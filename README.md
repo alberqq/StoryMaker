@@ -1,2 +1,2 @@
 # StoryMaker
-Generator of horror stories.
+Generator of historical stories.
