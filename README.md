@@ -1,2 +1,2 @@
 # StoryMaker
-Generator of historical stories.
+Generador de novelas históricas.
