@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/sobre/v1",
+  "title": "sobre",
+  "description": "Estructura auxiliar.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "contrato": {
+      "type": "string",
+      "pattern": "^CT-([1-9]|1[0-9]|20)R?$"
+    },
+    "emisor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "momento": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "proyecto": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ejecucion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "carga": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contrato",
+    "emisor",
+    "momento",
+    "carga"
+  ],
+  "additionalProperties": false
+}

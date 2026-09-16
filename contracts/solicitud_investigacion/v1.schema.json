@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/solicitud_investigacion/v1",
+  "title": "solicitud_investigacion",
+  "description": "Contrato CT-12, CT-13 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "emisor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tema": {
+      "type": "string",
+      "minLength": 1
+    },
+    "periodo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ambito_geografico": {
+      "type": "string",
+      "minLength": 1
+    },
+    "contexto_narrativo": {
+      "type": "string"
+    },
+    "unidad": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "emisor",
+    "tema",
+    "periodo",
+    "ambito_geografico"
+  ],
+  "additionalProperties": false
+}

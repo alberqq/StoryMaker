@@ -1,0 +1,45 @@
+{
+  "titulo_provisional": "El cartografo de Amberes",
+
+  "semillas": [
+    {
+      "tipo": "personaje",
+      "texto_literal": "un cartografo flamenco que miente en sus mapas"
+    }
+  ],
+
+  "premisa": "Un cartografo de Amberes falsifica una carta de navegacion por encargo, la corona la compra, y la mentira vuelve a buscarle.",
+  "epoca": { "desde": "1560", "hasta": "1570", "precision": "decada" },
+  "ambito_geografico": "Amberes y Sevilla",
+
+  "extension_objetivo_palabras": 528,
+  "capitulos_objetivo": 3,
+  "extension_por_capitulo": {
+    "valor_palabras": 176,
+    "valor_origen": 16,
+    "unidad_origen": "lineas",
+    "palabras_por_linea": 11,
+    "origen": "conversion_declarada_en_captura"
+  },
+
+  "tolerancia_extension": 0.1,
+
+  "politica_hechos_sensibles": {
+    "valor": "Que aparezcan sin eufemismos y sin regodeo si la trama los atraviesa",
+    "origen": "autor"
+  },
+  "politica_figuras_reales": {
+    "valor": "Solo lo documentado; cualquier accion no documentada exige Licencia registrada",
+    "origen": "autor"
+  },
+
+  "guia_estilo": {
+    "persona_narrativa": { "valor": "tercera", "estado": "declarado" },
+    "tiempo_verbal": { "valor": "pasado", "estado": "declarado" },
+    "registro": { "valor": "neutro con lexico de epoca", "estado": "declarado" },
+    "densidad_descriptiva": { "valor": "media", "estado": "declarado" },
+    "recursos_apertura": { "valor": "in medias res", "estado": "declarado" },
+    "longitud_media_frase": { "valor": 18, "estado": "declarado" },
+    "prohibiciones": { "valor": null, "estado": "sin_preferencia" }
+  }
+}

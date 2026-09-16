@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/capitulo_validado/v1",
+  "title": "capitulo_validado",
+  "description": "Contrato CT-15 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "capitulo": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "aprobado": {
+      "const": true
+    },
+    "hash_texto": {
+      "type": "string",
+      "format": "sha256"
+    },
+    "momento": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "extension_real": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "presupuesto": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "recuento": {
+      "type": "object",
+      "properties": {
+        "bloqueante": {
+          "type": "integer",
+          "maximum": 0
+        },
+        "mayor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "menor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "bloqueante",
+        "mayor",
+        "menor"
+      ],
+      "additionalProperties": false
+    },
+    "hallazgos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "enrutado": {
+      "type": "object"
+    },
+    "pasajes_protegidos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "capitulo",
+    "aprobado",
+    "hash_texto",
+    "recuento"
+  ],
+  "additionalProperties": false
+}

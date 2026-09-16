@@ -1,0 +1,44 @@
+{
+  "titulo_provisional": "La mano del copista",
+
+  "semillas": [
+    {
+      "tipo": "personaje",
+      "texto_literal": "un copista griego en Roma que introduce un error deliberado en un testamento"
+    }
+  ],
+
+  "premisa": "Un copista esclavo altera una sola palabra del testamento que le dictan, la familia sellada no lo advierte, y el error empieza a andar solo por los tribunales.",
+
+  "epoca": { "desde": "85", "hasta": "92", "precision": "periodo" },
+  "ambito_geografico": "Roma, entre el Argileto y el Foro",
+
+  "extension_objetivo_palabras": 600,
+  "capitulos_objetivo": 2,
+  "tolerancia_extension": 0.15,
+
+  "politica_hechos_sensibles": {
+    "valor": "La esclavitud aparece como lo que era, sin suavizarla y sin convertirla en espectaculo",
+    "origen": "autor"
+  },
+  "politica_figuras_reales": {
+    "valor": "Ninguna figura historica real con nombre propio. Si el diseno la necesita, que lo eleve como decision",
+    "origen": "autor"
+  },
+
+  "ejes_tematicos": [
+    "el derecho testamentario romano y sus siete testigos",
+    "la condicion del esclavo alfabetizado en una casa senatorial",
+    "materiales de escritura: tabulae ceratae, papiro, estilo y tinta"
+  ],
+
+  "guia_estilo": {
+    "persona_narrativa": { "valor": "tercera", "estado": "declarado" },
+    "tiempo_verbal": { "valor": "pasado", "estado": "declarado" },
+    "registro": { "valor": "sobrio, sin arcaismos forzados", "estado": "declarado" },
+    "densidad_descriptiva": { "valor": "baja: solo lo que el copista toca o mira", "estado": "declarado" },
+    "recursos_apertura": { "valor": "in medias res", "estado": "declarado" },
+    "longitud_media_frase": { "valor": 16, "estado": "declarado" },
+    "prohibiciones": { "valor": null, "estado": "sin_preferencia" }
+  }
+}

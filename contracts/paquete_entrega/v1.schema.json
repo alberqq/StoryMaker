@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/paquete_entrega/v1",
+  "title": "paquete_entrega",
+  "description": "Contrato CT-17 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "generado_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "proyecto": {
+      "type": "object"
+    },
+    "encargo": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "contexto_historico": {
+      "type": "object"
+    },
+    "canon_final": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "licencias": {
+      "type": "object"
+    },
+    "deuda_de_calidad": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "hallazgos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "pasada_global": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "metricas_ejecucion": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generado_en",
+    "proyecto",
+    "encargo",
+    "contexto_historico",
+    "canon_final",
+    "licencias",
+    "deuda_de_calidad"
+  ],
+  "additionalProperties": false
+}

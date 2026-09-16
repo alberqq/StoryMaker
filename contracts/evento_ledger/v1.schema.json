@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/evento_ledger/v1",
+  "title": "evento_ledger",
+  "description": "Contrato CT-18 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "secuencia": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "momento": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "tipo": {
+      "enum": [
+        "canon_versionado",
+        "ejecucion_finalizada",
+        "ejecucion_iniciada",
+        "error_registrado",
+        "escritura_denegada",
+        "evaluacion_registrada",
+        "fidelidad_verificada",
+        "frontera_esquema_cruzada",
+        "hallazgo_emitido",
+        "hallazgo_transicionado",
+        "llamada_modelo",
+        "piloto_resuelto",
+        "piloto_sometido",
+        "presupuesto_admitido",
+        "presupuesto_denegado",
+        "punto_control_abierto",
+        "punto_control_resuelto",
+        "refutacion_emitida",
+        "unidad_cerrada",
+        "unidad_iniciada"
+      ]
+    },
+    "proyecto": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ejecucion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "carga": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "secuencia",
+    "momento",
+    "tipo",
+    "proyecto",
+    "ejecucion",
+    "carga"
+  ],
+  "additionalProperties": false
+}

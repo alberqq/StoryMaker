@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/respuesta_investigacion/v1",
+  "title": "respuesta_investigacion",
+  "description": "Contrato CT-12R, CT-13R de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "solicitud_id": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "resultado": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "laguna_declarada": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "afirmaciones_nuevas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+      }
+    },
+    "restricciones_nuevas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "solicitud_id"
+  ],
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "required": [
+        "resultado"
+      ],
+      "properties": {
+        "resultado": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "required": [
+        "laguna_declarada"
+      ],
+      "properties": {
+        "laguna_declarada": {
+          "type": "object"
+        }
+      }
+    }
+  ]
+}

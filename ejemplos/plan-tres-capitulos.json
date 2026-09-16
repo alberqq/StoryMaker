@@ -1,0 +1,216 @@
+{
+  "arco": "Un hombre falsifica un mapa por dinero, la mentira navega sin el, y cuando vuelve ya no puede devolverla.",
+  "hilos": [
+    {
+      "id": "hil_el-mapa-falso",
+      "pregunta": "Se descubrira que la carta de navegacion esta falsificada",
+      "escena_apertura": "esc_001_001",
+      "escenas_avance": [
+        "esc_001_002",
+        "esc_002_001",
+        "esc_002_002",
+        "esc_003_001"
+      ],
+      "escena_resolucion": "esc_003_002"
+    }
+  ],
+  "personajes": [
+    {
+      "id": "per_joos",
+      "nombre": "Joos van der Beke",
+      "tipo": "ficticio",
+      "funcion_narrativa": "protagonista",
+      "rasgos": [
+        "meticuloso",
+        "endeudado",
+        "incapaz de deshacer lo hecho"
+      ],
+      "voz": "seca, concreta, mas atenta a los objetos que a las personas",
+      "arco": "de la impunidad tecnica al miedo concreto",
+      "conocimiento_inicial": [
+        "sabe que la sonda de la carta es inventada"
+      ]
+    },
+    {
+      "id": "per_inspector",
+      "nombre": "Alonso de Quesada",
+      "tipo": "ficticio",
+      "funcion_narrativa": "antagonista",
+      "rasgos": [
+        "paciente",
+        "sin prisa",
+        "lee los mapas como quien lee cuentas"
+      ],
+      "voz": "cortes y lenta, nunca alza el tono",
+      "arco": "de la rutina a la certeza",
+      "conocimiento_inicial": [
+        "no conoce a Joos"
+      ]
+    }
+  ],
+  "lugares": [
+    {
+      "id": "lug_taller",
+      "nombre": "El taller de Joos, en Amberes",
+      "naturaleza": "ficticio"
+    },
+    {
+      "id": "lug_casa-contratacion",
+      "nombre": "La Casa de Contratacion, en Sevilla",
+      "naturaleza": "real"
+    },
+    {
+      "id": "lug_puerto",
+      "nombre": "El muelle de Amberes",
+      "naturaleza": "ficticio"
+    }
+  ],
+  "revelaciones": [
+    {
+      "id": "rev_el-mapa-es-falso",
+      "informacion": "La sonda que Joos dibujo en la carta nunca se midio",
+      "escena": "esc_003_002",
+      "ante": [
+        "lector",
+        "per_inspector"
+      ],
+      "escenas_actuando_sin_saberlo": [
+        "esc_002_001",
+        "esc_002_002"
+      ]
+    }
+  ],
+  "linea_temporal": [
+    {
+      "id": "evf_encargo",
+      "descripcion": "El encargo de la carta",
+      "posicion": 1
+    },
+    {
+      "id": "evf_entrega",
+      "descripcion": "La entrega en Sevilla",
+      "posicion": 2
+    },
+    {
+      "id": "evf_perdida",
+      "descripcion": "La nao no regresa",
+      "posicion": 3
+    }
+  ],
+  "capitulos": [
+    {
+      "id": "cap_001",
+      "orden": 1,
+      "titulo": "El taller",
+      "escenas": [
+        {
+          "id": "esc_001_001",
+          "orden": 1,
+          "funcion_narrativa": "Presentar a Joos trabajando, y la deuda que lo empuja",
+          "personajes": [
+            "per_joos"
+          ],
+          "lugar": "lug_taller",
+          "momento": "1560-03-01",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [],
+          "presupuesto_palabras": 88
+        },
+        {
+          "id": "esc_001_002",
+          "orden": 2,
+          "funcion_narrativa": "Joos acepta el encargo sabiendo que le falta la sonda",
+          "personajes": [
+            "per_joos"
+          ],
+          "lugar": "lug_taller",
+          "momento": "1560-03-04",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [],
+          "presupuesto_palabras": 88
+        }
+      ]
+    },
+    {
+      "id": "cap_002",
+      "orden": 2,
+      "titulo": "La entrega",
+      "escenas": [
+        {
+          "id": "esc_002_001",
+          "orden": 1,
+          "funcion_narrativa": "La carta se entrega y se registra sin que nadie la mire dos veces",
+          "personajes": [
+            "per_joos"
+          ],
+          "lugar": "lug_casa-contratacion",
+          "momento": "1560-05-10",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [],
+          "presupuesto_palabras": 88
+        },
+        {
+          "id": "esc_002_002",
+          "orden": 2,
+          "funcion_narrativa": "Quesada archiva la carta y algo en el trazo le queda pendiente",
+          "personajes": [
+            "per_inspector"
+          ],
+          "lugar": "lug_casa-contratacion",
+          "momento": "1560-05-11",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [],
+          "presupuesto_palabras": 88
+        }
+      ]
+    },
+    {
+      "id": "cap_003",
+      "orden": 3,
+      "titulo": "La cuenta",
+      "escenas": [
+        {
+          "id": "esc_003_001",
+          "orden": 1,
+          "funcion_narrativa": "Joos espera una nao que no vuelve y empieza a contar los meses",
+          "personajes": [
+            "per_joos"
+          ],
+          "lugar": "lug_puerto",
+          "momento": "1560-09-02",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [],
+          "presupuesto_palabras": 88
+        },
+        {
+          "id": "esc_003_002",
+          "orden": 2,
+          "funcion_narrativa": "Quesada llega al taller con la carta, y la sonda falsa queda dicha",
+          "personajes": [
+            "per_joos",
+            "per_inspector"
+          ],
+          "lugar": "lug_taller",
+          "momento": "1560-09-20",
+          "hilos": [
+            "hil_el-mapa-falso"
+          ],
+          "revelaciones": [
+            "rev_el-mapa-es-falso"
+          ],
+          "presupuesto_palabras": 88
+        }
+      ]
+    }
+  ]
+}

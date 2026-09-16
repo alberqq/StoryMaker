@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/capitulo_para_validar/v1",
+  "title": "capitulo_para_validar",
+  "description": "Contrato CT-10 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "capitulo": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "escenas_cerradas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+      }
+    },
+    "extension_real": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "presupuesto": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hash_texto": {
+      "type": "string",
+      "format": "sha256"
+    },
+    "fichas_escenas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "funcion_narrativa": {
+            "type": "string",
+            "minLength": 1
+          },
+          "personajes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+            }
+          },
+          "lugar": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "momento": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hilos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+            }
+          },
+          "revelaciones": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+            }
+          },
+          "presupuesto_palabras": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "orden",
+          "funcion_narrativa",
+          "presupuesto_palabras"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "hechos_emergentes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "deuda_bucle_interno": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "capitulo",
+    "escenas_cerradas",
+    "extension_real",
+    "hash_texto"
+  ],
+  "additionalProperties": false
+}

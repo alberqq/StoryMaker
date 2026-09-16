@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/ambito_investigacion/v1",
+  "title": "ambito_investigacion",
+  "description": "Contrato CT-1 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "epoca": {
+      "type": "object",
+      "properties": {
+        "desde": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hasta": {
+          "type": "string",
+          "minLength": 1
+        },
+        "precision": {
+          "enum": [
+            "ano",
+            "decada",
+            "siglo",
+            "periodo"
+          ]
+        }
+      },
+      "required": [
+        "desde",
+        "hasta"
+      ],
+      "additionalProperties": false
+    },
+    "ambito_geografico": {
+      "type": "string",
+      "minLength": 1
+    },
+    "premisa": {
+      "type": "string",
+      "minLength": 1
+    },
+    "semillas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "enum": [
+              "personaje",
+              "epoca",
+              "idea",
+              "inspiracion"
+            ]
+          },
+          "texto_literal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "registrada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "tipo",
+          "texto_literal"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "ejes_tematicos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "politica_figuras_reales": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "epoca",
+    "ambito_geografico",
+    "premisa",
+    "semillas"
+  ],
+  "additionalProperties": false
+}

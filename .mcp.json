@@ -1,0 +1,34 @@
+{
+  "$comentario": [
+    "Los dos servidores de recuperacion de la seccion 2.5. Son la frontera con el",
+    "exterior y el unico punto por el que entra informacion no generada.",
+    "",
+    "Devuelven siempre contenido mas localizador mas fecha, nunca contenido suelto:",
+    "sin eso, RF-101 no tendria que conservar y la trazabilidad de RF-082 se caeria",
+    "en cuanto muriera un enlace.",
+    "",
+    "Las credenciales se resuelven del entorno en tiempo de ejecucion y se referencian",
+    "por marcador. Ninguna aparece jamas en un artefacto persistido (seccion 10)."
+  ],
+  "mcpServers": {
+    "sm-web": {
+      "command": "python",
+      "args": ["-m", "storymaker_mcp.web"],
+      "env": {
+        "PYTHONPATH": "src",
+        "SM_WEB_PROVEEDOR": "${SM_WEB_PROVEEDOR:-tavily}",
+        "SM_WEB_API_KEY": "${SM_WEB_API_KEY}",
+        "SM_WEB_CONSERVAR_CONTENIDO": "1"
+      }
+    },
+    "sm-rag": {
+      "command": "python",
+      "args": ["-m", "storymaker_mcp.rag"],
+      "env": {
+        "PYTHONPATH": "src",
+        "SM_RAG_CORPUS": "${SM_RAG_CORPUS}",
+        "SM_RAG_DEVOLVER_FRAGMENTO": "1"
+      }
+    }
+  }
+}

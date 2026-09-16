@@ -1,0 +1,103 @@
+{
+  "$comentario": [
+    "ADR-02, mecanismo 1: los permisos. La denegacion de escritura bajo proyectos/**",
+    "no es una recomendacion a los agentes: es que no pueden. La unica excepcion es",
+    "proyectos/*/tmp/, que es el borrador de trabajo de una unidad y no es autoritativo.",
+    "Un agente necesita un sitio donde pensar, y ese sitio no puede ser el estado del Proyecto."
+  ],
+  "permissions": {
+    "deny": [
+      "Write(./proyectos/**)",
+      "Edit(./proyectos/**)",
+      "NotebookEdit(./proyectos/**)",
+      "Read(./.env)",
+      "Read(./**/.env*)",
+      "Read(./**/credentials*)"
+    ],
+    "allow": [
+      "Write(./proyectos/*/tmp/**)",
+      "Edit(./proyectos/*/tmp/**)",
+      "Read(./proyectos/**)",
+      "Read(./contracts/**)",
+      "Read(./src/**)",
+      "Bash(storymaker:*)",
+      "Bash(python -m storymaker:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  },
+  "env": {
+    "STORYMAKER_RAIZ": "proyectos",
+    "PYTHONPATH": "src"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard_escritura.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard_canon.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard_presupuesto.py",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard_proteccion.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/ledger_llamada.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/cierre_unidad.py",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/arranque.py",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

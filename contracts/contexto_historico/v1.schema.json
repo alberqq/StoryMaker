@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/contexto_historico/v1",
+  "title": "contexto_historico",
+  "description": "Contrato CT-3 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "estado": {
+      "enum": [
+        "vacio",
+        "en_elaboracion",
+        "completo",
+        "ampliado"
+      ]
+    },
+    "afirmaciones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "seccion": {
+            "anyOf": [
+              {
+                "enum": [
+                  "indumentaria",
+                  "cultura_material",
+                  "organizacion_social",
+                  "mentalidad",
+                  "economia_y_trabajo"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "^otra:"
+              }
+            ]
+          },
+          "enunciado": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo_afirmacion": {
+            "enum": [
+              "existencial_negativa",
+              "existencial_positiva",
+              "datacion",
+              "atribucion",
+              "cuantitativa",
+              "cualitativa"
+            ]
+          },
+          "fuentes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+            }
+          },
+          "sin_fuente": {
+            "type": "boolean"
+          },
+          "fidelidad": {
+            "enum": [
+              "pendiente",
+              "verificada",
+              "no_sostenida",
+              "no_verificable"
+            ]
+          },
+          "fidelidad_motivo": {
+            "type": "string"
+          },
+          "fidelidad_contenido_cotejado": {
+            "type": "string"
+          },
+          "fidelidad_verificada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          },
+          "refutacion_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "estado": {
+            "enum": [
+              "vigente",
+              "refutada",
+              "retirada"
+            ]
+          },
+          "disputada": {
+            "type": "boolean"
+          },
+          "versiones_en_conflicto": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "certeza": {
+            "enum": [
+              "documentada",
+              "inferida",
+              "conocimiento_general"
+            ]
+          },
+          "origen": {
+            "enum": [
+              "inicial",
+              "bajo_demanda"
+            ]
+          },
+          "creado_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "schema_version",
+          "id",
+          "seccion",
+          "enunciado",
+          "fuentes",
+          "sin_fuente",
+          "fidelidad",
+          "estado"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "refutaciones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "afirmacion_id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "veredicto": {
+            "enum": [
+              "confirmada",
+              "matizada",
+              "disputada",
+              "refutada",
+              "no_refutable_documentalmente"
+            ]
+          },
+          "tipo_afirmacion": {
+            "enum": [
+              "existencial_negativa",
+              "existencial_positiva",
+              "datacion",
+              "atribucion",
+              "cuantitativa",
+              "cualitativa"
+            ]
+          },
+          "fuentes_contrarias": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+            }
+          },
+          "consultas": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "consulta": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "modo": {
+                  "enum": [
+                    "web",
+                    "rag"
+                  ]
+                },
+                "resultados_examinados": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "motivo_descarte": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "consulta",
+                "resultados_examinados"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "alcance_matiz": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "emitida_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "schema_version",
+          "afirmacion_id",
+          "veredicto",
+          "tipo_afirmacion",
+          "consultas"
+        ],
+        "additionalProperties": false,
+        "if": {
+          "type": "object",
+          "properties": {
+            "veredicto": {
+              "const": "matizada"
+            }
+          },
+          "required": [
+            "veredicto"
+          ],
+          "additionalProperties": true
+        },
+        "then": {
+          "required": [
+            "alcance_matiz"
+          ]
+        }
+      }
+    },
+    "restricciones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "enunciado": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoria": {
+            "enum": [
+              "lexica",
+              "material",
+              "tecnologica",
+              "institucional",
+              "mentalidad"
+            ]
+          },
+          "afirmacion_id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "comprobable": {
+            "type": "boolean"
+          },
+          "terminos_prohibidos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "severidad_incumplimiento": {
+            "enum": [
+              "bloqueante",
+              "mayor",
+              "menor"
+            ]
+          },
+          "estado": {
+            "enum": [
+              "vigente",
+              "revocada"
+            ]
+          },
+          "justificacion_revocacion": {
+            "type": "string"
+          },
+          "derivada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          },
+          "revocada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "schema_version",
+          "id",
+          "enunciado",
+          "categoria",
+          "afirmacion_id",
+          "comprobable",
+          "estado"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "fuentes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "tipo": {
+            "enum": [
+              "web",
+              "rag"
+            ]
+          },
+          "localizador": {
+            "type": "string",
+            "minLength": 1
+          },
+          "consultada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          },
+          "fiabilidad": {
+            "type": "string"
+          },
+          "contenido_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contenido_sha256": {
+            "type": "string",
+            "format": "sha256"
+          },
+          "motivo_no_conservable": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "id",
+          "tipo",
+          "localizador",
+          "consultada_en"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "figuras_reales": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "lagunas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "seccion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "impacto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "declarada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "seccion",
+          "impacto"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "cobertura_reducida": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "indicadores": {
+      "type": "object"
+    },
+    "creado_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    }
+  },
+  "required": [
+    "schema_version",
+    "estado",
+    "lagunas"
+  ],
+  "additionalProperties": false
+}

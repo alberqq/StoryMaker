@@ -1,0 +1,454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/canon_aprobado/v1",
+  "title": "canon_aprobado",
+  "description": "Contrato CT-6 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "estado": {
+          "enum": [
+            "borrador",
+            "en_validacion",
+            "aprobado",
+            "superado"
+          ]
+        },
+        "version_anterior": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "superada_por": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "motivo_cambio": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "origen_cambio": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "arco": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hilos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+              },
+              "pregunta": {
+                "type": "string",
+                "minLength": 1
+              },
+              "escena_apertura": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "escenas_avance": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                }
+              },
+              "escena_resolucion": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "pregunta"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "personajes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+              },
+              "nombre": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tipo": {
+                "enum": [
+                  "ficticio",
+                  "historico_real"
+                ]
+              },
+              "funcion_narrativa": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rasgos": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "voz": {
+                "type": "string"
+              },
+              "arco": {
+                "type": "string"
+              },
+              "conocimiento_inicial": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "figura_real": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "nombre",
+              "tipo",
+              "funcion_narrativa"
+            ],
+            "additionalProperties": false,
+            "if": {
+              "type": "object",
+              "properties": {
+                "tipo": {
+                  "const": "historico_real"
+                }
+              },
+              "required": [
+                "tipo"
+              ],
+              "additionalProperties": true
+            },
+            "then": {
+              "required": [
+                "figura_real"
+              ]
+            }
+          }
+        },
+        "facciones": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "lugares": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "linea_temporal": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "revelaciones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+              },
+              "informacion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "escena": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ante": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "escenas_actuando_sin_saberlo": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "informacion"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "capitulos": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+              },
+              "orden": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "titulo": {
+                "type": "string"
+              },
+              "escenas": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                    },
+                    "orden": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "funcion_narrativa": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "personajes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                      }
+                    },
+                    "lugar": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "momento": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "hilos": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                      }
+                    },
+                    "revelaciones": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+                      }
+                    },
+                    "presupuesto_palabras": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "orden",
+                    "funcion_narrativa",
+                    "presupuesto_palabras"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "orden",
+              "escenas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "licencias_alcance": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "capitulos_invalidados": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          }
+        },
+        "aprobado_por": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "modo": {
+              "enum": [
+                "agente",
+                "humano"
+              ]
+            },
+            "quien": {
+              "type": "string",
+              "minLength": 1
+            },
+            "decidido_en": {
+              "type": "string",
+              "format": "fecha-hora"
+            },
+            "bloqueantes_asumidos": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "motivo_asuncion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "modo",
+            "quien"
+          ],
+          "additionalProperties": false
+        },
+        "encargo_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contexto_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "creado_en": {
+          "type": "string",
+          "format": "fecha-hora"
+        }
+      },
+      "required": [
+        "arco",
+        "hilos",
+        "personajes",
+        "capitulos",
+        "revelaciones"
+      ],
+      "additionalProperties": false
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "licencias_alcance": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "guia_estilo_efectiva": {
+      "type": "object",
+      "properties": {
+        "declarados": {
+          "type": "object"
+        },
+        "no_evaluables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nota": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "declarados",
+        "no_evaluables"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan",
+    "version",
+    "guia_estilo_efectiva"
+  ],
+  "additionalProperties": false
+}

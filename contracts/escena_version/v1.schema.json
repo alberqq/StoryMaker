@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/escena_version/v1",
+  "title": "escena_version",
+  "description": "Contrato CT-7 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "escena": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "capitulo": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "rama": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "texto_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hash_texto": {
+      "type": "string",
+      "format": "sha256"
+    },
+    "palabras": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "presupuesto_palabras": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "canon_plan_version": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "guia_estilo_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udt_origen": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ejecucion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "iteracion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "es_piloto": {
+      "type": "boolean"
+    },
+    "protegido_palabras": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "pasajes_protegidos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "protecciones_reescritas": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "hallazgos_aplicados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "revelaciones_portadas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+      }
+    },
+    "evaluacion": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "modo_cierre": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "convergencia",
+        "estancamiento",
+        "regresion",
+        "agotamiento"
+      ]
+    },
+    "descartada": {
+      "type": "boolean"
+    },
+    "cerrada_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "hallazgos_pendientes_al_cerrar": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "creado_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "notas_redactor": {
+      "type": "string"
+    },
+    "vigente": {
+      "not": {}
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "escena",
+    "rama",
+    "texto_ref",
+    "hash_texto",
+    "palabras",
+    "canon_plan_version",
+    "udt_origen",
+    "es_piloto",
+    "protegido_palabras"
+  ],
+  "additionalProperties": false
+}

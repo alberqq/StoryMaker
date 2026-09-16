@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "storymaker"
+version = "2.0.0"
+description = "Nucleo determinista del arnes StoryMaker. Propietario unico del estado (ADR-01)."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+storymaker = "storymaker.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

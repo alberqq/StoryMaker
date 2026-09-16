@@ -1,0 +1,14 @@
+{
+  "name": "storymaker",
+  "version": "2.0.0",
+  "description": "Arnes generador de novelas historicas sobre Claude Code. Nueve subagentes, seis skills, ocho comandos y siete hooks sobre un nucleo determinista que es el unico propietario del estado.",
+  "author": {
+    "name": "StoryMaker"
+  },
+  "keywords": ["novela", "historica", "arnes", "canon", "trazabilidad"],
+  "agents": "./.claude/agents",
+  "commands": "./.claude/commands",
+  "skills": "./.claude/skills",
+  "hooks": "./.claude/settings.json",
+  "mcpServers": "./.mcp.json"
+}

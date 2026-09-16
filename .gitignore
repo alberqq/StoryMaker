@@ -1,0 +1,20 @@
+# Estado de los Proyectos. Es de trabajo, no de repositorio: un Proyecto puede
+# ocupar diez mil ficheros y su historia ya vive en su propio ledger.
+proyectos/*
+!proyectos/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Credenciales. Nunca entran aqui, y por si acaso tampoco pueden.
+.env
+.env.*
+credentials*
+*.key

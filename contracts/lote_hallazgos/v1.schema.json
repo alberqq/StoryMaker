@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/lote_hallazgos/v1",
+  "title": "lote_hallazgos",
+  "description": "Contrato CT-11, CT-16, CT-5, CT-8 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "emisor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unidad": {
+      "type": "string",
+      "minLength": 1
+    },
+    "iteracion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "hallazgos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+$"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "unidad": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "elemento_senalado": {
+            "type": "string"
+          },
+          "severidad": {
+            "enum": [
+              "bloqueante",
+              "mayor",
+              "menor"
+            ]
+          },
+          "causa_raiz": {
+            "enum": [
+              "entrada",
+              "investigacion",
+              "diseno",
+              "redaccion",
+              "refinamiento"
+            ]
+          },
+          "etapa_destino": {
+            "type": "string",
+            "minLength": 1
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accion_exigida": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidencia": {
+            "type": "string"
+          },
+          "localizacion": {
+            "type": "object"
+          },
+          "estado": {
+            "enum": [
+              "abierto",
+              "en_correccion",
+              "resuelto",
+              "aceptado_como_deuda",
+              "descartado"
+            ]
+          },
+          "iteracion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "creado_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          },
+          "motivo_transicion": {
+            "type": "string"
+          },
+          "transicionado_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          },
+          "capitulo_destino": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "unidad",
+          "categoria",
+          "severidad",
+          "causa_raiz",
+          "descripcion",
+          "accion_exigida"
+        ],
+        "additionalProperties": false,
+        "if": {
+          "type": "object",
+          "properties": {
+            "severidad": {
+              "const": "bloqueante"
+            }
+          },
+          "required": [
+            "severidad"
+          ],
+          "additionalProperties": true
+        },
+        "then": {
+          "required": [
+            "localizacion"
+          ]
+        }
+      }
+    },
+    "recomendacion": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "emisor",
+    "unidad",
+    "hallazgos"
+  ],
+  "additionalProperties": false
+}

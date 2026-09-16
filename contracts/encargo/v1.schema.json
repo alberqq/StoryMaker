@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/encargo/v1",
+  "title": "encargo",
+  "description": "Contrato CT-2 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "estado": {
+      "enum": [
+        "abierto",
+        "cerrado",
+        "reabierto"
+      ]
+    },
+    "origen_captura": {
+      "enum": [
+        "conversacion",
+        "fichero"
+      ]
+    },
+    "semillas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "enum": [
+              "personaje",
+              "epoca",
+              "idea",
+              "inspiracion"
+            ]
+          },
+          "texto_literal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "registrada_en": {
+            "type": "string",
+            "format": "fecha-hora"
+          }
+        },
+        "required": [
+          "tipo",
+          "texto_literal"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "premisa": {
+      "type": "string",
+      "minLength": 1
+    },
+    "epoca": {
+      "type": "object",
+      "properties": {
+        "desde": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hasta": {
+          "type": "string",
+          "minLength": 1
+        },
+        "precision": {
+          "enum": [
+            "ano",
+            "decada",
+            "siglo",
+            "periodo"
+          ]
+        }
+      },
+      "required": [
+        "desde",
+        "hasta"
+      ],
+      "additionalProperties": false
+    },
+    "ambito_geografico": {
+      "type": "string",
+      "minLength": 1
+    },
+    "extension_objetivo_palabras": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "tolerancia_extension": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "capitulos_objetivo": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "extension_por_capitulo": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "valor_palabras": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "valor_origen": {
+          "type": "number"
+        },
+        "unidad_origen": {
+          "enum": [
+            "palabras",
+            "lineas"
+          ]
+        },
+        "palabras_por_linea": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "origen": {
+          "type": "string"
+        }
+      },
+      "dependentRequired": {
+        "unidad_origen": [
+          "valor_palabras"
+        ]
+      },
+      "additionalProperties": false
+    },
+    "guia_estilo": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "properties": {
+            "valor": {},
+            "estado": {
+              "enum": [
+                "declarado",
+                "sin_preferencia",
+                "sin_decidir"
+              ]
+            },
+            "origen": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "estado"
+          ],
+          "additionalProperties": false,
+          "if": {
+            "type": "object",
+            "properties": {
+              "estado": {
+                "const": "declarado"
+              }
+            },
+            "required": [
+              "estado"
+            ],
+            "additionalProperties": true
+          },
+          "then": {
+            "required": [
+              "valor"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "guia_estilo_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "politica_hechos_sensibles": {
+      "type": "object"
+    },
+    "politica_figuras_reales": {
+      "type": "object"
+    },
+    "licencias_alcance_preautorizadas": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "hilos_abiertos_autorizados": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+      }
+    },
+    "restricciones_autor": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "incompatibilidades": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "ejes_tematicos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "titulo_provisional": {
+      "type": "string"
+    },
+    "confirmado_por": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confirmado_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "creado_en": {
+      "type": "string",
+      "format": "fecha-hora"
+    },
+    "campos_sin_preferencia": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "rondas": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "estado",
+    "semillas",
+    "premisa",
+    "epoca",
+    "ambito_geografico",
+    "extension_objetivo_palabras",
+    "guia_estilo",
+    "politica_hechos_sensibles",
+    "politica_figuras_reales"
+  ],
+  "additionalProperties": false
+}

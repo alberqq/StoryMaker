@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contracts/lote_hechos/v1",
+  "title": "lote_hechos",
+  "description": "Contrato CT-14 de la Especificacion Tecnica 2.0, seccion 6.2.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "escena_origen": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "escena_version_origen": {
+      "type": "string",
+      "pattern": "^[a-z]{3}_[a-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "hechos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "enunciado": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sujeto": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo_sujeto": {
+            "enum": [
+              "personaje",
+              "lugar",
+              "objeto",
+              "relacion",
+              "promesa"
+            ]
+          }
+        },
+        "required": [
+          "enunciado",
+          "sujeto",
+          "tipo_sujeto"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "escena_origen",
+    "escena_version_origen",
+    "hechos"
+  ],
+  "additionalProperties": false
+}
