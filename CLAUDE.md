@@ -40,7 +40,6 @@ de `idx_hilos_estado`.
 ## Lo que no se hace nunca
 
 - **No se redacta sobre un Canon no aprobado.**
-- **No se produce en serie antes de que el Autor acepte la escena piloto.**
 - **No se reescribe un pasaje protegido sin justificación registrada.** Cada uno
   resolvió un hallazgo bloqueante, y reescribirlo lo trae de vuelta.
 - **No se rellenan las lagunas con verosimilitud.** Se declaran.
@@ -54,8 +53,8 @@ de `idx_hilos_estado`.
 
 Encargo, Semilla, Contexto histórico, Restricción de época, Canon, Hilo de trama,
 Plan de revelaciones, Guía de estilo, Escena, Capítulo, Novela, Hallazgo, Severidad,
-Causa raíz, Anacronismo, Licencia literaria, Licencia de alcance, Escena piloto,
-Pasaje protegido, Presupuesto, Punto de control, Deuda de calidad.
+Causa raíz, Anacronismo, Licencia literaria, Licencia de alcance, Pasaje protegido,
+Presupuesto, Punto de control, Deuda de calidad.
 
 Úsalos tal cual, también al hablar con el Autor. No los traduzcas a *issue*,
 *pipeline*, *briefing* ni *worldbuilding*.
@@ -71,7 +70,6 @@ Al **Autor**, a través de un punto de control. Nunca se decide por él:
 | Replanificación durante la producción | PC-4 |
 | Bloqueo irresoluble | PC-5 |
 | Agotamiento con bloqueantes abiertos | PC-6 |
-| La escena piloto | PC-8 |
 
 Una Ejecución detenida en un punto de control **no consume presupuesto** mientras
 espera.
@@ -92,11 +90,22 @@ Los grupos son `proyecto`, `encargo`, `contexto`, `canon`, `escena`, `sinopsis`,
 
 ## Documentos de referencia
 
-- `especificaciones_funcionales.md` — el qué. Requisitos RF, RNF, invariantes INV,
-  puntos de control PC.
-- `especificaciones_tecnicas.md` — el cómo. Decisiones ADR, contratos CT, taxonomía
-  de errores ERR.
+- `docs/especificaciones_funcionales.md` — el qué. Requisitos RF, RNF, invariantes
+  INV, puntos de control PC.
+- `docs/especificaciones_tecnicas.md` — el cómo. Decisiones ADR, contratos CT,
+  taxonomía de errores ERR.
 - `ARQUITECTURA.md` — mapa de qué fichero del código implementa qué parte.
 
 Cuando el código y la especificación discrepen, **gana la especificación**: el código
 es la implementación, no la decisión.
+
+## Todo cambio de especificación se registra
+
+Siempre que se toque una especificación, el cambio se anota en el registro de
+cambios del propio documento: **§18.2, «Cambios por versión»**, en la Funcional, y
+**§15, «Registro de versiones»**, en la Técnica.
+
+No es burocracia. Una especificación sin registro de cambios no permite saber por qué
+algo dejó de estar ahí, y dentro de seis semanas la ausencia de un requisito es
+indistinguible de un olvido. El registro dice qué cambió y **por qué**, que es la
+parte que el diff no cuenta.

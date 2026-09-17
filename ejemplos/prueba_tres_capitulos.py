@@ -1,6 +1,6 @@
 """Camino rapido: una novela de tres capitulos, de la semilla a la entrega.
 
-Recorre las ocho etapas por la superficie del nucleo, sin llamar a ningun modelo.
+Recorre las etapas por la superficie del nucleo, sin llamar a ningun modelo.
 Sirve para dos cosas:
 
 - **Comprobar que la maquinaria funciona** en tu maquina antes de gastar en una
@@ -147,7 +147,7 @@ entendio que no habia forma de raspar aquello. Asintio despacio.""",
 
 titulo("0", "Proyecto")
 PROYECTO = sm("proyecto", "crear", "--titulo", "El cartografo de Amberes",
-              "--modo", "asistido")["datos"]["proyecto"]["id"]
+              "--modo", "revision_del_autor")["datos"]["proyecto"]["id"]
 print(f"Proyecto creado: {PROYECTO}")
 print(f"Almacen:         {Path(DESTINO) / PROYECTO}")
 
@@ -162,7 +162,7 @@ print(f"Estilo declarado:  {', '.join(sorted(estilo['declarados']))}")
 print(f"Sin preferencia:   {', '.join(estilo['no_evaluables'])}  <- no se evaluan, no tienen defecto")
 
 
-titulo("E2", "Investigacion historica y refutacion")
+titulo("E2", "Investigacion historica")
 fuente = sm("contexto", "fuente",
             "--localizador", "https://ejemplo.test/amberes-cartografia-1560",
             "--tipo", "web",
@@ -182,38 +182,39 @@ print(f"Afirmaciones en las cinco secciones obligatorias: {len(afirmaciones)}")
 
 clave = afirmaciones["cultura_material"]
 
-# La puerta de MD-7: sin fidelidad verificada no hay Restriccion comprobable.
-denegado = sm("contexto", "restriccion",
-              "--enunciado", "No aparece el termino 'boligrafo'",
-              "--categoria", "lexica", "--afirmacion", clave,
-              "--termino", "boligrafo", esperar_ok=False)
-print(f"Derivar antes de verificar -> {denegado['error']['codigo']} (MD-7 lo impide)")
-
-sm("contexto", "verificar", "--afirmacion", clave, "--resultado", "verificada",
-   "--contenido-cotejado", "vitela, compas de puntas y tinta de agallas")
-sm("contexto", "refutar", "--afirmacion", clave, "--veredicto", "confirmada",
-   "--tipo", "existencial_positiva",
-   "--consultas", fichero("consultas.json", [{
-       "consulta": "boligrafo primera atestacion castellano",
-       "modo": "web", "resultados_examinados": 11,
-       "motivo_descarte": "todas las atestaciones son del siglo XIX o posteriores",
-   }]))
+# Una Restriccion comprobable se deriva directamente de su afirmacion. Hasta la
+# version 1.7 habia que verificar la fidelidad y emitir un veredicto de refutacion
+# antes (la puerta de MD-7); las dos pasadas se retiraron porque costaban mas de lo
+# que corregian. Lo que sigue en pie es INV-8: la trazabilidad.
 restriccion = sm("contexto", "restriccion",
                  "--enunciado", "No aparece el termino 'boligrafo'",
                  "--categoria", "lexica", "--afirmacion", clave,
                  "--termino", "boligrafo")["datos"]["restriccion"]["id"]
-print(f"Tras verificar + refutar, Restriccion derivada: {restriccion}")
+print(f"Restriccion lexica derivada de {clave}: {restriccion}")
+
+# INV-8, que es la puerta que queda: lo que cuelga de una afirmacion caida, cae.
+# Se prueba sobre una afirmacion aparte para no tumbar la que sostiene la anterior.
+suelta = sm("contexto", "afirmar", "--seccion", "cultura_material",
+            "--enunciado", "En el taller se usaba tinta de agallas de roble",
+            "--sin-fuente")["datos"]["afirmacion"]["id"]
+sm("contexto", "descartar", "--afirmacion", suelta, "--quien", "Autor",
+   "--motivo", "El Autor no la da por buena")
+denegado = sm("contexto", "restriccion",
+              "--enunciado", "La tinta es siempre de agallas",
+              "--categoria", "material", "--afirmacion", suelta,
+              "--cualitativa", esperar_ok=False)
+print(f"Derivar de una afirmacion descartada -> {denegado['error']['codigo']} (INV-8)")
 
 contexto = sm("contexto", "cerrar")["datos"]["contexto"]
 indicadores = contexto["indicadores"]
 print(f"Contexto cerrado: {contexto['id']}")
-print(f"  RNF-027 fidelidad de cita:     {indicadores['RNF-027_fidelidad_de_cita']['valor']:.0%}")
-print(f"  RNF-028 cobertura refutacion:  {indicadores['RNF-028_cobertura_refutacion']['valor']:.0%}")
 print(f"  RNF-004 cobertura documental:  {indicadores['RNF-004_cobertura_documental']['valor']:.0%} "
       f"(indicador de salud, no detiene nada)")
+print("  RNF-027 y RNF-028 quedan en cero de forma permanente: la verificacion de")
+print("  fidelidad y la pasada de refutacion se retiraron en la version 1.7.")
 
 
-titulo("E3 / E4", "Diseno narrativo y validacion del Canon")
+titulo("E3 / E4", "Diseno narrativo y critica del Canon")
 plan = sm("canon", "proponer",
           "--plan", f"@{RAIZ / 'ejemplos' / 'plan-tres-capitulos.json'}")["datos"]
 print(f"Plan propuesto: {plan['version']} (pasa las ocho invariantes de 6.3)")
@@ -222,8 +223,10 @@ bloqueado = sm("escena", "escribir", "--escena", "esc_001_001",
                "--texto", "lo que sea", "--unidad", "udt_0", esperar_ok=False)
 print(f"Redactar con el Canon en borrador -> {bloqueado['error']['codigo']} (INV-1)")
 
-sm("canon", "aprobar", "--modo-aprobacion", "agente", "--quien", "sm-validador-canon")
-print("Canon aprobado como linea base (PC-3)")
+# PC-3 se resuelve siempre en modo humano: no queda ninguna etapa que juzgue el
+# Canon por el Autor, solo una critica breve que el lee antes de aprobar.
+sm("canon", "aprobar", "--modo-aprobacion", "humano", "--quien", "Autor")
+print("Canon aprobado por el Autor como linea base (PC-3)")
 
 
 titulo("Ejecucion", "Arranque con presupuestos congelados")
@@ -235,32 +238,8 @@ print(f"Reserva comun: {presupuesto['reserva_total']} iteraciones "
       f"del tramo final (solo el ultimo tercio, D24)")
 
 
-titulo("E5", "Piloto y punto de control PC-8")
-sm("escena", "escribir", "--escena", "esc_001_001",
-   "--texto", fichero("esc_001_001.md", ESCENAS["esc_001_001"]),
-   "--unidad", "udt_piloto", "--piloto")
-sm("escena", "cerrar", "--escena", "esc_001_001", "--modo-cierre", "convergencia")
-print(f"Piloto redactado: {palabras(ESCENAS['esc_001_001'])} palabras (presupuesto 88)")
-
-en_serie = sm("escena", "escribir", "--escena", "esc_001_002",
-              "--texto", "lo que sea", "--unidad", "udt_x", esperar_ok=False)
-print(f"Producir en serie sin piloto aceptado -> {en_serie['error']['codigo']} (INV-9)")
-
-punto = sm("control", "abrir", "--tipo", "PC-8",
-           "--presentado", fichero("piloto.json", {
-               "version_escena": "esv_001_001_v1",
-               "ficha_escena": "esc_001_001",
-               "parametros_estilo_aplicados": estilo["declarados"],
-           }))["datos"]["id"]
-sm("control", "resolver", "--id", punto, "--decision", "aprobar",
-   "--quien", "Autor de prueba", "--motivo", "La voz es la que buscaba")
-print(f"{punto} resuelto: piloto aceptado. Arranca la produccion.")
-
-
-titulo("E5 / E6", "Produccion del resto de escenas")
+titulo("E5 / E6", "Produccion de las escenas")
 for identificador, texto in ESCENAS.items():
-    if identificador == "esc_001_001":
-        continue
     argumentos = ["escena", "escribir", "--escena", identificador,
                   "--texto", fichero(f"{identificador}.md", texto),
                   "--unidad", f"udt_{identificador}"]
@@ -339,8 +318,7 @@ print(f"  cadena completa:    {traza['cadena_completa']}")
 
 respaldo = sm("traza", "afirmacion", "--consulta", "vitela")["datos"]
 print(f"Afirmacion 'vitela': {respaldo['afirmacion']}")
-print(f"  fidelidad: {respaldo['fidelidad']}  |  "
-      f"refutacion: {(respaldo.get('refutacion') or {}).get('veredicto')}")
+print(f"  estado: {respaldo.get('estado', 'vigente')}")
 print(f"  fuente con contenido conservado: "
       f"{respaldo['fuentes'][0]['contenido_disponible']}")
 

@@ -42,16 +42,17 @@ Las `lexica` son las unicas que el nucleo barre automaticamente por capitulo, y 
 eso **una lexica comprobable debe declarar sus terminos prohibidos**. Sin terminos
 no es comprobable sobre un texto, y el nucleo la rechazara.
 
-## La puerta de MD-7
+## De donde puede colgar una Restriccion
 
-Una Restriccion **comprobable** solo puede derivar de una afirmacion que cumple las
-dos cosas:
+Toda Restriccion tiene que ser **trazable a una afirmacion del Contexto**, y esa
+afirmacion tiene que estar vigente: ni descartada por el Autor, ni marcada como
+refutada. Lo que cuelga de algo caido, cae.
 
-- Su fidelidad esta `verificada`: la fuente dice lo que se le atribuye (RF-100).
-- Su veredicto de refutacion es `confirmada` o `matizada` (RF-102).
-
-Una afirmacion `refutada`, `disputada` o `no_refutable_documentalmente` no puede
-sostener una Restriccion comprobable. Como mucho, un criterio cualitativo.
+Esa es toda la puerta. Hasta la version 1.7 habia dos condiciones mas --- fidelidad
+`verificada` (RF-100) y veredicto de refutacion `confirmada` o `matizada` (RF-102)
+---, y ambas se retiraron: costaban dos pasadas de modelo por afirmacion y corregian
+menos de lo que costaban. Quien mira ahora el contenido de una afirmacion es el
+Autor, cuando firma el Contexto.
 
 Esto no es burocracia. Una cita que no dice lo que se le atribuye contamina **todo
 lo que se valide contra ella**: si una Restriccion falsa prohibe un termino que si

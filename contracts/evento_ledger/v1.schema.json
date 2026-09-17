@@ -30,8 +30,6 @@
         "hallazgo_emitido",
         "hallazgo_transicionado",
         "llamada_modelo",
-        "piloto_resuelto",
-        "piloto_sometido",
         "presupuesto_admitido",
         "presupuesto_denegado",
         "punto_control_abierto",

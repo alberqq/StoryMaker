@@ -37,7 +37,6 @@ POR_DEFECTO: dict[str, Any] = {
     "reserva_tramo_libre": 0.60,
     "reserva_tramo_final": 0.40,
     "reserva_tope_por_unidad": 3,
-    "ciclos_piloto": 3,
     "solicitudes_investigacion_por_escena": 2,
     "solicitudes_investigacion_por_ejecucion": 15,
     "factor_arnes_maximo": 15,
@@ -126,7 +125,6 @@ class Presupuesto:
     iteraciones_escena: int = POR_DEFECTO["iteraciones_bucle_interno_por_escena"]
     iteraciones_capitulo: int = POR_DEFECTO["iteraciones_bucle_externo_por_capitulo"]
     iteraciones_canon: int = POR_DEFECTO["iteraciones_validacion_canon"]
-    ciclos_piloto: int = POR_DEFECTO["ciclos_piloto"]
     solicitudes_por_escena: int = POR_DEFECTO["solicitudes_investigacion_por_escena"]
     solicitudes_por_ejecucion: int = POR_DEFECTO["solicitudes_investigacion_por_ejecucion"]
 

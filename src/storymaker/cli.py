@@ -39,7 +39,7 @@ from storymaker.hallazgos import Hallazgo
 from storymaker.indices import GestorIndices
 from storymaker.manifiesto import construir as construir_manifiesto
 from storymaker.presupuesto import Estimacion, Presupuesto
-from storymaker.proyecto import Proyecto
+from storymaker.proyecto import MODOS, Proyecto
 from storymaker.sobre import Respuesta
 
 RAIZ_POR_DEFECTO = os.environ.get("STORYMAKER_RAIZ", "proyectos")
@@ -191,6 +191,20 @@ def _contexto_refutar(args) -> dict[str, Any]:
     )
 
 
+def _contexto_firmar(args) -> dict[str, Any]:
+    return d_contexto.firmar_como_autor(
+        _proyecto(args), args.afirmacion or [],
+        quien=args.quien, motivo=args.motivo or "",
+    )
+
+
+def _contexto_descartar(args) -> dict[str, Any]:
+    return d_contexto.descartar(
+        _proyecto(args), afirmaciones=args.afirmacion or [],
+        restricciones=args.restriccion or [], quien=args.quien, motivo=args.motivo or "",
+    )
+
+
 def _contexto_restriccion(args) -> dict[str, Any]:
     return {"restriccion": d_contexto.derivar_restriccion(
         _proyecto(args), args.enunciado, args.categoria, args.afirmacion,
@@ -274,7 +288,7 @@ def _escena_escribir(args) -> dict[str, Any]:
     return d_novela.escribir(
         proyecto, args.escena, texto,
         id_unidad=args.unidad, ejecucion=proyecto.estado.ejecucion_activa or "sin_ejecucion",
-        iteracion=args.iteracion, es_piloto=args.piloto,
+        iteracion=args.iteracion,
         hallazgos_aplicados=args.hallazgo or [],
         revelaciones_portadas=args.revelacion or [],
     )
@@ -570,7 +584,7 @@ def construir_parser() -> argparse.ArgumentParser:
     )
     p = sub(g, "crear", _proyecto_crear, "Crea un Proyecto")
     p.add_argument("--titulo", required=True)
-    p.add_argument("--modo", default="asistido", choices=["asistido", "autonomo_supervisado", "autonomo"])
+    p.add_argument("--modo", default=MODOS[0], choices=list(MODOS))
 
     # -- encargo (E1) ------------------------------------------------------
     g = grupos.add_parser("encargo", help="E1 - Captura del encargo").add_subparsers(
@@ -591,7 +605,7 @@ def construir_parser() -> argparse.ArgumentParser:
     sub(g, "estilo", _encargo_estilo, "Guia de estilo efectiva (RF-029)")
 
     # -- contexto (E2) -----------------------------------------------------
-    g = grupos.add_parser("contexto", help="E2 - Investigacion y refutacion").add_subparsers(
+    g = grupos.add_parser("contexto", help="E2 - Investigacion historica").add_subparsers(
         dest="accion", required=True
     )
     p = sub(g, "fuente", _contexto_fuente, "Registra una Fuente y conserva su contenido")
@@ -621,6 +635,18 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--consultas", required=True, help="JSON inline, @fichero o -")
     p.add_argument("--fuente-contraria", action="append")
     p.add_argument("--alcance-matiz")
+    p = sub(g, "firmar", _contexto_firmar,
+            "El Autor asume la verificacion y la refutacion (modo revision_del_autor)")
+    p.add_argument("--quien", required=True)
+    p.add_argument("--afirmacion", action="append",
+                   help="Repetible. Sin ninguna, firma todas las afirmaciones vigentes")
+    p.add_argument("--motivo")
+    p = sub(g, "descartar", _contexto_descartar,
+            "El Autor retira afirmaciones o Restricciones del Contexto")
+    p.add_argument("--quien", required=True)
+    p.add_argument("--afirmacion", action="append")
+    p.add_argument("--restriccion", action="append")
+    p.add_argument("--motivo")
     p = sub(g, "restriccion", _contexto_restriccion, "Deriva una Restriccion de epoca (RF-016)")
     p.add_argument("--enunciado", required=True)
     p.add_argument("--categoria", required=True, choices=list(d_contexto.CATEGORIAS_RESTRICCION))
@@ -642,7 +668,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--figura", action="append")
 
     # -- canon (E3 y E4) ---------------------------------------------------
-    g = grupos.add_parser("canon", help="E3 y E4 - Canon").add_subparsers(
+    g = grupos.add_parser("canon", help="E3 - Canon, y su critica").add_subparsers(
         dest="accion", required=True
     )
     p = sub(g, "proponer", _canon_proponer, "Propone un plan en borrador")
@@ -682,7 +708,6 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--texto", required=True, help="Texto o @fichero")
     p.add_argument("--unidad", required=True)
     p.add_argument("--iteracion", type=int, default=1)
-    p.add_argument("--piloto", action="store_true")
     p.add_argument("--hallazgo", action="append")
     p.add_argument("--revelacion", action="append")
     p = sub(g, "refinar", _escena_refinar, "Version refinada, respetando protegidos")
@@ -775,8 +800,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--coste", type=float, required=True)
     p.add_argument("--segundos", type=float, default=86400.0)
     p.add_argument("--iteraciones", type=int, required=True)
-    p.add_argument("--modo-ejecucion", default="asistido",
-                   choices=["asistido", "autonomo_supervisado", "autonomo"])
+    p.add_argument("--modo-ejecucion", default=MODOS[0], choices=list(MODOS))
     p.add_argument("--versiones-agentes")
     p.add_argument("--versiones-rubricas")
     p = sub(g, "estado", _ejecucion_estado, "RF-086")
@@ -836,7 +860,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--tramo", choices=["libre", "final"])
 
     # -- control -----------------------------------------------------------
-    g = grupos.add_parser("control", help="Puntos de control PC-1 a PC-8").add_subparsers(
+    g = grupos.add_parser("control", help="Puntos de control PC-1 a PC-7").add_subparsers(
         dest="accion", required=True
     )
     p = sub(g, "abrir", _control_abrir, "Abre un punto de control")

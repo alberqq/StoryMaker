@@ -121,18 +121,11 @@ def comprobar_contexto(
                 seccion,
             ))
 
-    # 2. Toda afirmacion en alcance de refutacion tiene veredicto emitido
-    #    (RF-102, RNF-028).
-    en_alcance = alcance_de_refutacion(afirmaciones, restricciones, ids_figuras_referenciadas)
-    for id_afirmacion in sorted(en_alcance):
-        if id_afirmacion not in refutaciones:
-            fallos.append(_inc(
-                "ERR-606", "RF-102",
-                "Afirmacion en alcance de refutacion sin veredicto emitido. El alcance "
-                "es el que sostiene una Restriccion o una ficha de figura real.",
-                id_afirmacion,
-            ))
-
+    # 2. La refutacion dejo de ser obligatoria para cerrar el Contexto: el Autor
+    #    la retiro junto con la verificacion de fidelidad. Lo que sigue en pie es
+    #    que **un veredicto emitido este bien formado**. Refutar es ahora opcional,
+    #    pero refutar mal no: un veredicto 'matizada' sin declarar su alcance no
+    #    dice nada, y uno desconocido no se puede interpretar despues.
     for id_afirmacion, refutacion in sorted(refutaciones.items()):
         veredicto = refutacion.get("veredicto")
         if veredicto not in VEREDICTOS_REFUTACION:
@@ -260,39 +253,20 @@ def comprobar_derivacion_restriccion(
         ))
         return fallos
 
-    if afirmacion.get("estado") == "refutada":
+    # Antes, una Restriccion comprobable exigia que su afirmacion tuviera fidelidad
+    # verificada (RF-100) y veredicto de refutacion (RF-102). Esa puerta se retira
+    # por decision del Autor: el Contexto se obtiene por busqueda en internet, que
+    # ya devuelve la fuente con lo que dice, y el aparato de verificacion encima
+    # costaba dos pasadas de modelo por cada afirmacion sin cambiar casi ninguna.
+    #
+    # Lo que se conserva es lo unico que de verdad sostiene la validacion de
+    # anacronismos: que la Restriccion sea trazable a una afirmacion existente y
+    # que esa afirmacion no este marcada como refutada. Si alguien refuta algo a
+    # mano, lo que colgaba de ello sigue cayendo.
+    if afirmacion.get("estado") in ("refutada", "descartada"):
         fallos.append(_inc(
-            "ERR-606", "MD-7",
-            "La afirmacion de la que deriva esta refutada",
-            identificador,
-        ))
-
-    if not comprobable:
-        # Una Restriccion cualitativa no exige fidelidad verificada: es criterio
-        # de evaluacion, no puerta binaria.
-        return fallos
-
-    if afirmacion.get("fidelidad") != FIDELIDAD_VERIFICADA:
-        fallos.append(_inc(
-            "ERR-605", "RF-100",
-            "Una Restriccion comprobable no puede derivar de una afirmacion cuya "
-            f"fidelidad es '{afirmacion.get('fidelidad')}'. Se exige 'verificada'.",
-            identificador,
-        ))
-
-    veredicto = (refutaciones_por_afirmacion.get(id_afirmacion or "") or {}).get("veredicto")
-    if veredicto is None:
-        fallos.append(_inc(
-            "ERR-606", "RF-102",
-            "Una Restriccion comprobable no puede derivar de una afirmacion sin "
-            "veredicto de refutacion",
-            identificador,
-        ))
-    elif veredicto not in VEREDICTOS_QUE_SOSTIENEN_COMPROBABLE:
-        fallos.append(_inc(
-            "ERR-606", "RF-102",
-            f"Una afirmacion con veredicto '{veredicto}' no puede sostener una "
-            "Restriccion comprobable. Como mucho, un criterio cualitativo.",
+            "ERR-606", "RF-016",
+            "La afirmacion de la que deriva esta refutada o descartada",
             identificador,
         ))
 

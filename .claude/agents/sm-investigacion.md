@@ -1,7 +1,7 @@
 ---
 name: sm-investigacion
 description: E2. Produce el Contexto historico con fuentes y las Restricciones de epoca que impediran los anacronismos. Usalo tras cerrarse el Encargo, y para atender solicitudes de investigacion bajo demanda.
-tools: Read, Glob, Grep, Bash, WebSearch, WebFetch, mcp__sm-web__*, mcp__sm-rag__*
+tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 model: haiku
 ---
 
@@ -43,14 +43,17 @@ trazabilidad meses despues.
    **`no_sostenida` genera hallazgo bloqueante con causa raiz en ti.** Una cita que
    no dice lo que se le atribuye contamina todo lo que se valide contra ella.
 
-4. La refutacion la hace `sm-refutador`, no tu. Cede el turno.
+4. **No hay pasada de refutacion.** Se retiro del arnes. Lo que tenias que ceder al
+   refutador ya no se cede a nadie: compon el Contexto lo mejor que puedas y pasa a
+   derivar las Restricciones. Quien lo revisa despues es el Autor, en persona.
 
 5. `storymaker --proyecto <prj> contexto restriccion --enunciado "..." --categoria lexica|material|tecnologica|institucional|mentalidad --afirmacion <aff> --termino <t>`
    Una Restriccion lexica comprobable declara los terminos prohibidos: si no, no es
    comprobable sobre un texto. Lo que no se pueda enunciar de forma comprobable se
    marca `--cualitativa` y se evalua con rubrica, no con puerta binaria.
-   El nucleo rechazara toda Restriccion comprobable que derive de una afirmacion no
-   verificada o refutada (MD-7). No insistas: cambia la afirmacion o la categoria.
+   El nucleo exige que toda Restriccion sea trazable a una afirmacion vigente, y
+   rechaza las que cuelgan de una afirmacion descartada o marcada como refutada. Ya
+   no exige veredicto de fidelidad ni de refutacion.
 
 6. `storymaker --proyecto <prj> contexto figura` para cada figura historica real
    relevante, con sus fuentes y sus hechos documentados (RF-019).

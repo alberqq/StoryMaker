@@ -42,7 +42,7 @@ from storymaker.invariantes import (
     comprobar_contexto,
     comprobar_derivacion_restriccion,
 )
-from storymaker.proyecto import EN_DISENO, Proyecto
+from storymaker.proyecto import EN_DISENO, MODO_REVISION_DEL_AUTOR, Proyecto
 from storymaker.sobre import ahora
 
 MODOS_RECUPERACION = ("web", "rag")
@@ -321,6 +321,192 @@ def refutar(
         ),
         "solo_cualitativa": veredicto == "no_refutable_documentalmente",
     }
+
+
+def firmar_como_autor(
+    proyecto: Proyecto,
+    identificadores: Iterable[str],
+    *,
+    quien: str,
+    motivo: str = "",
+) -> dict[str, Any]:
+    """El Autor asume en persona la verificacion y la refutacion (RF-100, RF-102).
+
+    Esto **no** debilita MD-7. El invariante exige que una Restriccion comprobable
+    derive de una afirmacion con fidelidad verificada y con veredicto de refutacion;
+    lo que cambia aqui es quien los emite, no que hagan falta. El Autor puede
+    verificar lo que sabe, y su firma queda registrada como suya: la trazabilidad
+    distingue despues una afirmacion sostenida por una pasada adversarial de otra
+    sostenida por el criterio de una persona, que es una diferencia que importa al
+    releer la novela dentro de seis meses.
+
+    Se exige `quien` porque una firma sin firmante no es una firma, y el ledger
+    tiene que poder decir de quien se fio el Contexto.
+    """
+    if not quien.strip():
+        raise ErrorStoryMaker(
+            "ERR-302",
+            "Firmar la verificacion exige decir quien firma: una afirmacion "
+            "respaldada por nadie no esta respaldada",
+        )
+
+    if proyecto.estado.modo != MODO_REVISION_DEL_AUTOR:
+        raise ErrorStoryMaker(
+            "ERR-604",
+            "La firma del Autor como verificador solo opera en modo "
+            f"'{MODO_REVISION_DEL_AUTOR}'. Este Proyecto esta en "
+            f"'{proyecto.estado.modo}', donde la verificacion la emiten las etapas.",
+            modo=proyecto.estado.modo,
+        )
+
+    pedidos = list(identificadores)
+    vigentes = {a["id"]: a for a in _afirmaciones_vigentes(proyecto)}
+    if not pedidos:
+        pedidos = sorted(vigentes)
+    desconocidos = [i for i in pedidos if i not in vigentes]
+    if desconocidos:
+        raise ErrorStoryMaker(
+            "ERR-304",
+            f"No existen estas afirmaciones en el Contexto: {desconocidos}",
+            afirmaciones=desconocidos,
+        )
+
+    momento = ahora()
+    firmadas, refutaciones = [], []
+    for identificador in pedidos:
+        afirmacion = dict(vigentes[identificador])
+        afirmacion.update({
+            "fidelidad": FIDELIDAD_VERIFICADA,
+            "fidelidad_motivo": motivo,
+            "fidelidad_contenido_cotejado": (
+                f"Verificada por el Autor ({quien}) en revision directa del Contexto"
+            ),
+            "fidelidad_verificada_en": momento,
+            "verificada_por": {"modo": "autor", "quien": quien},
+        })
+
+        registro = {
+            "schema_version": SCHEMA_VERSION,
+            "id": id_refutacion(identificador),
+            "afirmacion_id": identificador,
+            "veredicto": "confirmada",
+            "tipo_afirmacion": afirmacion.get("tipo_afirmacion", "cualitativa"),
+            "fuentes_contrarias": [],
+            # No se finge una busqueda que no ha ocurrido: la consulta declara que
+            # el respaldo es el criterio del Autor, y eso es lo que se podra leer.
+            "consultas": [{
+                "consulta": f"Revision directa del Autor ({quien})",
+                "modo": "autor",
+                "resultados_examinados": 0,
+                "motivo_descarte": "El Autor asume la afirmacion sin busqueda inversa",
+            }],
+            "alcance_matiz": None,
+            "emitida_por": {"modo": "autor", "quien": quien},
+            "emitida_en": momento,
+        }
+        afirmacion["refutacion_id"] = registro["id"]
+
+        proyecto.almacen.anexar(proyecto.almacen.refutaciones, registro)
+        proyecto.almacen.anexar(proyecto.almacen.afirmaciones, afirmacion)
+        firmadas.append(afirmacion)
+        refutaciones.append(registro)
+
+    return {
+        "firmadas": [a["id"] for a in firmadas],
+        "cuantas": len(firmadas),
+        "quien": quien,
+        "nota": (
+            "Con fidelidad y refutacion firmadas, estas afirmaciones ya pueden "
+            "sostener Restricciones comprobables (MD-7)."
+        ),
+    }
+
+
+def descartar(
+    proyecto: Proyecto,
+    *,
+    afirmaciones: Iterable[str] = (),
+    restricciones: Iterable[str] = (),
+    quien: str,
+    motivo: str = "",
+) -> dict[str, Any]:
+    """El Autor retira del Contexto lo que no da por bueno (RF-015).
+
+    Es la salida fina del punto en que el Autor revisa el Contexto historico:
+    antes solo podia aceptarlo entero o rechazarlo entero, y una sola afirmacion
+    mal traida obligaba a rehacer la investigacion completa.
+
+    **Nada se borra.** El almacen es de solo anexion, asi que descartar es anexar
+    el estado nuevo: la afirmacion sigue ahi, marcada, y con ella la constancia de
+    que alguien la afirmo y de que el Autor la retiro. Borrarla perderia las dos
+    cosas.
+
+    Descartar una afirmacion **arrastra lo que colgaba de ella**: las Restricciones
+    derivadas se descartan tambien, porque una regla que se apoya en algo retirado
+    no se sostiene. Esa cascada se hace aqui y no se deja al que llama, que es
+    justo donde se olvidaria.
+    """
+    if not quien.strip():
+        raise ErrorStoryMaker(
+            "ERR-302", "Descartar exige decir quien lo hace: queda en el Contexto"
+        )
+
+    pedidas = set(afirmaciones)
+    pedidas_rst = set(restricciones)
+    if not pedidas and not pedidas_rst:
+        raise ErrorStoryMaker("ERR-302", "No se ha indicado nada que descartar")
+
+    vigentes = {a["id"]: a for a in _afirmaciones_vigentes(proyecto)}
+    desconocidas = sorted(pedidas - set(vigentes))
+    if desconocidas:
+        raise ErrorStoryMaker(
+            "ERR-304", f"No existen estas afirmaciones: {desconocidas}",
+            afirmaciones=desconocidas,
+        )
+
+    momento = ahora()
+    sello = {"quien": quien, "motivo": motivo, "descartado_en": momento}
+
+    for identificador in sorted(pedidas):
+        registro = dict(vigentes[identificador])
+        registro.update({"estado": "descartada", "descartada_por": sello})
+        proyecto.almacen.anexar(proyecto.almacen.afirmaciones, registro)
+
+    # La cascada: lo que derivaba de una afirmacion descartada cae con ella.
+    todas_rst = {r["id"]: r for r in _restricciones_vigentes(proyecto)}
+    arrastradas = {
+        i for i, r in todas_rst.items()
+        if r.get("afirmacion_id") in pedidas and r.get("estado") != "descartada"
+    }
+    desconocidas_rst = sorted(pedidas_rst - set(todas_rst))
+    if desconocidas_rst:
+        raise ErrorStoryMaker(
+            "ERR-304", f"No existen estas Restricciones: {desconocidas_rst}",
+            restricciones=desconocidas_rst,
+        )
+
+    for identificador in sorted(pedidas_rst | arrastradas):
+        registro = dict(todas_rst[identificador])
+        registro.update({"estado": "descartada", "descartada_por": sello})
+        proyecto.almacen.anexar(proyecto.almacen.restricciones, registro)
+
+    return {
+        "afirmaciones_descartadas": sorted(pedidas),
+        "restricciones_descartadas": sorted(pedidas_rst | arrastradas),
+        "arrastradas_por_su_afirmacion": sorted(arrastradas),
+        "quien": quien,
+        "nota": (
+            "Nada se borra: el almacen es de solo anexion y lo descartado queda "
+            "marcado, con constancia de quien lo retiro y por que."
+        ),
+    }
+
+
+def _restricciones_vigentes(proyecto: Proyecto) -> list[dict[str, Any]]:
+    ultimas: dict[str, dict[str, Any]] = {}
+    for registro in proyecto.almacen.leer_jsonl(proyecto.almacen.restricciones):
+        ultimas[registro["id"]] = registro
+    return list(ultimas.values())
 
 
 # ==========================================================================

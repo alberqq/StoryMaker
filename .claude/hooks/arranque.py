@@ -47,7 +47,6 @@ def main() -> int:
             f"- Estado: {estado.estado} | Etapa: {estado.etapa} | Modo: {estado.modo}",
             f"- Canon: {estado.canon_version_vigente or 'sin proponer'} "
             f"({estado.canon_estado or 'sin estado'})",
-            f"- Piloto aceptado: {'si' if estado.piloto_aceptado else 'no'}",
         ]
 
         if estado.schema_version != SCHEMA_VERSION:

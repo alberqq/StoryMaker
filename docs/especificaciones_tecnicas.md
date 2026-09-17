@@ -62,12 +62,13 @@ flowchart TD
     subgraph PIEL["Piel · lo que el Autor toca"]
         CMD["Comandos de barra<br>/encargo · /ejecutar · /estado · /control · /entrega"]
         SES["Sesión principal de Claude Code<br>conversación, puntos de control"]
+        GUI["Interfaz gráfica<br>conduce la Ejecución en tres tramos"]
     end
 
     subgraph AGENTES["Capa de agentes · no determinista"]
-        SUB["Nueve subagentes<br>uno por etapa, contexto aislado"]
+        SUB["Siete subagentes<br>uno por etapa, contexto aislado"]
         SK["Skills<br>procedimientos cargados a demanda"]
-        MCP["Servidores MCP<br>recuperación web · recuperación RAG"]
+        MCP["Servidor MCP sm-langfuse<br>observabilidad, sólo lectura"]
     end
 
     subgraph NUCLEO["Núcleo determinista · propietario del estado"]
@@ -77,6 +78,7 @@ flowchart TD
     end
 
     SES --> CMD
+    GUI -->|lanza cada tramo| SES
     CMD --> SUB
     SUB --> SK
     SUB --> MCP
@@ -89,12 +91,12 @@ flowchart TD
     classDef piel fill:#dae8fc,stroke:#6c8ebf,color:#12314f
     classDef ag fill:#e1d5e7,stroke:#9673a6,color:#3f2b47
     classDef nu fill:#ffe6cc,stroke:#d79b00,color:#5c4300
-    class CMD,SES piel
+    class CMD,SES,GUI piel
     class SUB,SK,MCP ag
     class CLI,HOOK,FS nu
 ```
 
-**La piel.** La sesión principal de Claude Code es donde el Autor conversa, responde a los puntos de control y lanza el trabajo. No ejecuta etapas: las despacha.
+**La piel.** La sesión principal de Claude Code es donde el Autor conversa, responde a los puntos de control y lanza el trabajo. No ejecuta etapas: las despacha. Junto a ella hay una **interfaz gráfica** que conduce la Ejecución entera en tres tramos y se detiene dos veces a esperar al Autor; no es una capa nueva, sino otra piel sobre los mismos comandos y el mismo núcleo.
 
 **La capa de agentes.** Cada etapa de la Funcional es un subagente con su propio contexto, sus propias instrucciones y un conjunto de herramientas recortado a lo que su etapa necesita. Es la capa que genera, critica y juzga. No escribe estado.
 
@@ -115,11 +117,10 @@ flowchart TD
 | Etapa de la Funcional | Subagente | Escribe estado mediante | Puerta que lo protege |
 |---|---|---|---|
 | E1 · Captura del encargo | `sm-entrada` | `storymaker encargo …` | Confirmación explícita del Autor (RF-006, PC-2) |
-| E2 · Investigación histórica | `sm-investigacion` | `storymaker contexto afirmar` | Fidelidad verificada antes de derivar Restricción (RF-100) |
-| E2 · Refutación | `sm-refutador` | `storymaker contexto refutar` | Toda refutación exige fuente distinta de la citada (RF-102) |
+| E2 · Investigación histórica | `sm-investigacion` | `storymaker contexto afirmar` | Trazabilidad: toda Restricción cuelga de una afirmación vigente (INV-8) |
 | E3 · Diseño narrativo | `sm-diseno` | `storymaker canon proponer` | Invariantes de plan completos (RF-020 a RF-029) |
-| E4 · Validación del Canon | `sm-validador-canon` | `storymaker canon aprobar` | Cero bloqueantes, salvo asunción humana registrada (D23) |
-| E5 · Redacción | `sm-redactor` | `storymaker escena escribir` | Canon aprobado y piloto aceptado (INV-1, INV-9) |
+| E4 · Crítica del Canon | `sm-diseno`, en la misma sesión | `storymaker canon aprobar`, que ejecuta el Autor | Aprobación del Autor en PC-3. Ya no hay validador que decida |
+| E5 · Redacción | `sm-redactor` | `storymaker escena escribir` | Canon aprobado (INV-1) |
 | E6 · Refinamiento | `sm-refinador` | `storymaker escena refinar` | Pasajes protegidos intactos (RF-054) |
 | E7 · Validación | `sm-validador` | `storymaker capitulo validar` | Cambio de texto verificado desde el rechazo (RF-067) |
 | E8 · Pasada global | `sm-global` | `storymaker novela cerrar` | Las cinco condiciones de terminación (RF-077) |
@@ -132,32 +133,39 @@ Todo lo que hay que construir, por tipo de artefacto. Un elemento que no figure 
 
 ### 2.1 Subagentes
 
-Nueve, uno por etapa más el refutador. Cada uno vive en `.claude/agents/<nombre>.md` con sus instrucciones y su lista de herramientas permitidas. La lista recortada no es una optimización: es la primera línea de la frontera de ADR-02.
+Siete, uno por etapa. Cada uno vive en `.claude/agents/<nombre>.md` con sus instrucciones, su modelo y su lista de herramientas permitidas. La lista recortada no es una optimización: es la primera línea de la frontera de ADR-02.
+
+E4, la crítica del Canon, **no tiene subagente propio**: la escribe `sm-diseno` en la misma sesión en que propone el plan, y quien decide sobre ella es el Autor en PC-3.
 
 | Subagente | Etapa | Herramientas permitidas | Por qué esas y no más |
 |---|---|---|---|
-| `sm-entrada` | E1 | Lectura, `storymaker encargo` | No necesita recuperación ni escritura de novela |
-| `sm-investigacion` | E2 | MCP de recuperación web y RAG, `storymaker contexto` | Es la única que sale al exterior a buscar |
-| `sm-refutador` | E2 | Las mismas que la anterior, más lectura del Contexto | Necesita buscar en contra y ver lo que se afirmó, nunca el razonamiento con que se afirmó (RF-102) |
-| `sm-diseno` | E3 | Lectura de Encargo y Contexto, `storymaker canon` | No redacta prosa ni recupera fuentes |
-| `sm-validador-canon` | E4 | Lectura de Canon, Contexto y Encargo, `storymaker canon aprobar` | Juzga, no corrige |
-| `sm-redactor` | E5 | Lectura del manifiesto de contexto, `storymaker escena`, solicitud de investigación | No puede leer la novela entera: recibe lo que §3 le entrega |
-| `sm-refinador` | E6 | Lectura de la escena y de la guía de estilo, `storymaker escena refinar` | Su alcance es la escena; la estructura la propone, no la aplica (RF-053) |
-| `sm-validador` | E7 | Lectura de Canon, hechos, restricciones y capítulo, `storymaker capitulo` | Valida contra estructuras, no releyendo la novela (§3.4) |
-| `sm-global` | E8 | Lectura de la novela completa y del Canon, `storymaker novela` | Es el único con permiso de lectura total, y sólo se invoca una vez |
+| `sm-entrada` | E1 | `Read`, `Glob`, `Grep`, `Bash`, `AskUserQuestion` | Su trabajo es preguntar; `AskUserQuestion` es la única etapa que la tiene |
+| `sm-investigacion` | E2 | Las anteriores sin preguntar, más `WebSearch` y `WebFetch` | Es la única que sale al exterior a buscar, y por tanto el único punto por el que entra información no generada |
+| `sm-diseno` | E3 | `Read`, `Glob`, `Grep`, `Bash` | No redacta prosa ni recupera fuentes |
+| `sm-redactor` | E5 | `Read`, `Glob`, `Grep`, `Bash` | No puede leer la novela entera: recibe lo que §3 le entrega |
+| `sm-refinador` | E6 | `Read`, `Glob`, `Grep`, `Bash` | Su alcance es la escena; la estructura la propone, no la aplica (RF-053) |
+| `sm-validador` | E7 | `Read`, `Glob`, `Grep`, `Bash` | Valida contra estructuras, no releyendo la novela (§3.4) |
+| `sm-global` | E8 | `Read`, `Glob`, `Grep`, `Bash` | Es el único con permiso de lectura total, y sólo se invoca una vez |
+
+`Bash` aparece en las siete porque **es el canal por el que se llama al núcleo**: un subagente propone su artefacto ejecutando `storymaker <grupo> <accion>`, y no tiene ninguna otra forma de escribir estado. Que pueda ejecutar órdenes no debilita la frontera: los hooks deniegan antes de que la llamada exista, y el núcleo vuelve a comprobar sus invariantes.
+
+**Los siete declaran `model: haiku`.** Es una elección de este montaje, no del diseño: el arnés se ejerce con novelas cortas de prueba y lo que se quiere medir es que el flujo entero corra y converja, no la calidad de la prosa. El modelo de cada etapa es un campo de su fichero y se cambia ahí, sin tocar el núcleo.
 
 ### 2.2 Skills
 
 Procedimientos que varios agentes comparten o que son demasiado extensos para vivir en las instrucciones de un agente. Se cargan a demanda, que es lo que evita pagar su coste en cada llamada.
 
+Cinco. Viven en `.claude/skills/<nombre>/SKILL.md`.
+
 | Skill | Qué encapsula | Quién la usa |
 |---|---|---|
-| `refutar-afirmacion` | La estrategia de búsqueda inversa por tipo de afirmación, la exigencia de fuente distinta y los cinco veredictos | `sm-refutador` |
 | `derivar-restricciones` | Cómo convertir una afirmación en regla comprobable, sus cinco categorías y el criterio para declararla cualitativa | `sm-investigacion` |
-| `evaluar-con-rubrica` | La rúbrica por etapa, su escala y la regla de evaluar sin historial de iteraciones previas (SUP-023) | `sm-refinador`, `sm-validador`, `sm-validador-canon`, `sm-global` |
+| `evaluar-con-rubrica` | La rúbrica por etapa, su escala y la regla de evaluar sin historial de iteraciones previas (SUP-023) | `sm-refinador`, `sm-validador`, `sm-global` |
 | `emitir-hallazgo` | La forma canónica de un hallazgo: severidad, causa raíz, localización, acción exigida y evidencia | Todos los agentes críticos |
-| `plantar-y-resolver` | Cómo se declara que una resolución está preparada y qué cuenta como preparación | `sm-diseno`, `sm-validador-canon` |
+| `plantar-y-resolver` | Cómo se declara que una resolución está preparada y qué cuenta como preparación | `sm-diseno` |
 | `voz-y-estilo` | Cómo se lee la Guía de estilo efectiva y qué significa un parámetro sin preferencia | `sm-redactor`, `sm-refinador` |
+
+La sexta, `refutar-afirmacion`, se retiró con la pasada de refutación.
 
 ### 2.3 Comandos de barra
 
@@ -168,8 +176,7 @@ La superficie del Autor. Cada uno despacha trabajo y presenta resultados; ningun
 | `/encargo` | Abre la captura conversacional, o ingiere un fichero JSON de Encargo | RF-002, RF-110 |
 | `/ejecutar` | Arranca o reanuda una Ejecución | RF-080, RF-084 |
 | `/estado` | Etapa, unidad, iteración, hallazgos por severidad, consumo y proyección | RF-086 |
-| `/control` | Lista los puntos de control pendientes y recoge la decisión | PC-1 a PC-8 |
-| `/piloto` | Muestra la escena piloto con su ficha y los parámetros aplicados | RF-046 |
+| `/control` | Lista los puntos de control pendientes y recoge la decisión | PC-1 a PC-7 |
 | `/traza` | Devuelve el origen de un pasaje o el respaldo de una afirmación | RF-081, RF-082 |
 | `/entrega` | Genera la entrega en Markdown y PDF con su paquete de trazabilidad | RF-090 a RF-093 |
 | `/calibracion` | Emite el informe de consumo real frente a presupuestado | RF-079 |
@@ -181,7 +188,7 @@ Donde viven las puertas. Son deterministas, se ejecutan fuera del modelo y puede
 | Hook | Momento | Qué hace | Requisito |
 |---|---|---|---|
 | `guard-escritura` | PreToolUse | Deniega cualquier escritura de estado que no venga del núcleo | ADR-02 |
-| `guard-canon` | PreToolUse | Deniega redactar si el Canon no está aprobado, o si el piloto no se ha aceptado | INV-1, INV-9 |
+| `guard-canon` | PreToolUse | Deniega redactar si el Canon no está aprobado | INV-1 |
 | `guard-presupuesto` | PreToolUse | Admisión previa: deniega la unidad cuya estimación supera el remanente, antes de gastar | RF-072, ERR-404 |
 | `guard-proteccion` | PreToolUse | Deniega reescribir un pasaje protegido sin justificación registrada | RF-054 |
 | `ledger-llamada` | PostToolUse | Anexa al ledger la llamada con sus tokens, coste, latencia y hashes | RF-083, RNF-013 |
@@ -190,22 +197,32 @@ Donde viven las puertas. Son deterministas, se ejecutan fuera del modelo y puede
 
 ### 2.5 Servidores MCP
 
-| Servidor | Qué expone | Sustituye a |
-|---|---|---|
-| `sm-web` | Búsqueda y recuperación en la web abierta, con conservación del contenido consultado | RF-011, RF-101 |
-| `sm-rag` | Consulta sobre el corpus indexado, con referencia a documento y fragmento | RF-012 |
+Uno, y **de sólo lectura**.
 
-Ambos son la frontera con el exterior y el único punto por el que entra información no generada. Devuelven siempre contenido más localizador más fecha, nunca contenido suelto: sin eso, RF-101 no tendría qué conservar.
+| Servidor | Qué expone | Por qué existe |
+|---|---|---|
+| `sm-langfuse` | `langfuse_resumen`, `langfuse_trazas` y `langfuse_traza`: el panorama de las Ejecuciones trazadas, su coste, sus errores y los pasos más lentos | Permite preguntar «qué hizo la última tirada y en qué se fue el tiempo» sin salir de la conversación, que es donde se decide qué ajustar |
+
+Hay un segundo servidor declarado en `.mcp.json`, `sm-navegador`, que **no forma parte del arnés**: es una herramienta de desarrollo. Abre `gui/index.html` en un Chromium real, recorre sus pestañas y dice cuáles revientan. Existe porque aquí no hay navegador y la página compila React con Babel en el cliente: un error de JavaScript la deja **en negro, sin un solo mensaje**, y eso ocurrió cuatro veces. Ningún subagente lo usa y no interviene en ninguna Ejecución.
+
+Es de sólo lectura por construcción, y la construcción importa: la interfaz tiene botones que invocan al núcleo —aprobar el Canon, firmar el Contexto—, así que el servidor **sólo sabe pulsar pestañas**, buscándolas dentro de `nav`. No hay ninguna herramienta que acepte otro selector. No es una promesa de buen comportamiento: es que la capacidad no existe.
+
+Playwright es una dependencia de **desarrollo**, como `pytest`. El núcleo sigue sin ninguna en tiempo de ejecución.
+
+Es de sólo lectura a propósito: quien **escribe** la traza es `gui/langfuse.py`. Separar las dos direcciones evita que una consulta mal hecha escriba en la observabilidad, que es justo donde uno quiere poder fiarse de lo que lee. Sus credenciales se resuelven del entorno o del `.env` de la raíz y no aparecen en ninguna respuesta, ni recortadas.
+
+Los dos servidores de recuperación, **sm-web** y **sm-rag**, se retiraron: exigían credenciales que no estaban y que no pueden autorizarse desde una sesión headless, y su ausencia mataba la Ejecución sin producir nada. La investigación entra ahora por `WebSearch` y `WebFetch`, con la cobertura declarada como reducida. La consecuencia hay que asumirla: la frontera con el exterior ya no garantiza por construcción que todo resultado traiga localizador y fecha, y eso pasa a depender de que `sm-investigacion` los registre al llamar a `contexto fuente`.
 
 ### 2.6 Empaquetado y configuración
 
 | Artefacto | Contenido |
 |---|---|
-| **Plugin `storymaker`** | Empaqueta los nueve subagentes, las seis skills, los ocho comandos y los siete hooks, con versión propia. Es lo que hace el arnés instalable y versionable como una unidad |
+| **Plugin `storymaker`** | Empaqueta los siete subagentes, las cinco skills, los siete comandos y los siete hooks, con versión propia. Es lo que hace el arnés instalable y versionable como una unidad |
 | `settings.json` | Permisos: denegación de escritura bajo `proyectos/**` salvo `tmp/`; registro de los hooks; variables de entorno del núcleo |
 | `CLAUDE.md` | Las reglas que deben estar siempre en contexto: qué es autoritativo, qué no se escribe nunca a mano, y a quién se pregunta |
-| `.mcp.json` | Declaración de los dos servidores de recuperación |
+| `.mcp.json` | Declaración del servidor `sm-langfuse` |
 | CLI `storymaker` | El núcleo determinista. Su superficie está en §6 |
+| `gui/` | La interfaz gráfica: servidor HTTP de biblioteca estándar, orquestador en tres tramos, cliente de traza y página única con React por CDN |
 
 ---
 
@@ -249,9 +266,8 @@ Cada etapa declara qué recibe, en qué orden de prelación y con qué límite. 
 | `sm-investigacion` | Ámbito de investigación derivado del Encargo | No aplica |
 | `sm-refutador` | La afirmación, sus fuentes citadas y su contenido conservado. **Nunca el razonamiento con que se compuso** | Fijo por requisito (RF-102) |
 | `sm-diseno` | Encargo íntegro, Restricciones vigentes, fichas de figuras reales, resumen temático del Contexto | 1 Encargo · 2 Restricciones · 3 figuras · 4 contexto temático |
-| `sm-validador-canon` | Plan completo, Encargo, Restricciones | 1 plan · 2 Encargo · 3 Restricciones |
-| `sm-redactor` | Ficha de la escena, Guía de estilo efectiva, hechos con sujetos presentes en la escena, revelaciones vigentes, **escena piloto como referencia de voz**, escenas anteriores del capítulo en curso, sinopsis de capítulos previos | 1 ficha · 2 estilo y piloto · 3 hechos de los sujetos presentes · 4 escenas del capítulo · 5 sinopsis |
-| `sm-refinador` | Texto de la escena, Guía de estilo, pasajes protegidos, escena piloto | 1 texto · 2 protegidos · 3 estilo y piloto |
+| `sm-redactor` | Ficha de la escena, Guía de estilo efectiva, hechos con sujetos presentes en la escena, revelaciones vigentes, escenas anteriores del capítulo en curso, sinopsis de capítulos previos | 1 ficha · 2 estilo · 3 hechos de los sujetos presentes · 4 escenas del capítulo · 5 sinopsis |
+| `sm-refinador` | Texto de la escena, Guía de estilo, pasajes protegidos | 1 texto · 2 protegidos · 3 estilo |
 | `sm-validador` | Capítulo completo, fichas de las escenas, hechos de los sujetos que aparecen, revelaciones con ventana, Restricciones aplicables | 1 capítulo · 2 fichas · 3 hechos · 4 revelaciones · 5 restricciones |
 | `sm-global` | Novela completa, Canon, Guía de estilo, indicadores de estilo por tercio | Sin recorte: es la única etapa cuyo objeto es el conjunto |
 
@@ -435,7 +451,6 @@ El plan **no** guarda el estado de ejecución de los hilos. Ese estado es deriva
 | `canon_plan_version`, `guia_estilo_hash`, `udt_origen` | 1 | Trazabilidad de RF-081 |
 | `evaluacion` | 0..1 | Puntuación por criterio, versión de rúbrica y marca de evaluación sin historial (SUP-023) |
 | `modo_cierre` | 0..1 | `convergencia` (T1), `estancamiento` (T2), `regresion` (T3), `agotamiento` (T4) |
-| `es_piloto` | 1 | La escena sometida a PC-8. No se vuelve a redactar: entra en la Novela como cualquier otra |
 | `protegido_palabras` | 1 | Numerador de RNF-026 |
 
 ### 4.4 Índices derivados
@@ -552,8 +567,7 @@ Cambiar la versión vigente es escribir un puntero: barato y reversible, que es 
 | `evaluacion_registrada` | Puntuación por criterio, versión de rúbrica, marca de sin historial | SUP-023, RF-056 |
 | `unidad_cerrada` | Modo de terminación, versión vigente resultante, deuda emitida | RF-055, RF-073 |
 | `presupuesto_admitido` / `denegado` | Ámbito, estimación, remanente, tramo de reserva usado | RF-070 a RF-072 |
-| `punto_control_abierto` / `resuelto` | Tipo, qué se presentó, decisión, quién y cuándo | PC-1 a PC-8, RNF-020 |
-| `piloto_sometido` / `piloto_resuelto` | Versión de escena del piloto y decisión del Autor | RF-046 |
+| `punto_control_abierto` / `resuelto` | Tipo, qué se presentó, decisión, quién y cuándo | PC-1 a PC-7, RNF-020 |
 | `canon_versionado` | Versión anterior y nueva, motivo, capítulos invalidados, licencias aprobadas | RF-026, RF-027, RF-035 |
 | `ejecucion_finalizada` | Estado, consumo total, informe de calibración | RF-079 |
 
@@ -611,8 +625,6 @@ Un campo nunca cambia de tipo ni de significado conservando el nombre. Eso es si
 | CT-16 | E8→E7 | `lote_hallazgos/v1` | Cada hallazgo con capítulo de destino |
 | CT-17 | E8→Salida | `paquete_entrega/v1` | Novela, Encargo, Contexto con fuentes, Canon final, licencias, deuda |
 | CT-18 | Etapa→Ejecución | `evento_ledger/v1` | Los tipos de §5.5 |
-| CT-19 | E5→Autor | `escena_piloto/v1` | Piloto, ficha de la escena, parámetros de estilo y su procedencia |
-| CT-20 | Autor→E5/E1/E3 | `decision_piloto/v1` | Aceptar, ajustar estilo o volver al Canon, con el elemento afectado |
 
 ### 6.3 Invariantes que el esquema no puede expresar
 
@@ -656,7 +668,7 @@ El núcleo se invoca como herramienta. Todo comando acepta `--json` y devuelve e
 | `novela cerrar` / `ensamblar` | Estado de terminación o condición que falta | RF-077, RF-090 |
 | `ejecucion iniciar` / `estado` / `reanudar` / `pausar` | Identificador, estado o punto de reanudación | RF-080, RF-084, RF-086 |
 | `etapa reejecutar` | Resultado e inventario de artefactos invalidados | RF-085 |
-| `control listar` / `resolver` | Puntos pendientes y estado tras la decisión | PC-1 a PC-8 |
+| `control listar` / `resolver` | Puntos pendientes y estado tras la decisión | PC-1 a PC-7 |
 | `traza pasaje` / `afirmacion` | Cadena completa de origen o respaldo | RF-081, RF-082 |
 | `entrega generar` | Rutas y estado por formato | RF-090, RF-093 |
 | `informe calibracion` | Consumo real frente a presupuestado | RF-079 |
@@ -687,10 +699,7 @@ stateDiagram-v2
     Refutacion --> Diseno : Contexto refutado
     Diseno --> ValidacionCanon : plan borrador completo
     ValidacionCanon --> Diseno : hallazgos de canon · B5
-    ValidacionCanon --> Piloto : Canon aprobado
-    Piloto --> Encargo : ajustar guía de estilo · B9
-    Piloto --> Diseno : volver al Canon · B9
-    Piloto --> Produccion : piloto aceptado
+    ValidacionCanon --> Produccion : Canon aprobado
     Produccion --> Produccion : bucles interno y externo
     Produccion --> Diseno : replanificación aprobada
     Produccion --> PasadaGlobal : todos los capítulos validados
@@ -777,7 +786,6 @@ Ocho familias. *Reintentable* significa que el mismo trabajo puede repetirse sin
 | ERR-101 a ERR-105 | Entrada | Semilla vacía, campo obligatorio sin valor ni marca, incompatibilidad interna del Encargo, época no acotable, campo desconocido en fichero o configuración | No | Volver a preguntar, reabrir el bucle de entrada, o abortar nombrando el campo |
 | ERR-201 a ERR-208 | Proveedor | Tiempo de espera, límite de tasa, error del servidor, modelo no disponible, credencial inválida, contexto excedido, respuesta truncada, filtro de contenido | Parcialmente | Reintentar con retroceso, degradar a modelo alternativo, o escalar. **Nunca se registra el valor de una credencial** |
 | ERR-301 a ERR-304 | Esquema | Salida no parseable, esquema incumplido, reparación agotada, referencia a identificador inexistente | Parcialmente | Reparación en dos niveles; agotada, abortar unidad y contar la iteración |
-| ERR-401 a ERR-408 | Presupuesto | Iteraciones agotadas, coste agotado, tiempo agotado, admisión denegada, tope de solicitudes de investigación, tramo libre agotado, tramo final solicitado antes de tiempo, ciclos de piloto agotados | No | Política de agotamiento del bucle correspondiente, o elevación al Autor |
 | ERR-501 a ERR-506 | Estado | Proyecto bloqueado, escritura sobre Canon no aprobado, línea truncada, índice inconsistente, esquema sin promotor, escena vigente inexistente al ensamblar | Parcialmente | Abortar, rechazar, reconstruir índice, o no arrancar |
 | ERR-601 a ERR-608 | Contradicción y recuperación | Hecho que contradice, escena irrealizable, replanificación que invalida capítulos, modificación sin versionar, fuente que no sostiene la afirmación, afirmación refutada, contenido no conservable, refutación sin fuente | No | Hallazgo bloqueante, escalado, o rechazo de la operación |
 | ERR-701 a ERR-709 | Evaluación | Bloqueantes abiertos, estancamiento, regresión, aprobación sin cambio de texto, bloqueo irresoluble, licencia sin autorizante, superficie protegida por encima del umbral, Canon aprobado con bloqueantes asumidos | Parcialmente | Iterar, cerrar por el modo que corresponda, escalar, o registrar la asunción |
@@ -818,23 +826,22 @@ El conjunto de encargos de referencia merece un apunte: es la única forma de sa
 | Requisitos | Dónde |
 |---|---|
 | RF-001 a RF-009, RF-110 (Encargo) | ENCARGO_V §4.3; `sm-entrada` §2.1; comandos de encargo §6.4; ERR-101 a ERR-105 |
-| RF-010 a RF-017 (investigación) | AFIRMACION §4.3; `sm-investigacion`; MCP §2.5; CT-12R y CT-13R |
+| RF-010 a RF-017 (investigación) | AFIRMACION §4.3; `sm-investigacion`; `WebSearch` y `WebFetch`; CT-12R y CT-13R |
 | RF-019 (figuras reales) | FIGURA_REAL; invariantes de §6.3 |
 | RF-100, RF-101 (fidelidad y conservación) | MD-7; `fidelidad`; almacén `fuentes/` §5.1; ERR-605, ERR-607 |
 | RF-102 (refutación) | REFUTACION §4.3; `sm-refutador` y skill `refutar-afirmacion`; B11 §7.3; ERR-606, ERR-608 |
 | RF-020 a RF-029, RF-035 (Canon) | CANON_PLAN_V y HECHO §4.3; MD-4; §5.3; invariantes de §6.3 |
-| RF-030 a RF-034, D23 (validación de Canon) | `sm-validador-canon`; `aprobado_por`; hook `guard-canon`; ERR-709 |
-| RF-040 a RF-046, PC-8 (redacción y piloto) | ESCENA_VERSION; `es_piloto`; CT-19 y CT-20; manifiesto de §3.4; ERR-408 |
+| RF-030 a RF-034, D23 (validación de Canon) | Crítica escrita por `sm-diseno`; `aprobado_por`; hook `guard-canon`; ERR-709 |
 | RF-050 a RF-056 (refinamiento) | `evaluacion`; ADR-05 §5.4; §9 |
 | RF-054, RNF-026 (protecciones) | PROTECCION; `protegido_palabras`; hook `guard-proteccion`; ERR-708 |
 | RF-059 a RF-069 (validación) | HALLAZGO; `idx_hechos_por_sujeto`; manifiesto del validador §3.4 |
-| RF-070 a RF-079, D24 (presupuestos) | §8 completo; hook `guard-presupuesto`; ERR-401 a ERR-408 |
+| RF-070 a RF-079, D24 (presupuestos) | §8 completo; hook `guard-presupuesto`; ERR-401 a ERR-407 |
 | RF-077 (terminación) | Recálculo de hilos en el momento de decidir, nunca desde índice (MD-6) |
 | RF-080 a RF-086 (trazabilidad) | Run Ledger §5.5; índices §4.4; §11 |
 | RF-090 a RF-093 (entrega) | `entrega/`; ERR-901, ERR-902 |
-| INV-1 a INV-9 | Hooks §2.4; invariantes §6.3; MD-7 |
+| INV-1 a INV-8 | Hooks §2.4; invariantes §6.3 |
 | CT-1 a CT-20 | §6.2 |
-| PC-1 a PC-8 | Comando `/control`; eventos de punto de control §5.5 |
+| PC-1 a PC-7 | Comando `/control`; eventos de punto de control §5.5 |
 | RNF-004, RNF-027, RNF-028 | Indicadores sobre AFIRMACION y REFUTACION |
 | D28 (extensión por capítulo) | `extension_por_capitulo` §4.3; invariante de cuadre §6.3 |
 | D29 (Encargo en fichero) | `origen_captura`; `encargo ingerir` §6.4 |
@@ -870,14 +877,24 @@ El conjunto de encargos de referencia merece un apunte: es la única forma de sa
 |---|---|---|
 | 1.0 | 1.0 | Primera emisión parcial: modelo de datos, persistencia, contratos y errores, sobre una arquitectura en la que Claude Code no era el tiempo de ejecución |
 | 1.3 | 1.3 | Sincronización por parches con la Funcional 1.3. Correcta en contenido y deficiente en redacción; archivada |
-| **2.0** | **1.4** | **Vigente.** Reescritura completa sobre Claude Code como tiempo de ejecución, con inventario del arnés, gestión de contexto y las secciones que faltaban |
+| 2.0 | 1.4 | Reescritura completa sobre Claude Code como tiempo de ejecución, con inventario del arnés, gestión de contexto y las secciones que faltaban |
+| 2.1 | 1.5 | Modo Revision del Autor: el Autor firma la verificacion y la refutacion, y PC-3 se resuelve siempre en modo humano |
+| 2.2 | 1.6 | Observabilidad externa: traza por Ejecucion, tramo por paso y consumo por modelo, enviados por HTTP con biblioteca estandar y con las credenciales resueltas del entorno |
+| 2.3 | 1.7 | Simplificacion. Se retira la escena piloto con todo lo suyo; se retiran los servidores de recuperacion sm-web y sm-rag, y la investigacion entra por WebSearch y WebFetch; la verificacion de fidelidad y la refutacion dejan de ser puerta; la validacion del Canon se sustituye por una critica breve que lee el Autor; la observabilidad deja de impedir el arranque; y la conduccion pasa de ocho sesiones encadenadas a **tres tramos** con dos paradas del Autor |
+| 2.4 | 1.7 | Conduccion de la Ejecucion sin reloj: se retira el limite de tiempo por etapa, que mataba el tramo de la novela justo en el tope y tiraba lo escrito, y en su lugar la interfaz ensena que subagente esta despachado y desde cuando, y parar mata la etapa en curso. Una Ejecucion cortada se relanza y continua por donde iba, con los tramos ya superados marcados en lugar de recortados |
+| 2.5 | 1.8 | Sincronizacion del inventario del arnes con lo que existe: siete subagentes y no nueve, cinco skills, siete comandos, un solo servidor MCP --- `sm-langfuse`, de solo lectura --- y la interfaz grafica como segunda piel. E4 deja de tener subagente propio: la critica del Canon la escribe `sm-diseno` y quien decide es el Autor |
+| 2.6 | 1.9 | El cierre de la Novela barre los Hallazgos no bloqueantes que sigan abiertos hacia la Deuda de calidad, en `global_._declarar_deuda_al_cerrar`. Los de la pasada global no tenian ninguna etapa detras que los corrigiera y se quedaban abiertos en un fichero que no miraba nadie |
+| 2.7 | 1.9 | Vista del flujo de agentes reconstruida del Run Ledger en `/api/flujo/<prj>`: cada unidad de trabajo con su etapa, duracion, modo de cierre e iteraciones, en disco y no en memoria. Y **GUI-026**, que rechaza arrancar una Ejecucion sobre una Novela ya cerrada antes de pagar la sesion |
+| 2.8 | 1.9 | Servidor MCP de desarrollo `sm-navegador`, sobre Playwright: abre la interfaz en un Chromium real y dice que pestana revienta. No es parte del arnes. Cubre el agujero de que aqui no haya navegador y un error de JavaScript deje la pagina en negro sin ningun mensaje |
+| 2.9 | 1.9 | La traza se exporta por **OpenTelemetry** (`/api/public/otel/v1/traces`, OTLP sobre JSON) en lugar de por la API de ingestion, que se apaga en noviembre de 2026 y no alimenta la lectura en vivo. Y el coste se lee de `/api/public/v2/metrics`: el listado de observaciones trae los precios siempre nulos, lo que nos hizo creer durante varias tiradas que las Ejecuciones no costaban nada |
+| **2.10** | **1.9** | **Vigente.** `cerrar_unidad` deja constancia del cierre en `unidades.jsonl`, que hasta ahora solo se escribia al abrir y dejaba toda unidad en `en_curso` para siempre. Y el tiempo de las paradas del Autor se contabiliza aparte del tiempo de trabajo en la observabilidad: el presupuesto ya no lo contaba, pero los informes si |
 
 **Qué cambia en la 2.0 respecto a la 1.3**
 
 | Cambio | Motivo |
 |---|---|
 | Arquitectura nueva: Claude Code es el tiempo de ejecución, con subagentes por etapa, skills, comandos, hooks, plugin y MCP | Corrección del Autor. Invalida la decisión maestra anterior |
-| Sección de inventario del arnés: nueve subagentes, seis skills, ocho comandos, siete hooks, dos servidores MCP, plugin y configuración | Petición expresa del Autor |
+| Sección de inventario del arnés: subagentes por etapa, skills, comandos, hooks, servidores MCP, plugin y configuración | Petición expresa del Autor |
 | Sección de gestión de contexto: tres memorias, manifiesto por etapa, sinopsis acumulada y política de compactación | Petición expresa del Autor. Cierra además el «resumen de la novela previa» que la Funcional dejaba sin definir |
 | Secciones nuevas: orquestación, presupuestos, evaluación, observabilidad, pruebas | El documento anterior sólo cubría cuatro secciones de las previstas |
 | La vigencia de una escena deja de estar duplicada y vive sólo en `ramas.json` | Dos fuentes de verdad sin transacciones acaban divergiendo |

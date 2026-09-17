@@ -3,7 +3,12 @@
 
 Deniega cualquier escritura de estado que no venga del nucleo.
 
-Los permisos de `settings.json` ya deniegan `Write` y `Edit` bajo `proyectos/**`.
+Los permisos de `settings.json` ya deniegan la edicion bajo `proyectos/**`. Ojo con
+como se escribe esa regla: solo las reglas `Edit(ruta)` se comprueban contra los
+ficheros, y cubren por si solas las tres herramientas de edicion. Una regla
+`Write(ruta)` o `NotebookEdit(ruta)` no se aplica nunca, y lo peor de una regla
+inerte es que parece que protege.
+
 Este hook cubre lo que los permisos no ven: un `Bash` con `echo ... > fichero`, un
 `python -c` que abre un fichero en modo escritura, un `cp` sobre el Canon. Un
 agente al que se le ocurra escribir directamente una escena recibe una denegacion,

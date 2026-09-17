@@ -112,7 +112,7 @@ def test_el_puntero_se_escribe_el_ultimo_y_apunta_a_algo_que_existe(listo_para_e
     proyecto = listo_para_escribir
     resultado = d_novela.escribir(
         proyecto, "esc_001_001", TEXTO,
-        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa, es_piloto=True,
+        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa,
     )
     vigente = d_novela.version_vigente(proyecto, "esc_001_001")
     assert vigente == resultado["version_escena"]["id"]
@@ -125,7 +125,7 @@ def test_un_artefacto_sin_puntero_es_invisible_y_no_corrompe(listo_para_escribir
     proyecto = listo_para_escribir
     d_novela.escribir(
         proyecto, "esc_001_001", TEXTO,
-        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa, es_piloto=True,
+        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa,
     )
     # El corte: se deja el artefacto de la version 2 pero no se mueve el puntero.
     proyecto.almacen.escribir_texto(

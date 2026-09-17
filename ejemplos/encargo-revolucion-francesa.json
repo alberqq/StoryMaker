@@ -1,0 +1,64 @@
+{
+  "titulo_provisional": "El peso del bronce",
+
+  "semillas": [
+    {
+      "tipo": "personaje",
+      "texto_literal": "un fundidor de campanas de Paris al que la Republica encarga fundir en canones las campanas que el mismo colo hace veinte anos"
+    },
+    {
+      "tipo": "idea",
+      "texto_literal": "el bronce no se pierde: cambia de oficio, y quien lo funde reconoce su propia obra por la aleacion"
+    }
+  ],
+
+  "premisa": "El decreto que manda bajar las campanas de las iglesias llega al taller de un fundidor que reconoce, en el metal que le traen, las piezas que salieron de sus moldes. Funde las primeras sin decir nada. Con la tercera, empieza a apartar bronce.",
+
+  "epoca": { "desde": "1793-07", "hasta": "1794-04", "precision": "periodo" },
+  "ambito_geografico": "Paris, faubourg Saint-Antoine y el arsenal",
+
+  "extension_por_capitulo": {
+    "valor_palabras": 180,
+    "valor_origen": 12,
+    "unidad_origen": "lineas",
+    "palabras_por_linea": 15,
+    "origen": "conversion_declarada_en_captura"
+  },
+  "extension_objetivo_palabras": 540,
+  "capitulos_objetivo": 3,
+  "tolerancia_extension": 0.15,
+
+  "politica_hechos_sensibles": {
+    "valor": "El Terror aparece como lo que fue, sin convertirlo en decorado ni en denuncia. La violencia se cuenta por sus efectos en el taller, no por el espectaculo del cadalso",
+    "origen": "autor"
+  },
+  "politica_figuras_reales": {
+    "valor": "Ninguna figura historica real con nombre propio en escena. Las instituciones si: la Convencion, el comite de vigilancia de la seccion, el arsenal. Si el diseno necesita una persona real, que lo eleve como decision",
+    "origen": "autor"
+  },
+
+  "ejes_tematicos": [
+    "la descente des cloches: el decreto de 1793 que manda fundir las campanas de las iglesias en canones",
+    "el oficio del fundidor de campanas: molde de arcilla, aleacion de cobre y estano, afinacion por raspado",
+    "la escasez de estano y lo que eso obliga a hacer con la aleacion",
+    "la vida de una seccion parisina: comite de vigilancia, certificado de civismo, denuncia vecinal",
+    "el trabajo cobrado en asignados mientras el asignado pierde valor"
+  ],
+
+  "restricciones_autor": [
+    "No usar el sistema metrico decimal: en 1793 se pesa en libras y se mide en pies y pulgadas de rey",
+    "El calendario republicano solo aparece a partir de octubre de 1793, y conviven ambos durante un tiempo",
+    "El tratamiento es ciudadano y ciudadana, no senor ni senora",
+    "Ninguna escena dentro de una sala de tribunal"
+  ],
+
+  "guia_estilo": {
+    "persona_narrativa": { "valor": "tercera", "estado": "declarado" },
+    "tiempo_verbal": { "valor": "pasado", "estado": "declarado" },
+    "registro": { "valor": "seco y concreto, con el vocabulario del oficio sin glosarlo", "estado": "declarado" },
+    "densidad_descriptiva": { "valor": "media, y siempre desde el trabajo: lo que pesa, lo que quema, lo que suena", "estado": "declarado" },
+    "recursos_apertura": { "valor": "in medias res, con el metal ya en el horno", "estado": "declarado" },
+    "longitud_media_frase": { "valor": 15, "estado": "declarado" },
+    "prohibiciones": { "valor": "sin discursos politicos en boca de los personajes: la politica llega al taller en forma de encargo, de plazo y de escasez", "estado": "declarado" }
+  }
+}

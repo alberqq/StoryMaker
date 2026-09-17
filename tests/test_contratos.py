@@ -33,7 +33,9 @@ def registro() -> RegistroContratos:
 
 def test_todos_los_contratos_de_la_seccion_6_2_tienen_esquema(registro):
     mapa = json.loads((CONTRATOS / "mapa_contratos.json").read_text(encoding="utf-8"))
-    esperados = [f"CT-{n}" for n in range(1, 21)] + ["CT-12R", "CT-13R"]
+    # CT-19 y CT-20 se retiraron con la escena piloto. Los identificadores no
+    # se reutilizan: el hueco es la constancia de que existieron.
+    esperados = [f"CT-{n}" for n in range(1, 19)] + ["CT-12R", "CT-13R"]
     assert sorted(mapa) == sorted(esperados)
     for contrato, nombre in mapa.items():
         assert registro.cargar(nombre), contrato
@@ -205,7 +207,6 @@ def _version_escena() -> dict:
         "palabras": 500,
         "canon_plan_version": "can_abc_v1",
         "udt_origen": "udt_1",
-        "es_piloto": False,
         "protegido_palabras": 0,
     }
 
@@ -315,22 +316,9 @@ def test_capitulo_no_aprobado_no_cabe_en_ct_15(registro):
 
 
 # ==========================================================================
-# CT-20: decision sobre el piloto
+# Decision del Autor en un punto de control
 # ==========================================================================
 
-
-def test_decision_de_piloto_no_aceptada_identifica_que_debe_cambiar(registro):
-    validador = registro.validador("decision_piloto")
-    assert validador.validar({
-        "schema_version": "2.0", "decision": "aceptar", "decidido_por": "autor",
-    })
-    assert not validador.validar({
-        "schema_version": "2.0", "decision": "ajustar_estilo", "decidido_por": "autor",
-    })
-    assert validador.validar({
-        "schema_version": "2.0", "decision": "ajustar_estilo",
-        "decidido_por": "autor", "elemento_afectado": "persona_narrativa",
-    })
 
 
 # ==========================================================================

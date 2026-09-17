@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hook `guard-canon` - PreToolUse (INV-1, INV-9).
 
-Deniega redactar si el Canon no esta aprobado, o si el piloto no se ha aceptado.
+Deniega redactar si el Canon no esta aprobado.
 
 Esta comprobacion tambien la hace el nucleo antes de persistir. La redundancia es
 deliberada y esta declarada en ADR-02: el hook protege de un agente descaminado, y
@@ -30,7 +30,6 @@ from storymaker.hooks_comun import (  # noqa: E402
 
 # Ordenes del nucleo que producen prosa de la Novela.
 REDACTA = re.compile(r"\bstorymaker\b.*\bescena\s+(escribir|refinar)\b")
-ES_PILOTO = re.compile(r"--piloto\b")
 
 
 def main() -> int:
@@ -52,13 +51,6 @@ def main() -> int:
             "INV-1: no se redacta una sola escena sobre un Canon que no esta aprobado. "
             f"El Canon esta en estado '{estado.get('canon_estado')}'. Pasa antes por "
             "PC-3 con `storymaker canon aprobar`."
-        )
-
-    if not estado.get("piloto_aceptado") and not ES_PILOTO.search(orden):
-        return denegar(
-            "INV-9 y RF-046: ninguna escena se produce en serie antes de que el Autor "
-            "haya aceptado la escena piloto. Redacta primero el piloto con `--piloto` y "
-            "somete PC-8."
         )
 
     return permitir()

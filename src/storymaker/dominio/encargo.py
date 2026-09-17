@@ -167,6 +167,16 @@ def responder(
             if sin_preferencia
             else {"valor": valor, "estado": "declarado"}
         )
+    elif campo == "guia_estilo" and sin_preferencia:
+        # El interrogatorio pregunta por la Guia de estilo como grupo, y renunciar
+        # al grupo es renunciar a sus siete parametros. Sin propagarlo aqui, cada
+        # uno se quedaria en 'sin_decidir', que no es un estado que el Encargo
+        # admita al cerrarse (RF-029), y el interrogatorio no podria cerrar el
+        # Encargo que el mismo produce: solo lo lograba agotando las rondas.
+        guia = borrador.setdefault("guia_estilo", _guia_vacia())
+        for parametro in PARAMETROS_ESTILO:
+            if guia.get(parametro, {}).get("estado") != "declarado":
+                guia[parametro] = {"valor": None, "estado": "sin_preferencia"}
     elif sin_preferencia:
         borrador.setdefault("campos_sin_preferencia", []).append(campo)
     else:

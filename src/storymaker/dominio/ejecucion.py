@@ -39,7 +39,7 @@ from storymaker.presupuesto import (
     Presupuesto,
     en_ultimo_tercio,
 )
-from storymaker.proyecto import MODO_ASISTIDO, MODOS, Proyecto
+from storymaker.proyecto import MODO_REVISION_DEL_AUTOR, MODOS, Proyecto
 from storymaker.sobre import ahora
 
 # Estados de la maquina de la seccion 7.2.
@@ -48,8 +48,7 @@ TRANSICIONES: dict[str, set[str]] = {
     "Investigacion": {"Refutacion"},
     "Refutacion": {"Investigacion", "Diseno"},       # B11 devuelve si se refuta
     "Diseno": {"ValidacionCanon"},
-    "ValidacionCanon": {"Diseno", "Piloto"},          # B5
-    "Piloto": {"Encargo", "Diseno", "Produccion"},    # B9
+    "ValidacionCanon": {"Diseno", "Produccion"},      # B5
     "Produccion": {"Produccion", "Diseno", "PasadaGlobal", "Detenida"},
     "PasadaGlobal": {"Produccion", "Entrega"},        # B10
     "Detenida": {"Produccion"},
@@ -64,7 +63,6 @@ PUNTOS_CONTROL = {
     "PC-4": ("Replanificacion del Canon durante la produccion", "el_mismo_que_aprobo", False),
     "PC-5": ("Escalado por bloqueo irresoluble", "humano", False),
     "PC-6": ("Agotamiento del bucle externo con bloqueantes", "humano", True),
-    "PC-8": ("Escena piloto, antes de producir en serie", "humano", True),
 }
 
 DECISIONES = (
@@ -83,7 +81,7 @@ def iniciar(
     proyecto: Proyecto,
     presupuesto: Presupuesto,
     *,
-    modo: str = MODO_ASISTIDO,
+    modo: str = MODO_REVISION_DEL_AUTOR,
     versiones_agentes: dict[str, str] | None = None,
     versiones_rubricas: dict[str, str] | None = None,
     catalogo_modelos: dict[str, Any] | None = None,
@@ -180,6 +178,40 @@ def pausar(proyecto: Proyecto, motivo: str) -> dict[str, Any]:
     return {"ejecucion": identificador, "etapa": "Detenida", "motivo": motivo}
 
 
+def etapa_tras_detencion(proyecto: Proyecto) -> str:
+    """A donde vuelve una Ejecucion que quedo detenida en un punto de control.
+
+    Volver de `Detenida` no es una transicion de la maquina de estados: es
+    deshacer una pausa. Por eso no pasa por `transicionar`, que rechazaria el
+    salto, y por eso la tabla de transiciones no la contempla.
+
+    Se prefiere la etapa que el punto de control anoto al abrirse. Los puntos
+    resueltos antes de que eso se registrara no la tienen, asi que se deduce del
+    estado del Proyecto, que es lo unico fiable que queda: hasta donde llego el
+    trabajo dice en que etapa estaba.
+    """
+    identificador = proyecto.estado.ejecucion_activa
+    if identificador:
+        resueltos = [
+            p for p in listar_puntos_control(proyecto, identificador)
+            if p.get("estado") == "resuelto" and p.get("etapa_al_abrir")
+        ]
+        if resueltos:
+            ultimo = max(resueltos, key=lambda p: p.get("decidido_en") or "")
+            if ultimo["etapa_al_abrir"] != "Detenida":
+                return str(ultimo["etapa_al_abrir"])
+
+    if proyecto.estado.canon_estado == "aprobado":
+        return "Produccion"
+    if proyecto.estado.canon_version_vigente:
+        return "ValidacionCanon"
+    if proyecto.estado.contexto_version_vigente:
+        return "Diseno"
+    if proyecto.estado.encargo_version_vigente:
+        return "Investigacion"
+    return "Encargo"
+
+
 def reanudar(proyecto: Proyecto, id_ejecucion_: str | None = None) -> dict[str, Any]:
     """RF-084: reanuda desde la ultima unidad cerrada, sin rehacer trabajo valido.
 
@@ -207,9 +239,19 @@ def reanudar(proyecto: Proyecto, id_ejecucion_: str | None = None) -> dict[str, 
     ultima = cierres[-1]["carga"] if cierres else None
     contabilidad = reconstruir_contabilidad(proyecto, identificador)
 
+    # Una Ejecucion detenida tiene que poder volver. Sin esto, resolver el punto
+    # de control registraba la decision y dejaba el Proyecto en 'Detenida' para
+    # siempre: ni reanudando salia de ahi.
+    etapa_recuperada = None
+    if proyecto.estado.etapa == "Detenida":
+        etapa_recuperada = etapa_tras_detencion(proyecto)
+        proyecto.guardar(etapa=etapa_recuperada)
+        ledger.anexar("ejecucion_reanudada", etapa=etapa_recuperada)
+
     proyecto.guardar(ejecucion_activa=identificador)
     return {
         "ejecucion": identificador,
+        "etapa_recuperada": etapa_recuperada,
         "ultima_unidad_cerrada": ultima,
         "consumo_conservado": contabilidad.global_.como_dict(),
         "remanente": contabilidad.remanente(),
@@ -291,6 +333,7 @@ def admitir_unidad(
     Ejecucion caida sin pagar dos veces, y lo que hace segura `etapa reejecutar`.
     """
     identificador = _exigir_ejecucion(proyecto)
+
     ledger = Ledger(proyecto.almacen, identificador)
 
     clave = clave_idempotencia(etapa, unidad, intento, manifiesto.hash())
@@ -460,6 +503,27 @@ def cerrar_unidad(
         iteraciones_consumidas=iteraciones_consumidas,
         tramo=tramo,
     )
+    # El fichero de unidades es de solo anexion, como el de hallazgos: el cierre
+    # no reescribe la linea de apertura, anade otra con el mismo identificador y
+    # quien lo lea se queda con la ultima.
+    #
+    # Sin esto, toda unidad quedaba en `en_curso` para siempre aunque hubiera
+    # cerrado bien, y una Ejecucion terminada parecia tener media docena de etapas
+    # colgadas. El ledger lo contaba correctamente --- ahi si esta el
+    # `unidad_cerrada` ---, pero nadie cruza los dos ficheros al mirar.
+    proyecto.almacen.anexar(
+        proyecto.almacen.unidades(identificador),
+        {
+            "schema_version": SCHEMA_VERSION,
+            "id": id_unidad,
+            "unidad": unidad,
+            "estado": "cerrada",
+            "modo_cierre": modo_cierre,
+            "iteraciones_consumidas": iteraciones_consumidas,
+            "version_vigente": version_vigente,
+            "cerrada_en": ahora(),
+        },
+    )
     proyecto.almacen.anexar(
         proyecto.almacen.consumo(identificador),
         {
@@ -546,9 +610,8 @@ def abrir_punto_control(
 ) -> dict[str, Any]:
     """Abre un punto de control y detiene lo que haya que detener.
 
-    En modo autonomo, PC-8 no detiene nada pero el piloto se registra igualmente
-    como referencia de voz de la Ejecucion: su valor como linea base de estilo no
-    depende de que alguien lo lea.
+    Todo punto de control detiene la Ejecucion hasta que el Autor decide, y
+    mientras espera no consume presupuesto.
     """
     if tipo not in PUNTOS_CONTROL:
         raise ErrorStoryMaker("ERR-302", f"Punto de control desconocido: {tipo}")
@@ -557,9 +620,15 @@ def abrir_punto_control(
     descripcion, modo_por_defecto, configurable = PUNTOS_CONTROL[tipo]
     modo_efectivo = modo_requerido or modo_por_defecto
 
+    # En revision del Autor, PC-3 deja de resolverlo un agente validador: lo
+    # resuelve el, que es la definicion del modo. El punto de control no
+    # desaparece; cambia de manos.
+    if proyecto.estado.modo == MODO_REVISION_DEL_AUTOR and tipo == "PC-3":
+        modo_efectivo = "humano"
+
+    # Todo punto de control detiene: no queda ningun modo autonomo que siguiera
+    # adelante sin esperar al Autor.
     detiene = True
-    if proyecto.estado.modo == "autonomo" and tipo in ("PC-3", "PC-8", "PC-6"):
-        detiene = False
 
     numero = len(listar_puntos_control(proyecto, identificador)) + 1
     registro = {
@@ -574,6 +643,10 @@ def abrir_punto_control(
         "presentado": presentado,
         "abierto_en": ahora(),
         "ejecucion": identificador,
+        # De donde venia la Ejecucion, para poder devolverla ahi al resolver. Sin
+        # esto, un punto de control que detiene deja el Proyecto en 'Detenida'
+        # para siempre: la decision se registra y la Ejecucion no se reanuda.
+        "etapa_al_abrir": proyecto.estado.etapa,
     }
     proyecto.almacen.escribir_json(
         proyecto.almacen.punto_control(identificador, registro["id"]), registro
@@ -658,32 +731,17 @@ def resolver_punto_control(
         elemento_afectado=elemento_afectado,
     )
 
-    if registro["tipo"] == "PC-8":
-        _aplicar_decision_piloto(proyecto, decision, registro)
+    # Resolver reanuda. `abandonar` es la unica decision que no devuelve la
+    # Ejecucion a su etapa, porque ahi no hay a donde volver.
+    if registro.get("detiene_ejecucion") and decision != "abandonar":
+        etapa_previa = registro.get("etapa_al_abrir")
+        if not etapa_previa or etapa_previa == "Detenida":
+            etapa_previa = etapa_tras_detencion(proyecto)
+        proyecto.guardar(etapa=etapa_previa)
 
     return registro
 
 
-def _aplicar_decision_piloto(
-    proyecto: Proyecto, decision: str, registro: dict[str, Any]
-) -> None:
-    """CT-20: las tres salidas de PC-8 (RF-046)."""
-    identificador = _exigir_ejecucion(proyecto)
-    Ledger(proyecto.almacen, identificador).anexar(
-        "piloto_resuelto",
-        decision=decision,
-        version_escena=registro.get("presentado", {}).get("version_escena"),
-    )
-    if decision == "aprobar":
-        proyecto.guardar(
-            piloto_aceptado=True,
-            piloto_version=registro.get("presentado", {}).get("version_escena"),
-            etapa="Produccion",
-        )
-    elif decision == "ajustar_estilo":
-        proyecto.guardar(etapa="Encargo")
-    elif decision == "volver_al_canon":
-        proyecto.guardar(etapa="Diseno")
 
 
 def listar_puntos_control(

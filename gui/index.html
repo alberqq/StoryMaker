@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StoryMaker</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23FF7038'/%3E%3C/svg%3E">
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<style>
+:root {
+  /* El naranja corporativo. Todo lo demas se deriva de aqui: cambiando este
+     valor cambia la interfaz entera, que es lo que hace que una marca se pueda
+     corregir sin repasar cincuenta reglas. */
+  --marca: #FF7038;
+  --marca-viva: #FF8451;
+  --marca-honda: #D9541F;
+
+  --fondo: #FBF8F6; --panel: #FFFFFF; --borde: #EADFD8; --tinta: #241B16;
+  --tenue: #6F6259; --acento: var(--marca-honda); --acento-suave: #FFF0E8;
+  --bloqueante: #C0392B; --mayor: #B07B18; --menor: #6F6259; --bien: #2F7D4F;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --fondo: #17120F; --panel: #211915; --borde: #392C24; --tinta: #F2E9E3;
+    --tenue: #A2938A; --acento: var(--marca-viva); --acento-suave: #2E2016;
+    --bloqueante: #E8776A; --mayor: #DFA74E; --menor: #A2938A; --bien: #6FBF8C;
+  }
+}
+:root[data-tema="oscuro"] {
+  --fondo: #17120F; --panel: #211915; --borde: #392C24; --tinta: #F2E9E3;
+  --tenue: #A2938A; --acento: var(--marca-viva); --acento-suave: #2E2016;
+  --bloqueante: #E8776A; --mayor: #DFA74E; --menor: #A2938A; --bien: #6FBF8C;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--fondo); color: var(--tinta);
+  font: 15px/1.6 ui-serif, Georgia, "Iowan Old Style", serif;
+}
+code, pre, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+a { color: var(--acento); }
+.marco { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; }
+header.cabecera {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline;
+  border-bottom: 1px solid var(--borde); padding-bottom: 14px; margin-bottom: 20px;
+}
+h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+h1 small { color: var(--tenue); font-weight: 400; font-size: 13px; margin-left: 10px; }
+h2 { font-size: 17px; margin: 0 0 10px; }
+h3 { font-size: 14px; margin: 18px 0 8px; color: var(--tenue); text-transform: uppercase; letter-spacing: .06em; }
+.fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.crece { flex: 1 1 auto; }
+select, input, textarea, button {
+  font: inherit; color: inherit; background: var(--panel);
+  border: 1px solid var(--borde); border-radius: 6px; padding: 7px 10px;
+}
+textarea { width: 100%; min-height: 110px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--acento); color: var(--acento); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.principal { background: var(--acento); border-color: var(--acento); color: var(--fondo); font-weight: 600; }
+button.principal:hover:not(:disabled) { opacity: .88; color: var(--fondo); }
+nav.pestanas { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 18px; }
+nav.pestanas button { border-radius: 999px; padding: 6px 14px; font-size: 14px; }
+nav.pestanas button[aria-selected="true"] { background: var(--acento-suave); border-color: var(--acento); color: var(--acento); font-weight: 600; }
+.tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+.rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.dato .et { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--tenue); }
+.dato .vl { font-size: 17px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--borde); vertical-align: top; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--tenue); font-weight: 600; }
+.pico { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.s-bloqueante { color: var(--bloqueante); } .s-mayor { color: var(--mayor); }
+.s-menor { color: var(--menor); } .s-bien { color: var(--bien); }
+pre.sobre { background: var(--acento-suave); border: 1px solid var(--borde); border-radius: 8px; padding: 12px; overflow: auto; max-height: 340px; font-size: 12.5px; white-space: pre-wrap; word-break: break-word; }
+.prosa p { margin: 0 0 .9em; }
+.tenue { color: var(--tenue); }
+.pequeno { font-size: 13px; }
+.aviso { border-left: 3px solid var(--mayor); padding-left: 12px; color: var(--tenue); }
+
+header.cabecera { align-items: center; }
+h1 { display: flex; align-items: baseline; gap: 10px; }
+button.principal { background: var(--marca); border-color: var(--marca); color: #fff; }
+button.principal:hover:not(:disabled) { background: var(--marca-viva); border-color: var(--marca-viva); color: #fff; }
+nav.pestanas button[aria-selected="true"] { background: var(--marca); border-color: var(--marca); color: #fff; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--marca); outline-offset: 1px; }
+@media (max-width: 620px) { .marco { padding: 16px; } }
+</style>
+</head>
+<body>
+<div id="raiz"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback } = React;
+
+async function pedir(ruta, opciones) {
+  const r = await fetch(ruta, opciones);
+  try { return await r.json(); }
+  catch { return { ok: false, error: { codigo: "GUI-000", mensaje: `Respuesta ilegible (${r.status})` } }; }
+}
+const traer = (ruta) => pedir(ruta);
+const enviar = (ruta, cuerpo) => pedir(ruta, {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo),
+});
+
+
+// Marcador, no el logo. Dibujar de memoria la marca de alguien sale mal y
+// parece un logo equivocado, que es peor que no tener ninguno. Basta con dejar
+// el fichero en gui/logo.svg o gui/logo.png para que la pagina use el autentico.
+const LOGO_SVG = (
+  <svg viewBox="0 0 64 64" width="34" height="34" role="img" aria-label="Marcador de logo"
+       style={{ display: "block", borderRadius: 10 }}>
+    <rect width="64" height="64" rx="12" fill="var(--marca)" />
+    <text x="32" y="45" textAnchor="middle" fill="#FBF8F6" fontSize="36" fontWeight="700"
+          fontFamily="ui-sans-serif, Segoe UI, Helvetica, Arial, sans-serif">Q</text>
+  </svg>
+);
+
+function Logo() {
+  const [propio, setPropio] = useState(true);
+  if (!propio) return LOGO_SVG;
+  return (
+    <img src="/logo" alt="Logo" width="34" height="34"
+         style={{ display: "block", borderRadius: 10 }}
+         onError={() => setPropio(false)} />
+  );
+}
+
+function Dato({ et, children }) {
+  return <div className="dato"><span className="et">{et}</span><span className="vl">{children}</span></div>;
+}
+
+function Sobre({ sobre }) {
+  if (!sobre) return null;
+  return (
+    <div className="tarjeta">
+      <div className="fila">
+        <strong>{sobre.ok ? "El núcleo aceptó" : "El núcleo rechazó"}</strong>
+        <span className={"pico " + (sobre.ok ? "s-bien" : "s-bloqueante")}>
+          {sobre.ok ? "ok" : (sobre.error?.codigo || "error")}
+        </span>
+      </div>
+      {!sobre.ok && (
+        <p className="pequeno" style={{ marginTop: 8 }}>
+          {sobre.error?.mensaje} <span className="tenue">Un rechazo del núcleo es la respuesta, no un obstáculo que rodear.</span>
+        </p>
+      )}
+      <pre className="sobre">{JSON.stringify(sobre.datos ?? sobre.error ?? sobre, null, 1)}</pre>
+    </div>
+  );
+}
+
+
+// La parada del proceso, tal como se ve desde la pestana donde se decide. No
+// comprueba nada por su cuenta: llama al nucleo y, si el nucleo acepta, le dice
+// al proceso que siga. Si el nucleo rechaza, el proceso sigue esperando.
+function Parada({ esperando, clave, titulo, verbo, onDecidir }) {
+  const [motivo, setMotivo] = useState("");
+  const [yendo, setYendo] = useState(false);
+  if (!esperando || esperando.paso !== clave) return null;
+
+  async function decidir() {
+    setYendo(true);
+    const ok = await onDecidir(AUTOR);
+    if (ok) await enviar("/api/proceso-continuar", { proceso: esperando.proceso });
+    setYendo(false);
+  }
+
+  // Rechazar no llama al núcleo: no hay nada que firmar ni que aprobar. Sólo le
+  // dice al proceso que vuelva al tramo anterior con este motivo delante.
+  async function rehacer() {
+    setYendo(true);
+    await enviar("/api/proceso-continuar", {
+      proceso: esperando.proceso, decision: "rehacer", motivo: motivo.trim(),
+    });
+    setMotivo("");
+    setYendo(false);
+  }
+
+  return (
+    <div className="tarjeta" style={{ borderColor: "var(--acento)", borderWidth: 2 }}>
+      <div className="fila">
+        <span className="pico s-mayor">el proceso te espera</span>
+        <h2 style={{ margin: 0 }}>{titulo}</h2>
+      </div>
+      <p className="pequeno tenue" style={{ marginTop: 8 }}>{esperando.detalle}</p>
+      <div className="fila" style={{ marginTop: 10 }}>
+        <button className="principal" disabled={yendo} onClick={decidir}>
+          {yendo ? "…" : verbo}
+        </button>
+      </div>
+      <p className="pequeno tenue" style={{ marginTop: 8 }}>
+        Si el núcleo rechaza, el proceso sigue esperando aquí: no se continúa sobre un rechazo.
+      </p>
+      <h3>O recházalo y que lo rehaga</h3>
+      <div className="fila">
+        <input className="crece" placeholder="Qué está mal y qué quieres en su lugar"
+               value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+        <button disabled={!motivo.trim() || yendo} onClick={rehacer}>Rechazar y rehacer</button>
+      </div>
+      <p className="pequeno tenue" style={{ marginTop: 8 }}>
+        El tramo se lanza otra vez con tu motivo delante y vuelve a parar aquí. El motivo
+        es obligatorio: un rechazo que no dice qué cambiar obliga a adivinar, y lo más
+        probable es que salga lo mismo.
+      </p>
+    </div>
+  );
+}
+
+function Estado({ p, onNucleo }) {
+  const pr = p.proyecto || {};
+  return (
+    <>
+      <div className="tarjeta">
+        <div className="rejilla">
+          <Dato et="Estado">{pr.estado}</Dato>
+          <Dato et="Etapa">{pr.etapa}</Dato>
+          <Dato et="Modo">{pr.modo}</Dato>
+          <Dato et="Canon">{pr.canon_estado || "—"}</Dato>
+          <Dato et="Limitado a reservas">{pr.limitado_a_reservas ? "sí" : "no"}</Dato>
+        </div>
+        {pr.limitado_a_reservas && (
+          <p className="aviso pequeno" style={{ marginTop: 12 }}>
+            Este Proyecto quedó limitado a «finalizado con reservas», y eso es permanente.
+            Motivo: {(pr.motivo_reservas || []).join("; ")}
+          </p>
+        )}
+      </div>
+      <div className="tarjeta">
+        <h2>Versiones vigentes</h2>
+        <table>
+          <tbody>
+            <tr><th>Encargo</th><td className="mono">{pr.encargo_version_vigente || "—"}</td></tr>
+            <tr><th>Contexto histórico</th><td className="mono">{pr.contexto_version_vigente || "—"}</td></tr>
+            <tr><th>Canon</th><td className="mono">{pr.canon_version_vigente || "—"}</td></tr>
+            <tr><th>Ejecución activa</th><td className="mono">{pr.ejecucion_activa || "—"}</td></tr>
+          </tbody>
+        </table>
+        <div className="fila" style={{ marginTop: 14 }}>
+          <button onClick={() => onNucleo("ejecucion", "estado")}>Consultar Ejecución</button>
+          <button onClick={() => onNucleo("novela", "hilos")}>Estado de los hilos</button>
+        </div>
+        <p className="pequeno tenue" style={{ marginTop: 10 }}>
+          El estado de los hilos se recalcula al consultarlo. Un índice puede estar obsoleto,
+          y una decisión no puede apoyarse en algo que puede estarlo.
+        </p>
+      </div>
+    </>
+  );
+}
+
+
+function Contexto({ p, onNucleo, esperando }) {
+  // Descartar sólo tiene sentido mientras el proceso te espera aquí: después, el
+  // Contexto ya está cerrado y lo que cuelga de él, construido.
+  const revisando = Boolean(esperando && esperando.paso === "espera_contexto");
+  const [marcadas, setMarcadas] = useState({ afirmaciones: [], restricciones: [] });
+  const [motivoDescarte, setMotivoDescarte] = useState("");
+  const alternar = (tipo, id) => setMarcadas((m) => ({
+    ...m,
+    [tipo]: m[tipo].includes(id) ? m[tipo].filter((x) => x !== id) : [...m[tipo], id],
+  }));
+  const cuantas = marcadas.afirmaciones.length + marcadas.restricciones.length;
+
+  async function descartar() {
+    const opciones = ["--quien", AUTOR, "--motivo", motivoDescarte.trim()];
+    marcadas.afirmaciones.forEach((id) => opciones.push("--afirmacion", id));
+    marcadas.restricciones.forEach((id) => opciones.push("--restriccion", id));
+    const r = await onNucleo("contexto", "descartar", opciones);
+    if (r?.ok) setMarcadas({ afirmaciones: [], restricciones: [] });
+  }
+
+  const ctx = p.contexto;
+  if (!ctx && !(p.afirmaciones || []).length) return <p className="tenue">Todavía no hay Contexto histórico.</p>;
+  return (
+    <>
+      <Parada esperando={esperando} clave="espera_contexto"
+              titulo="Acepta el Contexto histórico" verbo="Acepto el Contexto"
+              onDecidir={async (quien) => {
+                const r = await onNucleo("contexto", "firmar",
+                  ["--quien", quien, "--motivo", "El Autor acepta el Contexto en la interfaz"]);
+                return Boolean(r?.ok);
+              }} />
+
+      {revisando && (
+        <div className="tarjeta">
+          <h2>Descartar lo que no des por bueno</h2>
+          <p className="pequeno tenue">
+            Marca abajo las afirmaciones o las Restricciones que quieras retirar antes de
+            aceptar. Nada se borra: quedan marcadas, con constancia de por qué. Y descartar una afirmación <strong>arrastra las Restricciones que
+            derivaban de ella</strong>, porque una regla que se apoya en algo retirado no
+            se sostiene.
+          </p>
+          <div className="fila" style={{ marginTop: 10 }}>
+            <input className="crece" placeholder="Por qué"
+                   value={motivoDescarte} onChange={(e) => setMotivoDescarte(e.target.value)} />
+            <button disabled={!cuantas} onClick={descartar}>
+              {cuantas ? `Descartar ${cuantas}` : "Nada marcado"}
+            </button>
+          </div>
+          <p className="pequeno tenue" style={{ marginTop: 8 }}>
+            Cuando termines de descartar, acepta el Contexto arriba. Si lo que falta es
+            investigación entera, mejor recházalo y que rehaga el tramo.
+          </p>
+        </div>
+      )}
+      {ctx && (
+        <div className="tarjeta">
+          <div className="rejilla">
+            <Dato et="Versión">{ctx.id}</Dato>
+            <Dato et="Estado">{ctx.estado}</Dato>
+            <Dato et="Afirmaciones">{(p.afirmaciones || []).length}</Dato>
+            <Dato et="Restricciones">{(p.restricciones || []).length}</Dato>
+            <Dato et="Lagunas">{(ctx.lagunas || []).length}</Dato>
+          </div>
+        </div>
+      )}
+      <div className="tarjeta">
+        <h2>Afirmaciones</h2>
+        <table>
+          <thead><tr>{revisando && <th></th>}<th>Id</th><th>Enunciado</th><th>Sección</th><th>Certeza</th></tr></thead>
+          <tbody>
+            {(p.afirmaciones || []).map((a) => (
+              <tr key={a.id} style={marcadas.afirmaciones.includes(a.id) ? { opacity: .45 } : null}>
+                {revisando && (
+                  <td><input type="checkbox" checked={marcadas.afirmaciones.includes(a.id)}
+                             onChange={() => alternar("afirmaciones", a.id)} /></td>
+                )}
+                <td className="mono pequeno">{a.id}</td>
+                <td>{a.enunciado}</td>
+                <td className="pequeno">{a.seccion}</td>
+                <td><span className={"pico " + (a.estado === "refutada" ? "s-bloqueante" : "s-menor")}>
+                  {a.estado === "refutada" ? "refutada" : (a.certeza || "documentada")}
+                </span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="pequeno tenue" style={{ marginTop: 10 }}>
+          Ya no hay verificación de fidelidad ni pasada de refutación: una Restricción deriva
+          directamente de su afirmación. Lo único que se conserva es que una afirmación marcada
+          como refutada tumba lo que colgaba de ella.
+        </p>
+      </div>
+      <div className="tarjeta">
+        <h2>Restricciones de época</h2>
+        <table>
+          <thead><tr>{revisando && <th></th>}<th>Id</th><th>Categoría</th><th>Enunciado</th><th>Tipo</th></tr></thead>
+          <tbody>
+            {(p.restricciones || []).map((r) => (
+              <tr key={r.id} style={marcadas.restricciones.includes(r.id) ? { opacity: .45 } : null}>
+                {revisando && (
+                  <td><input type="checkbox" checked={marcadas.restricciones.includes(r.id)}
+                             onChange={() => alternar("restricciones", r.id)} /></td>
+                )}
+                <td className="mono pequeno">{r.id}</td>
+                <td>{r.categoria}</td>
+                <td>{r.enunciado}</td>
+                <td><span className={"pico " + (r.comprobable ? "s-bien" : "s-menor")}>{r.comprobable ? "comprobable" : "cualitativa"}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {ctx && (ctx.lagunas || []).length > 0 && (
+        <div className="tarjeta">
+          <h2>Lagunas declaradas</h2>
+          <p className="pequeno tenue">No se rellenan con verosimilitud. Se declaran.</p>
+          <pre className="sobre">{JSON.stringify(ctx.lagunas, null, 1)}</pre>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Canon({ p, onNucleo, esperando }) {
+  const c = p.canon;
+  if (!c) return <p className="tenue">Todavía no hay Canon propuesto.</p>;
+  return (
+    <>
+      <Parada esperando={esperando} clave="espera_canon"
+              titulo="PC-3 · Aprueba el Canon" verbo="Apruebo el Canon"
+              onDecidir={async (quien) => {
+                const r = await onNucleo("canon", "aprobar",
+                  ["--modo-aprobacion", "humano", "--quien", quien]);
+                return Boolean(r?.ok);
+              }} />
+      <div className="tarjeta">
+        <div className="rejilla">
+          <Dato et="Versión">{c.id}</Dato>
+          <Dato et="Estado">{c.estado}</Dato>
+          <Dato et="Capítulos">{(c.capitulos || []).length}</Dato>
+          <Dato et="Hilos">{(c.hilos || []).length}</Dato>
+          <Dato et="Licencias">{(c.licencias_alcance || []).length}</Dato>
+        </div>
+        {c.motivo_cambio && <p className="pequeno tenue" style={{ marginTop: 10 }}>Motivo del cambio: {c.motivo_cambio}</p>}
+      </div>
+
+      <div className="tarjeta">
+        <h2>Licencias de alcance</h2>
+        {(c.licencias_alcance || []).length === 0 && <p className="tenue">Ninguna.</p>}
+        {(c.licencias_alcance || []).map((l) => {
+          const completa = Array.isArray(l.limites) && l.limites.length > 0;
+          return (
+            <div key={l.id} style={{ marginBottom: 14 }}>
+              <div className="fila">
+                <strong className="mono">{l.id}</strong>
+                <span className={"pico " + (completa ? "s-bien" : "s-bloqueante")}>
+                  {completa ? "instanciada" : "sin límites"}
+                </span>
+              </div>
+              <div className="pequeno">{l.figura_o_hecho || l.figura}</div>
+              {l.desviacion && <div className="pequeno tenue">Desviación: {l.desviacion}</div>}
+              {completa
+                ? <ul className="pequeno">{l.limites.map((x, i) => <li key={i}>{x}</li>)}</ul>
+                : <p className="pequeno aviso">Una Licencia sin límites declarados es un cheque en blanco sobre toda la novela.</p>}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="tarjeta">
+        <h2>Capítulos y escenas</h2>
+        <table>
+          <thead><tr><th>Capítulo</th><th>Escena</th><th>Función narrativa</th><th>Palabras</th></tr></thead>
+          <tbody>
+            {(c.capitulos || []).flatMap((cap) => (cap.escenas || []).map((e) => (
+              <tr key={e.id}>
+                <td className="mono pequeno">{cap.id}</td>
+                <td className="mono pequeno">{e.id}</td>
+                <td className="pequeno">{e.funcion_narrativa}</td>
+                <td>{e.presupuesto_palabras}</td>
+              </tr>
+            )))}
+          </tbody>
+        </table>
+      </div>
+
+      {c.estado === "aprobado" && (
+        <div className="tarjeta">
+          <p className="pequeno">
+            <strong>Canon aprobado</strong> por {c.aprobado_por?.quien || "—"}
+            {c.aprobado_por?.decidido_en ? ` el ${c.aprobado_por.decidido_en}` : ""}.
+            Un Canon aprobado es inmutable: cambiarlo exige versión nueva.
+          </p>
+          {(c.aprobado_por?.bloqueantes_asumidos || []).length > 0 && (
+            <p className="pequeno aviso">
+              Se asumieron {c.aprobado_por.bloqueantes_asumidos.length} bloqueantes:
+              {" "}{c.aprobado_por.motivo_asuncion}. El Proyecto queda limitado a reservas.
+            </p>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+// Con quien se firma todo lo que el Autor decide. El nucleo pide un `--quien`
+// en varias ordenes, pero aqui solo hay una persona --- que es ademas el
+// Operador y el unico usuario ---, asi que un campo de nombre que siempre se
+// rellena igual no anade trazabilidad: anade un paso antes de cada decision.
+const AUTOR = "Autor";
+
+const ORDEN_SEVERIDAD = { bloqueante: 0, mayor: 1, menor: 2 };
+
+// Un hallazgo, con su sitio a la vista. La ficha lleva delante *donde* esta el
+// defecto porque sin eso la lista parece repetirse: la pasada global emite
+// varios hallazgos sobre las mismas escenas, y leidos solo por su descripcion
+// cuesta ver que hablan de cosas distintas.
+function Hallazgo({ h, onNucleo, enCurso }) {
+  const donde = [h.unidad, h.localizacion?.escena].filter(Boolean).join(" · ");
+
+  return (
+    <div className="tarjeta">
+      <div className="fila">
+        <span className={"pico s-" + (h.severidad || "menor")}>{h.severidad}</span>
+        {h.estado !== "abierto" && <span className="pico s-bien">{h.estado}</span>}
+        {donde && <span className="pico">{donde}</span>}
+        {h.veces > 1 && (
+          <span className="pico s-mayor" title="Veces que aparece en el registro">
+            {h.veces} apariciones
+          </span>
+        )}
+        <span className="crece" />
+        <span className="mono pequeno tenue">{h.id}</span>
+      </div>
+
+      <p className="pequeno" style={{ marginTop: 8 }}>{h.descripcion}</p>
+
+      {h.localizacion?.pasaje && (
+        <p className="pequeno tenue" style={{ fontStyle: "italic" }}>«{h.localizacion.pasaje}»</p>
+      )}
+      {h.accion_exigida && (
+        <p className="pequeno tenue"><strong>Acción exigida:</strong> {h.accion_exigida}</p>
+      )}
+      <p className="pequeno tenue">
+        Causa raíz: {h.causa_raiz}
+        {h.etapa_destino ? ` · vuelve a ${h.etapa_destino}` : ""}
+      </p>
+
+      {h.estado === "abierto" && enCurso && (
+        <p className="pequeno tenue">
+          El arnés está trabajando en esto ahora mismo: el bucle corrige y vuelve a
+          validar. No hay nada que hacer salvo esperar.
+        </p>
+      )}
+
+      {h.estado === "abierto" && !enCurso && (
+        <div className="fila" style={{ marginTop: 8 }}>
+          <button onClick={() => onNucleo("hallazgo", "transicionar",
+                    ["--id", h.id, "--estado", "resuelto"])}>
+            Marcar resuelto
+          </button>
+          <button onClick={() => onNucleo("hallazgo", "transicionar",
+                    ["--id", h.id, "--estado", "aceptado_como_deuda"])}>
+            Aceptar como Deuda de calidad
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Hallazgos({ p, onNucleo, enCurso }) {
+  const [verCerrados, setVerCerrados] = useState(false);
+  const hs = p.hallazgos || [];
+
+  // El fichero es de sólo añadir y guarda una línea por transición; el servidor
+  // ya lo pliega por identificador, así que aquí cada entrada es un hallazgo y
+  // no una línea del registro.
+  const ordenar = (a, b) =>
+    (ORDEN_SEVERIDAD[a.severidad] ?? 9) - (ORDEN_SEVERIDAD[b.severidad] ?? 9);
+
+  const abiertos = hs.filter((h) => h.estado === "abierto").sort(ordenar);
+  const cerrados = hs.filter((h) => h.estado !== "abierto").sort(ordenar);
+
+  // Los de la pasada global son distintos en un sentido que importa: E8 es la
+  // última etapa, así que detrás de ellos no queda nadie que los arregle.
+  const deGlobal = abiertos.filter((h) => h.unidad === "novela");
+  const deBucle = abiertos.filter((h) => h.unidad !== "novela");
+
+  const cuenta = (s) => abiertos.filter((h) => h.severidad === s).length;
+
+  return (
+    <>
+      <div className="tarjeta">
+        <div className="rejilla">
+          <Dato et="Bloqueantes abiertos"><span className="s-bloqueante">{cuenta("bloqueante")}</span></Dato>
+          <Dato et="Mayores abiertos"><span className="s-mayor">{cuenta("mayor")}</span></Dato>
+          <Dato et="Menores abiertos"><span className="s-menor">{cuenta("menor")}</span></Dato>
+          <Dato et="Cerrados">{cerrados.length}</Dato>
+        </div>
+        <p className="pequeno tenue" style={{ marginTop: 8 }}>
+          Los emiten el refinador, sobre la prosa de una escena, y el validador, sobre el
+          capítulo completo. Un hallazgo que reaparece después de haberse resuelto conserva
+          su identificador: por eso la ficha dice cuántas veces ha aparecido.
+        </p>
+      </div>
+
+      {hs.length === 0 && <p className="tenue">Sin hallazgos.</p>}
+
+      {deBucle.length > 0 && (
+        <>
+          <h3>Del bucle de producción</h3>
+          {deBucle.map((h) => (
+            <Hallazgo key={h.id} h={h} onNucleo={onNucleo} enCurso={enCurso} />
+          ))}
+        </>
+      )}
+
+      {deGlobal.length > 0 && (
+        <>
+          <h3>De la pasada global</h3>
+          <p className="pequeno aviso">
+            E8 es la última etapa: detrás de estos no queda ninguna que los arregle. Al
+            cerrar la Novela, los que sigan abiertos se declaran como <strong>Deuda de
+            calidad</strong> y el Proyecto queda en «finalizado con reservas». Puedes
+            cerrarlos tú antes si crees que no proceden.
+          </p>
+          {deGlobal.map((h) => (
+            <Hallazgo key={h.id} h={h} onNucleo={onNucleo} enCurso={enCurso} />
+          ))}
+        </>
+      )}
+
+      {cerrados.length > 0 && (
+        <div className="tarjeta">
+          <div className="fila">
+            <strong>Cerrados</strong>
+            <span className="pico">{cerrados.length}</span>
+            <span className="crece" />
+            <button className="pequeno" onClick={() => setVerCerrados(!verCerrados)}>
+              {verCerrados ? "ocultar" : "ver"}
+            </button>
+          </div>
+        </div>
+      )}
+      {verCerrados && cerrados.map((h) => (
+        <Hallazgo key={h.id} h={h} onNucleo={onNucleo} enCurso={enCurso} />
+      ))}
+    </>
+  );
+}
+
+function Novela({ p, onNucleo }) {
+  const total = (p.escenas || []).reduce((s, e) => s + e.palabras, 0);
+  return (
+    <>
+      <div className="tarjeta">
+        <div className="rejilla">
+          <Dato et="Escenas">{(p.escenas || []).length}</Dato>
+          <Dato et="Capítulos cerrados">{(p.capitulos || []).length}</Dato>
+          <Dato et="Palabras">{total}</Dato>
+        </div>
+      </div>
+      {p.entrega && (
+        <div className="tarjeta">
+          <div className="fila">
+            <h2 style={{ margin: 0 }}>La novela, entera</h2>
+            <span className="pico s-bien">{p.entrega.split(/\s+/).filter(Boolean).length} palabras</span>
+            <span className="crece" />
+            <button onClick={() => {
+              const url = URL.createObjectURL(new Blob([p.entrega], { type: "text/markdown" }));
+              const a = document.createElement("a");
+              a.href = url; a.download = "novela.md"; a.click();
+              URL.revokeObjectURL(url);
+            }}>Descargar novela.md</button>
+          </div>
+          <p className="pequeno tenue">
+            El texto tal como quedó ensamblado en la entrega, con sus capítulos en orden.
+          </p>
+          <div className="prosa" style={{ marginTop: 12 }}>
+            {p.entrega.split(/\n{2,}/).map((bloque, i) =>
+              bloque.startsWith("#")
+                ? <h3 key={i} style={{ marginTop: 20 }}>{bloque.replace(/^#+\s*/, "")}</h3>
+                : <p key={i}>{bloque}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <h3 style={{ marginTop: 24 }}>Las escenas, una a una</h3>
+      {(p.escenas || []).map((e) => (
+        <div className="tarjeta" key={e.escena}>
+          <div className="fila">
+            <strong className="mono pequeno">{e.escena}</strong>
+            <span className="pico">{e.palabras} palabras</span>
+            <span className="pico">{e.versiones} {e.versiones === 1 ? "versión" : "versiones"}</span>
+          </div>
+          <div className="prosa" style={{ marginTop: 10 }}>
+            {e.texto.split(/\n{2,}/).map((parrafo, i) => <p key={i}>{parrafo}</p>)}
+          </div>
+        </div>
+      ))}
+      {(p.capitulos || []).map((c) => (
+        <div className="tarjeta" key={c.capitulo}>
+          <h3>Sinopsis congelada · {c.capitulo}</h3>
+          <div className="prosa pequeno">
+            {c.sinopsis.split(/\n{2,}/).map((parrafo, i) => <p key={i}>{parrafo}</p>)}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Los siete parametros de la Guia de estilo. Los dos primeros son de lista
+// cerrada; el resto, texto libre. Lo que se deje en blanco queda sin preferencia,
+// que significa que no se evaluara, no que tenga un valor por defecto.
+const PARAMETROS_ESTILO = [
+  ["persona_narrativa", "Persona narrativa", ["primera", "tercera"]],
+  ["tiempo_verbal", "Tiempo verbal", ["pasado", "presente"]],
+  ["registro", "Registro", null],
+  ["densidad_descriptiva", "Densidad descriptiva", null],
+  ["recursos_apertura", "Recursos de apertura", null],
+  ["longitud_media_frase", "Longitud media de frase", null],
+  ["prohibiciones", "Prohibiciones", null],
+];
+
+function Compositor({ p, onNucleo, onProyectoNuevo, onIrA }) {
+  const [c, setC] = useState({
+    titulo: "", tipoSemilla: "idea", semilla: "", premisa: "",
+    desde: "", hasta: "", precision: "periodo", ambito: "",
+    palabras: "", capitulos: "", tolerancia: "0.1",
+    lineasPorParrafo: "", parrafosPorCapitulo: "", palabrasPorLinea: "",
+    sensibles: "", figuras: "",
+  });
+  const [estilo, setEstilo] = useState(
+    Object.fromEntries(PARAMETROS_ESTILO.map(([k]) => [k, ""])));
+  const [trabajando, setTrabajando] = useState("");
+  const [subido, setSubido] = useState(null);
+  const [fallo, setFallo] = useState("");
+  // Como acabo la ultima creacion. Sin esto la operacion funcionaba y no lo
+  // parecia: el nucleo creaba el Proyecto e ingeria el Encargo, y la pantalla se
+  // quedaba igual, con el formulario lleno y sin decir nada.
+  const [resultado, setResultado] = useState(null);
+  const [copiado, setCopiado] = useState(false);
+  const set = (k) => (e) => setC({ ...c, [k]: e.target.value });
+
+  // Hay algo que cerrar si el Proyecto elegido tiene borrador de Encargo y
+  // todavia ninguna version vigente. No depende de que lo hayas creado tu en
+  // esta misma pagina: el estado esta en el disco, no en el navegador.
+  const pendienteDeCerrar = Boolean(
+    p?.borrador_encargo && !p?.proyecto?.encargo_version_vigente);
+
+  // Muchos autores piensan la novela en parrafos y lineas. La palabra es la
+  // unidad canonica, asi que la conversion ocurre aqui, una vez, y se conserva
+  // el valor de origen con su factor: nada aguas abajo trabaja en lineas.
+  const porCapitulo = (() => {
+    const lin = Number(c.lineasPorParrafo), par = Number(c.parrafosPorCapitulo);
+    const ppl = Number(c.palabrasPorLinea);
+    if (!lin || !par || !ppl) return null;
+    return { lineas: lin * par, palabras: lin * par * ppl, palabrasPorLinea: ppl };
+  })();
+
+  const compuesto = (() => {
+    const e = { titulo_provisional: c.titulo || "" };
+    e.semillas = [{ tipo: c.tipoSemilla, texto_literal: c.semilla || "" }];
+    if (c.premisa) e.premisa = c.premisa;
+    if (c.desde || c.hasta) e.epoca = { desde: c.desde, hasta: c.hasta, precision: c.precision };
+    if (c.ambito) e.ambito_geografico = c.ambito;
+    const caps = Number(c.capitulos) || null;
+    if (porCapitulo) {
+      e.extension_por_capitulo = {
+        valor_palabras: porCapitulo.palabras,
+        valor_origen: porCapitulo.lineas,
+        unidad_origen: "lineas",
+        palabras_por_linea: porCapitulo.palabrasPorLinea,
+        origen: "conversion_declarada_en_captura",
+      };
+      if (caps) e.extension_objetivo_palabras = porCapitulo.palabras * caps;
+    } else if (c.palabras) {
+      e.extension_objetivo_palabras = Number(c.palabras);
+    }
+    if (caps) e.capitulos_objetivo = caps;
+    if (c.tolerancia) e.tolerancia_extension = Number(c.tolerancia);
+    if (c.sensibles) e.politica_hechos_sensibles = { valor: c.sensibles, origen: "autor" };
+    if (c.figuras) e.politica_figuras_reales = { valor: c.figuras, origen: "autor" };
+    e.guia_estilo = Object.fromEntries(PARAMETROS_ESTILO.map(([k]) => {
+      const v = (estilo[k] || "").trim();
+      if (!v) return [k, { valor: null, estado: "sin_preferencia" }];
+      return [k, { valor: /^[0-9]+$/.test(v) ? Number(v) : v, estado: "declarado" }];
+    }));
+    return e;
+  })();
+
+  const efectivo = subido ? subido.datos : compuesto;
+  const texto = JSON.stringify(efectivo, null, 2);
+  const sinDeclarar = PARAMETROS_ESTILO.filter(([k]) => !(estilo[k] || "").trim()).map(([, n]) => n);
+
+  // Crear el Proyecto es encadenar dos ordenes del nucleo, y la segunda solo
+  // tiene sentido si la primera fue bien. Si el nucleo rechaza cualquiera de las
+  // dos, se para aqui: la interfaz no arregla lo que el nucleo ha rechazado.
+  async function crearProyecto() {
+    setResultado(null);
+    setTrabajando("Creando…");
+    const titulo = (subido ? (subido.datos.titulo_provisional || "") : c.titulo).trim() || "Sin titulo";
+
+    const creado = await onNucleo("proyecto", "crear",
+      ["--titulo", titulo, "--modo", "revision_del_autor"], { conProyecto: false });
+    const id = creado?.datos?.proyecto?.id;
+    if (!id) {
+      setTrabajando("");
+      setResultado({ ok: false, paso: "crear el Proyecto", error: creado?.error });
+      return;
+    }
+
+    setTrabajando("Ingiriendo el Encargo…");
+    const ingerido = await onNucleo("encargo", "ingerir", ["--datos", texto], { proyecto: id });
+    setTrabajando("");
+
+    if (!ingerido?.ok) {
+      // El Proyecto existe pero se ha quedado sin Encargo: hay que decirlo, o el
+      // Autor se encuentra una carpeta vacia sin saber de donde ha salido.
+      setResultado({ ok: false, paso: "ingerir el Encargo", error: ingerido?.error, id, titulo });
+      onProyectoNuevo(id);
+      return;
+    }
+
+    setResultado({ ok: true, id, titulo });
+    onProyectoNuevo(id);
+  }
+
+  function copiar() {
+    navigator.clipboard.writeText(texto).then(() => {
+      setCopiado(true); setTimeout(() => setCopiado(false), 2000);
+    }).catch(() => setCopiado(false));
+  }
+
+  function descargar() {
+    const url = URL.createObjectURL(new Blob([texto], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = "encargo.json"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      <div className="tarjeta">
+        <h2>Componer el Encargo</h2>
+        <p className="pequeno tenue">
+          Rellena, sube un JSON que ya tengas, o las dos cosas. Al crear, el núcleo
+          levanta la carpeta del Proyecto entera e ingiere el Encargo.
+        </p>
+      </div>
+
+      <div className="tarjeta">
+        <h3>O sube un Encargo que ya tengas</h3>
+        <p className="pequeno tenue">
+          Un fichero JSON con los mismos campos. Si lo subes, manda sobre lo que hayas
+          rellenado abajo, y el núcleo rechazará nombrándolo cualquier campo que no
+          conozca: no lo ignora ni lo corrige por su cuenta.
+        </p>
+        <div className="fila" style={{ marginTop: 8 }}>
+          <input type="file" accept=".json,application/json"
+                 onChange={(e) => {
+                   const fichero = e.target.files && e.target.files[0];
+                   if (!fichero) return;
+                   const lector = new FileReader();
+                   lector.onload = () => {
+                     try {
+                       setSubido({ nombre: fichero.name, datos: JSON.parse(String(lector.result)) });
+                       setFallo("");
+                     } catch (err) {
+                       setSubido(null);
+                       setFallo(`${fichero.name} no es JSON válido: ${err.message}`);
+                     }
+                   };
+                   lector.onerror = () => setFallo("No se pudo leer el fichero");
+                   lector.readAsText(fichero, "utf-8");
+                 }} />
+          {subido && <button onClick={() => setSubido(null)}>Descartar y usar el formulario</button>}
+        </div>
+        {fallo && <p className="pequeno aviso" style={{ marginTop: 8 }}>{fallo}</p>}
+        {subido && (
+          <p className="pequeno" style={{ marginTop: 8 }}>
+            Usando <strong className="mono">{subido.nombre}</strong>. El formulario queda
+            ignorado mientras esté cargado.
+          </p>
+        )}
+      </div>
+
+      <div className="tarjeta">
+        <h3>De qué parte</h3>
+        <div className="fila">
+          <input className="crece" placeholder="Título provisional" value={c.titulo} onChange={set("titulo")} />
+          <select value={c.tipoSemilla} onChange={set("tipoSemilla")}>
+            {["idea", "personaje", "epoca", "inspiracion"].map((x) => <option key={x}>{x}</option>)}
+          </select>
+        </div>
+        <input style={{ width: "100%", marginTop: 8 }} value={c.semilla} onChange={set("semilla")}
+               placeholder="La semilla, con tus palabras: no se reescribe nunca" />
+        <textarea style={{ minHeight: 70, marginTop: 8 }} value={c.premisa} onChange={set("premisa")}
+                  placeholder="La premisa, en una o dos frases" />
+      </div>
+
+      <div className="tarjeta">
+        <h3>Época y lugar</h3>
+        <div className="fila">
+          <input style={{ width: 120 }} placeholder="desde" value={c.desde} onChange={set("desde")} />
+          <input style={{ width: 120 }} placeholder="hasta" value={c.hasta} onChange={set("hasta")} />
+          <select value={c.precision} onChange={set("precision")}>
+            {["periodo", "decada", "ano", "siglo"].map((x) => <option key={x}>{x}</option>)}
+          </select>
+          <input className="crece" placeholder="Ámbito geográfico" value={c.ambito} onChange={set("ambito")} />
+        </div>
+        <p className="pequeno tenue" style={{ marginTop: 8 }}>
+          Sin acotar la época no hay investigación posible, y casi todo lo demás depende de ella.
+        </p>
+      </div>
+
+      <div className="tarjeta">
+        <h3>Extensión</h3>
+        <div className="fila">
+          <label className="pequeno">Capítulos
+            <input style={{ width: 80, marginLeft: 6 }} value={c.capitulos} onChange={set("capitulos")} /></label>
+          <label className="pequeno">Tolerancia
+            <input style={{ width: 80, marginLeft: 6 }} value={c.tolerancia} onChange={set("tolerancia")} /></label>
+          <label className="pequeno">Palabras en total
+            <input style={{ width: 100, marginLeft: 6 }} value={c.palabras} onChange={set("palabras")}
+                   disabled={Boolean(porCapitulo)} /></label>
+        </div>
+        <h3>O en párrafos y líneas, y se convierte aquí</h3>
+        <div className="fila">
+          <label className="pequeno">Párrafos por capítulo
+            <input style={{ width: 70, marginLeft: 6 }} value={c.parrafosPorCapitulo} onChange={set("parrafosPorCapitulo")} /></label>
+          <label className="pequeno">Líneas por párrafo
+            <input style={{ width: 70, marginLeft: 6 }} value={c.lineasPorParrafo} onChange={set("lineasPorParrafo")} /></label>
+          <label className="pequeno">Palabras por línea
+            <input style={{ width: 70, marginLeft: 6 }} value={c.palabrasPorLinea} onChange={set("palabrasPorLinea")} /></label>
+        </div>
+        {porCapitulo && (
+          <p className="pequeno" style={{ marginTop: 10 }}>
+            <strong>
+              {porCapitulo.lineas} líneas por capítulo × {porCapitulo.palabrasPorLinea} = {porCapitulo.palabras} palabras
+            </strong>
+            {c.capitulos ? " · " + c.capitulos + " capítulos = " + (porCapitulo.palabras * Number(c.capitulos)) + " palabras en total" : ""}
+            <br />
+            <span className="tenue">
+              El factor queda declarado junto al valor de origen. La palabra es la unidad
+              canónica: la conversión ocurre una vez, aquí.
+            </span>
+          </p>
+        )}
+      </div>
+
+      <div className="tarjeta">
+        <h3>Políticas</h3>
+        <input style={{ width: "100%" }} value={c.sensibles} onChange={set("sensibles")}
+               placeholder="Hechos sensibles: cómo quieres que se traten si la trama los atraviesa" />
+        <input style={{ width: "100%", marginTop: 8 }} value={c.figuras} onChange={set("figuras")}
+               placeholder="Figuras reales: cómo quieres que aparezca quien existió de verdad" />
+      </div>
+
+      <div className="tarjeta">
+        <h3>Guía de estilo</h3>
+        <div className="rejilla">
+          {PARAMETROS_ESTILO.map(([k, nombre, opciones]) => (
+            <label key={k} className="pequeno">
+              {nombre}
+              {opciones
+                ? <select style={{ width: "100%", marginTop: 4 }} value={estilo[k]}
+                          onChange={(e) => setEstilo({ ...estilo, [k]: e.target.value })}>
+                    <option value="">sin preferencia</option>
+                    {opciones.map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                : <input style={{ width: "100%", marginTop: 4 }} value={estilo[k]} placeholder="sin preferencia"
+                         onChange={(e) => setEstilo({ ...estilo, [k]: e.target.value })} />}
+            </label>
+          ))}
+        </div>
+        {sinDeclarar.length > 0 && (
+          <p className="aviso pequeno" style={{ marginTop: 12 }}>
+            Quedan sin preferencia: {sinDeclarar.join(", ")}. Eso significa que <strong>no se
+            evaluarán</strong>, no que tengan un valor por defecto.
+          </p>
+        )}
+      </div>
+
+      <div className="tarjeta">
+        <div className="fila">
+          <h2 style={{ margin: 0 }}>El Encargo</h2>
+          <span className="crece" />
+          <button onClick={copiar}>{copiado ? "copiado" : "Copiar"}</button>
+          <button onClick={descargar}>Descargar encargo.json</button>
+        </div>
+        <pre className="sobre" style={{ maxHeight: 360 }}>{texto}</pre>
+      </div>
+
+      <div className="tarjeta">
+        <h2>Crear el Proyecto</h2>
+        <p className="pequeno tenue">
+          Crea la carpeta del Proyecto con todo lo que lleva dentro e ingiere este Encargo.
+          Lo hace el núcleo, que es el único que escribe: si algo no le cuadra, lo verás
+          aquí tal cual lo diga y no se creará a medias.
+        </p>
+        <div className="fila" style={{ marginTop: 10 }}>
+          <button className="principal"
+                  disabled={Boolean(trabajando) || (!subido && (!c.titulo.trim() || !c.semilla.trim()))}
+                  onClick={crearProyecto}>
+            {trabajando || "Crear el Proyecto e ingerir el Encargo"}
+          </button>
+        </div>
+        <p className="pequeno tenue" style={{ marginTop: 8 }}>
+          El Contexto histórico lo aceptas tú y el Canon lo apruebas tú en PC-3. Ninguna
+          etapa de validación juzga por ti: es el único modo que hay.
+        </p>
+        {!subido && (!c.titulo.trim() || !c.semilla.trim()) && (
+          <p className="pequeno aviso" style={{ marginTop: 8 }}>
+            Hacen falta al menos el título provisional y la semilla, o un fichero subido.
+          </p>
+        )}
+
+        {resultado && resultado.ok && (
+          <div className="tarjeta" style={{ borderColor: "var(--marca)", marginTop: 12 }}>
+            <div className="fila">
+              <span className="pico s-bien">creado</span>
+              <strong>{resultado.titulo}</strong>
+              <span className="crece" />
+              <span className="mono pequeno tenue">{resultado.id}</span>
+            </div>
+            <p className="pequeno tenue" style={{ marginTop: 8 }}>
+              El núcleo ha levantado la carpeta del Proyecto y ha ingerido el Encargo, que
+              queda como <strong>borrador</strong>. Falta confirmarlo abajo: un fichero no
+              confirma nada por sí solo, y sin Encargo cerrado la Ejecución no arranca.
+            </p>
+            <div className="fila" style={{ marginTop: 8 }}>
+              <button onClick={() => onIrA && onIrA("proceso")}>Ir a Proceso</button>
+              <button onClick={() => onIrA && onIrA("estado")}>Ver su Estado</button>
+            </div>
+          </div>
+        )}
+
+        {resultado && !resultado.ok && (
+          <div className="tarjeta" style={{ marginTop: 12 }}>
+            <p className="pequeno aviso">
+              <strong>No se pudo {resultado.paso}.</strong>{" "}
+              {resultado.error
+                ? `${resultado.error.codigo}: ${resultado.error.mensaje}`
+                : "El núcleo no devolvió un sobre legible."}
+            </p>
+            {resultado.id && (
+              <p className="pequeno tenue">
+                El Proyecto <span className="mono">{resultado.id}</span> sí se creó, y se ha
+                quedado sin Encargo. Corrige lo que dice el núcleo y vuelve a ingerirlo, o
+                bórralo a mano de <code>proyectos/</code>.
+              </p>
+            )}
+          </div>
+        )}
+
+        {pendienteDeCerrar && (
+          <>
+            <p className="pequeno" style={{ marginTop: 14 }}>
+              El Proyecto <strong className="mono">{p.proyecto.id}</strong> tiene un Encargo
+              ingerido y sin cerrar. Falta confirmarlo: un fichero no confirma nada por sí
+              mismo, y sin Encargo cerrado no se puede arrancar la Ejecución.
+            </p>
+            <div className="fila">
+
+              <button onClick={() => onNucleo("encargo", "presentar")}>Presentar</button>
+              <button className="principal"
+                      onClick={() => onNucleo("encargo", "confirmar", ["--quien", AUTOR])}>
+                PC-2 · Confirmar el Encargo
+              </button>
+            </div>
+          </>
+        )}
+        {p?.proyecto?.encargo_version_vigente && (
+          <p className="pequeno" style={{ marginTop: 14 }}>
+            El Proyecto <strong className="mono">{p.proyecto.id}</strong> ya tiene el Encargo{" "}
+            <span className="mono">{p.proyecto.encargo_version_vigente}</span> cerrado. Lo
+            siguiente ocurre en <em>Proceso</em>.
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Como se llama cada subagente cuando hay que ensenarselo a una persona. El
+// identificador tecnico no dice nada: «sm-refinador» y «Refinador (E6)» cuestan
+// lo mismo de escribir y solo uno se entiende sin abrir la documentacion.
+const NOMBRE_DE_ETAPA = {
+  "sm-entrada": "Entrada · E1",
+  "sm-investigacion": "Investigación · E2",
+  "sm-diseno": "Diseño del Canon · E3",
+  "sm-redactor": "Redactor · E5",
+  "sm-refinador": "Refinador · E6",
+  "sm-validador": "Validador · E7",
+  "sm-global": "Pasada global · E8",
+  conductor: "Conductor del tramo",
+};
+
+function minutos(desde, hasta) {
+  if (!desde) return "";
+  const a = new Date(desde).getTime();
+  const b = hasta ? new Date(hasta).getTime() : Date.now();
+  const s = Math.max(0, Math.round((b - a) / 1000));
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+}
+
+// Quien esta despachado ahora mismo y quien ya volvio. Es lo que contesta a
+// «esto sigue vivo o se ha colgado»: el registro en crudo lo dice tambien, pero
+// enterrado entre cientos de lineas que solo ponen «-> Bash».
+function Agenda({ paso }) {
+  const [crudo, setCrudo] = useState(false);
+  const agenda = paso.agenda || [];
+  const trabajando = agenda.filter((x) => x.estado === "en_curso");
+  const historia = agenda.filter((x) => x.estado !== "en_curso").slice().reverse();
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      {paso.estado === "en_curso" && (
+        trabajando.length ? (
+          trabajando.map((x, i) => (
+            <div className="fila" key={x.id || i} style={{ marginBottom: 4 }}>
+              <span className="pico s-mayor">trabajando</span>
+              <strong>{NOMBRE_DE_ETAPA[x.quien] || x.quien}</strong>
+              <span className="pequeno tenue">{x.que}</span>
+              <span className="crece" />
+              <span className="pequeno tenue">{minutos(x.desde, null)}</span>
+            </div>
+          ))
+        ) : (
+          <p className="pequeno tenue">
+            Ningún subagente despachado en este instante: el conductor del tramo está
+            leyendo o llamando al núcleo entre una etapa y la siguiente.
+          </p>
+        )
+      )}
+
+      {historia.length > 0 && (
+        <table style={{ marginTop: 10 }}>
+          <thead><tr><th>Quién</th><th>Qué</th><th>Duró</th></tr></thead>
+          <tbody>
+            {historia.slice(0, 40).map((x, i) => (
+              <tr key={x.id || i}>
+                <td className="pequeno">
+                  {x.estado === "error" && <span className="pico s-bloqueante">error</span>}{" "}
+                  {NOMBRE_DE_ETAPA[x.quien] || x.quien}
+                </td>
+                <td className="pequeno tenue">{x.que || "—"}</td>
+                <td className="pequeno tenue">{minutos(x.desde, x.hasta)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {historia.length > 40 && (
+        <p className="pequeno tenue">Y {historia.length - 40} llamadas anteriores.</p>
+      )}
+
+      {agenda.length === 0 && paso.estado !== "pendiente" && (
+        <p className="pequeno tenue">
+          Sin llamadas registradas. Las tiradas arrancadas antes de este cambio no las
+          anotaron: se verán en la siguiente.
+        </p>
+      )}
+
+      {(paso.salida_viva || paso.sobre) && (
+        <>
+          <button className="pequeno" style={{ marginTop: 10 }}
+                  onClick={() => setCrudo(!crudo)}>
+            {crudo ? "Ocultar el registro en crudo" : "Ver el registro en crudo"}
+          </button>
+          {crudo && (
+            <pre className="sobre" style={{ maxHeight: 300 }}>
+              {(paso.salida_viva || []).length
+                ? paso.salida_viva.join("\n")
+                : (typeof paso.sobre?.datos?.salida === "string" && paso.sobre.datos.salida)
+                  || JSON.stringify(paso.sobre?.datos ?? paso.sobre?.error ?? {}, null, 1)}
+            </pre>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// El flujo de agentes tal como quedo registrado en el Run Ledger. A diferencia
+// del panel en vivo de cada paso, esto vive en disco: sobrevive a reiniciar el
+// servidor y existe para las Ejecuciones de antes. Es el registro del que uno se
+// puede fiar; el de arriba es el que enseña lo que pasa ahora mismo.
+function Flujo({ proyecto }) {
+  const [datos, setDatos] = useState(null);
+  const [abierto, setAbierto] = useState(true);
+
+  const refrescar = useCallback(async () => {
+    if (!proyecto) return;
+    const r = await traer(`/api/flujo/${proyecto}`);
+    if (r.ok) setDatos(r.ejecuciones || []);
+  }, [proyecto]);
+
+  useEffect(() => {
+    refrescar();
+    const t = setInterval(refrescar, 5000);
+    return () => clearInterval(t);
+  }, [refrescar]);
+
+  if (!datos) return null;
+  const total = datos.reduce((n, e) => n + e.pasos.filter((x) => x.clase === "unidad").length, 0);
+  if (!total) return null;
+
+  return (
+    <div className="tarjeta">
+      <div className="fila">
+        <strong>El flujo de agentes</strong>
+        <span className="pico">{total} unidades de trabajo</span>
+        <span className="crece" />
+        <button className="pequeno" onClick={() => setAbierto(!abierto)}>
+          {abierto ? "ocultar" : "ver"}
+        </button>
+      </div>
+      <p className="pequeno tenue" style={{ marginTop: 6 }}>
+        Sale del Run Ledger, no de la memoria del servidor: está en disco y no se pierde
+        al reiniciar. Cada fila es una unidad de trabajo — un subagente sobre una escena,
+        un capítulo o el Canon — con lo que tardó y cómo terminó.
+      </p>
+
+      {abierto && datos.map((eje) => (
+        <div key={eje.ejecucion} style={{ marginTop: 12 }}>
+          <p className="pequeno tenue mono">{eje.ejecucion}</p>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Quién</th><th>Sobre</th><th>Duró</th><th>Cómo terminó</th></tr>
+            </thead>
+            <tbody>
+              {eje.pasos.map((x, i) => {
+                if (x.clase === "error") {
+                  return (
+                    <tr key={i}>
+                      <td className="pequeno tenue">—</td>
+                      <td colSpan={4} className="pequeno aviso">
+                        {x.codigo}: {x.mensaje}
+                        {x.comando ? <span className="tenue"> · al llamar a «{x.comando}»</span> : null}
+                      </td>
+                    </tr>
+                  );
+                }
+                if (x.clase === "parada") {
+                  return (
+                    <tr key={i}>
+                      <td className="pequeno tenue">—</td>
+                      <td colSpan={4} className="pequeno">
+                        <span className="pico s-mayor">parada</span> El Autor decide: {x.sobre}
+                      </td>
+                    </tr>
+                  );
+                }
+                return (
+                  <tr key={i}>
+                    <td className="pequeno tenue">{i + 1}</td>
+                    <td className="pequeno">
+                      <strong>{NOMBRE_DE_ETAPA[x.quien] || x.quien}</strong>
+                      {x.intento > 1 && <span className="pico"> intento {x.intento}</span>}
+                    </td>
+                    <td className="pequeno mono">{x.sobre}</td>
+                    <td className="pequeno tenue">{minutos(x.desde, x.hasta || null)}</td>
+                    <td className="pequeno">
+                      {x.estado === "en_curso" ? (
+                        <span className="pico s-mayor">sin cerrar</span>
+                      ) : (
+                        <>
+                          <span className="pico s-bien">{x.modo_cierre || "hecho"}</span>
+                          {x.iteraciones > 1 && (
+                            <span className="tenue"> · {x.iteraciones} iteraciones</span>
+                          )}
+                          {x.deuda && <span className="pico s-mayor">deuda</span>}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {eje.abiertas > 0 && (
+            <p className="pequeno tenue">
+              {eje.abiertas} {eje.abiertas === 1 ? "unidad quedó abierta" : "unidades quedaron abiertas"}:
+              la sesión murió antes de cerrarlas, o siguen corriendo ahora mismo.
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Proceso({ p, onNucleo }) {
+  const proyecto = p?.proyecto?.id;
+  const [proceso, setProceso] = useState(null);
+  const [coste, setCoste] = useState("25");
+  const [iteraciones, setIteraciones] = useState("40");
+  const [error, setError] = useState(null);
+
+  const refrescar = useCallback(async () => {
+    const r = await traer("/api/procesos");
+    if (!r.ok) return;
+    const mios = r.procesos.filter((x) => x.proyecto === proyecto);
+    setProceso(mios.length ? mios[mios.length - 1] : null);
+  }, [proyecto]);
+
+  useEffect(() => {
+    refrescar();
+    const t = setInterval(refrescar, 3000);
+    return () => clearInterval(t);
+  }, [refrescar]);
+
+  async function arrancar() {
+    setError(null);
+    const r = await enviar("/api/proceso", {
+      proyecto, coste: Number(coste), iteraciones: Number(iteraciones),
+    });
+    if (!r.ok) setError(r.error);
+    refrescar();
+  }
+
+  const corriendo = proceso && ["en_curso", "esperando_al_autor"].includes(proceso.estado);
+  // Cerrada la Novela no hay nada que arrancar: los tres tramos estan hechos y el
+  // nucleo rechazaria cada paso. Ensenar el boton invita a gastar una sesion para
+  // que la deniegue la primera puerta.
+  const cerrada = ["finalizado", "finalizado_con_reservas"].includes(p?.proyecto?.estado);
+  const conReservas = p?.proyecto?.estado === "finalizado_con_reservas";
+  const pasos = proceso?.pasos || [];
+  const hechos = pasos.filter((x) => x.estado === "hecho").length;
+  const enCurso = pasos.find((x) => x.estado === "en_curso");
+  const esperandoPaso = pasos.find((x) => x.estado === "esperando");
+
+  const color = (e) => e === "hecho" ? "s-bien"
+    : e === "fallido" ? "s-bloqueante"
+    : e === "en_curso" ? "s-mayor"
+    : e === "esperando" ? "s-mayor" : "s-menor";
+
+  return (
+    <>
+      <div className="tarjeta">
+        <h2>La Ejecución</h2>
+        <p className="pequeno tenue">
+          Son <strong>tres tramos</strong> y <strong>dos paradas</strong>. Cada tramo es
+          una sola sesión que hace su trecho seguido, despachando subagentes; en cada
+          parada el trabajo se detiene y no sigue hasta que tú decides.
+        </p>
+        <ol className="pequeno tenue" style={{ marginTop: 6, paddingLeft: 18 }}>
+          <li>Investiga y deriva las Restricciones de época. <strong>Para.</strong> Tú
+              revisas en <em>Contexto histórico</em>: firmas, o descartas lo que no te vale.</li>
+          <li>Cierra el Contexto y construye el Canon. <strong>Para.</strong> Tú lo
+              apruebas en <em>Canon</em>.</li>
+          <li>Redacta, refina, valida capítulo a capítulo y entrega.</li>
+        </ol>
+        {!cerrada && (
+          <p className="pequeno tenue">
+            Las etapas son subagentes reales: cada una tarda minutos y gasta presupuesto de
+            verdad. Una Ejecución cortada se puede relanzar y continúa por donde iba.
+          </p>
+        )}
+
+        {cerrada ? (
+          <div className="fila" style={{ marginTop: 10 }}>
+            <span className="pico s-bien">
+              {conReservas ? "finalizada con reservas" : "finalizada"}
+            </span>
+            <span className="pequeno tenue">
+              La Novela está cerrada y entregada. No hay nada que arrancar: los tres tramos
+              están hechos{conReservas ? ", con Deuda de calidad registrada" : ""}. El texto
+              completo está en <strong>Novela</strong>.
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className="fila" style={{ marginTop: 10 }}>
+              <label className="pequeno">Coste
+                <input style={{ width: 80, marginLeft: 6 }} value={coste}
+                       onChange={(e) => setCoste(e.target.value)} /></label>
+              <label className="pequeno">Iteraciones
+                <input style={{ width: 80, marginLeft: 6 }} value={iteraciones}
+                       onChange={(e) => setIteraciones(e.target.value)} /></label>
+              <button className="principal" disabled={corriendo} onClick={arrancar}>
+                {corriendo ? "En curso…" : "Arrancar"}
+              </button>
+              {corriendo && (
+                <button onClick={() => enviar("/api/proceso-parar", { proceso: proceso.id }).then(refrescar)}>
+                  Parar
+                </button>
+              )}
+            </div>
+            <p className="pequeno tenue" style={{ marginTop: 6 }}>
+              <strong>Coste</strong> e <strong>iteraciones</strong> son el presupuesto de la
+              Ejecución: cuánto puede gastar y cuántas vueltas de refinado puede dar antes de
+              agotarse. <strong>Parar</strong> mata la etapa en curso; lo que el núcleo ya
+              haya guardado se queda.
+            </p>
+          </>
+        )}
+        {error && <p className="aviso pequeno" style={{ marginTop: 10 }}>{error.codigo}: {error.mensaje}</p>}
+      </div>
+
+      {proceso && (
+        <div className="tarjeta">
+          <div className="fila">
+            <span className={"pico " + color(proceso.estado === "terminado" ? "hecho" : proceso.estado)}>
+              {proceso.estado}
+            </span>
+            <strong>{hechos} de {pasos.length} pasos</strong>
+            <span className="crece" />
+            <span className="pequeno tenue mono">{proceso.id}</span>
+          </div>
+          {proceso.esperando && (
+            <p className="pequeno aviso" style={{ marginTop: 8 }}>
+              Detenida, esperándote. Ve a la pestaña que dice el paso de abajo y decide
+              ahí; no se reanuda sola.
+            </p>
+          )}
+          {enCurso && (
+            <p className="pequeno tenue" style={{ marginTop: 8 }}>
+              Lleva {minutos(enCurso.empezado_en, null)} trabajando en «{enCurso.titulo}».
+            </p>
+          )}
+          {esperandoPaso && (
+            <p className="pequeno tenue" style={{ marginTop: 8 }}>
+              Lleva <strong>{minutos(esperandoPaso.empezado_en, null)}</strong> esperándote.
+              Ese tiempo no cuenta: el arnés está quieto y no consume presupuesto.
+            </p>
+          )}
+        </div>
+      )}
+
+      <Flujo proyecto={proyecto} />
+
+      {pasos.map((paso) => (
+        <div className="tarjeta" key={paso.clave}>
+          <div className="fila">
+            <span className={"pico " + color(paso.estado)}>{paso.estado}</span>
+            <strong>{paso.titulo}</strong>
+            <span className="crece" />
+            <span className="pequeno tenue">{paso.terminado_en || paso.empezado_en || ""}</span>
+          </div>
+          <p className="pequeno tenue" style={{ marginTop: 6 }}>{paso.detalle}</p>
+          {paso.estado === "esperando" && paso.pestana && (
+            <p className="pequeno aviso">
+              Te toca a ti, en la pestaña <strong>{paso.pestana}</strong>.
+            </p>
+          )}
+          {paso.sobre && !paso.sobre.ok && (
+            <p className="pequeno aviso">
+              {paso.sobre.error?.codigo}: {paso.sobre.error?.mensaje}
+            </p>
+          )}
+          {paso.tipo === "etapa" && paso.estado !== "pendiente" && <Agenda paso={paso} />}
+        </div>
+      ))}
+    </>
+  );
+}
+
+const PESTANAS = [
+  ["componer", "Componer Encargo", Compositor],
+  ["proceso", "Proceso", Proceso],
+  ["estado", "Estado", Estado], ["contexto", "Contexto histórico", Contexto],
+  ["canon", "Canon", Canon], ["hallazgos", "Hallazgos", Hallazgos],
+  ["novela", "Novela", Novela],
+];
+
+function App() {
+  const [proyectos, setProyectos] = useState([]);
+  const [elegido, setElegido] = useState("");
+  const [panel, setPanel] = useState(null);
+  const [pestana, setPestana] = useState("estado");
+  const [sobre, setSobre] = useState(null);
+  // De que pestana salio la llamada. El sobre es la respuesta a algo que
+  // pulsaste ahi: ensenarlo en las demas confunde, porque parece el resultado
+  // de lo que estas mirando y no lo es.
+  const [pestanaDelSobre, setPestanaDelSobre] = useState(null);
+  const [tema, setTema] = useState(() => {
+    try { return localStorage.getItem("sm-tema") || "auto"; } catch { return "auto"; }
+  });
+
+  useEffect(() => {
+    if (tema === "auto") document.documentElement.removeAttribute("data-tema");
+    else document.documentElement.setAttribute("data-tema", tema);
+    try { localStorage.setItem("sm-tema", tema); } catch { /* sin almacenamiento, da igual */ }
+  }, [tema]);
+
+  const recargarProyectos = useCallback(async (seleccionar) => {
+    const r = await traer("/api/proyectos");
+    if (!r.ok) return;
+    setProyectos(r.proyectos);
+    if (seleccionar) setElegido(seleccionar);
+    else if (r.proyectos.length && !elegido) setElegido(r.proyectos[r.proyectos.length - 1].id);
+  }, [elegido]);
+
+  useEffect(() => { recargarProyectos(); }, []);
+
+  const refrescar = useCallback(() => {
+    if (!elegido) return;
+    traer(`/api/panel/${elegido}`).then((r) => setPanel(r.ok ? r : null));
+  }, [elegido]);
+
+  useEffect(refrescar, [refrescar]);
+
+  // Si un proceso esta detenido esperando una decision, la pestana donde se
+  // decide tiene que enterarse. Se sondea aparte del panel porque cambia solo.
+  const [esperando, setEsperando] = useState(null);
+  // Si un tramo esta corriendo, el arnes esta trabajando en lo que haya abierto y
+  // el Autor no tiene que intervenir. Ofrecerle cerrarlo seria invitarle a pisar
+  // un trabajo en marcha.
+  const [enCurso, setEnCurso] = useState(false);
+  useEffect(() => {
+    if (!elegido) { setEsperando(null); setEnCurso(false); return; }
+    let vivo = true;
+    const mirar = async () => {
+      const r = await traer("/api/procesos");
+      if (!vivo || !r.ok) return;
+      const mio = r.procesos.filter((x) => x.proyecto === elegido).pop();
+      setEnCurso(Boolean(mio && mio.estado === "en_curso"));
+      if (mio && mio.esperando) {
+        const paso = (mio.pasos || []).find((x) => x.clave === mio.esperando) || {};
+        setEsperando({ proceso: mio.id, paso: mio.esperando, detalle: paso.detalle || "" });
+      } else setEsperando(null);
+    };
+    mirar();
+    const t = setInterval(mirar, 3000);
+    return () => { vivo = false; clearInterval(t); };
+  }, [elegido, sobre]);
+
+  const onNucleo = useCallback(async (grupo, accion, opciones = [], ajustes = {}) => {
+    setSobre({ ok: true, datos: { estado: "invocando el núcleo…" } });
+    setPestanaDelSobre(pestana);
+    const r = await enviar("/api/nucleo", {
+      proyecto: ajustes.conProyecto === false ? null : (ajustes.proyecto || elegido),
+      grupo, accion, opciones,
+    });
+    setSobre(r);
+    refrescar();
+    return r;
+  }, [elegido, refrescar, pestana]);
+
+  const onProyectoNuevo = useCallback((id) => {
+    recargarProyectos(id);
+  }, [recargarProyectos]);
+
+  const Vista = (PESTANAS.find(([id]) => id === pestana) || PESTANAS[0])[2];
+
+  return (
+    <div className="marco">
+      <header className="cabecera">
+        <Logo />
+        <h1>StoryMaker <small>el núcleo es el único que escribe</small></h1>
+        <span className="crece" />
+        <select value={elegido} onChange={(e) => { setElegido(e.target.value); setSobre(null); }}>
+          {proyectos.length === 0 && <option value="">sin Proyectos</option>}
+          {proyectos.map((p) => <option key={p.id} value={p.id}>{p.titulo_provisional}</option>)}
+        </select>
+        <select value={tema} onChange={(e) => setTema(e.target.value)} title="Tema">
+          <option value="auto">auto</option><option value="claro">claro</option><option value="oscuro">oscuro</option>
+        </select>
+        <button onClick={refrescar}>Refrescar</button>
+      </header>
+
+      <nav className="pestanas">
+        {PESTANAS.map(([id, nombre]) => (
+          <button key={id} aria-selected={pestana === id} disabled={!elegido && id !== "componer"}
+                  onClick={() => setPestana(id)}>{nombre}</button>
+        ))}
+      </nav>
+
+      <Sobre sobre={pestanaDelSobre === pestana ? sobre : null} />
+
+      {pestana === "componer"
+        ? <Compositor p={panel} onNucleo={onNucleo} onProyectoNuevo={onProyectoNuevo}
+                      onIrA={setPestana} />
+        : !elegido
+        ? <div className="tarjeta">
+            <p>No hay ningún Proyecto bajo <code>proyectos/</code>.</p>
+            <p className="pequeno tenue">
+              Los Proyectos se crean y el Encargo se captura desde la terminal, con
+              <code> /encargo</code>. Esta interfaz es para conducir lo que ya existe.
+            </p>
+          </div>
+          : panel
+            ? <Vista p={panel} onNucleo={onNucleo} esperando={esperando} enCurso={enCurso} />
+            : <p className="tenue">Cargando el Proyecto…</p>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("raiz")).render(<App />);
+</script>
+</body>
+</html>

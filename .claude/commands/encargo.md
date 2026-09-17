@@ -24,7 +24,7 @@ interrogatorio. Despacha el subagente `sm-entrada`, que lo conduce.
 Si no existe todavia un Proyecto, crealo antes:
 
 ```
-storymaker proyecto crear --titulo "<titulo provisional>" --modo asistido
+storymaker proyecto crear --titulo "<titulo provisional>" --modo revision_del_autor
 ```
 
 Al terminar, muestra al Autor:

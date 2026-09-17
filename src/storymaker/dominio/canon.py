@@ -169,7 +169,12 @@ def aprobar(
         },
     })
     proyecto.almacen.escribir_json(proyecto.almacen.plan_canon(version), aprobado)
-    proyecto.guardar(canon_estado=APROBADO, etapa="Piloto")
+    # Aprobar el Canon **es** arrancar la produccion desde que se retiro la escena
+    # piloto: antes quedaba una etapa intermedia en la que el Autor aceptaba el
+    # piloto, y era esa aceptacion la que movia el estado del Proyecto. Sin ella,
+    # mover solo la etapa dejaba el Proyecto en `en_diseno` con etapa `Produccion`,
+    # que es una contradiccion visible en cualquier pantalla de estado.
+    proyecto.guardar(estado=EN_PRODUCCION, canon_estado=APROBADO, etapa="Produccion")
 
     if asumidos:
         proyecto.limitar_a_reservas(
@@ -269,14 +274,8 @@ def _fichas_por_capitulo(plan: dict[str, Any]) -> dict[str, Any]:
 
 
 def arrancar_produccion(proyecto: Proyecto) -> dict[str, Any]:
-    """Transicion a produccion tras aceptarse el piloto (INV-9)."""
+    """Transicion a produccion. La unica puerta es el Canon aprobado (INV-1)."""
     proyecto.exigir_canon_aprobado()
-    if not proyecto.estado.piloto_aceptado:
-        raise ErrorStoryMaker(
-            "ERR-502",
-            "Ninguna escena se produce en serie antes de que el piloto haya sido "
-            "aceptado por el Autor (INV-9, RF-046)",
-        )
     proyecto.guardar(estado=EN_PRODUCCION, etapa="Produccion")
     return {"estado": proyecto.estado.como_dict()}
 

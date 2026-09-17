@@ -25,9 +25,9 @@ un fragmento del texto, que es lo que tiene delante quien revisa una novela:
 storymaker --proyecto <prj> traza afirmacion --consulta "$ARGUMENTS"
 ```
 
-Presenta: la afirmacion del Contexto que la sostiene, su veredicto de fidelidad, su
-veredicto de refutacion, las Restricciones que derivan de ella, y sus fuentes **con
-el contenido conservado**.
+Presenta: la afirmacion del Contexto que la sostiene, su estado --- vigente o
+descartada ---, las Restricciones que derivan de ella, y sus fuentes **con el
+contenido conservado**.
 
 El contenido conservado es lo que hace que esto siga funcionando meses despues: un
 localizador puede haber muerto, y la trazabilidad no puede depender de que una

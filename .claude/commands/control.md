@@ -4,7 +4,7 @@ argument-hint: "[pct_xxxxx <decision>]"
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 
-Puntos de control (PC-1 a PC-8). Argumento recibido: `$ARGUMENTS`
+Puntos de control (PC-1 a PC-7). Argumento recibido: `$ARGUMENTS`
 
 ## Sin argumentos: lista lo pendiente
 
@@ -22,7 +22,6 @@ bloqueo.
 | PC-4 | Aceptar o rechazar una replanificacion, con los capitulos que invalida |
 | PC-5 | Bloqueo irresoluble: evitar el detalle, aportar fuente, autorizar licencia o modificar el Encargo |
 | PC-6 | Agotamiento con bloqueantes: aceptar la deuda, ampliar presupuesto o abandonar |
-| PC-8 | El piloto: aceptar, ajustar el estilo y repetir, o volver al Canon |
 
 ## Con argumentos: resuelve
 

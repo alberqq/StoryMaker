@@ -69,9 +69,6 @@
       "type": "integer",
       "minimum": 1
     },
-    "es_piloto": {
-      "type": "boolean"
-    },
     "protegido_palabras": {
       "type": "integer",
       "minimum": 0
@@ -154,7 +151,6 @@
     "palabras",
     "canon_plan_version",
     "udt_origen",
-    "es_piloto",
     "protegido_palabras"
   ],
   "additionalProperties": false

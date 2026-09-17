@@ -200,9 +200,16 @@ def test_contexto_rechaza_laguna_sin_impacto_evaluado():
     )
 
 
-def test_contexto_rechaza_afirmacion_en_alcance_sin_veredicto():
+def test_contexto_cierra_sin_ninguna_refutacion():
+    """Refutar dejo de ser obligatorio para cerrar el Contexto.
+
+    El Autor retiro la pasada de refutacion junto con la verificacion de fidelidad:
+    el Contexto se obtiene por busqueda en internet y el aparato adversarial encima
+    costaba mas de lo que corregia. Lo que sigue en pie es que un veredicto
+    emitido este bien formado, no que exista.
+    """
     cabecera, afirmaciones, _, restricciones = _contexto_valido()
-    assert "RF-102" in requisitos(comprobar_contexto(cabecera, afirmaciones, [], restricciones))
+    assert comprobar_contexto(cabecera, afirmaciones, [], restricciones) == []
 
 
 def test_contexto_rechaza_fuente_contraria_que_es_la_propia_fuente():
@@ -230,38 +237,64 @@ def test_contexto_rechaza_figura_referenciada_sin_ficha():
 
 
 # ==========================================================================
-# MD-7: de que puede derivarse una Restriccion
+# De que puede derivarse una Restriccion
 # ==========================================================================
 
 
-@pytest.mark.parametrize("veredicto", ["refutada", "disputada", "no_refutable_documentalmente"])
-def test_restriccion_comprobable_no_deriva_de_veredicto_que_no_la_sostiene(veredicto):
-    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "verificada", "estado": "vigente"}}
-    refutaciones = {"aff_1": {"veredicto": veredicto}}
+@pytest.mark.parametrize("fidelidad", ["pendiente", "no_verificable", "no_sostenida"])
+def test_restriccion_comprobable_deriva_sin_verificar(fidelidad):
+    """La verificacion de fidelidad dejo de ser puerta.
+
+    El Contexto se obtiene por busqueda en internet, que ya devuelve la fuente con
+    lo que dice. Exigir encima dos pasadas de modelo por afirmacion costaba mas de
+    lo que corregia, y el Autor retiro la puerta.
+    """
+    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": fidelidad, "estado": "vigente"}}
     restriccion = {
         "id": "rst_1", "categoria": "material", "afirmacion_id": "aff_1", "comprobable": True
     }
-    assert comprobar_derivacion_restriccion(restriccion, afirmaciones, refutaciones)
+    assert comprobar_derivacion_restriccion(restriccion, afirmaciones, {}) == []
 
 
-def test_restriccion_cualitativa_si_deriva_de_no_refutable_documentalmente():
-    """El veredicto no es una confirmacion, pero si admite criterio cualitativo."""
-    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "no_verificable", "estado": "vigente"}}
-    refutaciones = {"aff_1": {"veredicto": "no_refutable_documentalmente"}}
-    restriccion = {
-        "id": "rst_1", "categoria": "mentalidad", "afirmacion_id": "aff_1", "comprobable": False
-    }
-    assert comprobar_derivacion_restriccion(restriccion, afirmaciones, refutaciones) == []
-
-
-def test_restriccion_comprobable_no_deriva_de_fidelidad_no_verificada():
-    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "no_sostenida", "estado": "vigente"}}
-    refutaciones = {"aff_1": {"veredicto": "confirmada"}}
+def test_restriccion_comprobable_deriva_sin_veredicto_de_refutacion():
+    """Tampoco hace falta que nadie haya intentado refutarla."""
+    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "pendiente", "estado": "vigente"}}
     restriccion = {
         "id": "rst_1", "categoria": "lexica", "afirmacion_id": "aff_1", "comprobable": True
     }
-    fallos = comprobar_derivacion_restriccion(restriccion, afirmaciones, refutaciones)
-    assert "RF-100" in requisitos(fallos)
+    assert comprobar_derivacion_restriccion(restriccion, afirmaciones, {}) == []
+
+
+def test_restriccion_no_deriva_de_afirmacion_refutada():
+    """Lo unico que se conserva: lo que cuelga de algo refutado, cae.
+
+    Si alguien marca una afirmacion como refutada --- a mano o por una pasada
+    adversarial --- las Restricciones que dependian de ella dejan de sostenerse.
+    """
+    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "verificada", "estado": "refutada"}}
+    restriccion = {
+        "id": "rst_1", "categoria": "material", "afirmacion_id": "aff_1", "comprobable": True
+    }
+    fallos = comprobar_derivacion_restriccion(restriccion, afirmaciones, {})
+    assert "ERR-606" in {f.como_dict()["codigo"] for f in fallos}
+
+
+def test_restriccion_sigue_exigiendo_ser_trazable_a_una_afirmacion():
+    """Una Restriccion que no viene de ninguna parte no se puede defender."""
+    restriccion = {
+        "id": "rst_1", "categoria": "material", "afirmacion_id": "aff_inexistente",
+        "comprobable": True,
+    }
+    fallos = comprobar_derivacion_restriccion(restriccion, {}, {})
+    assert "RF-016" in requisitos(fallos)
+
+
+def test_restriccion_cualitativa_deriva_igual():
+    afirmaciones = {"aff_1": {"id": "aff_1", "fidelidad": "no_verificable", "estado": "vigente"}}
+    restriccion = {
+        "id": "rst_1", "categoria": "mentalidad", "afirmacion_id": "aff_1", "comprobable": False
+    }
+    assert comprobar_derivacion_restriccion(restriccion, afirmaciones, {}) == []
 
 
 # ==========================================================================

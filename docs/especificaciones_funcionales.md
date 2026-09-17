@@ -22,7 +22,7 @@ La contribución de esta especificación sobre las entradas recibidas es hacer o
 
 **Riesgo residual declarado.** El ámbito histórico queda sin acotar (D8) y el corpus indexado es de naturaleza enciclopédica general. Esto hace que la cobertura documental varíe mucho de un período a otro y que el objetivo del 90 % de RNF-004 no sea alcanzable de forma uniforme. La mitigación no es medir la cobertura —un recuento de afirmaciones con fuente mide lo que el sistema decidió afirmar, no lo que la novela necesita saber— sino someter lo afirmado a contradicción: RF-102 obliga a buscar activamente las fuentes que desmienten cada afirmación de la que dependa una Restricción de época, antes de gastar nada en diseño ni en redacción. El riesgo de acometer un período mal documentado sin aviso previo queda aceptado y registrado en R-18.
 
-**Aportación de la versión 1.1.** Se cierran tres huecos del ciclo anterior. La trazabilidad documental deja de medir que la cita exista y pasa a medir que la fuente sostenga lo que se le atribuye (RF-100, RF-101): hasta ahora una cita inventada cumplía todos los requisitos y contaminaba en silencio las Restricciones de época y, con ellas, la validación de la novela entera. Aparece un punto de lectura humana sobre prosa real antes de producir la novela completa (RF-046, PC-8): los dos puntos de control obligatorios anteriores ocurrían ambos antes de que existiera una sola línea escrita. Y la desviación deliberada de lo documentado puede declararse una vez para todo el Proyecto, instanciada en el Canon, en lugar de autorizarse pasaje a pasaje (RF-035).
+**Aportación de la versión 1.1.** Se cierran tres huecos del ciclo anterior. La trazabilidad documental deja de medir que la cita exista y pasa a medir que la fuente sostenga lo que se le atribuye (RF-100, RF-101): hasta ahora una cita inventada cumplía todos los requisitos y contaminaba en silencio las Restricciones de época y, con ellas, la validación de la novela entera. Y la desviación deliberada de lo documentado puede declararse una vez para todo el Proyecto, instanciada en el Canon, en lugar de autorizarse pasaje a pasaje (RF-035).
 
 ---
 
@@ -99,17 +99,15 @@ flowchart TD
     N1[E1 · Agente de entrada]
     ENC[(Encargo + Guía de estilo)]
 
-    WEB[Recuperación web]
-    RAG[Recuperación RAG enciclopédico]
+    WEB[Búsqueda en internet<br>WebSearch · WebFetch]
     N4[E2 · Agente de investigación histórica]
     N10[(Contexto histórico<br>Restricciones de época<br>Fichas de figuras reales)]
-    REF{{E2 · Agente refutador}}
+    N29{{PC-2b · El Autor firma el Contexto}}
 
     N5[E3 · Agente de diseño narrativo]
     CAN[(Canon versionado)]
-    N30{{PC-3 · Validación del Canon}}
+    N30{{PC-3 · El Autor aprueba el Canon}}
 
-    PIL{{PC-8 · Escena piloto}}
     N6[E5 · Agente redactor]
     N7[E6 · Agente refinador]
     N13[(Novela · texto acumulado)]
@@ -122,21 +120,17 @@ flowchart TD
     N1 --> ENC
     ENC --> N4
     WEB --> N4
-    RAG --> N4
     N4 --> N10
-    N10 --> REF
-    REF -.->|B11 · afirmación refutada| N4
-    REF -->|Contexto histórico refutado| N5
+    N10 --> N29
+    N29 -.->|el Autor descarta o rehace| N4
+    N29 -->|Contexto histórico firmado| N5
     ENC --> N5
     N5 --> CAN
     CAN --> N30
-    N30 -.->|agente / humano / ambos| U
+    N29 -.->|siempre humano| U
+    N30 -.->|siempre humano| U
     N30 -->|B5 · hallazgos de canon| N5
-    N30 -->|Canon aprobado| PIL
-    PIL -.->|PC-8 · lectura del Autor| U
-    PIL -->|piloto aceptado| N6
-    PIL -.->|B9 · ajuste de la Guía de estilo| ENC
-    PIL -.->|B9 · vuelta al Canon| N5
+    N30 -->|Canon aprobado| N6
     CAN --> N6
     ENC -->|Guía de estilo| N7
     N6 --> N13
@@ -189,8 +183,7 @@ flowchart TD
 | 12 | Se añade la arista **B6**, propuesta de replanificación del refinador hacia el diseño narrativo | E25 atribuye competencia estructural al refinador y D2 hace del Canon la fuente de verdad: el refinador propone, no aplica |
 | 13 | Se añaden los puntos de control PC-5 y PC-6 hacia el Autor, y el nodo de entrega con sus dos formatos | RF-076, RF-074 y D17 |
 | 14 | El Contexto histórico incorpora las fichas de figuras históricas reales | D7 y RF-019 |
-| 15 | Se añade el nodo de **escena piloto** con su punto de control PC-8, entre la aprobación del Canon y la producción de la novela, y el bucle B9 hacia la Guía de estilo o hacia el Canon | D21. Los dos puntos de control humanos obligatorios anteriores, PC-1 y PC-3, ocurren ambos antes de que exista una línea de prosa |
-| 16 | ~~La etiqueta PC-7 del dictamen de viabilidad queda formalizada en la tabla 12.1~~ **Retirada en la 1.3 junto con el dictamen (D27).** El identificador PC-7 queda retirado y no se reutiliza | Corrección de coherencia de la 1.1, sin objeto desde que el dictamen desaparece |
+| 15 | ~~La etiqueta PC-7 del dictamen de viabilidad queda formalizada en la tabla 12.1~~ **Retirada en la 1.3 junto con el dictamen (D27).** El identificador PC-7 queda retirado y no se reutiliza | Corrección de coherencia de la 1.1, sin objeto desde que el dictamen desaparece |
 
 ### 1.3 Afirmaciones extraídas del texto
 
@@ -258,7 +251,6 @@ flowchart TD
 | D18 | ~~Umbral de viabilidad documental: al menos cuatro de las cinco secciones obligatorias con el 70 % o más de afirmaciones con fuente~~ **Sin efecto desde la 1.3: el dictamen que umbralizaba se retira por D27** | Respuesta a PA-023 |
 | D19 | Los presupuestos de la tabla 10.1 se aceptan como provisionales, con **calibración obligatoria tras la primera Ejecución completa** | Respuesta a PA-024 |
 | D20 | Se exige **comprobar que la Fuente sostiene la afirmación**, no solo que esté asociada, y **conservar el contenido consultado** | Respuesta a PA-025 |
-| D21 | Se instituye la **escena piloto** como puerta obligatoria antes de producir la novela completa | Respuesta a PA-026 |
 | D22 | Se admiten **Licencias literarias de alcance instanciadas en el Canon**, que puede proponer tanto el Autor como el propio sistema cuando lo considere mejor para la historia | Respuesta a PA-027 |
 | D23 | El validador humano **puede aprobar un Canon con bloqueantes abiertos**; cada uno se convierte en Deuda de calidad o en Licencia registrada y el Proyecto solo podrá alcanzar *finalizado con reservas* | Respuesta a PA-028 |
 | D24 | La reserva común de presupuesto se **segmenta**, con un tramo que solo se libera en el último tercio de la novela | Respuesta a PA-029 |
@@ -341,14 +333,13 @@ Se prioriza el vocabulario del autor. Cada término introducido por mí lleva ju
 | **Anacronismo** | Elemento incompatible con la época: léxico, material, tecnológico, institucional o de mentalidad | Término del autor (E12) |
 | **Licencia literaria** | Desviación deliberada de lo documentado, tomada por razones narrativas y registrada como tal | Término introducido por mí. Distingue la desviación consciente del error |
 | **Licencia de alcance** | Licencia literaria que autoriza una desviación sostenida a lo largo de todo el Proyecto —de forma característica, la participación de una figura histórica real en una trama no documentada— en lugar de pasaje a pasaje. Se instancia en el Canon y se aprueba con él | Término introducido por mí en respuesta a D22. Sin él, una premisa de esa clase exige tantas autorizaciones como escenas en las que la figura aparezca |
-| **Escena piloto** | Primera escena redactada del Proyecto, representativa del Canon aprobado, que se somete al Autor antes de producir el resto de la novela | Término introducido por mí (propuesta PR-02, elevada a requisito por D21) |
 | **Bucle de entrada (B1)** | Interrogatorio iterativo entre Agente de entrada y usuario hasta cerrar el Encargo | Término del autor (A15) |
 | **Bucle interno (B2)** | Iteración entre Agente refinador y Agente redactor sobre una Escena | Término del autor (E28) |
 | **Bucle externo (B3)** | Iteración dirigida por el Agente validador que devuelve un Capítulo al Agente redactor | Término del autor (E29) |
 | **Pasaje protegido** | Fragmento de texto que resolvió un Hallazgo bloqueante y que no puede reescribirse sin justificación registrada | Término introducido por mí. Evita la oscilación descrita en 1.4 |
 | **Presupuesto** | Límite declarado de iteraciones, coste o tiempo asignado a una unidad de trabajo o a una Ejecución | Término introducido por mí a partir de la intuición del autor sobre límites por longitud |
 | **Punto de control** | Momento del flujo en el que la Ejecución se detiene a esperar una aprobación, de un agente validador o de una persona | Término introducido por mí para nombrar lo que D3 y D5 instituyen |
-| **Deuda de calidad** | Registro de los Hallazgos no resueltos con los que se cerró una unidad por agotamiento de presupuesto | Término introducido por mí. Hace visible lo que de otro modo se entrega en silencio |
+| **Deuda de calidad** | Registro de los Hallazgos no resueltos con los que se cerró una unidad, sea por agotamiento de presupuesto o por no quedar ninguna etapa que pudiera corregirlos | Término introducido por mí. Hace visible lo que de otro modo se entrega en silencio |
 
 ---
 
@@ -365,7 +356,6 @@ Se prioriza el vocabulario del autor. Cada término introducido por mí lleva ju
 | Extensión por capítulo en palabras o en líneas, convertida en la captura | D28 |
 | Entrega del Encargo como fichero JSON estructurado, alternativa al interrogatorio | D29 |
 | Refutación adversarial del Contexto histórico por un agente distinto del que lo produjo | D27 |
-| Escena piloto sometida al Autor antes de producir la novela completa | D21 |
 | Licencias literarias de alcance instanciadas en el Canon | D22 |
 | Producción del Contexto histórico con contenido mínimo obligatorio | E11, E13 |
 | Diseño narrativo: trama, personajes, capítulos, escenas, línea temporal | E17, E18, D2 |
@@ -411,10 +401,9 @@ Se prioriza el vocabulario del autor. Cada término introducido por mí lleva ju
 | Actor | Naturaleza | Objetivo | Pericia asumida | Origen |
 |---|---|---|---|---|
 | **Autor** | Humano | Obtener una novela histórica que responda a su semilla, sin sostener él la coherencia | Criterio narrativo alto; conocimiento histórico variable; ninguna pericia técnica exigida | E1, E2 |
-| **Validador de canon humano** | Humano, opcional | Aprobar o rechazar el Canon completo antes de que se gaste presupuesto en redactar | Criterio narrativo e histórico. Puede ser el propio Autor | D3, D5 |
+| **Validador de canon humano** | Humano, **siempre el Autor desde la 1.8** | Aprobar o rechazar el Canon completo antes de que se gaste presupuesto en redactar | Criterio narrativo e histórico | D3, D5 |
 | **Agente de entrada** | Agente | Cerrar un Encargo completo y sin contradicciones a partir de una semilla incompleta | — | E1, N1 |
 | **Agente de investigación histórica** | Agente | Producir un Contexto histórico con fuentes y unas Restricciones de época accionables | — | E7, N4 |
-| **Agente refutador** | Agente | Intentar desmentir con fuentes lo que la investigación ha afirmado, y hacer aflorar los hechos disputados que una sola búsqueda no encuentra | — | D27 |
 | **Agente de diseño narrativo** | Agente | Producir un Canon coherente con el Contexto histórico y con el Encargo | — | E14, N5 |
 | **Agente redactor** | Agente | Convertir escenas planificadas en prosa fiel al Canon y a la Guía de estilo | — | E20, N6 |
 | **Agente refinador** | Agente | Elevar la calidad lingüística y señalar problemas estructurales sin decidir sobre ellos | — | E24, N7 |
@@ -506,7 +495,6 @@ erDiagram
 | INV-6 | Toda modificación del Canon genera versión nueva; las versiones anteriores no se destruyen | D2, OBJ-5 |
 | INV-7 | Ninguna Ejecución supera sus presupuestos declarados | D4 |
 | INV-8 | Ninguna Restricción de época deriva de una afirmación que no haya sido verificada contra el contenido de su Fuente | D20 |
-| INV-9 | Ninguna escena se produce en serie antes de que la escena piloto haya sido aceptada por el Autor | D21 |
 
 ---
 
@@ -533,12 +521,12 @@ Ocho etapas. Para cada una: propósito, entradas, salidas, invariantes que prese
 |---|---|
 | **Propósito** | Producir el Contexto histórico y las Restricciones de época que impedirán los anacronismos |
 | **Entradas** | Encargo (época, ámbito geográfico, premisa) |
-| **Salidas** | Contexto histórico con fuentes y con el contenido consultado conservado; Restricciones de época; lista de lagunas y hechos disputados; veredicto de refutación por afirmación en alcance |
+| **Salidas** | Contexto histórico con fuentes y con el contenido consultado conservado; Restricciones de época; lista de lagunas y hechos disputados |
 | **Invariantes** | Toda afirmación lleva fuente o marca de carencia. Toda afirmación que sostenga una Restricción de época está verificada contra el contenido de su Fuente. Las lagunas se declaran, no se rellenan con verosimilitud |
-| **Condición de avance** | Todas las secciones obligatorias cubiertas o declaradas como laguna con impacto evaluado, y pasada de refutación ejecutada sin afirmaciones refutadas pendientes de resolver entre las que sostienen Restricciones de época |
+| **Condición de avance** | Todas las secciones obligatorias cubiertas o declaradas como laguna con impacto evaluado, y **firma del Autor** sobre el Contexto. Desde la 1.8 no hay pasada de refutación que ejecutar |
 | **Modos de fallo** | Fuentes inaccesibles; corpus RAG no disponible; el período es tan oscuro que la mayoría de las secciones quedan en laguna; fuentes contradictorias entre sí; **la Fuente citada no sostiene la afirmación que se le atribuye** |
-| **Degradación** | Si un modo de recuperación falla, se continúa con el otro y se marca la cobertura reducida en el Contexto histórico. Si ambos fallan, la etapa falla y la Ejecución se detiene: redactar sin contexto contradice OBJ-2 |
-| **Punto de control humano** | No por defecto. [PROPUESTA en 17.2: revisión opcional del Contexto histórico] |
+| **Degradación** | Si la búsqueda en internet falla, la etapa falla y la Ejecución se detiene: redactar sin contexto contradice OBJ-2. Ya no hay segundo modo de recuperación al que caer, y la cobertura se declara reducida de forma permanente |
+| **Punto de control humano** | **Sí, desde la 1.8.** El Autor lee el Contexto, descarta lo que no da por bueno y lo firma. Es una de las dos paradas de la Ejecución |
 
 ### E3 — Diseño narrativo
 
@@ -577,7 +565,7 @@ Ocho etapas. Para cada una: propósito, entradas, salidas, invariantes que prese
 | **Condición de avance** | Escena redactada dentro de su presupuesto de palabras, con margen de tolerancia |
 | **Modos de fallo** | La escena planificada es irrealizable como está; falta información histórica; el texto generado se desvía sistemáticamente del presupuesto de extensión |
 | **Degradación** | Escena irrealizable: emite hallazgo contra el Canon en lugar de improvisar. Falta de información: solicita investigación (B8) |
-| **Punto de control humano** | **Sí, una sola vez: PC-8 sobre la escena piloto** (RF-046), antes de producir el resto de la novela. La producción en serie no arranca sin la decisión del Autor |
+| **Punto de control humano** | No. Aprobado el Canon en PC-3, la producción arranca sin detenerse ante el Autor |
 
 ### E6 — Refinamiento (bucle interno B2)
 
@@ -614,7 +602,7 @@ Ocho etapas. Para cada una: propósito, entradas, salidas, invariantes que prese
 | **Salidas** | Novela finalizada, paquete de trazabilidad, registro de Licencias literarias, Deuda de calidad si la hubiera |
 | **Invariantes** | Todos los hilos de trama en estado resuelto. Todos los capítulos planificados cerrados |
 | **Modos de fallo** | Hilos sin resolver; deriva de estilo por encima del umbral; extensión fuera de tolerancia |
-| **Degradación** | Los hallazgos de la pasada global se enrutan a los capítulos concretos y reabren el bucle externo, con su propio presupuesto. Agotado este, se entrega con Deuda de calidad |
+| **Degradación** | Los hallazgos de la pasada global se entregan como **Deuda de calidad** y el Proyecto queda limitado a *finalizado con reservas*. La reapertura del bucle externo que esta especificación preveía **no está implementada** desde la 1.9: E8 es la última etapa, y añadir una vuelta al final sería un bucle sin terminación declarada justo donde queda menos presupuesto |
 | **Punto de control humano** | [SUPUESTO SUP-015: entrega directa al Autor sin aprobación formal previa] |
 
 ---
@@ -1711,38 +1699,6 @@ Escenario: Declaración prematura
 - **Prioridad:** Must
 - **Origen:** E36 (reinterpretado), D6
 
-#### RF-046 — Someter una escena piloto al Autor antes de producir en serie
-
-- **Enunciado:** El sistema redacta y refina una escena piloto representativa del Canon aprobado, la somete al Autor en el punto de control PC-8 junto con la ficha de la escena y los parámetros de estilo aplicados, y no arranca la producción del resto de la novela hasta recibir su decisión: aceptar, ajustar la Guía de estilo y repetir el piloto, o devolver al Canon.
-- **Justificación:** D21, que eleva a requisito la propuesta PR-02. Los dos puntos de control humanos obligatorios anteriores, PC-1 y PC-3, ocurren ambos antes de que exista una sola línea de prosa: el Autor aprueba un plan, no una voz. Validar el registro, la densidad descriptiva y la persona narrativa cuesta aquí una escena; descubierto en la pasada global, cuesta la novela entera, y ni RNF-009 ni RNF-010 lo detectan, porque miden consistencia y una voz equivocada puede ser perfectamente consistente.
-- **Historia de usuario:** Como Autor, quiero leer una escena antes de que se escriban las cien mil palabras restantes, para reconocer mi novela mientras corregirla todavía es barato.
-- **Precondiciones:** Canon en estado aprobado; Guía de estilo efectiva disponible; ninguna escena producida en serie.
-- **Postcondiciones:** Escena piloto aceptada y registrada como referencia de voz de la Ejecución, o Guía de estilo o Canon modificados y piloto repetido.
-- **Criterios de aceptación:**
-
-```gherkin
-Escenario: Piloto aceptado
-  Dado un Canon aprobado y una escena piloto redactada y refinada
-  Cuando el Autor la acepta en PC-8
-  Entonces la escena queda registrada como referencia de voz de la Ejecución
-  Y arranca la producción del resto de la novela
-
-Escenario: Piloto rechazado por la voz
-  Dado una escena piloto cuya densidad descriptiva no responde a lo que el Autor esperaba
-  Cuando el Autor la rechaza indicando el motivo
-  Entonces el sistema actualiza la Guía de estilo con el parámetro corregido y genera una versión nueva del Encargo
-  Y repite el piloto sin producir ninguna otra escena
-  Y el consumo del piloto se registra por separado del presupuesto de producción
-
-Escenario: Piloto que revela un problema de Canon
-  Dado una escena piloto que el Autor rechaza porque la escena planificada no funciona
-  Entonces el sistema emite una propuesta de replanificación conforme a RF-027
-  Y la producción no arranca hasta que el Canon se apruebe de nuevo
-```
-
-- **Casos límite:** ciclos repetidos de piloto que agotan presupuesto sin que el Autor acepte ninguno; Autor que no responde a PC-8; escena piloto poco representativa del conjunto; Ejecución en modo autónomo sin destinatario de escalado.
-- **Prioridad:** Must
-- **Origen:** D21, PR-02
 
 ### Capacidad C6 — Refinamiento y bucle interno
 
@@ -2425,7 +2381,7 @@ Escenario: Bloqueo por contradicción con el Encargo
 - **Justificación:** D6, literal del autor. Sustituye a E36, que hacía depender la finalización de que el redactor se declarase satisfecho.
 - **Historia de usuario:** Como Autor, quiero que «terminada» signifique lo mismo siempre, para poder fiarme de la palabra.
 - **Precondiciones:** Novela con todos los capítulos validados.
-- **Postcondiciones:** Proyecto en estado finalizado, o finalizado con reservas, o en producción.
+- **Postcondiciones:** Proyecto en estado finalizado, o finalizado con reservas, o en producción. Al cerrar, todo Hallazgo **no bloqueante** que siga abierto se declara como Deuda de calidad y pasa a `aceptado_como_deuda`; si hay alguno, el estado resultante es *finalizado con reservas*. Los bloqueantes no entran en el barrido: su ausencia es una de las cinco condiciones, así que con uno abierto no se llega a cerrar.
 - **Criterios de aceptación:**
 
 ```gherkin
@@ -2792,6 +2748,8 @@ El bloque RF-010 a RF-019 quedó agotado en la versión 1.0 y los identificadore
 
 #### RF-100 — Comprobar que la Fuente sostiene la afirmación
 
+> **Retirado en la 1.7.** La comprobación de que la Fuente sostiene lo que se le atribuye deja de ser obligatoria: el Contexto se obtiene por búsqueda en internet, que ya devuelve la fuente con lo que dice, y dos pasadas de modelo por afirmación costaban más de lo que corregían. El comando sigue existiendo para quien quiera usarlo; nada lo exige.
+
 - **Enunciado:** El sistema comprueba, para toda afirmación del Contexto histórico de la que se derive una Restricción de época o una ficha de figura histórica real, que el contenido conservado de su Fuente documental sostiene efectivamente lo que se le atribuye, y genera un Hallazgo bloqueante con causa raíz en la investigación cuando no lo hace.
 - **Justificación:** D20. RF-013 exige que la afirmación **esté asociada** a una Fuente, no que la Fuente diga lo que se le atribuye. Una cita inventada o mal atribuida satisface RF-013, cuenta como cobertura en RNF-004 y produce por RF-016 una Restricción de época falsa contra la que se validará la novela entera. El error no se detecta: se certifica, y toda la trazabilidad posterior lo hereda. Es la única comprobación del arnés que introduce verdad externa en lugar de coherencia interna.
 - **Historia de usuario:** Como Autor, quiero que las citas de mi dossier de época digan lo que se afirma que dicen, para que la trazabilidad signifique algo más que llevar una referencia pegada.
@@ -2852,6 +2810,8 @@ Escenario: Fuente inaccesible en la entrega
 
 #### RF-102 — Refutar las afirmaciones del Contexto histórico
 
+> **Retirado en la 1.7.** La pasada de refutación deja de ser obligatoria para cerrar el Contexto y para derivar Restricciones. Lo único que se conserva: un veredicto emitido debe estar bien formado, y una afirmación marcada como refutada tumba lo que colgaba de ella.
+
 - **Enunciado:** Al cierre de la investigación, el sistema ejecuta una pasada de refutación sobre las afirmaciones del Contexto histórico de las que dependa una Restricción de época o una ficha de figura histórica real. Por cada una busca activamente fuentes que la contradigan o la maticen, y emite un veredicto: confirmada, matizada, disputada, refutada o **no refutable documentalmente**. Una afirmación con este último veredicto no puede sostener una Restricción de época de modo comprobable: solo un criterio de evaluación cualitativa conforme a RF-016. La ejecuta el Agente refutador, distinto del que produjo el Contexto, con acceso a los dos modos de recuperación y sin acceso al razonamiento con el que se compuso la afirmación. **Una refutación sin fuente que la sostenga no es una refutación y no se registra.**
 - **Justificación:** D27. Un investigador que encuentra una fuente y se detiene nunca descubre que el hecho está disputado: RF-015 solo puede marcar como disputado lo que la recuperación llegó a sacar a la luz, y una sola búsqueda tiende a confirmar lo que ya ha encontrado. Duplicar el investigador de forma simétrica no lo arregla, porque dos instancias del mismo modelo sobre el mismo corpus comparten los puntos ciegos y su acuerdo no es evidencia; además, dos iguales que discrepan necesitan un árbitro, y eso es un bucle sin terminación declarada. La asimetría sí funciona, y es el patrón que el arnés ya emplea en el resto del flujo: el refinador critica al redactor y el validador critica a ambos. La exigencia de fuente es lo que impide que el refutador se convierta en el crítico automático que siempre encuentra algo.
 - **Historia de usuario:** Como Autor, quiero que alguien intente tumbar lo que el investigador ha dado por bueno, para que lo que sobrevive sea lo defendible y no solo lo primero que se encontró.
@@ -2903,6 +2863,42 @@ Escenario: Afirmación que ninguna fuente puede desmentir
 - **Casos límite:** afirmación negativa de existencia, refutable con una sola atestación, frente a afirmación positiva, que la ausencia de pruebas no desmiente; refutación apoyada en una fuente de peor calidad que la original; cadena de refutaciones sobre la misma afirmación; afirmación refutada de la que ya depende un Canon aprobado en una reejecución; refutación que agota el presupuesto de la etapa; afirmaciones de conocimiento general que ninguna fuente se molesta en contradecir.
 - **Prioridad:** Must
 - **Origen:** D27, [SUPUESTO SUP-036]
+
+
+#### RF-105 — Trazar toda la Ejecución en una plataforma de observabilidad
+
+- **Enunciado:** El sistema emite a una plataforma de observabilidad externa una traza por Ejecución, con un tramo por cada paso —etapas, órdenes al núcleo y puntos de control— y, dentro de cada etapa, el consumo real desglosado por modelo: tokens de entrada y de salida, tokens de caché, coste y duración. Una Ejecución no arranca si la observabilidad no está configurada. Las credenciales de la plataforma se resuelven del entorno y no se escriben en ningún artefacto persistido.
+- **Justificación:** Petición expresa del Autor, que lo eleva a requisito. El ledger de RF-083 registra lo que el núcleo persiste, pero el gasto ocurre fuera de él: en sesiones de modelo que el núcleo no ve salvo que alguien las contabilice, y la primera Ejecución completa demostró que nadie lo hacía —el informe de calibración de RF-079 salió con consumo cero, es decir, inservible para lo único que existe—. Una traza externa mide lo que de verdad se gastó, y lo mide mientras ocurre y no al final.
+- **Historia de usuario:** Como Autor, quiero ver en qué se va el dinero y el tiempo de una Ejecución mientras corre, para poder pararla cuando una etapa se desboca en lugar de descubrirlo en la factura.
+- **Precondiciones:** Credenciales de la plataforma disponibles en el entorno.
+- **Postcondiciones:** Una traza por Ejecución con sus tramos y su consumo por modelo, consultable fuera del arnés.
+- **Criterios de aceptación:**
+
+```gherkin
+Escenario: Ejecución trazada
+  Dado un Proyecto con el Encargo cerrado y la observabilidad configurada
+  Cuando arranca la Ejecución
+  Entonces se abre una traza con el identificador de la Ejecución
+  Y cada paso emite su tramo con su inicio, su fin y su resultado
+  Y cada etapa emite el consumo por modelo con sus tokens y su coste
+
+Escenario: Observabilidad sin configurar
+  Dado un Proyecto con el Encargo cerrado y sin credenciales de la plataforma
+  Cuando se intenta arrancar la Ejecución
+  Entonces el sistema la rechaza antes de gastar nada
+  Y el motivo nombra las variables de entorno que faltan
+  Y no revela el valor de ninguna credencial
+
+Escenario: La plataforma no responde
+  Dado una Ejecución en curso con la observabilidad configurada
+  Cuando la plataforma deja de aceptar eventos
+  Entonces la Ejecución continúa
+  Y el fallo de ingestión queda declarado en el estado del proceso
+```
+
+- **Casos límite:** plataforma caída a mitad de Ejecución; credenciales válidas pero sin permisos de escritura; una etapa que no emite consumo porque termina en error antes de llamar al modelo.
+- **Prioridad:** Must
+- **Origen:** Petición del Autor
 
 ### Capacidad C1 (extensión) — Ingesta estructurada del encargo
 
@@ -2983,8 +2979,6 @@ Qué información viaja entre etapas, si es obligatoria, y qué debe ser cierto 
 | CT-16 | E8 → E7 | Hallazgos globales enrutados al capítulo responsable | Análisis comparativo entre tercios de la novela | Cada Hallazgo global identifica al menos un capítulo afectado |
 | CT-17 | E8 → Salida | Novela ensamblada, Encargo, Contexto histórico con fuentes, Canon final, Licencias literarias, Deuda de calidad | Métricas de la Ejecución | El Proyecto está en estado finalizado o finalizado con reservas |
 | CT-18 | Cualquier etapa → Ejecución | Consumo de presupuesto, iteración, Hallazgos generados, versión de instrucciones | Duración | El consumo se registra antes de avanzar de unidad |
-| CT-19 | E5 → Autor (PC-8) | Escena piloto redactada y refinada, ficha de la escena en el Canon, parámetros de estilo aplicados y su procedencia | Alternativas de voz sobre la misma escena | La escena procede del Canon aprobado y no se ha producido ninguna otra escena |
-| CT-20 | Autor → E5 / E1 / E3 (PC-8) | Decisión sobre el piloto: aceptación, ajuste de la Guía de estilo, o vuelta al Canon | Motivo de la decisión | La decisión identifica qué parámetro o qué elemento del Canon debe cambiar cuando no es una aceptación |
 
 ---
 
@@ -3035,7 +3029,6 @@ D13 delega en mí la fijación del presupuesto. No dispongo de datos de coste re
 | Reserva común · tramo libre | Porción disponible desde el inicio de la producción | 60 % de la reserva | Cubre los primeros capítulos, que se llevan siempre más iteraciones porque la voz aún no está fijada y el Canon de hechos emergentes está vacío |
 | Reserva común · tramo final | Porción que solo libera el último tercio de la novela | 40 % de la reserva | D24. R-01 sitúa la degradación de la coherencia en el último tercio, donde el contexto acumulado es mayor. Una reserva que se agota en el primer tercio no mitiga ese riesgo: lo agrava |
 | Reserva común | Tope de consumo por unidad | 3 iteraciones | Impide que un capítulo difícil deje sin crédito al resto de la novela |
-| Escena piloto | Ciclos de piloto por Ejecución | 3 | Tres pilotos rechazados indican que el desacuerdo está en el Canon o en el Encargo, no en la redacción. El cuarto se eleva al Autor como decisión, no como repetición |
 | Investigación | Alcance de la verificación de fidelidad de RF-100 | Afirmaciones que sostienen una Restricción de época o una ficha de figura real | El coste crece con el número de restricciones, no con el de afirmaciones. Verificar el Contexto entero encarecería E2 sin ganancia: lo que no deriva en restricción no valida nada |
 | Investigación | Alcance y profundidad de la pasada de refutación de RF-102 | Mismo alcance que RF-100; una pasada, sin bucle | Una pasada adversarial sobre el subconjunto que sostiene restricciones cuesta una fracción de duplicar el agente investigador, que sería el doble del coste de E2 para el mismo punto ciego |
 | Canon | Iteraciones de validación (PC-3) | 3 | Es la puerta más barata; conviene ser generoso aquí y estricto después |
@@ -3056,10 +3049,10 @@ Un arnés sin criterio de aceptación de su propia salida es un generador de rui
 | Etapa | Comprobaciones automáticas | Rúbrica de evaluación | Criterio de rechazo |
 |---|---|---|---|
 | E1 Captura | Campos obligatorios cubiertos o marcados; ausencia de contradicciones detectadas; confirmación del Autor registrada | Fidelidad al lenguaje del Autor; concreción de los valores registrados | Cualquier campo obligatorio sin valor ni marca; ausencia de confirmación |
-| E2 Investigación | Secciones obligatorias no vacías; cobertura de fuentes medida y registrada; fidelidad de cita verificada (RF-100); pasada de refutación con veredicto en el 100 % de las afirmaciones en alcance (RF-102); lagunas declaradas; restricciones derivadas y clasificadas | Pertinencia respecto al ámbito; especificidad del detalle; calidad de las fuentes; esfuerzo real de refutación | Sección obligatoria vacía sin declararse laguna; afirmación sin fuente ni marca; Restricción derivada de una afirmación que su Fuente no sostiene o que la refutación ha desmentido. La cobertura por debajo del 90 % de RNF-004 **no** es criterio de rechazo |
+| E2 Investigación | Secciones obligatorias no vacías; cobertura de fuentes medida y registrada; lagunas declaradas; restricciones derivadas y clasificadas. Desde la 1.7 **no** se comprueban ni la fidelidad de cita (RF-100) ni el veredicto de refutación (RF-102) | Pertinencia respecto al ámbito; especificidad del detalle; calidad de las fuentes | Sección obligatoria vacía sin declararse laguna; afirmación sin fuente ni marca; Restricción derivada de una afirmación descartada o marcada como refutada. La cobertura por debajo del 90 % de RNF-004 **no** es criterio de rechazo |
 | E3 Diseño narrativo | Todos los hilos con resolución; todas las escenas con función; línea temporal sin contradicciones; presupuestos que suman la extensión objetivo; plan de revelaciones completo | Solidez del arco; diferenciación de personajes; integración del contexto histórico en la trama y no como decorado | Cualquier invariante incumplido |
 | E4 Validación de canon | Recuento de Hallazgos por severidad | Juicio sobre la viabilidad del plan y su fidelidad al Encargo | Un solo Hallazgo bloqueante |
-| E5 Redacción | Escena piloto aceptada antes de cualquier producción en serie; extensión dentro de tolerancia; personajes presentes conformes al Canon; ausencia de revelaciones anticipadas; restricciones de época no violadas | Cumplimiento de la función narrativa de la escena; encarnación de la voz de los personajes | Producción en serie sin piloto aceptado; revelación anticipada; anacronismo; función narrativa no cumplida |
+| E5 Redacción | Extensión dentro de tolerancia; personajes presentes conformes al Canon; ausencia de revelaciones anticipadas; restricciones de época no violadas | Cumplimiento de la función narrativa de la escena; encarnación de la voz de los personajes | Revelación anticipada; anacronismo; función narrativa no cumplida |
 | E6 Refinamiento | Adherencia a parámetros declarados de estilo; repeticiones y muletillas por debajo del umbral; pasajes protegidos intactos; superficie protegida dentro del aviso de RNF-026 | Precisión léxica; ritmo; economía | Modificación de pasaje protegido sin justificación; regresión respecto a la versión anterior |
 | E7 Validación | Recuento de Hallazgos por severidad y por causa raíz; cambio de texto verificado respecto al rechazo previo | Juicio de continuidad, verosimilitud y cumplimiento de trama | Un solo Hallazgo bloqueante; aprobación sin cambio de texto |
 | E8 Pasada global | Hilos resueltos; deriva de estilo dentro de banda; extensión dentro de tolerancia; diferenciación de voz; licencias puntuales y de alcance registradas; protecciones revisadas y liberadas las caducas | Juicio de conjunto sobre ritmo y unidad de la obra | Hilo sin resolver; desviación de estilo fuera de banda; licencia no registrada |
@@ -3086,25 +3079,27 @@ Para que el estancamiento y la regresión (RF-075) sean detectables, la evaluaci
 |---|---|---|---|---|---|
 | PC-1 | Durante la captura del encargo | Humano, intrínseco | No configurable | Todo el contenido del Encargo | E1, A15 |
 | PC-2 | Cierre del Encargo | Humano | No configurable | Confirmación del Encargo completo | RF-006 |
-| PC-3 | Tras el diseño narrativo, antes de redactar | Agente validador de canon | Humano, o agente seguido de humano | Aprobación, rechazo con hallazgos, o replanificación del Canon | D3, D5 |
+| PC-3 | Tras el diseño narrativo, antes de redactar | **Humano, siempre** | No configurable desde la 1.8 | Aprobación, rechazo con hallazgos, o replanificación del Canon | D3, D5 |
 | PC-4 | Replanificación del Canon durante la producción | El mismo que aprobó el Canon | — | Aceptación o rechazo de la propuesta | RF-027 |
 | PC-5 | Escalado por bloqueo irresoluble | Humano | — | Evitar el detalle, aportar fuente, autorizar licencia o modificar el Encargo | RF-076 |
-| PC-6 | Agotamiento del bucle externo con bloqueantes | Humano si el modo lo permite | Cierre con reservas en modo autónomo | Aceptar la deuda, ampliar presupuesto o abandonar | RF-074 |
-| PC-8 | Escena piloto, tras aprobarse el Canon y antes de producir en serie | Humano | Omisión en modo autónomo, con el piloto registrado igualmente como referencia de voz | Aceptar el piloto, ajustar la Guía de estilo y repetir, o devolver al Canon | RF-046, D21 |
+| PC-6 | Agotamiento del bucle externo con bloqueantes | Humano | No configurable desde la 1.8 | Aceptar la deuda, ampliar presupuesto o abandonar | RF-074 |
 
 ### 12.2 Modos de operación
 
+**Desde la 1.8 hay un solo modo: Revisión del Autor.** Los otros tres —asistido, autónomo supervisado y autónomo— se retiran. El supuesto que los sostenía, SUP-024, queda resuelto en el sentido que él mismo anticipaba: «si sólo hubiera uno, la sección 12.2 se simplifica; ningún requisito funcional cambia, sólo su configuración por defecto».
+
 | Modo | PC-3 | PC-5 y PC-6 | Comportamiento al agotar presupuesto con bloqueantes | Origen |
 |---|---|---|---|---|
-| **Asistido** | Humano o agente + humano | Detiene y escala | Espera decisión humana indefinidamente, sin consumir presupuesto | D3, D5 |
-| **Autónomo supervisado** | Agente | Detiene y notifica | Espera decisión durante un plazo configurado; agotado el plazo, cierra con reservas | [SUPUESTO SUP-024] |
-| **Autónomo** | Agente | No detiene | Cierra con reservas y marca el Proyecto como finalizado con reservas | [SUPUESTO SUP-024] |
+| **Revisión del Autor** | Humano, siempre | Detiene y escala | Espera decisión humana indefinidamente, sin consumir presupuesto | D28b, D30 |
 
-**PC-8 en los tres modos.** En modo asistido y en autónomo supervisado detiene la Ejecución y espera decisión, antes de gastar en producción. En modo autónomo no detiene nada, pero el piloto se redacta y se registra igualmente como referencia de voz de la Ejecución, porque su valor como línea base de estilo no depende de que alguien lo lea. La escena piloto no se vuelve a redactar: entra en la novela como cualquier otra.
+**Revisión del Autor.** El Autor revisa en persona el Contexto histórico y el Canon, y ninguna etapa de validación se despacha para juzgarlos por él. Son las **dos paradas** de la Ejecución, y ninguna se resuelve sola: el trabajo se detiene y no continúa hasta que él decide, sin consumir presupuesto mientras espera.
+
+Conviene ser honesto sobre lo que esto significa, porque es la diferencia entre la 1.5 y la 1.8. En la 1.5 el Autor **sustituía** a dos etapas de validación que seguían existiendo, y su firma ocupaba el hueco que dejaban: la puerta de MD-7 seguía en pie y una Restricción comprobable seguía exigiendo fidelidad verificada y veredicto de refutación, sólo que los emitía él. Desde la 1.7 esas dos etapas **no existen**, y desde la 1.8 el Autor no las sustituye: es el único control que hay sobre el Contexto y sobre el Canon. Lo que queda comprobado por código es la trazabilidad —toda Restricción cuelga de una afirmación vigente y no refutada— y no la veracidad de lo afirmado. Es una pérdida real de garantía, aceptada a cambio de que la Ejecución corra de principio a fin, y está registrada como tal.
+
 
 **Ningún punto de control humano protege ya la entrada a la etapa de diseño.** Hasta la versión 1.2 lo hacía PC-7, ligado al dictamen de viabilidad documental; retirado este por D27, la decisión de acometer un período mal documentado se toma de forma implícita al arrancar la Ejecución. La consecuencia está registrada en R-18.
 
-**Modo por defecto fijado por D15: asistido.** Se mantiene mientras los presupuestos de 10.1 no estén calibrados con ejecuciones reales. La migración a *autónomo supervisado* es una decisión del Autor, no un cambio automático del sistema. Dado que el Autor es también el Operador y el único usuario (D14), el modo *autónomo* sin destinatario de escalado solo tiene sentido para ejecuciones desatendidas de noche, y su uso implica aceptar cierres con reservas sin consulta.
+**D15 queda sin efecto desde la 1.8**, al no haber ya entre qué modos elegir. Su razonamiento sigue siendo válido y por eso se conserva: el Autor es también el Operador y el único usuario (D14), de modo que un modo *autónomo* sin destinatario del escalado sólo tendría sentido para ejecuciones desatendidas de noche, y su uso implicaría aceptar cierres con reservas sin consulta. No es lo que el Autor quiere de este arnés.
 
 ---
 
@@ -3161,7 +3156,6 @@ Para que el estancamiento y la regresión (RF-075) sean detectables, la evaluaci
 | D18 | ~~RF-018, SUP-030~~ | Sin efecto: retirados por D27 |
 | D19 | RF-079, SUP-027 | Informe de calibración con consumo real frente a presupuestado |
 | D20 | RF-100, RF-101, RNF-027, INV-8 | Afirmación que su Fuente no sostiene genera bloqueante y no deriva en Restricción |
-| D21 | RF-046, PC-8, INV-9, CT-19, CT-20 | La producción en serie no arranca sin piloto aceptado |
 | D22 | RF-035, RF-009, RF-059, RF-092, INV-3 | Atribución dentro de los límites de una Licencia de alcance no genera Hallazgo |
 | D23 | RF-031, etapa E4 | Bloqueante aprobado por una persona se convierte en Deuda o Licencia y limita el Proyecto a *finalizado con reservas* |
 | D24 | RF-070, tabla 10.1, R-01 | El tramo final de la reserva se deniega a toda unidad anterior al último tercio |
@@ -3194,7 +3188,6 @@ Todo requisito de esta lista procede de una inferencia mía, no de una entrada. 
 | RF-102 | SUP-036 |
 | RF-100 | SUP-031 |
 | RF-101 | SUP-032 |
-| RF-046 | SUP-033 |
 | RF-070 (segmentación de la reserva) | SUP-034 |
 | RNF-026 | SUP-035 |
 
@@ -3248,7 +3241,6 @@ Ninguna otra afirmación del texto ni ningún nodo o arista del diagrama queda s
 | SUP-029 | Los criterios por defecto para hechos sensibles son: no eludirlos si la trama los atraviesa, no estetizarlos, y sostenerlos sobre el Contexto histórico y no sobre el tópico | Propuesta mía en el marco de D11, que fija la política pero no su contenido por defecto. Si el Autor tiene otro criterio, debe declararlo en el Encargo y RNF-022 se evalúa contra el suyo |
 | SUP-031 | La comprobación de fidelidad entre afirmación y Fuente es exigible y suficiente sobre el subconjunto de afirmaciones que sostienen Restricciones de época o fichas de figuras reales, no sobre el Contexto histórico entero | Si el subconjunto es demasiado estrecho, una afirmación falsa que no derive en Restricción puede llegar igualmente a la novela por la vía del diseño narrativo. Si se amplía a todo el Contexto, el coste de E2 crece con el número de afirmaciones y no con el de comprobaciones útiles. Se recalibra con el informe de RF-079 |
 | SUP-032 | Conservar el contenido consultado de cada Fuente es viable en volumen y admisible en cuanto a derechos, al tratarse de uso interno de verificación y no de publicación | Si no lo fuera para cierto material, RF-100 queda sin base sobre esas fuentes y hay que declararlas como no verificables, lo que las excluye de la cobertura de RNF-004 |
-| SUP-033 | Una sola escena es muestra suficiente para que el Autor reconozca o rechace la voz de la novela | Si no lo es, el piloto da falsa seguridad y la deriva aparece igualmente. La alternativa —un piloto de capítulo— multiplica por cinco o seis el coste de la puerta y empieza a competir con el precio de descubrir el problema en la pasada global |
 | SUP-034 | El reparto de la reserva común en 60 % libre y 40 % para el último tercio es adecuado | Propuesta mía en respuesta a la delegación de D24. Si el tramo final es pequeño, R-01 sigue sin mitigarse; si es grande, los primeros capítulos se cierran con deuda evitable y la voz se fija peor, que es justo lo que arrastra el resto de la novela. Se recalibra con el informe de RF-079 |
 | SUP-035 | La superficie de texto protegido es un indicador útil de rigidez de la novela, y sus umbrales de aviso son el 15 % por capítulo y el 10 % sobre el total | Propuesta mía en respuesta a la delegación de D25. Si los umbrales son bajos, el aviso se convierte en ruido; si son altos, no avisa de nada. El valor diagnóstico del indicador no depende del umbral concreto: una novela con un tercio del texto intocable tiene un problema aunque nadie haya fijado el número |
 | SUP-036 | El alcance de la refutación son las afirmaciones que sostienen Restricciones de época o fichas de figuras reales, y una pasada única basta: no hace falta un bucle entre investigador y refutador | Si el alcance es estrecho, una afirmación falsa que no derive en Restricción llega igualmente al Canon por la vía del diseño. Si una pasada no basta, quedarán refutaciones de segundo orden sin examinar; la alternativa es un bucle entre dos agentes, que exige árbitro y terminación declarada, y eso es justo lo que se descartó al elegir la asimetría. Se recalibra con el informe de RF-079 |
@@ -3288,7 +3280,6 @@ Toda pregunta formulada en cualquier momento del análisis figura aquí con su r
 | PA-023 | Umbral de viabilidad documental de RF-018 | ~~Cuatro de las cinco secciones obligatorias con el 70 % o más de afirmaciones con fuente~~ **Sin objeto desde la 1.3: la pregunta desaparece con el dictamen (D27)** | v0.4, decisión D18; anulada en la v1.3 por D27 | RF-018 y SUP-030, ambos retirados |
 | PA-024 | Validez de los presupuestos de la tabla 10.1 | **Aceptados como provisionales, con calibración obligatoria tras la primera Ejecución completa** | v0.4, decisión D19 | RF-079, SUP-027, R-14 |
 | PA-025 | ¿Se exige comprobar que la Fuente sostiene la afirmación, y no solo que esté asociada? | **Sí, y se conserva el contenido consultado** | v1.1, decisión D20 | RF-100, RF-101, RNF-027, INV-8 |
-| PA-026 | ¿Se instituye la escena piloto como puerta obligatoria antes de producir? | **Sí** | v1.1, decisión D21 | RF-046, PC-8, INV-9, CT-19, CT-20 |
 | PA-027 | ¿Existe la Licencia literaria de alcance y quién puede proponerla? | **Sí, instanciada en el Canon; puede proponerla el Autor o el propio sistema si lo considera mejor para la historia** | v1.1, decisión D22 | RF-035, RF-059, RF-092, glosario |
 | PA-028 | ¿Puede el validador humano aprobar un Canon con bloqueantes abiertos? | **Sí; cada bloqueante pasa a Deuda o Licencia y el Proyecto queda limitado a *finalizado con reservas*** | v1.1, decisión D23 | RF-031, etapa E4 |
 | PA-029 | ¿Cómo se reparte la reserva común de presupuesto? | **Segmentada, con un tramo reservado al último tercio** | v1.1, decisión D24 | RF-070, tabla 10.1, SUP-034 |
@@ -3306,7 +3297,7 @@ En PA-032 mi posición era reescribir el dictamen para que midiera las preguntas
 
 **Ninguna.** Las 34 preguntas formuladas desde la Fase 0 están cerradas.
 
-Esto no significa que no quede nada por saber. Quedan siete supuestos que solo la medición puede confirmar o desmentir, y que deben revisarse con el informe de calibración de RF-079 después de la primera novela completa: **SUP-021** (tasa de terminación por convergencia del 90 %), **SUP-027** (valores de presupuesto de la tabla 10.1), **SUP-031** (alcance de la verificación de fidelidad documental), **SUP-036** (alcance y profundidad de la refutación), **SUP-033** (una escena basta como piloto), **SUP-034** (reparto 60/40 de la reserva común) y **SUP-035** (umbrales de superficie protegida). Son supuestos con plan de verificación, no preguntas sin respuesta, y por eso viven en la sección 14 y no aquí.
+Esto no significa que no quede nada por saber. Quedan cuatro supuestos que solo la medición puede confirmar o desmentir, y que deben revisarse con el informe de calibración de RF-079 después de la primera novela completa: **SUP-021** (tasa de terminación por convergencia del 90 %), **SUP-027** (valores de presupuesto de la tabla 10.1), **SUP-034** (reparto 60/40 de la reserva común) y **SUP-035** (umbrales de superficie protegida). Son supuestos con plan de verificación, no preguntas sin respuesta, y por eso viven en la sección 14 y no aquí.
 
 ## 16. Riesgos
 
@@ -3328,8 +3319,7 @@ Esto no significa que no quede nada por saber. Quedan siete supuestos que solo l
 | R-14 | Los presupuestos por defecto de 10.1 resultan mal dimensionados y la mayoría de las novelas se cierra con reservas | Alta hasta la primera calibración | Medio | RF-079 emite el informe de calibración al cierre de cada Ejecución. D19 obliga a recalibrar tras la primera novela completa, antes de producir en serie |
 | R-15 | La investigación alucina una fuente que sostiene una afirmación falsa, y el error se propaga a las Restricciones de época, al Canon y a la validación de toda la novela | Media, reducida desde Alta por RF-100 | Alto | RF-100 verifica contra el contenido conservado por RF-101; RNF-027 exige el 100 % verificado o marcado como no verificable. Riesgo residual: una fuente real pero errónea, o una afirmación que no deriva en Restricción y llega al Canon por la vía del diseño (SUP-031) |
 | R-16 | El sistema instancia Licencias de alcance con generosidad y la novela se aleja de lo documentado más de lo que el Autor pretendía | Media | Medio | D22 permite al sistema proponerlas, pero no aprobarlas: pasan por PC-3 con sus límites declarados, RF-092 las enumera en la entrega y RF-059 comprueba que nada se salga de sus límites. El Autor puede además fijar su política en el Encargo (RF-009) |
-| R-17 | El ciclo de escena piloto se repite sin que el Autor acepte ninguna versión y la producción no llega a arrancar | Media | Medio | Presupuesto de 3 ciclos en la tabla 10.1; al cuarto, el desacuerdo se eleva como decisión sobre el Canon o el Encargo, no como repetición de la redacción (RF-046) |
-| R-18 | Una Ejecución se lanza sobre un período tan mal documentado que la ambientación será pobre, y nadie lo advierte hasta leer la novela | Alta | Medio | **Ninguna preventiva desde la 1.3.** La retirada del dictamen por D27 elimina el único aviso previo al gasto: la decisión de acometer el período se toma implícitamente al arrancar. Quedan controles posteriores y no equivalentes: la refutación (RF-102) impide afirmar lo indefendible pero no avisa de la escasez, las lagunas se declaran (RF-015), y la escena piloto (RF-046) es el primer momento en que el Autor ve el resultado, ya con la investigación y el Canon pagados. Riesgo aceptado conscientemente por el Autor al responder PA-032 |
+| R-18 | Una Ejecución se lanza sobre un período tan mal documentado que la ambientación será pobre, y nadie lo advierte hasta leer la novela | Alta | Medio | **Ninguna preventiva desde la 1.3.** La retirada del dictamen por D27 elimina el único aviso previo al gasto: la decisión de acometer el período se toma implícitamente al arrancar. Quedan controles posteriores y no equivalentes: la refutación (RF-102) impide afirmar lo indefendible pero no avisa de la escasez, y las lagunas se declaran (RF-015). Riesgo aceptado conscientemente por el Autor al responder PA-032 |
 | R-19 | La refutación retira afirmaciones legítimas apoyándose en fuentes de peor calidad que las originales, y empobrece el Contexto histórico | Media | Medio | Toda refutación exige fuente y queda registrada con ella (RF-102); el veredicto distingue refutada de matizada y de disputada, de modo que el desacuerdo documentado no borra la afirmación sino que la marca conforme a RF-015; y la pasada es única, sin bucle que permita erosionar el Contexto por insistencia |
 
 ---
@@ -3354,7 +3344,6 @@ Estas formulaciones aparecían en las entradas y no se han convertido en requisi
 | ID | Propuesta | Por qué la sugiero | Coste de no hacerla |
 |---|---|---|---|
 | PR-01 | **Punto de control humano opcional sobre el Contexto histórico**, antes del diseño narrativo | Un Autor con criterio sobre el período detecta en cinco minutos un error de ambientación que contaminaría toda la novela. Es el segundo punto más barato del arnés, después de PC-3 | El error histórico estructural se descubre capítulos después |
-| PR-02 | ~~**Escena piloto**: redactar una escena representativa y someterla al Autor antes de producir el resto~~ **Elevada a requisito en la versión 1.1 por D21: RF-046 y PC-8.** Se conserva el ID por estabilidad | Validaba la voz, el registro y la densidad descriptiva con el coste de una escena, no de una novela | — |
 | PR-03 | **Modo copiloto**: el Autor escribe y el arnés valida contra el Canon en tiempo real | Los componentes ya están todos especificados; el validador, el Canon y las restricciones de época funcionan igual sobre texto humano. Abriría un segundo producto sin rediseñar nada | Se pierde un uso evidente de lo construido |
 | PR-04 | **Panel de salud de la Ejecución** con hallazgos por severidad, consumo y proyección por capítulo | Hace visible la degradación antes de que sea irreversible. Sin él, la única señal es el resultado final | Se diagnostica tarde y a ciegas |
 | PR-05 | **Conjunto de encargos de referencia** para regresión: media docena de encargos fijos que se reejecutan tras cada cambio de instrucciones | Es la única forma de saber si un cambio en un prompt mejora o empeora el sistema. Sin esto, la evolución del arnés es a ciegas | Cada ajuste es una apuesta |
@@ -3391,12 +3380,59 @@ Las versiones 0.1 a 0.6 son borradores del ciclo de refinamiento con el responsa
 | 0.5 | Petición de actualizar el diagrama a la arquitectura vigente | Diagrama canónico reconstruido y sincronizado con el documento |
 | 0.6 | Petición de embeber el diagrama en el documento | El documento deja de depender de ficheros externos para ser comprendido |
 | 1.0 | Cierre del ciclo de refinamiento | Consolidación y renumeración del histórico. Sin cambios normativos respecto a la 0.6 |
-| 1.1 | Revisión crítica del documento cerrado; decisiones D20 a D25 sobre las preguntas PA-025 a PA-030 | Verificación documental, escena piloto, licencias de alcance, reserva segmentada y superficie protegida, más siete correcciones de coherencia |
+| 1.1 | Revisión crítica del documento cerrado; decisiones D20 a D25 sobre las preguntas PA-025 a PA-030 | Verificación documental, licencias de alcance, reserva segmentada y superficie protegida, más siete correcciones de coherencia |
 | 1.2 | Decisión D26 sobre PA-031 | Fijado el nombre del artefacto que acumula el texto redactado: **Novela** |
 | 1.3 | Decisión D27 sobre PA-032 | Retirada del dictamen de viabilidad documental y sustitución por la pasada de refutación adversarial |
-| **1.4** | Decisiones D28 y D29 sobre PA-033 y PA-034 | **Vigente.** Extensión por capítulo en palabras o líneas, y Encargo entregable como fichero estructurado |
+| 1.4 | Decisiones D28 y D29 sobre PA-033 y PA-034 | Extensión por capítulo en palabras o líneas, y Encargo entregable como fichero estructurado |
+| **1.9** | Barrido de Deuda de calidad al cerrar la Novela | **Vigente.** El detalle de las versiones 1.5 a 1.9 está en §18.2 |
 
 ### 18.2 Cambios por versión
+
+**1.9**
+
+| Tipo | Cambio | Motivo |
+|---|---|---|
+| Comportamiento nuevo en RF-077 | Al cerrar la Novela, todo Hallazgo **no bloqueante** que siga abierto se declara como **Deuda de calidad**, pasa a `aceptado_como_deuda` y el Proyecto queda en *finalizado con reservas* | Pregunta del Autor: «¿por qué los hallazgos los tengo que aceptar yo? ¿no deberían ser los agentes?». Tenía razón: RF-065 enruta cada hallazgo a su etapa responsable, pero **E8 es la última** y los suyos nacían sin nadie detrás. Se quedaban abiertos para siempre en un fichero que no miraba nadie, y la novela se entregaba como *finalizada* igual |
+| Degradación de E8 acotada | La reapertura del bucle externo con los hallazgos de la pasada global, que E8 preveía, **se declara no implementada**. Queda sólo la salida por Deuda de calidad | Añadir una vuelta al final de todo sería un bucle sin terminación declarada —los cinco modos T1 a T5 están definidos para el bucle interno y el externo— justo donde queda menos presupuesto |
+| Glosario ampliado | La **Deuda de calidad** deja de ser sólo «por agotamiento de presupuesto» y cubre también el cierre sin etapa que pueda corregir | Es el mismo mecanismo y la misma promesa: hacer visible lo que de otro modo se entrega en silencio |
+
+**1.8**
+
+| Tipo | Cambio | Motivo |
+|---|---|---|
+| Modos retirados | **Asistido**, **autónomo supervisado** y **autónomo**. Queda un único modo de operación, **Revisión del Autor**, y con ellos decaen **D15** y el supuesto **SUP-024** | Decisión del Autor: «sólo hay modo de revisión del autor, así que hay que quitar los demás». Los otros tres presuponían etapas de validación que ya no existen desde la 1.7, de modo que eran configuraciones sin implementación detrás |
+| Punto de control nuevo | **PC-2b**, la firma del Contexto histórico por el Autor, que pasa a ser una de las dos paradas de la Ejecución. E2 deja de no tener punto de control humano | Sin verificación de fidelidad ni refutación, el Contexto entraba al diseño sin que nadie lo mirara. La propuesta de revisión opcional que 17.2 dejaba apuntada se convierte en obligatoria |
+| Actor retirado | El **Agente refutador** desaparece del diagrama canónico y de la tabla de actores, junto con el bucle **B11** | Consecuencia de la retirada de RF-102 en la 1.7, que la 1.7 no arrastró hasta el diagrama |
+| Recuperación | El diagrama y E2 dejan de mostrar dos modos de recuperación. Queda la búsqueda en internet, y la degradación por fallo de un modo deja de existir porque no hay segundo modo al que caer | Consecuencia de la retirada de `sm-web` y `sm-rag` |
+| Garantía rebajada, declarada | Sobre el Contexto histórico, lo comprobado por código es la **trazabilidad** —toda Restricción cuelga de una afirmación vigente y no refutada—, no la veracidad de lo afirmado. El único control sobre el contenido es la lectura del Autor | Se declara explícitamente porque hasta la 1.5 el Autor sustituía a unas etapas que existían, y desde la 1.7 no sustituye a nadie. Es una pérdida real de garantía, aceptada a cambio de que la Ejecución corra entera |
+| Conducción | La Ejecución se conduce en **tres tramos** con dos paradas, desde la interfaz gráfica o desde `/ejecutar`. Ninguna etapa tiene límite de tiempo; parar mata la etapa en curso, y una Ejecución cortada se relanza y continúa por donde iba | El límite de media hora mataba el tramo de la novela justo en el tope y tiraba lo escrito. Un reloj que no distingue una etapa colgada de una etapa larga corta más trabajo bueno del que salva |
+
+**1.7**
+
+| Tipo | Cambio | Motivo |
+|---|---|---|
+| Requisito retirado | **RF-046**, la escena piloto, con su punto de control **PC-8**, el invariante **INV-9**, la decisión **D21**, los contratos **CT-19** y **CT-20**, el supuesto **SUP-033**, el riesgo **R-17**, la propuesta **PR-02**, el código de error **ERR-408** y los eventos de ledger `piloto_sometido` y `piloto_resuelto` | Decisión del Autor: «piloto no va a haber nunca más». Aprobado el Canon, la producción arranca |
+| Requisito ablandado | **RF-100** y **RF-102** dejan de ser obligatorios. Ni la verificación de fidelidad ni la refutación condicionan el cierre del Contexto ni la derivación de Restricciones | El Contexto se obtiene por búsqueda en internet, que ya devuelve la fuente con lo que dice. Dos pasadas de modelo por afirmación costaban más de lo que corregían, y una de ellas rompió una Ejecución entera sin producir nada |
+| Invariante ablandado | **MD-7** ya no exige los dos veredictos para una Restricción comprobable. Se conserva que sea trazable a una afirmación y que esa afirmación no esté marcada como refutada | Lo que cuelga de algo refutado debe seguir cayendo; lo demás era coste sin retorno |
+| Componentes retirados | Los servidores de recuperación **sm-web** y **sm-rag** | Exigían credenciales que no estaban y no podían autorizarse desde una sesión headless. La investigación entra por `WebSearch` y `WebFetch`, y la cobertura se declara reducida |
+| Validación sustituida | La validación del Canon (E4) se sustituye por una **crítica breve** que el Autor lee antes de aprobar en PC-3 | Petición del Autor: «que sea muy sencilla, como una crítica, se revisa y punto» |
+| Precondición retirada | Una Ejecución arranca aunque no haya observabilidad configurada; la falta de traza se declara | Bloquear el arranque por falta de telemetría convertía un problema menor en uno mayor |
+| Etapas retiradas | Los subagentes `sm-refutador` y `sm-validador-canon`, y la skill `refutar-afirmacion` | Sin la refutación ni la validación del Canon como puertas, no quedaba quién los despachara: eran peso muerto |
+
+**1.6**
+
+| Tipo | Cambio | Motivo |
+|---|---|---|
+| Requisito nuevo | **RF-105**, trazado de toda la Ejecución en una plataforma de observabilidad, con el consumo real por modelo | Petición expresa del Autor. El ledger registra lo que el núcleo persiste, pero el gasto ocurre en sesiones de modelo que el núcleo no ve, y la primera Ejecución completa dejó el informe de calibración de RF-079 con consumo cero |
+| Precondición nueva | Una Ejecución no arranca sin observabilidad configurada | Una Ejecución sin traza gasta dinero y tiempo sin dejar constancia de en qué, y eso no se descubre hasta que alguien pregunta cuánto costó y no hay forma de saberlo |
+
+**1.5**
+
+| Tipo | Cambio | Motivo |
+|---|---|---|
+| Modo nuevo | **Revisión del Autor**, cuarto modo de operación en §12.2 | Petición expresa del Autor: quiere revisar él el Contexto histórico y el Canon, sin que se despache una etapa de validación para juzgarlos por él |
+| Requisito ampliado | RF-100 y RF-102 admiten al **Autor como emisor** del veredicto de fidelidad y del de refutación, cuando la Ejecución está en modo Revisión del Autor | Sin esto, MD-7 impedía derivar Restricciones comprobables y el modo quedaba inservible. Se amplía quién puede verificar, no se retira la exigencia de verificación: el veredicto se registra con su firmante, de modo que una afirmación sostenida por el criterio de una persona sigue siendo distinguible de una sostenida por una pasada adversarial |
+| Corrección | El interrogatorio del Encargo propaga la renuncia a la Guía de estilo a sus siete parámetros | Responder «sin preferencia» al grupo dejaba cada parámetro en `sin_decidir`, que RF-029 no admite al cerrar: el interrogatorio no podía cerrar el Encargo que él mismo producía, y sólo salía adelante agotando el límite de rondas |
 
 **0.3**
 
@@ -3477,16 +3513,14 @@ Esta versión nace de una revisión crítica del documento ya cerrado. Se separa
 |---|---|---|
 | Decisión | D20 a D25 incorporadas a la tabla de 1.3; PA-025 a PA-030 registradas en 15.1 | Respuestas del Autor a la revisión crítica |
 | Requisito nuevo | **RF-100**, comprobación de que la Fuente sostiene la afirmación, y **RF-101**, conservación del contenido consultado | D20. RF-013 solo exigía que la cita existiera: una fuente alucinada cumplía todos los requisitos y contaminaba en silencio las Restricciones de época |
-| Requisito nuevo | **RF-046**, escena piloto, con el punto de control **PC-8** | D21. Los dos puntos de control humanos obligatorios ocurrían ambos antes de que existiera una línea de prosa |
 | Requisito nuevo | **RF-035**, Licencias literarias de alcance instanciadas en el Canon | D22. Una premisa que hace de una figura real un personaje de la trama generaba un bloqueante por escena |
 | Requisito nuevo | **RNF-026**, superficie de texto protegido, y **RNF-027**, fidelidad de la cita a su fuente | D25 y D20 |
 | Requisito modificado | **RF-031**: el validador humano puede aprobar con bloqueantes abiertos, que pasan a Deuda o Licencia y limitan el Proyecto a *finalizado con reservas* | D23. El caso figuraba como límite sin resolver, en contradicción con INV-1 |
 | Requisito modificado | **RF-070** y tabla 10.1: la reserva común se segmenta en tramo libre y tramo del último tercio | D24. RF-070 y R-01 justificaban la misma reserva para dos propósitos incompatibles |
 | Requisito modificado | **RF-054** pasa a Must e incorpora la medición de superficie protegida | D25 |
 | Requisitos modificados por arrastre | RF-009, RF-013, RF-055, RF-059, RF-068, RF-085, RF-092; contratos CT-3, CT-6, CT-19 y CT-20; invariantes INV-3, INV-8 e INV-9; etapas E2, E4 y E5; entidades Fuente documental, Licencia literaria y Canon; glosario | Coherencia con los requisitos nuevos |
-| Diagrama | Añadido el nodo de escena piloto con PC-8 y el bucle B9; desviaciones 15 y 16 | D21 y la formalización de PC-7 |
 | Supuestos nuevos | SUP-031 a SUP-035 | Cinco inferencias mías introducidas al responder a las delegaciones de D20, D21, D24 y D25 |
-| Riesgos | R-15, R-16 y R-17 nuevos; mitigaciones de R-01 y R-03 reescritas | La verificación documental reduce R-03 pero abre el riesgo de la fuente real y errónea; las licencias de alcance y el piloto abren riesgos propios |
+| Riesgos | R-15, R-16 y R-17 nuevos; mitigaciones de R-01 y R-03 reescritas | La verificación documental reduce R-03 pero abre el riesgo de la fuente real y errónea; las licencias de alcance abren riesgos propios |
 | Propuesta elevada | PR-02 pasa de propuesta a requisito RF-046 | D21 |
 
 **1.2**
@@ -3532,11 +3566,14 @@ Esta versión nace de una revisión crítica del documento ya cerrado. Se separa
 | SUP-013 | Cerrado en la versión 0.4 | Resuelto por D17 |
 | RF-110 a RF-119 | Bloque reservado desde la versión 1.4 | Extensión de la capacidad C1, cuyo bloque original RF-001 a RF-009 quedó agotado en la 1.0. RF-110 emitido; el resto reservado |
 | RF-100 a RF-109 | Bloque reservado desde la versión 1.1 | Extensión de la capacidad C2, cuyo bloque original RF-010 a RF-019 quedó agotado en la 1.0. RF-100 y RF-101 emitidos; el resto reservado |
-| PR-02 | Elevada a requisito en la versión 1.1 | Convertida en RF-046 por D21. El identificador de propuesta no se reutiliza |
 | SUP-015 | Corregido en la versión 1.1 | Se retiró su referencia a un futuro «PC-7». Desde la 1.3, el siguiente identificador libre de punto de control es PC-9 |
 | RF-018 | Retirado en la versión 1.3 | Sustituido por RF-102 en virtud de D27 |
 | PC-7 | Retirado en la versión 1.3 | Desaparece con el dictamen que lo motivaba (D27). No se reutiliza |
 | SUP-028, SUP-030 | Cerrados en la versión 1.3 | Sin objeto tras la retirada del dictamen (D27) |
 | D18, PA-023 | Sin efecto desde la versión 1.3 | La decisión fijaba el umbral del dictamen retirado (D27). Se conservan en el registro porque describen lo que se decidió en su momento |
+| RF-046 | Retirado en la 1.7 | La escena piloto se elimina del arnés. El identificador no se reutiliza |
+| PC-8 | Retirado en la 1.7 | Punto de control de la escena piloto |
+| INV-9 | Retirado en la 1.7 | Invariante de la escena piloto |
+| CT-19, CT-20 | Retirados en la 1.7 | Contratos de la escena piloto y de su decisión |
 
 Ningún identificador retirado se reutiliza.

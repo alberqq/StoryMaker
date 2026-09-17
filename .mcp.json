@@ -1,33 +1,44 @@
 {
   "$comentario": [
-    "Los dos servidores de recuperacion de la seccion 2.5. Son la frontera con el",
-    "exterior y el unico punto por el que entra informacion no generada.",
+    "Dos servidores, y hacen cosas de naturaleza distinta.",
     "",
-    "Devuelven siempre contenido mas localizador mas fecha, nunca contenido suelto:",
-    "sin eso, RF-101 no tendria que conservar y la trazabilidad de RF-082 se caeria",
-    "en cuanto muriera un enlace.",
+    "`sm-langfuse` es de solo lectura y consulta la observabilidad de las",
+    "Ejecuciones. Los dos de recuperacion, sm-web y sm-rag, se retiraron del",
+    "arnes; la investigacion entra por WebSearch y WebFetch.",
     "",
-    "Las credenciales se resuelven del entorno en tiempo de ejecucion y se referencian",
-    "por marcador. Ninguna aparece jamas en un artefacto persistido (seccion 10)."
+    "`sm-navegador` NO es parte del arnes: es una herramienta de desarrollo.",
+    "Abre la interfaz en un Chromium de verdad para comprobar que pinta, porque",
+    "aqui no hay navegador y un error de JavaScript la deja en negro sin decir",
+    "nada. Ningun subagente lo usa y no interviene en ninguna Ejecucion. Solo",
+    "pulsa pestanas: no hay ninguna herramienta que acepte otro selector, de modo",
+    "que no puede accionar los botones que invocan al nucleo.",
+    "",
+    "Necesita `pip install playwright` y `python -m playwright install chromium`.",
+    "Es una dependencia de desarrollo, como pytest: el nucleo sigue sin ninguna",
+    "en tiempo de ejecucion.",
+    "",
+    "Las credenciales se resuelven del entorno o del .env de la raiz, y no",
+    "aparecen en ningun artefacto persistido."
   ],
   "mcpServers": {
-    "sm-web": {
+    "sm-langfuse": {
       "command": "python",
-      "args": ["-m", "storymaker_mcp.web"],
+      "args": [
+        "-m",
+        "storymaker_mcp.langfuse"
+      ],
       "env": {
-        "PYTHONPATH": "src",
-        "SM_WEB_PROVEEDOR": "${SM_WEB_PROVEEDOR:-tavily}",
-        "SM_WEB_API_KEY": "${SM_WEB_API_KEY}",
-        "SM_WEB_CONSERVAR_CONTENIDO": "1"
+        "PYTHONPATH": "src"
       }
     },
-    "sm-rag": {
+    "sm-navegador": {
       "command": "python",
-      "args": ["-m", "storymaker_mcp.rag"],
+      "args": [
+        "-m",
+        "storymaker_mcp.navegador"
+      ],
       "env": {
-        "PYTHONPATH": "src",
-        "SM_RAG_CORPUS": "${SM_RAG_CORPUS}",
-        "SM_RAG_DEVOLVER_FRAGMENTO": "1"
+        "PYTHONPATH": "src"
       }
     }
   }

@@ -95,8 +95,6 @@ CATALOGO: dict[str, DefinicionError] = {
            "Elevar al Autor"),
         _d("ERR-407", FAMILIA_PRESUPUESTO, "Tramo final solicitado antes del ultimo tercio", False,
            "Denegar: es una reserva, no un prestamo (D24)"),
-        _d("ERR-408", FAMILIA_PRESUPUESTO, "Ciclos de piloto agotados", False,
-           "Elevar al Autor como decision, no como repeticion"),
         # --- Estado --------------------------------------------------------
         _d("ERR-501", FAMILIA_ESTADO, "Proyecto bloqueado por otro proceso", False,
            "Abortar: escritor unico (ADR-04)"),

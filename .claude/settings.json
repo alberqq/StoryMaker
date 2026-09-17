@@ -7,15 +7,12 @@
   ],
   "permissions": {
     "deny": [
-      "Write(./proyectos/**)",
       "Edit(./proyectos/**)",
-      "NotebookEdit(./proyectos/**)",
       "Read(./.env)",
       "Read(./**/.env*)",
       "Read(./**/credentials*)"
     ],
     "allow": [
-      "Write(./proyectos/*/tmp/**)",
       "Edit(./proyectos/*/tmp/**)",
       "Read(./proyectos/**)",
       "Read(./contracts/**)",
@@ -27,7 +24,8 @@
       "Bash(git diff:*)",
       "Bash(git log:*)"
     ]
-  },
+  }
+,
   "env": {
     "STORYMAKER_RAIZ": "proyectos",
     "PYTHONPATH": "src"

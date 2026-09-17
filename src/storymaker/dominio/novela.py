@@ -47,7 +47,6 @@ def escribir(
     ejecucion: str,
     iteracion: int = 1,
     rama: str = RAMA_PRINCIPAL,
-    es_piloto: bool = False,
     hallazgos_aplicados: Iterable[str] = (),
     revelaciones_portadas: Iterable[str] = (),
 ) -> dict[str, Any]:
@@ -58,16 +57,6 @@ def escribir(
     hook. La redundancia es deliberada.
     """
     plan = proyecto.exigir_canon_aprobado()
-
-    # INV-9: fuera del piloto, ninguna escena se produce antes de que el piloto
-    # haya sido aceptado.
-    if not es_piloto and not proyecto.estado.piloto_aceptado:
-        raise ErrorStoryMaker(
-            "ERR-502",
-            "No se produce en serie antes de que el Autor acepte la escena piloto "
-            "(INV-9, RF-046)",
-            escena=id_escena,
-        )
 
     ficha = _ficha_de_escena(plan, id_escena)
     numero = _siguiente_numero_version(proyecto, id_escena)
@@ -95,7 +84,6 @@ def escribir(
         "udt_origen": id_unidad,
         "ejecucion": ejecucion,
         "iteracion": iteracion,
-        "es_piloto": es_piloto,
         "protegido_palabras": 0,
         "pasajes_protegidos": [],
         "hallazgos_aplicados": list(hallazgos_aplicados),
@@ -160,7 +148,6 @@ def refinar(
     resultado = escribir(
         proyecto, id_escena, texto_refinado,
         id_unidad=id_unidad, ejecucion=ejecucion, iteracion=iteracion, rama=rama,
-        es_piloto=meta_anterior.get("es_piloto", False),
         hallazgos_aplicados=meta_anterior.get("hallazgos_aplicados", []),
         revelaciones_portadas=meta_anterior.get("revelaciones_portadas", []),
     )

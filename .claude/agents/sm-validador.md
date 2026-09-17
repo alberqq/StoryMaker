@@ -80,9 +80,11 @@ del redactor a la novela que ya se escribio, y se congela al cerrar el capitulo.
 
 ## Al agotarse el presupuesto
 
-Con bloqueantes abiertos: en modo asistido, **detiene y escala** a PC-6. En modo
-autonomo sin destinatario, cierra con reservas, registra la Deuda, y la novela ya
-no podra declararse *finalizada* sino *finalizada con reservas* (RF-074).
+Con bloqueantes abiertos, **detiene y escala** a PC-6. Hay un unico modo de
+operacion, Revision del Autor, y ninguna puerta se resuelve sola: la Ejecucion
+espera su decision sin consumir presupuesto. El cierre con reservas existe todavia
+--- deja la novela como *finalizada con reservas* y registra la Deuda (RF-074) ---
+pero lo decide el Autor, no el arnes.
 
 Un bloqueante que no se puede resolver dentro del arnes -- falta fuente documental,
 contradice una decision del Autor, exige cambiar el Encargo -- **se escala (T5), no

@@ -153,45 +153,8 @@ def test_guard_canon_deniega_redactar_sobre_canon_en_borrador(proyecto_con_canon
     assert "INV-1" in decision["permissionDecisionReason"]
 
 
-def test_guard_canon_deniega_produccion_en_serie_sin_piloto(proyecto_con_canon_borrador):
-    proyecto = proyecto_con_canon_borrador
-    d_canon.aprobar(proyecto, modo="agente", quien="sm-validador-canon")
-    decision = ejecutar_hook(
-        "guard_canon.py",
-        {
-            "tool_name": "Bash",
-            "tool_input": {
-                "command": f"storymaker --proyecto {proyecto.estado.id} escena escribir "
-                           "--escena esc_001_002 --texto @b.md --unidad udt_2"
-            },
-        },
-        entorno={
-            "STORYMAKER_PROYECTO": proyecto.estado.id,
-            "STORYMAKER_RAIZ": str(proyecto.almacen.raiz_proyectos),
-        },
-    )
-    assert decision["permissionDecision"] == "deny"
-    assert "INV-9" in decision["permissionDecisionReason"]
 
 
-def test_guard_canon_permite_el_piloto(proyecto_con_canon_borrador):
-    proyecto = proyecto_con_canon_borrador
-    d_canon.aprobar(proyecto, modo="agente", quien="sm-validador-canon")
-    decision = ejecutar_hook(
-        "guard_canon.py",
-        {
-            "tool_name": "Bash",
-            "tool_input": {
-                "command": f"storymaker --proyecto {proyecto.estado.id} escena escribir "
-                           "--escena esc_001_001 --texto @b.md --unidad udt_1 --piloto"
-            },
-        },
-        entorno={
-            "STORYMAKER_PROYECTO": proyecto.estado.id,
-            "STORYMAKER_RAIZ": str(proyecto.almacen.raiz_proyectos),
-        },
-    )
-    assert decision["permissionDecision"] == "allow"
 
 
 def test_guard_canon_no_estorba_a_las_ordenes_que_no_redactan():
@@ -219,7 +182,7 @@ def proyecto_con_pasaje_protegido(proyecto):
     fragmento = "una frase que resolvio un bloqueante"
     d_novela.escribir(
         proyecto, "esc_001_001", f"{TEXTO} {fragmento}",
-        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa, es_piloto=True,
+        id_unidad="udt_1", ejecucion=proyecto.estado.ejecucion_activa,
     )
     d_novela.proteger_pasaje(proyecto, "esc_001_001", fragmento, "hlz_x")
     return proyecto
@@ -320,11 +283,11 @@ def test_arranque_avisa_de_puntos_de_control_pendientes(proyecto):
     d_ejecucion.iniciar(
         proyecto, Presupuesto(coste_total=10.0, segundos_total=600.0, iteraciones_total=10)
     )
-    d_ejecucion.abrir_punto_control(proyecto, "PC-8", {"version_escena": "esv_001_001_v1"})
+    d_ejecucion.abrir_punto_control(proyecto, "PC-5", {"motivo": "bloqueo de prueba"})
 
     salida = ejecutar_hook("arranque.py", {}, entorno=_entorno(proyecto))
     assert "esperan tu decision" in salida["additionalContext"]
-    assert "PC-8" in salida["additionalContext"]
+    assert "PC-5" in salida["additionalContext"]
 
 
 # ==========================================================================

@@ -138,12 +138,12 @@ PRELACION: dict[str, tuple[str, ...]] = {
     "sm-validador-canon": ("plan", "encargo", "restricciones"),
     "sm-redactor": (
         "ficha_escena",
-        "estilo_y_piloto",
+        "estilo",
         "hechos_de_sujetos_presentes",
         "escenas_del_capitulo",
         "sinopsis_previas",
     ),
-    "sm-refinador": ("texto_escena", "pasajes_protegidos", "estilo_y_piloto"),
+    "sm-refinador": ("texto_escena", "pasajes_protegidos", "estilo"),
     "sm-validador": (
         "capitulo",
         "fichas_escenas",
@@ -159,7 +159,7 @@ PRELACION: dict[str, tuple[str, ...]] = {
 # objeto o incumpliria un requisito.
 NO_RECORTABLES: dict[str, frozenset[str]] = {
     "sm-refutador": frozenset({"afirmacion", "fuentes_citadas", "contenido_conservado"}),
-    "sm-redactor": frozenset({"ficha_escena", "estilo_y_piloto"}),
+    "sm-redactor": frozenset({"ficha_escena", "estilo"}),
     "sm-refinador": frozenset({"texto_escena", "pasajes_protegidos"}),
     "sm-validador": frozenset({"capitulo", "fichas_escenas"}),
     "sm-validador-canon": frozenset({"plan"}),

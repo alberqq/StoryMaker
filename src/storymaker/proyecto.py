@@ -37,13 +37,20 @@ ESTADOS_PROYECTO = (
 # Proyecto. Se declaran aqui porque el Proyecto guarda el ultimo conocido.
 ETAPAS = (
     "Encargo", "Investigacion", "Refutacion", "Diseno", "ValidacionCanon",
-    "Piloto", "Produccion", "PasadaGlobal", "Entrega", "Detenida",
+    "Produccion", "PasadaGlobal", "Entrega", "Detenida",
 )
 
-MODO_ASISTIDO = "asistido"
-MODO_AUTONOMO_SUPERVISADO = "autonomo_supervisado"
-MODO_AUTONOMO = "autonomo"
-MODOS = (MODO_ASISTIDO, MODO_AUTONOMO_SUPERVISADO, MODO_AUTONOMO)
+# El unico modo de operacion. Hubo tres mas --- asistido, autonomo supervisado y
+# autonomo --- que se distinguian por quien resolvia los puntos de control y por
+# si la Ejecucion se detenia a esperar. Se retiraron porque ninguno se usaba: el
+# Autor revisa en persona el Contexto historico y el Canon, y ese es el flujo.
+#
+# La constante se conserva en lugar de disolverse en una cadena suelta porque el
+# estado del Proyecto la persiste y el dia que vuelva a haber mas de uno, el sitio
+# donde anadirlos es este.
+MODO_REVISION_DEL_AUTOR = "revision_del_autor"
+
+MODOS = (MODO_REVISION_DEL_AUTOR,)
 
 
 @dataclass
@@ -54,13 +61,11 @@ class EstadoProyecto:
     etapa: str = "Encargo"
     creado_en: str = field(default_factory=ahora)
     actualizado_en: str = field(default_factory=ahora)
-    modo: str = MODO_ASISTIDO
+    modo: str = MODO_REVISION_DEL_AUTOR
     encargo_version_vigente: str | None = None
     contexto_version_vigente: str | None = None
     canon_version_vigente: str | None = None
     canon_estado: str | None = None
-    piloto_aceptado: bool = False
-    piloto_version: str | None = None
     ejecucion_activa: str | None = None
     # D23: si el Canon se aprobo con bloqueantes asumidos por una persona, el
     # Proyecto ya no puede alcanzar *finalizado*, solo *finalizado con reservas*.
@@ -82,8 +87,6 @@ class EstadoProyecto:
             "contexto_version_vigente": self.contexto_version_vigente,
             "canon_version_vigente": self.canon_version_vigente,
             "canon_estado": self.canon_estado,
-            "piloto_aceptado": self.piloto_aceptado,
-            "piloto_version": self.piloto_version,
             "ejecucion_activa": self.ejecucion_activa,
             "limitado_a_reservas": self.limitado_a_reservas,
             "motivo_reservas": self.motivo_reservas,
@@ -121,13 +124,13 @@ class Proyecto:
     def crear(
         raiz_proyectos: Path | str,
         titulo_provisional: str,
-        modo: str = MODO_ASISTIDO,
+        modo: str = MODO_REVISION_DEL_AUTOR,
         identificador: str | None = None,
     ) -> "Proyecto":
         if modo not in MODOS:
             raise ErrorStoryMaker(
                 "ERR-105",
-                f"Modo de operacion desconocido: {modo!r}. Los tres son {MODOS}.",
+                f"Modo de operacion desconocido: {modo!r}. El unico es {MODOS[0]}.",
                 campo="modo",
             )
         identificador = identificador or id_proyecto()

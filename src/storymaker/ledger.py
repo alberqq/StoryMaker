@@ -35,8 +35,6 @@ EVENTOS = {
     "presupuesto_denegado": "Ambito, estimacion, remanente y motivo de la denegacion",
     "punto_control_abierto": "Tipo y que se presento",
     "punto_control_resuelto": "Decision, quien y cuando",
-    "piloto_sometido": "Version de escena del piloto",
-    "piloto_resuelto": "Decision del Autor sobre el piloto",
     "canon_versionado": "Version anterior y nueva, motivo, capitulos invalidados y licencias aprobadas",
     "ejecucion_finalizada": "Estado, consumo total e informe de calibracion",
     # Transversales exigidos por la seccion 10 y por ADR-02/ADR-06.

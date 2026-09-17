@@ -11,12 +11,12 @@ la implementación, no la decisión.
 ## Las tres capas
 
 ```
-Piel          .claude/commands/        ocho comandos de barra
+Piel          .claude/commands/        siete comandos de barra
+              gui/                     interfaz y orquestador
               CLAUDE.md                lo que siempre está en contexto
 
-Agentes       .claude/agents/          nueve subagentes, contexto aislado
-              .claude/skills/          seis procedimientos a demanda
-              src/storymaker_mcp/      dos servidores de recuperación
+Agentes       .claude/agents/          siete subagentes, contexto aislado
+              .claude/skills/          cinco procedimientos a demanda
 
 Núcleo        src/storymaker/          propietario único del estado
               .claude/hooks/           siete puertas deterministas
@@ -58,9 +58,8 @@ La regla que las separa es ADR‑01: **los agentes proponen, el núcleo escribe.
 |---|---|---|
 | E1 · Captura del encargo | `sm-entrada` | `dominio/encargo.py` |
 | E2 · Investigación | `sm-investigacion` | `dominio/contexto.py` |
-| E2 · Refutación | `sm-refutador` | `dominio/contexto.py` (`refutar`) |
 | E3 · Diseño narrativo | `sm-diseno` | `dominio/canon.py` |
-| E4 · Validación del Canon | `sm-validador-canon` | `dominio/canon.py` (`aprobar`) |
+| E4 · Crítica del Canon | — la escribe E3 al final de su tramo | `dominio/canon.py` (`aprobar`) |
 | E5 · Redacción | `sm-redactor` | `dominio/novela.py` |
 | E6 · Refinamiento | `sm-refinador` | `dominio/novela.py` (`refinar`) |
 | E7 · Validación | `sm-validador` | `dominio/validacion.py` |
@@ -68,7 +67,7 @@ La regla que las separa es ADR‑01: **los agentes proponen, el núcleo escribe.
 
 ---
 
-## Las nueve invariantes, y quién las sostiene
+## Las invariantes, y quién las sostiene
 
 Cada una se comprueba en al menos dos sitios. La redundancia es ADR‑02: el hook
 protege de un agente descaminado, el núcleo protege de un error en el hook.
@@ -79,11 +78,10 @@ protege de un agente descaminado, el núcleo protege de un error en el hook.
 | INV‑2 | Ninguna escena revela antes de tiempo | — | `invariantes._revelaciones_posteriores` · `validacion.comprobar_revelaciones_anticipadas` |
 | INV‑3 | Toda afirmación histórica, respaldada o con licencia | — | `validacion.comprobar_licencia_de_figura` |
 | INV‑4 | La Novela contiene la mejor versión, no la última | — | `novela.conservar_mejor` · `bucles.mejor_version` |
-| INV‑5 | Ningún bloqueante convive con una unidad cerrada | — | `validacion.cerrar_capitulo` · `invariantes.comprobar_terminacion` |
+| INV‑5 | Ningún bloqueante convive con una unidad cerrada | — | `validacion.cerrar_capitulo` · `invariantes.comprobar_terminacion` · `global_._declarar_deuda_al_cerrar` barre los no bloqueantes a Deuda |
 | INV‑6 | Toda modificación del Canon genera versión | — | `canon.aprobar` · `canon.replanificar` |
 | INV‑7 | Ninguna Ejecución supera su presupuesto | `guard_presupuesto.py` | `presupuesto.Contabilidad.admitir` |
-| INV‑8 | Ninguna Restricción de afirmación no verificada | — | `invariantes.comprobar_derivacion_restriccion` |
-| INV‑9 | Nada en serie antes del piloto aceptado | `guard_canon.py` | `novela.escribir` |
+| INV‑8 | Toda Restricción es trazable a una afirmación vigente, y ninguna cuelga de una descartada o refutada | — | `invariantes.comprobar_derivacion_restriccion` |
 
 ---
 
@@ -102,11 +100,55 @@ promesa de poder reconstruir con qué información se tomó cada decisión.
 
 ---
 
+## La interfaz gráfica
+
+| Fichero | Qué hace |
+|---|---|
+| `gui/servidor.py` | Servidor HTTP de biblioteca estándar. Lee los ficheros del Proyecto para pintar el panel, invoca el núcleo por lista de argumentos para todo lo demás, y expone el orquestador. `/api/flujo/<prj>` reconstruye del Run Ledger qué etapa trabajó sobre qué y cómo cerró, emparejando `unidad_iniciada` con `unidad_cerrada` |
+| `gui/proceso.py` | Orquesta la Ejecución en **tres tramos** con dos paradas del Autor. Cada tramo es una sesión de `claude`, cuya salida se traduce a lenguaje legible y llega a la interfaz según se produce. De esa salida se extrae además **quién despacha a quién**: cada subagente con su tarea y su duración, y cada llamada al núcleo |
+| `gui/langfuse.py` | Exporta la traza de la Ejecución por **OpenTelemetry** (`/api/public/otel/v1/traces`), en OTLP sobre JSON y con biblioteca estándar. Las credenciales se resuelven del entorno; sin ellas, se declara que no hay traza y se sigue |
+| `gui/comprobar_pagina.py` | Comprobación estática del JavaScript de la página: detecta las formas de romperla que ya conocemos |
+| `src/storymaker_mcp/navegador.py` | Servidor MCP de desarrollo, sobre Playwright. Abre la página en un Chromium real y dice qué pestaña revienta. **No es parte del arnés** |
+| `gui/index.html` | Página única. React y Babel por CDN, sin compilación y sin `node_modules` |
+
+Tres decisiones la gobiernan, y son consecuencia de la regla de que sólo el núcleo
+escribe. La primera es que **el servidor no escribe un solo byte bajo `proyectos/`**:
+cuando la interfaz quiere cambiar algo invoca al núcleo y devuelve su sobre tal cual,
+error incluido. La segunda es la **lista blanca** de `COMANDOS_PERMITIDOS`: la
+superficie de la interfaz es deliberadamente más estrecha que la del CLI, y deja
+fuera `escena escribir` y `unidad admitir`, que producen prosa o consumen presupuesto
+y son trabajo de una etapa, no de un botón. La tercera es que **sólo escucha en
+`127.0.0.1`**, porque esto expone el núcleo por HTTP y abrirlo a la red sería dar a
+cualquiera la capacidad de escribir en el Proyecto.
+
+La interfaz tiene siete vistas —componer el Encargo, proceso, estado, Contexto,
+Canon, hallazgos y novela— y **ninguna despacha etapas sueltas**: la Ejecución son
+tres tramos y se conduce desde *Proceso*.
+
+Las vistas de agentes son **dos, y complementarias**: el panel en vivo de cada tramo
+sale de la salida de la sesión y vive en memoria, así que enseña quién trabaja ahora
+pero se pierde al reiniciar; *El flujo de agentes* sale del ledger, así que está en
+disco y existe para las Ejecuciones de antes, pero sólo enseña las unidades ya cerradas.
+
+**Ninguna etapa tiene reloj.** Lo tuvo: media hora, y el tramo de la novela murió
+justo en el tope dos veces, tirando lo que llevaba escrito. Un límite que no
+distingue una etapa colgada de una etapa larga corta más trabajo bueno del que
+salva. En su lugar, *Proceso* enseña quién está despachado y desde cuándo —que es
+lo que de verdad contesta a «esto sigue vivo»— y el botón de **parar mata la etapa
+en curso**. Lo que el núcleo haya persistido sobrevive, así que una Ejecución
+cortada se relanza y **continúa por donde iba**: los tramos ya superados aparecen
+marcados como hechos en una tirada anterior en lugar de desaparecer de la lista.
+
+Se arranca con `python gui/servidor.py` y responde en el puerto 8765, configurable
+con `STORYMAKER_GUI_PUERTO`.
+
+---
+
 ## Dependencias
 
 **Ninguna en tiempo de ejecución.** El almacén son ficheros, la validación de
-contratos es un subconjunto de JSON Schema implementado en `esquemas.py`, y los
-servidores MCP hablan JSON‑RPC sobre entrada y salida estándar sin biblioteca.
+contratos es un subconjunto de JSON Schema implementado en `esquemas.py`, y la
+interfaz gráfica trae React por CDN en lugar de un árbol de dependencias.
 
 Para las pruebas hace falta `pytest`. El PDF de la entrega usa `pandoc` si está en el
 entorno, y si no, se entrega sólo Markdown y se declara (ERR‑902).
@@ -122,12 +164,11 @@ python -m pytest tests/ -q
 | Fichero | Nivel de §12 | Qué cubre |
 |---|---|---|
 | `test_invariantes.py` | Unitario determinista | Las invariantes de §6.3, **cada una con su caso que falla** |
-| `test_contratos.py` | Contrato | Los veinte contratos, con casos que deben rechazarse |
+| `test_contratos.py` | Contrato | Los quince esquemas de contrato, con casos que deben rechazarse |
 | `test_almacen_y_recuperacion.py` | Recuperación | Corte simulado en cada paso del orden canónico |
 | `test_presupuesto_y_bucles.py` | Unitario determinista | Los dos tramos de reserva y los cinco modos de terminación |
 | `test_integracion.py` | Integración | La novela mínima de dos capítulos y cuatro escenas |
 | `test_hooks_y_cli.py` | Integración | Los hooks como procesos reales, con su protocolo |
-| `test_mcp.py` | Contrato | Que ningún resultado salga sin localizador y fecha |
 
 El quinto nivel de §12 —regresión de arnés sobre el conjunto de encargos de
 referencia— **no está implementado**, y no lo está porque necesita un proveedor de
@@ -147,5 +188,4 @@ Lo mismo que §13.2 deja fuera, más lo que se ha descubierto al construir:
 | Texto de los prompts y de las rúbricas | Los prompts viven en `.claude/agents/`; las rúbricas, en la skill `evaluar-con-rubrica` |
 | Deriva de voz y repetición a larga distancia | `global_.indicadores_de_estilo` mide tres cosas simples. Exige calibración empírica sobre el castellano (T‑03) |
 | Contradicción entre hechos en lenguaje natural | `canon._detectar_contradiccion` cubre sólo el caso comprobable —mismo sujeto, mismo atributo único, valor distinto—. El resto es comprobación por modelo con rúbrica, y así está declarado (T‑03) |
-| Índice vectorial del corpus | `storymaker_mcp/rag.py` recupera por términos. El índice vectorial sigue pendiente de prueba de concepto |
 | Puerta de calidad sobre la rúbrica | T‑02: la maquinaria está, falta el umbral. Hoy las puntuaciones sólo comparan una versión consigo misma |

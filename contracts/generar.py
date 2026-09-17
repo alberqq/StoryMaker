@@ -487,7 +487,6 @@ ESCENA_VERSION = objeto(
         "udt_origen": TEXTO,
         "ejecucion": TEXTO,
         "iteracion": {"type": "integer", "minimum": 1},
-        "es_piloto": {"type": "boolean"},
         "protegido_palabras": {"type": "integer", "minimum": 0},
         "pasajes_protegidos": {"type": "array", "items": {"type": "object"}},
         "protecciones_reescritas": {"type": "array", "items": {"type": "object"}},
@@ -505,13 +504,13 @@ ESCENA_VERSION = objeto(
         "notas_redactor": {"type": "string"},
     },
     ["schema_version", "id", "escena", "rama", "texto_ref", "hash_texto", "palabras",
-     "canon_plan_version", "udt_origen", "es_piloto", "protegido_palabras"],
+     "canon_plan_version", "udt_origen", "protegido_palabras"],
 )
 # ADR-05: la vigencia vive solo en ramas.json. Que el campo este prohibido aqui es
 # lo que impide que vuelva a haber dos fuentes de la misma verdad.
 ESCENA_VERSION["properties"]["vigente"] = {"not": {}}
 
-# --- CT-9, CT-10, CT-12/13, CT-14, CT-15, CT-17, CT-18, CT-19, CT-20 -------
+# --- CT-9, CT-10, CT-12/13, CT-14, CT-15, CT-17, CT-18 -------------------
 
 PROPUESTA_REPLANIFICACION = objeto(
     {
@@ -649,42 +648,6 @@ EVENTO_LEDGER = objeto(
     ["schema_version", "secuencia", "momento", "tipo", "proyecto", "ejecucion", "carga"],
 )
 
-ESCENA_PILOTO = objeto(
-    {
-        "schema_version": VERSION,
-        "version_escena": ID,
-        "texto": TEXTO,
-        "ficha_escena": ESCENA_PLAN,
-        "parametros_estilo_aplicados": {"type": "object"},
-        "procedencia_parametros": {"type": "object"},
-        "alternativas_de_voz": {"type": "array", "items": {"type": "object"}},
-    },
-    ["schema_version", "version_escena", "texto", "ficha_escena",
-     "parametros_estilo_aplicados", "procedencia_parametros"],
-)
-
-DECISION_PILOTO = objeto(
-    {
-        "schema_version": VERSION,
-        "decision": {"enum": ["aceptar", "ajustar_estilo", "volver_al_canon"]},
-        "motivo": {"type": "string"},
-        "elemento_afectado": {"type": ["string", "null"]},
-        "decidido_por": TEXTO,
-        "decidido_en": MOMENTO,
-    },
-    ["schema_version", "decision", "decidido_por"],
-    # CT-20: cuando no es una aceptacion, la decision identifica que debe cambiar.
-    # Sin eso, "no me convence" no es accionable por ninguna etapa.
-    **{
-        "if": objeto(
-            {"decision": {"enum": ["ajustar_estilo", "volver_al_canon"]}},
-            ["decision"], extra=True,
-        ),
-        "then": {"required": ["elemento_afectado"]},
-    },
-)
-
-
 ESQUEMAS = {
     "sobre": SOBRE,
     "ambito_investigacion": AMBITO_INVESTIGACION,
@@ -702,8 +665,6 @@ ESQUEMAS = {
     "capitulo_validado": CAPITULO_VALIDADO,
     "paquete_entrega": PAQUETE_ENTREGA,
     "evento_ledger": EVENTO_LEDGER,
-    "escena_piloto": ESCENA_PILOTO,
-    "decision_piloto": DECISION_PILOTO,
 }
 
 # Que contrato de la seccion 6.2 usa cada esquema. Es la trazabilidad inversa:
@@ -719,7 +680,6 @@ CONTRATOS = {
     "CT-13R": "respuesta_investigacion", "CT-14": "lote_hechos",
     "CT-15": "capitulo_validado", "CT-16": "lote_hallazgos",
     "CT-17": "paquete_entrega", "CT-18": "evento_ledger",
-    "CT-19": "escena_piloto", "CT-20": "decision_piloto",
 }
 
 

@@ -155,5 +155,7 @@ def _escena_version_1_a_2(registro: dict[str, Any]) -> dict[str, Any]:
     promovido = dict(registro)
     promovido.pop("vigente", None)
     promovido.setdefault("protegido_palabras", 0)
-    promovido.setdefault("es_piloto", False)
+    # La marca de piloto se retiro del arnes: los registros que la traigan la
+    # pierden al promoverse, y ninguno nuevo la lleva.
+    promovido.pop("es_piloto", None)
     return promovido

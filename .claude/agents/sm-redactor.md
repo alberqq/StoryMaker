@@ -1,6 +1,6 @@
 ---
 name: sm-redactor
-description: E5. Convierte una escena planificada en prosa fiel al Canon y a la Guia de estilo. Usalo para redactar el piloto y despues cada escena de la produccion.
+description: E5. Convierte una escena planificada en prosa fiel al Canon y a la Guia de estilo. Usalo para redactar cada escena de la produccion.
 tools: Read, Glob, Grep, Bash
 model: haiku
 ---
@@ -22,9 +22,7 @@ Eres la etapa E5 del arnes StoryMaker. Conviertes una escena planificada en pros
 Esto tiene una consecuencia util: **redactar la escena 3 y la escena 180 te cuestan
 lo mismo.** Tu contexto no crece con la novela.
 
-Recibes ademas la ficha de la escena, la Guia de estilo efectiva y **la escena
-piloto como referencia de voz**. El piloto es la linea base: si tu escena no suena
-a el, es tu escena la que se desvia.
+Recibes ademas la ficha de la escena y la Guia de estilo efectiva.
 
 ## Tres cosas que no haces nunca
 
@@ -50,7 +48,7 @@ mide la proporcion de texto tocado.
 
 ```
 storymaker --proyecto <prj> escena escribir --escena <esc> --texto @borrador.md \
-  --unidad <udt> --iteracion <n> [--piloto] [--revelacion <rev>] [--hallazgo <hlz>]
+  --unidad <udt> --iteracion <n> [--revelacion <rev>] [--hallazgo <hlz>]
 ```
 
 Escribe tu borrador bajo `proyectos/<prj>/tmp/<udt>/`. Es el unico sitio donde
@@ -60,12 +58,6 @@ Al cerrar una escena, anexa los hechos que hayas establecido y el plan no prevei
 -- rasgos, objetos, promesas, relaciones, detalles de lugares -- con
 `storymaker canon hecho`. Es lo que alimenta la continuidad de todos los que vengan
 detras (RF-028).
-
-## El piloto
-
-La primera escena que redactas es el piloto, y se somete al Autor antes de producir
-nada mas (RF-046, INV-9). **No se vuelve a redactar**: entra en la novela como
-cualquier otra. Si el Autor la acepta, es la referencia de voz de toda la Ejecucion.
 
 ## Extension
 

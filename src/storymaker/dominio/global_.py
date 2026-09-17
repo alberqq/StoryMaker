@@ -46,7 +46,14 @@ def recalcular_estado_hilos(
     cuando alguna de sus escenas de avance lo esta; abierto cuando solo lo esta su
     apertura; planificado cuando nada de eso ha ocurrido todavia.
     """
-    plan = proyecto.exigir_canon_aprobado()
+    # Consultar no es redactar. Sin Canon aprobado no hay hilos que calcular, pero
+    # eso no es la violacion de INV-1 que `exigir_canon_aprobado` denuncia: es
+    # simplemente que todavia no hay nada. Devolver el rechazo de redaccion ante
+    # una lectura confunde a quien pregunta y le hace buscar un problema que no
+    # tiene.
+    plan = proyecto.plan_canon()
+    if plan is None or proyecto.estado.canon_estado != "aprobado":
+        return {}
     ramas = proyecto.ramas().get(rama) or {}
     validados = set(dominio_validacion.capitulos_validados(proyecto))
 
@@ -268,6 +275,81 @@ def pasada_global(
 # ==========================================================================
 
 
+def _hallazgos_vigentes(proyecto: Proyecto) -> list[dict[str, Any]]:
+    """Los hallazgos con su estado de ahora.
+
+    El fichero es de solo anexion y guarda una linea por transicion, con el mismo
+    identificador: la identidad de un hallazgo excluye su enunciado a proposito
+    (RF-075), de modo que un defecto que reaparece conserva su id. Aqui interesa
+    la ultima linea de cada uno, no cuantas hay.
+    """
+    vigentes: dict[str, dict[str, Any]] = {}
+    for registro in proyecto.almacen.leer_jsonl(proyecto.almacen.hallazgos):
+        if registro.get("id"):
+            vigentes[registro["id"]] = registro
+    return list(vigentes.values())
+
+
+def _declarar_deuda_al_cerrar(proyecto: Proyecto) -> dict[str, Any]:
+    """Lo que queda abierto al cerrar la Novela se entrega declarado, no en silencio.
+
+    Existe por un hueco del flujo. RF-065 manda enrutar cada hallazgo a la etapa
+    responsable, y el bucle de produccion lo hace: el validador devuelve al
+    redactor, este corrige y el hallazgo se cierra. Pero **E8 es la ultima etapa**:
+    los hallazgos de la pasada global nacen sin nadie detras que los reciba, y se
+    quedaban abiertos para siempre en un fichero que no miraba nadie.
+
+    Cerrar un bucle nuevo al final de todo no es la salida: los cinco modos de
+    terminacion estan definidos para el bucle interno y el externo, y anadir aqui
+    una vuelta mas seria un bucle sin terminacion declarada justo donde queda
+    menos presupuesto. La salida es la que el arnes ya tenia prevista para esto,
+    la **Deuda de calidad**: el registro de los hallazgos no resueltos con los que
+    se cerro una unidad.
+
+    Los bloqueantes no entran. RF-077 exige cero bloqueantes abiertos para
+    declarar la novela finalizada, y esa condicion se comprueba antes: si queda
+    alguno, no se llega hasta aqui.
+    """
+    abiertos = [
+        h for h in _hallazgos_vigentes(proyecto)
+        if h.get("estado") == "abierto" and h.get("severidad") != "bloqueante"
+    ]
+    if not abiertos:
+        return {"emitida": False, "hallazgos": []}
+
+    identificadores = sorted(h["id"] for h in abiertos)
+    recuento: dict[str, int] = {}
+    for h in abiertos:
+        severidad = h.get("severidad") or "menor"
+        recuento[severidad] = recuento.get(severidad, 0) + 1
+
+    proyecto.almacen.anexar(proyecto.almacen.deudas, {
+        "schema_version": SCHEMA_VERSION,
+        "momento": ahora(),
+        "ambito": "novela",
+        "origen": "cierre_de_novela",
+        "hallazgos": identificadores,
+        "recuento_por_severidad": recuento,
+        "motivo": (
+            "Hallazgos abiertos al cerrar la Novela. La mayoria vienen de la pasada "
+            "global, que es la ultima etapa y no tiene ninguna detras que los corrija."
+        ),
+    })
+
+    # El registro de hallazgos tiene que decir lo mismo que la Deuda: si no, uno de
+    # los dos miente y no hay forma de saber cual.
+    for identificador in identificadores:
+        dominio_validacion.transicionar_hallazgo(
+            proyecto, identificador, "aceptado_como_deuda",
+            "Aceptado como Deuda de calidad al cerrar la Novela",
+        )
+
+    proyecto.limitar_a_reservas(
+        f"Deuda de calidad al cerrar: {len(identificadores)} hallazgos no resueltos"
+    )
+    return {"emitida": True, "hallazgos": identificadores, "recuento_por_severidad": recuento}
+
+
 def cerrar_novela(
     proyecto: Proyecto,
     hallazgos_bloqueantes_abiertos: int = 0,
@@ -303,6 +385,10 @@ def cerrar_novela(
             "estado": proyecto.estado.estado,
         }
 
+    # Se barre antes de fijar el estado: declarar Deuda limita el Proyecto a
+    # reservas, y eso es justo lo que decide cual de los dos estados finales toca.
+    deuda = _declarar_deuda_al_cerrar(proyecto)
+
     estado_final = (
         FINALIZADO_CON_RESERVAS if proyecto.estado.limitado_a_reservas else FINALIZADO
     )
@@ -311,6 +397,7 @@ def cerrar_novela(
         "finalizada": True,
         "estado": estado_final,
         "motivo_reservas": proyecto.estado.motivo_reservas,
+        "deuda_de_calidad": deuda,
         "palabras": _palabras_totales(proyecto, rama),
     }
 

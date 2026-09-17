@@ -44,7 +44,7 @@ Solo `declarados` se comprueba. `no_evaluables` esta ahi para que sepas que **no
 tienes que comprobar, que es tan importante como saber que si.
 
 El `hash` se registra en cada version de escena. Si la guia cambia -- porque el
-Autor ajusto el estilo tras el piloto -- el hash cambia, y se puede saber que
+Autor ajusto el estilo -- el hash cambia, y se puede saber que
 escenas se escribieron bajo que voz.
 
 ## Los parametros
@@ -58,17 +58,6 @@ escenas se escribieron bajo que voz.
 | `recursos_apertura` | In medias res, escena de encuadre, otros |
 | `longitud_media_frase` | Objetivo en palabras |
 | `prohibiciones` | Lo que el Autor no quiere leer |
-
-## El piloto es la linea base
-
-Una vez que el Autor acepta la escena piloto, **esa escena es la referencia de voz
-de toda la Ejecucion**. Los parametros declarados dicen que se busca; el piloto
-enseña como suena.
-
-Si tu escena cumple todos los parametros y no suena al piloto, **es tu escena la que
-se desvia**. La guia es una descripcion parcial de una voz; el piloto es la voz.
-
-El piloto no se vuelve a redactar: entra en la novela como cualquier otra escena.
 
 ## Registro de epoca
 

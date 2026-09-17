@@ -21,7 +21,7 @@ from storymaker.dominio import validacion as d_validacion
 from storymaker.errores import ErrorStoryMaker
 from storymaker.hallazgos import Hallazgo
 from storymaker.presupuesto import Presupuesto
-from storymaker.proyecto import FINALIZADO
+from storymaker.proyecto import FINALIZADO, FINALIZADO_CON_RESERVAS
 
 TEXTO = " ".join(["palabra"] * 500)
 
@@ -49,26 +49,16 @@ def _cerrar_contexto(proyecto):
     return d_contexto.cerrar(proyecto)
 
 
-def _aceptar_piloto(proyecto):
-    d_ejecucion.abrir_punto_control(
-        proyecto, "PC-8", {"version_escena": "esv_001_001_v1", "bloqueantes_abiertos": []}
-    )
-    pendiente = d_ejecucion.listar_puntos_control(proyecto, estado_filtro="pendiente")[-1]
-    d_ejecucion.resolver_punto_control(proyecto, pendiente["id"], "aprobar", "autor-de-prueba")
 
 
 def _escribir_novela(proyecto):
     for id_escena in ("esc_001_001", "esc_001_002", "esc_002_001", "esc_002_002"):
-        piloto = id_escena == "esc_001_001"
         d_novela.escribir(
             proyecto, id_escena, TEXTO,
             id_unidad=f"udt_{id_escena}", ejecucion=proyecto.estado.ejecucion_activa,
-            es_piloto=piloto,
             revelaciones_portadas=["rev_el-mapa-es-falso"] if id_escena == "esc_002_002" else [],
         )
         d_novela.cerrar_escena(proyecto, id_escena, T1_CONVERGENCIA)
-        if piloto:
-            _aceptar_piloto(proyecto)
 
 
 def _validar_y_cerrar(proyecto):
@@ -114,6 +104,62 @@ def test_novela_minima_termina_por_convergencia_y_entrega(novela_completa):
         assert clave in paquete
 
 
+def test_lo_que_queda_abierto_al_cerrar_se_declara_como_deuda(novela_completa):
+    """La pasada global es la ultima etapa: sus hallazgos no tienen quien los corrija.
+
+    Antes se quedaban abiertos para siempre en un fichero que no miraba nadie, y la
+    novela se entregaba como *finalizada* igual. Ahora se barren a la Deuda de
+    calidad y el Proyecto queda limitado a reservas, que es lo que la Deuda
+    significa: se entrega, pero se dice con que se entrega.
+    """
+    proyecto = novela_completa
+    d_validacion.registrar_hallazgos(proyecto, [
+        Hallazgo(
+            unidad="novela", categoria="repeticion_larga_distancia",
+            elemento_senalado="per_joos-van-der-beke", severidad="menor",
+            causa_raiz="refinamiento", descripcion="la misma imagen cierra dos escenas",
+            accion_exigida="variar una de las dos",
+        ),
+        Hallazgo(
+            unidad="novela", categoria="ritmo",
+            elemento_senalado="cap_002", severidad="mayor",
+            causa_raiz="diseno", descripcion="el salto temporal no se cubre",
+            accion_exigida="anadir una transicion",
+        ),
+    ])
+
+    d_global.pasada_global(proyecto)
+    cierre = d_global.cerrar_novela(proyecto)
+
+    assert cierre["finalizada"], cierre
+    assert cierre["estado"] == FINALIZADO_CON_RESERVAS
+    deuda = cierre["deuda_de_calidad"]
+    assert deuda["emitida"]
+    assert len(deuda["hallazgos"]) == 2
+    assert deuda["recuento_por_severidad"] == {"menor": 1, "mayor": 1}
+
+    # El registro de hallazgos dice lo mismo que la Deuda: ninguno queda abierto.
+    vigentes = {}
+    for registro in proyecto.almacen.leer_jsonl(proyecto.almacen.hallazgos):
+        vigentes[registro["id"]] = registro
+    assert all(h["estado"] == "aceptado_como_deuda" for h in vigentes.values())
+
+    # Y la Deuda esta en el paquete de trazabilidad, que es donde el Autor la lee.
+    paquete = d_global.paquete_trazabilidad(proyecto)
+    assert len(paquete["deuda_de_calidad"]) == 1
+
+
+def test_sin_hallazgos_abiertos_la_novela_se_cierra_sin_reservas(novela_completa):
+    """El caso que debe seguir pasando: barrer no puede inventar Deuda donde no la hay."""
+    proyecto = novela_completa
+    d_global.pasada_global(proyecto)
+    cierre = d_global.cerrar_novela(proyecto)
+
+    assert cierre["estado"] == FINALIZADO
+    assert not cierre["deuda_de_calidad"]["emitida"]
+    assert proyecto.almacen.leer_jsonl(proyecto.almacen.deudas) == []
+
+
 def test_la_novela_no_se_cierra_si_falta_una_condicion(novela_completa):
     """RF-077 no admite aproximacion: o se cumplen las cinco, o no se cierra."""
     proyecto = novela_completa
@@ -135,16 +181,6 @@ def test_no_se_redacta_sobre_un_canon_no_aprobado(proyecto):
     assert fallo.value.codigo == "ERR-502"
 
 
-def test_no_se_produce_en_serie_sin_piloto_aceptado(proyecto):
-    """INV-9 y RF-046."""
-    cerrar_encargo(proyecto)
-    _cerrar_contexto(proyecto)
-    aprobar_canon(proyecto)
-    with pytest.raises(ErrorStoryMaker) as fallo:
-        d_novela.escribir(
-            proyecto, "esc_001_002", TEXTO, id_unidad="udt_x", ejecucion="eje_x"
-        )
-    assert fallo.value.codigo == "ERR-502"
 
 
 def test_el_ensamblado_aborta_si_falta_una_escena_vigente(proyecto):
@@ -156,7 +192,7 @@ def test_el_ensamblado_aborta_si_falta_una_escena_vigente(proyecto):
     )
     d_novela.escribir(
         proyecto, "esc_001_001", TEXTO, id_unidad="udt_1",
-        ejecucion=proyecto.estado.ejecucion_activa, es_piloto=True,
+        ejecucion=proyecto.estado.ejecucion_activa,
     )
     with pytest.raises(ErrorStoryMaker) as fallo:
         d_global.ensamblar(proyecto)
@@ -174,7 +210,7 @@ def test_anacronismo_lexico_se_detecta_y_bloquea(proyecto):
     texto = TEXTO + " y sacó su boligrafo del bolsillo"
     d_novela.escribir(
         proyecto, "esc_001_001", texto, id_unidad="udt_1",
-        ejecucion=proyecto.estado.ejecucion_activa, es_piloto=True,
+        ejecucion=proyecto.estado.ejecucion_activa,
     )
     hallazgos = d_validacion.barrer_anacronismos_lexicos(proyecto, "cap_001")
     assert [h.categoria for h in hallazgos] == ["anacronismo"]
