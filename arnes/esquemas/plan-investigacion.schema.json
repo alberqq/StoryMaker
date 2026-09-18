@@ -8,7 +8,9 @@
     "esquema",
     "proyecto",
     "creado_en",
-    "lineas"
+    "lineas",
+    "dimensiones_elegidas",
+    "justificacion_de_la_eleccion"
   ],
   "properties": {
     "esquema": {
@@ -23,7 +25,7 @@
     },
     "lineas": {
       "type": "array",
-      "description": "Al menos una linea por cada dimension obligatoria declarada en arnes/dimensiones.json. El numero minimo NO se fija aqui a proposito: anadir o quitar una dimension no debe obligar a tocar este esquema (RF-060, RNF-026). Una dimension no aplicable NO se omite: se incluye con su justificacion (RF-005, escenario 2).",
+      "description": "Una linea por cada una de las CINCO dimensiones elegidas (E82). No una por dimension declarada: el plan describe lo que se va a investigar, no el menu del que sale.",
       "items": {
         "type": "object",
         "required": [
@@ -59,7 +61,28 @@
             "description": "Dimension anadida por la inspiracion del Encargo. No cuenta para la cobertura minima."
           }
         }
-      }
+      },
+      "maxItems": 5
+    },
+    "dimensiones_elegidas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 5,
+      "description": "Las cinco dimensiones que se van a investigar, en orden de prioridad."
+    },
+    "justificacion_de_la_eleccion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Por que esas cinco y no otras, dado el tema y la epoca del Encargo. Es lo que hace inspeccionable la decision mas importante del plan (OBJ-5)."
+    },
+    "dimensiones_de_reserva": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Candidatas para sustituir a las que el verificador rechace, sin gastar una ronda en decidirlas."
     }
   }
 }

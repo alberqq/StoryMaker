@@ -1,7 +1,9 @@
 # Especificación Funcional — StoryMaker
 ### Arnés generador de novelas históricas
-**Versión:** v1.3 · **Estado:** Línea base aprobada · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
-**Entradas consumidas:** `StoryMaker.drawio` (diagrama) y la especificación en prosa del autor, con sus respuestas de arbitraje, descompuestas en las afirmaciones E1 a E79 de §1.3. Las afirmaciones E75 a E79 se incorporan a partir de decisiones del autor durante la implementación.
+**Versión:** v2.2 · **Estado:** Línea base aprobada · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
+**Entradas consumidas:** `StoryMaker.drawio` (diagrama), la especificación en prosa del autor con sus respuestas de arbitraje, y las decisiones tomadas durante la construcción del arnés y su primera ejecución completa. Todas ellas están descompuestas en las afirmaciones E1 a E82 de §1.3.
+**Qué es esta versión.** v2 es una **línea base reescrita**, no una revisión incremental. Recoge como texto de base todo lo decidido hasta hoy: las diecisiete dimensiones de investigación, los topes revisados, el reparto de competencias entre verificadores, la retirada del versionado por instrucción y la corrección de la tabla de severidades. El cuerpo se lee de corrido, sin notas de parche; el histórico completo vive en §18.4 y §18.5, que es donde debe estar.
+**Qué no cambia en v2.** Los identificadores. Ningún RF, RNF, SUP, PA, R, OBJ, RES, PCH, CL, P ni E se ha renumerado, reordenado ni retirado al reescribir (regla 1 de §18.2). Una línea base reescrita no es una oportunidad para soltar lastre.
 **Preguntas abiertas:** ninguna. Las veintiocho planteadas están resueltas (§15.1).
 **Control de versiones y procedimiento de cambio:** §18. El histórico de la elaboración previa a v1 está en §18.4; todo cambio posterior se registra en §18.5.
 
@@ -128,7 +130,7 @@ flowchart TD
 | D-N6 | Se añaden bucles interior (escena) y exterior (capítulo) | Declarados explícitamente por el autor (E30, E31); ausentes del diagrama |
 | D-N7 | Se añaden ramas de descarte tras segundo rechazo | Declaradas por el autor para las etapas 1 y 2 (E33, E34) |
 | D-N8 | Se elimina la arista huérfana A20 | H2: sin destino, no interpretable |
-| D-N9 | El manuscrito (N12) sí es entrada de una validación global, como sugería N7 | Confirmado por el autor al arbitrar PA-012 (E56). En v1.1 estaba fuera de alcance; en v1.2 es requisito RF-055 |
+| D-N9 | El manuscrito (N12) sí es entrada de una validación global, como sugería N7 | Confirmado por el autor al arbitrar PA-012 (E56). Durante la elaboración estuvo fuera de alcance; desde la línea base es el requisito RF-055 |
 
 ### 1.3 Afirmaciones extraídas del texto
 
@@ -169,7 +171,7 @@ flowchart TD
 | E33 | En contexto histórico se reintenta; si el validador vuelve a rechazar, eso se rechaza | Requisito funcional |
 | E34 | En canon se aplica la misma política | Requisito funcional |
 | E35 | En redacción todo se rehace hasta tener la novela completa | Requisito funcional — vago, a operacionalizar |
-| E36 | Los parámetros son: número de capítulos, párrafos por capítulo, líneas por capítulo y palabras por línea | Requisito funcional |
+| E36 | Los parámetros son: número de capítulos, párrafos por capítulo, líneas por párrafo y palabras por línea | Requisito funcional |
 | E37 | Se admite cualquier época | Requisito funcional |
 | E38 | Se admiten figuras históricas y figuras reales como personajes | Requisito funcional |
 | E39 | Las figuras reales pueden tener licencias literarias, como Da Vinci amigo de los asesinos en Assassin's Creed | Requisito funcional / Preferencia estética |
@@ -203,6 +205,9 @@ flowchart TD
 | E77 | El verificador de lingüística comprueba que no se cometan faltas de ortografía ni malas formas lingüísticas; el verificador de canon e historia es el que comprueba que no se cometan anacronismos | Requisito funcional |
 | E78 | La investigación la realiza **una** llamada al agente investigador, que la hace entera, y no una llamada por cada línea del plan | Restricción operativa |
 | E79 | Las instrucciones de los agentes no se versionan: se editan en su sitio, «si lo cambiamos, lo hemos cambiado» | Restricción operativa |
+| E80 | Un tipo de hallazgo que la tabla de severidades no prevea no debe endurecerse por defecto, porque endurecer descarta trabajo que nadie consideró grave | Requisito funcional |
+| E81 | El tercer parámetro de longitud es **líneas por párrafo**, no líneas por capítulo. Los cuatro son: capítulos, escenas o párrafos por capítulo, líneas por párrafo y palabras por línea | Requisito funcional |
+| E82 | El Contexto Histórico se relaja a **cinco afirmaciones**, como máximo una por dimensión. El Investigador produce cinco, el Verificador dictamina, y las rechazadas se sustituyen por nuevas: tres rondas. Si no se logran las cinco, se sigue adelante con las que haya, aceptadas con esa salvedad declarada | Requisito funcional |
 
 **Afirmaciones vagas marcadas para operacionalización en las fases 5 y 6:** E5, E20, E22, E25 («correcto a nivel léxico»), E35, E39 («licencias»), E42 («tendrá GUI», sin alcance funcional declarado), E43 («gestión de contexto etc.», sin definición).
 
@@ -217,7 +222,7 @@ flowchart TD
 | Laguna | N6 «Refinamiento» no aparece en el texto | (a) Se descarta. (b) Es el bucle léxico. (c) Es un pase de estilo posterior a la validación | Fuera de alcance en v1; propuesto en §17 como pase de pulido opcional |
 | Desalineación de granularidad | N7 es una validación global final; el texto distribuye la validación por etapa | (a) Solo validadores por etapa. (b) Ambas cosas | Resuelto por el autor: validadores por etapa. La validación global se propone en §17 |
 | Desalineación de granularidad | E17 y E30 hablan de «escena», pero E36 parametriza capítulos, párrafos, líneas y palabras, sin escenas | (a) La escena es una agrupación de párrafos decidida por el canon. (b) Escena ≡ párrafo. (c) Escena ≡ capítulo | Se adopta (a) provisionalmente. **PA-002** |
-| Contradicción interna | E36 sobredetermina la longitud: párrafos/capítulo y líneas/capítulo fijan líneas/párrafo, y «línea» no es unidad estable en prosa | (a) «Línea» = renglón lógico ≈ oración. (b) «Línea» = renglón de renderizado a X columnas. (c) `líneas por capítulo` es en realidad `líneas por párrafo` | Se adopta (a) y se trata `líneas por capítulo` como total del capítulo, del que se deriva `líneas por párrafo`. **PA-001** |
+| Contradicción interna | E36 sobredetermina la longitud: párrafos/capítulo y líneas/capítulo fijan líneas/párrafo, y «línea» no es unidad estable en prosa | (a) «Línea» = renglón lógico ≈ oración. (b) «Línea» = renglón de renderizado a X columnas. (c) `líneas por párrafo` es en realidad `líneas por párrafo` | **Resuelta por E81: prevalece la lectura (c)** (regla 4 de §18.2). El tercer parámetro es `líneas por párrafo` y se aplica directamente, sin dividir. La lectura (a), adoptada provisionalmente, queda revocada junto con la parte de E36 que la sostenía. **PA-001** queda resuelta |
 | Laguna | A17 describe un bucle de entrada que pregunta por tema, personaje e inspiración; el texto solo menciona la época | El diagrama amplía sin contradecir | Se incorpora: el encargo incluye época, tema, personajes e inspiración. Origen A17 |
 | Laguna | E35 «todo se rehace hasta tener la novela completa» no define terminación | (a) Bucle sin límite hasta aprobación. (b) Límite de iteraciones con escalado al autor | Se adopta (b) con límites explícitos, por RNF-014. **PA-003** |
 | Laguna | Ni el diagrama ni el texto fijan el formato de entrega ni el idioma de la novela | — | [SUPUESTO] SUP-002, SUP-003 |
@@ -263,12 +268,12 @@ flowchart TD
 | RES-4 | La obtención de información histórica se hace por búsqueda web | Impuesta por el autor | E9 |
 | RES-5 | El verificador de contexto no reabre la fuente: juzga sobre el fragmento aportado | Impuesta por el autor por simplicidad | E32 |
 | RES-6 | La solución debe permanecer simple y explicable; se prefiere lo comprensible a lo óptimo | Impuesta por el autor | E4, E5 |
-| RES-7 | La ejecución es continua de principio a fin; el troceado en sesiones deja de ser obligatorio, pero cada etapa sigue siendo invocable por separado sobre artefactos persistidos | Reescrita en v1.4. El autor sustituyó las tres sesiones por la ejecución de corrido (E63); la invocación por etapa se conserva porque de ella dependen la reanudación y la reejecución aislada | E63, sustituye a E6 |
-| RES-8 | El sistema dispondrá de interfaz gráfica de usuario, **no en la primera implementación**. Condiciona qué interacciones deben existir, no cómo se presentan. En la primera implementación el canal de interacción es la propia sesión de Claude Code | Aplazada en v1.6 (E67) | E42, E67 |
+| RES-7 | La ejecución es continua de principio a fin; el troceado en sesiones deja de ser obligatorio, pero cada etapa sigue siendo invocable por separado sobre artefactos persistidos | Reescrita durante la elaboración: el autor sustituyó las tres sesiones por la ejecución de corrido (E63); la invocación por etapa se conserva porque de ella dependen la reanudación y la reejecución aislada | E63, sustituye a E6 |
+| RES-8 | El sistema dispondrá de interfaz gráfica de usuario, **no en la primera implementación**. Condiciona qué interacciones deben existir, no cómo se presentan. En la primera implementación el canal de interacción es la propia sesión de Claude Code | Aplazada (E67) | E42, E67 |
 | RES-9 | El sistema gestiona explícitamente el contexto que recibe cada invocación de un agente | Impuesta por el autor | E43 |
 | RES-12 | El Encargo puede aportarse como fichero JSON, además de por diálogo | Impuesta por el autor. Fija el formato del canal de entrada, no la representación interna de los artefactos, que sigue siendo conceptual en §9 | E65 |
-| RES-11 | La orquestación del arnés y la lógica de todos sus agentes son puras de Claude Code: definiciones de agente, instrucciones y artefactos de texto. Se admite código únicamente en herramientas de hoja invocadas desde un paso concreto, como la conversión a PDF, que no deciden nada del flujo | Relajada en v1.6 a petición del autor (E66). El límite es funcional y no de volumen: una herramienta de hoja transforma o convierte, nunca decide si algo se acepta, se reintenta o se descarta | E57, E66 |
-| RES-10 | El sistema será compatible con Langfuse y hará uso completo de la plataforma —observabilidad, versionado de instrucciones, conjuntos de datos, evaluadores y sus propios agentes para detectar mejoras—, **no en la primera implementación**. La arquitectura no debe cerrarle la puerta: de ahí que la bitácora registre ya, por cada invocación, lo que después se emitirá como traza | Aplazada y ampliada en v1.6 (E67, E68) | E44, E68 |
+| RES-11 | La orquestación del arnés y la lógica de todos sus agentes son puras de Claude Code: definiciones de agente, instrucciones y artefactos de texto. Se admite código únicamente en herramientas de hoja invocadas desde un paso concreto, como la conversión a PDF, que no deciden nada del flujo | Relajada a petición del autor (E66). El límite es funcional y no de volumen: una herramienta de hoja transforma o convierte, nunca decide si algo se acepta, se reintenta o se descarta | E57, E66 |
+| RES-10 | El sistema será compatible con Langfuse y hará uso completo de la plataforma —observabilidad, versionado de instrucciones, conjuntos de datos, evaluadores y sus propios agentes para detectar mejoras—, **no en la primera implementación**. La arquitectura no debe cerrarle la puerta: de ahí que la bitácora registre ya, por cada invocación, lo que después se emitirá como traza | Aplazada y ampliada (E67, E68) | E44, E68 |
 
 ---
 
@@ -294,14 +299,14 @@ flowchart TD
 | **Licencia literaria** | Desviación deliberada y declarada respecto a lo documentado sobre una Figura Real o sobre un hecho, registrada con su justificación | «Ficción», «libertad creativa» |
 | **Trama** | Secuencia de acontecimientos y arco dramático de la novela, definida en el Canon | «Argumento», «plot» |
 | **Escena** | Unidad mínima de redacción y de validación léxica, **equivalente a un párrafo** del manuscrito. El Canon planifica una escena por cada párrafo previsto en el capítulo (E46) | «Secuencia», «beat», «párrafo» — «párrafo» se usa al hablar del texto resultante y «escena» al hablar de su planificación en el Canon; designan la misma unidad |
-| **Palabras por párrafo objetivo** | Extensión efectiva que debe alcanzar cada párrafo, calculada como `(líneas por capítulo ÷ párrafos por capítulo) × palabras por línea`. Es la única magnitud de longitud que se comprueba sobre el texto (E45) | «Longitud de escena» |
+| **Palabras por párrafo objetivo** | Extensión efectiva que debe alcanzar cada párrafo, calculada como `(líneas por párrafo ÷ párrafos por capítulo) × palabras por línea`. Es la única magnitud de longitud que se comprueba sobre el texto (E45) | «Longitud de escena» |
 | **Severidad** | Gravedad de un Hallazgo: Bloqueante, Mayor o Menor. Determina si fuerza reescritura, si puede saltarse al agotar los intentos y si impide la entrega (E47) | «Criticidad», «gravedad» |
 | **Aceptado con observaciones** | Estado de una escena o un capítulo que se da por bueno conservando hallazgos no bloqueantes sin corregir, por decisión del autor o por agotamiento de intentos | «Aprobado con salvedades» |
 | **Capítulo** | Agrupación ordenada de escenas; unidad de validación del bucle exterior | — |
 | **Línea** | Unidad de cálculo, no de texto. Sirve únicamente para derivar las palabras por párrafo objetivo a partir de los parámetros del Encargo; **nunca se cuenta sobre el manuscrito** (E45) | «Renglón», «oración» |
 | **Manuscrito** | Artefacto de la Etapa 3: el conjunto de capítulos aprobados, en orden | «Novela», «historia que se va escribiendo» (N12) |
 | **Redactor** | Papel genérico: agente que produce un artefacto o parte de él. Lo desempeñan el Agente Investigador, el Agente Constructor de Canon y el Agente Escritor | «Generador» |
-| **Verificador** | Papel genérico: agente que examina un artefacto producido por un Redactor y emite un Veredicto. Lo desempeñan los cuatro agentes verificadores de §5. Se adopta el término del autor y se retira «Validador», usado en v1.0–v1.2 | «Validador», «revisor», «crítico», «juez» |
+| **Verificador** | Papel genérico: agente que examina un artefacto producido por un Redactor y emite un Veredicto. Lo desempeñan los cuatro agentes verificadores de §5. Se adopta el término del autor y se retira «Validador», que se usó en los borradores previos a la línea base | «Validador», «revisor», «crítico», «juez» |
 | **Veredicto** | Resultado de una validación: Aceptado o Rechazado, con motivo obligatorio en caso de rechazo | «Dictamen», «resultado» |
 | **Intento** | Cada producción de un artefacto por un redactor para un mismo objetivo. El primer intento no es un reintento | «Iteración» — se reserva «iteración» para las vueltas de un bucle de reescritura |
 | **Bucle interior** | Ciclo redactar–validar léxicamente que se ejecuta por cada escena | — |
@@ -383,7 +388,7 @@ flowchart TD
 
 ### 5.2 Los ocho agentes
 
-La arquitectura consta exactamente de los ocho agentes que el autor ha enumerado (E59). Los nombres son los suyos y son los canónicos a partir de la v1.3.
+La arquitectura consta exactamente de los ocho agentes que el autor ha enumerado (E59). Los nombres son los suyos y son los canónicos.
 
 | Agente | Responsabilidad | Entradas principales | Salida | Origen |
 |---|---|---|---|---|
@@ -406,7 +411,7 @@ Los tres primeros papeles de redacción —investigar, construir canon, escribir
 |---|---|---|---|---|
 | **Proyecto** | Identificador, título provisional, fecha de creación, estado de cada etapa | Un Proyecto tiene exactamente un Encargo, como máximo un Contexto Histórico cerrado, como máximo un Canon congelado y como máximo un Manuscrito | Creado → Etapa 1 cerrada → Etapa 2 cerrada → Etapa 3 cerrada → Entregado | E6 |
 | **Encargo** | Época (ámbito temporal y geográfico), tema, personajes de partida, inspiración, parámetros de longitud | La época debe estar acotada en tiempo y lugar. Los cuatro parámetros de longitud son obligatorios y enteros positivos | Incompleto → Completo → Congelado al iniciar la Etapa 1 | E8, E27, E36, E37, E40, A17 |
-| **Parámetros de longitud** | Número de capítulos, párrafos por capítulo, líneas por capítulo, palabras por línea, y el derivado palabras por párrafo objetivo | Todos ≥ 1. `líneas por capítulo` ≥ `párrafos por capítulo`. `palabras por párrafo objetivo = (líneas por capítulo ÷ párrafos por capítulo) × palabras por línea`, redondeado | Inmutable una vez congelado el Encargo | E36, E45 |
+| **Parámetros de longitud** | Número de capítulos, párrafos por capítulo, líneas por párrafo, palabras por línea, y el derivado palabras por párrafo objetivo | Todos ≥ 1. `líneas por párrafo` ≥ `párrafos por capítulo`. `palabras por párrafo objetivo = (líneas por párrafo ÷ párrafos por capítulo) × palabras por línea`, redondeado | Inmutable una vez congelado el Encargo | E36, E45 |
 | **Dimensión** | Nombre, descripción, cobertura mínima exigida | Las diecisiete dimensiones declaradas en RF-005 son obligatorias; puede haber más | Fija | E12, E75 |
 | **Afirmación** | Enunciado, dimensión, fragmento de respaldo, fuente, número de intento, estado | Toda Afirmación tiene exactamente un fragmento de respaldo y exactamente una fuente. Ninguna Afirmación en estado Verificada carece de veredicto de aceptación | Propuesta → (Rechazada → Reintentada) → Verificada \| Descartada | E13, E14, E32, E33 |
 | **Fuente** | Identificador, URL, título, fecha de consulta | Una Fuente puede respaldar varias Afirmaciones; una Afirmación tiene una sola Fuente | Registrada | E13 |
@@ -480,7 +485,7 @@ Tres etapas secuenciales. Cada una se invoca por separado (RES-7), consume artef
 | **Salidas** | Encargo completo y congelado |
 | **Invariantes** | No se congela el Encargo mientras falte un campo obligatorio o la época no esté acotada en tiempo y lugar |
 | **Condición de avance** | Los cinco bloques de datos están presentes y los cuatro parámetros son enteros ≥ 1 |
-| **Modos de fallo** | El autor aporta una época no acotada («la antigüedad»); aporta parámetros incoherentes (`líneas por capítulo` < `párrafos por capítulo`) |
+| **Modos de fallo** | El autor aporta una época no acotada («la antigüedad»); aporta parámetros incoherentes (`líneas por párrafo` < `párrafos por capítulo`) |
 | **Reintento / degradación** | El sistema repregunta indefinidamente sobre el campo que falta o es inválido; no degrada ni rellena por su cuenta |
 | **Punto de control humano** | Sí, por naturaleza: la etapa **es** el diálogo con el autor |
 | **Origen** | A17, E8, E27, E36, E40 |
@@ -611,8 +616,8 @@ Escenario: Respuesta vacía
 - **Origen:** A17, E8, E65
 
 #### RF-002 · Captura y validación de los parámetros de longitud
-- **Enunciado:** El sistema solicita el número de capítulos, los párrafos por capítulo, las líneas por capítulo y las palabras por línea, y rechaza los valores que no sean enteros mayores o iguales que 1 o que incumplan `líneas por capítulo ≥ párrafos por capítulo`.
-- **Justificación:** Son los cuatro parámetros que el autor declaró (E36); la restricción cruzada evita capítulos con párrafos de cero líneas.
+- **Enunciado:** El sistema solicita el número de capítulos, las escenas o párrafos por capítulo, las líneas por párrafo y las palabras por línea, y rechaza los valores que no sean enteros mayores o iguales que 1.
+- **Justificación:** Son los cuatro parámetros que el autor declaró (E36), con el tercero precisado en E81: es **líneas por párrafo**, no por capítulo. Los cuatro son independientes entre sí y se multiplican en cadena, de modo que **no hay restricción cruzada que comprobar**: cualquier combinación de enteros ≥ 1 describe una novela posible. La formulación anterior obligaba a dividir las líneas del capítulo entre sus párrafos, lo que exigía una restricción cruzada, introducía un redondeo y, sobre todo, **encogía los párrafos sin que el autor lo advirtiera**: pedir 12 líneas y 4 párrafos daba párrafos de 3 líneas, no de 12.
 - **Historia de usuario:** Como autor, quiero fijar la extensión con parámetros concretos, para controlar el tamaño de la novela.
 - **Precondiciones:** Los cuatro bloques de RF-001 están cumplimentados.
 - **Postcondiciones:** El Encargo contiene los cuatro parámetros, validados.
@@ -620,20 +625,21 @@ Escenario: Respuesta vacía
 ```gherkin
 Escenario: Parámetros válidos
   Dado que el sistema solicita los parámetros de longitud
-  Cuando el autor indica 10 capítulos, 8 párrafos por capítulo, 40 líneas por capítulo y 12 palabras por línea
+  Cuando el autor indica 10 capítulos, 8 párrafos por capítulo, 10 líneas por párrafo y 12 palabras por línea
   Entonces el Encargo registra los cuatro valores
-  Y el sistema calcula y muestra las palabras por párrafo objetivo, la extensión total resultante y la cota informativa de invocaciones
+  Y el sistema calcula y muestra 120 palabras por párrafo objetivo, 960 por capítulo y 9.600 en total
+  Y muestra la cota informativa de invocaciones
 
-Escenario: Parámetros incoherentes
+Escenario: Valor no entero o menor que 1
   Dado que el sistema solicita los parámetros de longitud
-  Cuando el autor indica 8 párrafos por capítulo y 5 líneas por capítulo
+  Cuando el autor indica 0 líneas por párrafo
   Entonces el sistema rechaza el valor
-  Y explica que no puede haber menos líneas que párrafos en un capítulo
-  Y vuelve a solicitar las líneas por capítulo
+  Y explica que los cuatro parámetros son enteros mayores o iguales que 1
+  Y vuelve a solicitar solo ese parámetro
 ```
-- **Casos límite:** valores absurdamente grandes (1.000 capítulos) — se aceptan pero el sistema muestra la extensión resultante y pide confirmación; valor no numérico — se rechaza y se repregunta.
+- **Casos límite:** valores absurdamente grandes (1.000 capítulos) — se aceptan pero el sistema muestra la extensión resultante y pide confirmación; valor no numérico — se rechaza y se repregunta; párrafos de una sola línea — se aceptan, porque un párrafo corto es una decisión de estilo legítima y ya no hay restricción cruzada que lo impida.
 - **Prioridad:** Must
-- **Origen:** E27, E36
+- **Origen:** E27, E36, E81
 
 #### RF-003 · Acotación explícita de la época
 - **Enunciado:** El sistema exige que la época del Encargo incluya un intervalo temporal y un ámbito geográfico, y repregunta si falta alguno de los dos.
@@ -696,7 +702,7 @@ Escenario: Fichero completo y válido
   Y el sistema muestra las palabras por párrafo objetivo y la cota de invocaciones antes de arrancar
 
 Escenario: Fichero incompleto o inválido
-  Dado un fichero sin ámbito geográfico en la época y con las líneas por capítulo a cero
+  Dado un fichero sin ámbito geográfico en la época y con las líneas por párrafulo a cero
   Cuando el autor lo aporta
   Entonces el sistema enumera los dos campos que fallan y el motivo de cada uno
   Y pregunta solo por ellos
@@ -723,7 +729,7 @@ Escenario: Intento de configurar el arnés desde el fichero
 ### Capacidad C2 — Investigación histórica
 
 #### RF-005 · Plan de investigación por dimensiones
-- **Enunciado:** El Agente Investigador genera, antes de buscar, un plan que cubre como mínimo las diecisiete dimensiones declaradas: Tiempo, Espacio, Demografía, Economía, Estructura social, Poder político, Derecho y justicia, Religión, Mentalidad y cultura simbólica, Ciencia y técnica, Cultura material, Vida cotidiana y privada, Comunicación y saber, Arte y estética, Relaciones exteriores, Conflicto y disidencia, y Ausencias y anacronismos.
+- **Enunciado:** El Agente Investigador genera, antes de buscar, un plan que declara y justifica **las cinco dimensiones** que va a investigar, una línea por cada una, elegidas entre las diecisiete declaradas: Tiempo, Espacio, Demografía, Economía, Estructura social, Poder político, Derecho y justicia, Religión, Mentalidad y cultura simbólica, Ciencia y técnica, Cultura material, Vida cotidiana y privada, Comunicación y saber, Arte y estética, Relaciones exteriores, Conflicto y disidencia, y Ausencias y anacronismos.
 - **Justificación:** El autor enumeró esas dimensiones; un plan previo hace el proceso inspeccionable (OBJ-5) y evita una investigación sin criterio de cobertura.
 - **Historia de usuario:** Como autor, quiero ver qué va a investigar el agente antes de que lo haga, para entender el proceso.
 - **Precondiciones:** Encargo congelado.
@@ -870,7 +876,7 @@ Escenario: Reintento idéntico
 - **Prioridad:** Must
 - **Origen:** E33
 
-#### RF-011 · Descarte tras el segundo rechazo
+#### RF-011 · Sustitución de las afirmaciones rechazadas
 - **Enunciado:** El sistema descarta la afirmación rechazada por segunda vez, la excluye del Contexto Histórico y conserva en la bitácora sus dos intentos y sus dos motivos de rechazo.
 - **Justificación:** Es la política literal del autor: «si no le vuelve a aceptar el validador de contexto histórico se rechaza eso» (E33). La conservación en bitácora es lo que hace demostrable el funcionamiento del validador (OBJ-3).
 - **Historia de usuario:** Como evaluador académico, quiero ver lo que el sistema descartó y por qué, para comprobar que el control de calidad actúa de verdad.
@@ -948,7 +954,7 @@ Escenario: Intento de cierre prematuro
 - **Origen:** E6, E7
 
 #### RF-014 · Cobertura mínima por dimensión
-- **Enunciado:** El sistema exige un mínimo de dos afirmaciones verificadas en cada una de las diecisiete dimensiones obligatorias para cerrar la Etapa 1 como completa, no admite más de cuatro por dimensión, y marca la etapa como incompleta si alguna no alcanza el mínimo.
+- **Enunciado:** El sistema cierra la Etapa 1 con **cinco** afirmaciones verificadas, **como máximo una por dimensión**, y marca la etapa como incompleta si tras tres rondas no ha reunido las cinco. **Ninguna dimensión es obligatoria** y no hay cobertura mínima por dimensión: la etapa incompleta **no bloquea ni escala**, y la ejecución continúa con las afirmaciones logradas y la salvedad declarada (E82).
 - **Justificación:** «Cobertura suficiente» es un adjetivo evaluativo si no se cuantifica. El mínimo garantiza que la dimensión sirva de algo; el máximo responde a la exigencia del autor de que la investigación sea limitada (E55) y evita contextos que no caben después en las invocaciones de redacción.
 - **Historia de usuario:** Como autor, quiero saber si la investigación se quedó corta en algún aspecto, para decidir si sigo o repito.
 - **Precondiciones:** Verificación concluida.
@@ -1264,8 +1270,8 @@ Escenario: Capítulo fuera de tolerancia
   Entonces se emite un hallazgo de longitud de severidad Menor
   Y el hallazgo se registra sin bloquear la aprobación del capítulo
 ```
-- **Casos límite:** el número de párrafos por capítulo no admite tolerancia, porque es una cuenta discreta y pequeña fijada por el canon: debe ser exacto; `líneas por capítulo` no divisible por `párrafos por capítulo` — se redondea el objetivo por párrafo y el resto se absorbe en la tolerancia del capítulo.
-- **Prioridad:** Should — rebajada en v1.3: sin código, el recuento de palabras es una estimación del agente y no puede sostener un requisito Must (§10.1)
+- **Casos límite:** el número de párrafos por capítulo no admite tolerancia, porque es una cuenta discreta y pequeña fijada por el canon: debe ser exacto; `líneas por párrafo` no divisible por `párrafos por capítulo` — se redondea el objetivo por párrafo y el resto se absorbe en la tolerancia del capítulo.
+- **Prioridad:** Should — sin código, el recuento de palabras es una estimación del agente y no puede sostener un requisito Must (§10.1)
 - **Origen:** E27, E36, E45; tolerancias [SUPUESTO] SUP-010
 
 #### RF-027 · Resumen acumulado del manuscrito
@@ -1297,7 +1303,7 @@ Escenario: Redacción sin resumen disponible
 
 #### RF-028 · Validación léxica y formal de la escena
 - **Enunciado:** El Agente Verificador de Lingüística de Escenas examina cada escena redactada junto con los párrafos ya aprobados del mismo capítulo y emite un hallazgo, con su severidad según RF-051, por cada expresión ajena al registro de la época, error gramatical u ortográfico, repetición de una misma palabra no funcional más de tres veces, desviación de la longitud objetivo, presencia de más de un párrafo o falta de encaje con el párrafo inmediatamente anterior.
-- **Justificación:** El autor pidió una validación «a nivel léxico, es decir, en forma» (E25), que los hallazgos tengan severidad (E47) y que este verificador reciba los párrafos anteriores para comprobar el encaje (E60). El encaje es el punto ciego que dejaba la equivalencia escena = párrafo: dos párrafos correctos por separado pueden no seguirse el uno al otro, y ningún otro verificador lo mira. Se operacionaliza en **seis** criterios enumerados para que el veredicto sea verificable por un tercero. En v1.1 el autor precisó la frontera (E77): **este verificador juzga cómo está escrito el párrafo, no qué dice**. El Inventario de Prohibidos deja de ser suyo y pasa a RF-030, de modo que todo juicio sobre el contenido —anacronismos, contradicciones con el contexto, desvíos de canon— queda concentrado en el bucle exterior, que además es el único que tiene delante el Canon y el Contexto completos.
+- **Justificación:** El autor pidió una validación «a nivel léxico, es decir, en forma» (E25), que los hallazgos tengan severidad (E47) y que este verificador reciba los párrafos anteriores para comprobar el encaje (E60). El encaje es el punto ciego que dejaba la equivalencia escena = párrafo: dos párrafos correctos por separado pueden no seguirse el uno al otro, y ningún otro verificador lo mira. Se operacionaliza en **seis** criterios enumerados para que el veredicto sea verificable por un tercero. El autor fijó la frontera en E77: **este verificador juzga cómo está escrito el párrafo, no qué dice**. El Inventario de Prohibidos deja de ser suyo y pasa a RF-030, de modo que todo juicio sobre el contenido —anacronismos, contradicciones con el contexto, desvíos de canon— queda concentrado en el bucle exterior, que además es el único que tiene delante el Canon y el Contexto completos.
 - **Historia de usuario:** Como autor, quiero que cada párrafo esté limpio de anacronismos verbales y de errores de forma, distinguiendo lo grave de lo cosmético.
 - **Precondiciones:** Escena en estado Redactada.
 - **Postcondiciones:** Existe un veredicto sobre la escena con sus hallazgos y severidades.
@@ -1362,7 +1368,7 @@ Escenario: Límite de intentos agotado
 
 #### RF-030 · Validación del capítulo contra canon y contexto
 - **Enunciado:** El Agente Verificador de Canon e Historia examina cada capítulo ensamblado junto con el **Inventario de Prohibidos** y con los capítulos anteriores —íntegros los tres inmediatamente previos, y el resumen acumulado para los demás— y emite veredicto de Rechazado ante todo elemento del Inventario y ante toda desviación respecto al canon congelado, al Contexto Histórico cerrado o a lo ya narrado.
-- **Justificación:** El autor pidió un verificador de que «se sigue cumpliendo el contexto histórico y el canon» (E26), situó su bucle en el capítulo (E31) y añadió que debe recibir los capítulos anteriores para comprobar que el nuevo se ajusta a ellos (E61). En v1.1 precisó además que **es este verificador, y no el de lingüística, quien comprueba los anacronismos** (E77): el Inventario de Prohibidos pasa a ser entrada suya. El reparto queda por competencia y no por artefacto —el bucle interior juzga cómo está escrito, el exterior juzga qué se dice— y concentra todo juicio sobre el contenido en el único agente que tiene delante el Canon y el Contexto completos. El corte en tres capítulos íntegros responde a que el manuscrito completo no cabe en la ventana con el modelo impuesto; lo que queda fuera se cubre con el resumen acumulado y las fichas de continuidad.
+- **Justificación:** El autor pidió un verificador de que «se sigue cumpliendo el contexto histórico y el canon» (E26), situó su bucle en el capítulo (E31) y añadió que debe recibir los capítulos anteriores para comprobar que el nuevo se ajusta a ellos (E61). El autor precisó además que **es este verificador, y no el de lingüística, quien comprueba los anacronismos** (E77): el Inventario de Prohibidos pasa a ser entrada suya. El reparto queda por competencia y no por artefacto —el bucle interior juzga cómo está escrito, el exterior juzga qué se dice— y concentra todo juicio sobre el contenido en el único agente que tiene delante el Canon y el Contexto completos. El corte en tres capítulos íntegros responde a que el manuscrito completo no cabe en la ventana con el modelo impuesto; lo que queda fuera se cubre con el resumen acumulado y las fichas de continuidad.
 - **Historia de usuario:** Como autor, quiero comprobar capítulo a capítulo que la novela no se sale de lo acordado, para no descubrirlo al final.
 - **Precondiciones:** Todas las escenas del capítulo están aprobadas por el bucle interior. El Inventario de Prohibidos está disponible como entrada obligatoria.
 - **Postcondiciones:** Existe un veredicto sobre el capítulo con sus hallazgos.
@@ -1678,7 +1684,7 @@ Escenario: Veredicto malformado
 
 #### RF-059 · Arnés sin código
 - **Enunciado:** La orquestación del arnés y la lógica de todos sus agentes se componen exclusivamente de definiciones de agente, instrucciones y artefactos de texto; el código se admite únicamente en herramientas de hoja que transforman o convierten un artefacto sin decidir nada del flujo.
-- **Justificación:** Restricción del autor, relajada en v1.6 (E57, E66, RES-11). El límite está en la decisión, no en el volumen de código: una herramienta que convierte Markdown a PDF no decide nada; una que decidiera si un párrafo se acepta o se reescribe sacaría el criterio fuera de los agentes y vaciaría de sentido el arnés. Sigue condicionando qué comprobaciones son posibles y con qué precisión (§10.1).
+- **Justificación:** Restricción del autor, relajada durante la elaboración (E57, E66, RES-11). El límite está en la decisión, no en el volumen de código: una herramienta que convierte Markdown a PDF no decide nada; una que decidiera si un párrafo se acepta o se reescribe sacaría el criterio fuera de los agentes y vaciaría de sentido el arnés. Sigue condicionando qué comprobaciones son posibles y con qué precisión (§10.1).
 - **Historia de usuario:** Como autor, quiero entender el arnés entero leyendo instrucciones en lenguaje natural, sin tener que leer código.
 - **Precondiciones:** Ninguna.
 - **Postcondiciones:** El Proyecto no contiene artefactos ejecutables.
@@ -1778,10 +1784,10 @@ Escenario: Reanudación desde el estado
 ### Capacidad C19 — Repetición de etapa
 
 #### RF-064 · ~~Edición restringida del contexto y del canon~~ — OBSOLETO
-Introducido en v1.7 a partir de E72 y **retirado en v1.8** por revocación del autor (E74). El identificador se conserva y no se reutiliza. El Contexto Histórico cerrado y el Canon congelado son inmutables; la única vía de cambio es RF-066.
+Introducido a partir de E72 y **retirado** por revocación del autor (E74). El identificador se conserva y no se reutiliza. El Contexto Histórico cerrado y el Canon congelado son inmutables; la única vía de cambio es RF-066.
 
 #### RF-065 · ~~Revalidación de lo derivado tras una intervención~~ — OBSOLETO
-Introducido en v1.7 y **retirado en v1.8** por la misma razón. Sin ediciones parciales no hay versiones contra las que revalidar. El identificador se conserva y no se reutiliza.
+Introducido y **retirado** por la misma razón. Sin ediciones parciales no hay versiones contra las que revalidar. El identificador se conserva y no se reutiliza.
 
 #### RF-066 · Repetición de etapa como única vía de cambio
 - **Enunciado:** El sistema permite repetir una etapa ya cerrada, lo que produce un artefacto nuevo desde cero y descarta el anterior junto con todos los artefactos derivados de él, y advierte al autor de lo que se perderá antes de ejecutarla.
@@ -1820,6 +1826,7 @@ Escenario: Intento de edición parcial
 #### RF-051 · Clasificación de los hallazgos por severidad
 - **Enunciado:** Todo validador asigna a cada hallazgo una de tres severidades: Bloqueante, Mayor o Menor, conforme a una tabla de correspondencia entre tipo de hallazgo y severidad declarada y versionada con el Proyecto.
 - **Justificación:** El autor pidió severidad para que algunos hallazgos puedan saltarse directamente (E47). Sin una tabla declarada, la severidad la decidiría el criterio variable del agente en cada invocación y dejaría de ser un control.
+- **Por qué la regla por defecto ablanda y no endurece (E80).** Un tipo de hallazgo sin fila en la tabla se resuelve como **Menor**: se registra como anomalía y **no fuerza reescritura**. La intuición contraria —ante la duda, ser estricto— es la que parecía prudente y resultó dañina: en un bucle con límite de intentos, elevar por defecto no se limita a ser severo, **descarta trabajo**. Ablandar por defecto tiene el riesgo simétrico, dejar pasar algo que importaba, pero ese riesgo es **visible** —la anomalía consta en el informe y el artefacto sigue ahí para revisarlo— mientras que el descarte es **irreversible**. Entre un fallo que se ve y uno que destruye, el arnés elige el que se ve.
 - **Historia de usuario:** Como autor, quiero que el sistema distinga lo que invalida un pasaje de lo que solo lo afea, para no rehacer texto por menudencias.
 - **Precondiciones:** Existe un hallazgo.
 - **Postcondiciones:** El hallazgo tiene severidad asignada y justificada por la tabla.
@@ -1854,8 +1861,10 @@ Escenario: Severidad asignada por tabla
 
 Escenario: Tipo de hallazgo no previsto en la tabla
   Cuando un validador detecta un problema que no corresponde a ningún tipo de la tabla
-  Entonces el hallazgo se emite con severidad Mayor por defecto
-  Y se registra que el tipo no estaba previsto
+  Entonces el hallazgo se emite con severidad Menor por defecto
+  Y no fuerza reescritura
+  Y se registra como anomalía que el tipo no estaba previsto
+  Y la anomalía aparece en el informe de ejecución
 ```
 - **Casos límite:** un hallazgo Menor que se repite en todos los párrafos del capítulo — el bucle exterior puede elevarlo a Mayor de forma agregada, y la elevación queda registrada; **un tipo de hallazgo sin fila en la tabla** — la regla por defecto lo eleva a Mayor, que fuerza reescritura, de modo que en un bucle con límite de intentos **una fila que falta puede descartar trabajo que nadie consideró grave**. Por eso la tabla debe cubrir toda clave que un verificador pueda emitir, y cada criterio de verificador declara la suya (RF-058).
 - **Prioridad:** Must
@@ -1914,8 +1923,8 @@ Escenario: Entrega con observaciones abiertas
 - **Origen:** E51, E66
 
 #### RF-054 · Tope de volumen de la investigación
-- **Enunciado:** El sistema detiene la investigación histórica al alcanzar cincuenta y dos afirmaciones verificadas en total, cuatro por dimensión o dos búsquedas por dimensión, lo que ocurra primero, y cierra la etapa con lo obtenido si se cumple el mínimo de cobertura.
-- **Justificación:** El autor pidió que la investigación sea limitada (E55) y, en v1.1, que además no se alargue en el tiempo (E76). Un tope explícito acota el tamaño del Contexto Histórico, que viaja como contexto en todas las invocaciones de las etapas 2 y 3 (RF-045) y condiciona su viabilidad con un modelo pequeño. El tope de **búsquedas** se añade porque el número de consultas web, y no el de afirmaciones, es lo que gobierna cuánto dura la Etapa 1.
+- **Enunciado:** El sistema detiene la investigación histórica al reunir **cinco** afirmaciones verificadas, al alcanzar **una por dimensión**, o al agotar **tres rondas**, lo que ocurra primero, y cierra la etapa con lo obtenido en todo caso.
+- **Justificación:** El autor pidió que la investigación sea limitada (E55) y que además no se alargue en el tiempo (E76). Un tope explícito acota el tamaño del Contexto Histórico, que viaja como contexto en todas las invocaciones de las etapas 2 y 3 (RF-045) y condiciona su viabilidad con un modelo pequeño. El tope de **búsquedas** se añade porque el número de consultas web, y no el de afirmaciones, es lo que gobierna cuánto dura la Etapa 1.
 - **Historia de usuario:** Como autor, quiero que el sistema investigue lo justo para no cometer anacronismos y pare, en vez de acumular datos sin fin.
 - **Precondiciones:** Etapa 1 en ejecución.
 - **Postcondiciones:** La investigación se detiene al alcanzar el tope.
@@ -1963,7 +1972,7 @@ Escenario: Manuscrito globalmente coherente
 
 #### RF-056 · Lista fija de clichés
 - **Enunciado:** El arnés incorpora una lista fija y numerada de clichés, declarada en §11.5, idéntica para todos los Proyectos; el Verificador de Canon comprueba únicamente contra esa lista y cita el número de la entrada infringida.
-- **Justificación:** El autor fijó en v1.7 que la lista es un artefacto dado y que esos son los clichés que se verifican, sin más (E71, E73), sustituyendo a la generación por agente de E53. Una lista fija hace el veredicto comparable entre proyectos y entre ejecuciones, permite discutirla en la memoria académica y elimina la variabilidad que una lista regenerada introducía en RF-022.
+- **Justificación:** El autor fijó que la lista es un artefacto dado y que esos son los clichés que se verifican, sin más (E71, E73), sustituyendo a la generación por agente de E53. Una lista fija hace el veredicto comparable entre proyectos y entre ejecuciones, permite discutirla en la memoria académica y elimina la variabilidad que una lista regenerada introducía en RF-022.
 - **Historia de usuario:** Como autor, quiero que el criterio de cliché sea el mismo durante todo el proyecto, para poder discutirlo y no encontrarme con que cambia solo.
 - **Precondiciones:** Encargo congelado.
 - **Postcondiciones:** Existe la lista de clichés del Proyecto, congelada y consultable.
@@ -2029,7 +2038,7 @@ Escenario: Encargo válido desde la interfaz
   Y habilita el lanzamiento de la Etapa 1
 
 Escenario: Parámetros incoherentes desde la interfaz
-  Cuando el autor introduce menos líneas por capítulo que párrafos por capítulo
+  Cuando el autor introduce un valor menor que 1 en cualquier parámetro de longitudo
   Entonces la interfaz señala el campo inválido con su motivo
   Y no habilita el lanzamiento de la Etapa 1
 ```
@@ -2230,7 +2239,7 @@ Escenario: Agregación por etapa
 
 #### RF-050 · Versionado de las instrucciones de los agentes
 - **Enunciado:** El sistema identifica con una versión **el conjunto de las instrucciones de los agentes** —la versión del arnés— y la registra en cada traza.
-- **Justificación:** Sin una versión registrada, dos ejecuciones distintas no son comparables y RNF-007 —trazabilidad en lugar de determinismo— queda vacío. En v1.2 el autor decidió que las instrucciones **no lleven versión propia** y se editen en su sitio (E79): el histórico lo guarda el control de versiones del repositorio, y la unidad de comparación pasa a ser el arnés entero, que queda anclado al Proyecto al crearlo. Se pierde poder distinguir qué agente concreto cambió entre dos ejecuciones; se conserva poder afirmar que corrieron con arneses distintos y cuáles.
+- **Justificación:** Sin una versión registrada, dos ejecuciones distintas no son comparables y RNF-007 —trazabilidad en lugar de determinismo— queda vacío. El autor decidió que las instrucciones **no lleven versión propia** y se editen en su sitio (E79): el histórico lo guarda el control de versiones del repositorio, y la unidad de comparación pasa a ser el arnés entero, que queda anclado al Proyecto al crearlo. Se pierde poder distinguir qué agente concreto cambió entre dos ejecuciones; se conserva poder afirmar que corrieron con arneses distintos y cuáles.
 - **Historia de usuario:** Como evaluador académico, quiero saber con qué versión de las instrucciones se produjo cada resultado, para comparar ejecuciones y atribuir las mejoras.
 - **Precondiciones:** Invocación a un agente.
 - **Postcondiciones:** La traza registra la versión de instrucción.
@@ -2266,7 +2275,7 @@ Este contrato es independiente del canal: rige igual si el Encargo llega por di�
 | Tema | Obligatoria | No vacío |
 | Personajes de partida | Obligatoria, admite «ninguno» | Si hay personajes, cada uno tiene al menos un nombre o una descripción |
 | Inspiración | Obligatoria, admite «ninguna» | — |
-| Parámetros de longitud (4 valores) | Obligatoria | Enteros ≥ 1; `líneas por capítulo ≥ párrafos por capítulo` |
+| Parámetros de longitud (4 valores) | Obligatoria | Enteros ≥ 1; sin restricción cruzada. `líneas por párrafo ≥ párrafos por capítulo` |
 | Estado | Obligatoria | Es Congelado |
 
 ### 9.2 Etapa 1 → Etapa 2 · Contexto Histórico
@@ -2366,11 +2375,11 @@ Transversal a las tres etapas. Define qué recibe un agente cada vez que se le i
 | RNF-022 | La indisponibilidad de la plataforma de observabilidad no debe detener la ejecución | Número de ejecuciones abortadas por fallo de instrumentación | 0 | Se ejecuta una etapa con la plataforma inaccesible y la etapa concluye, con la incidencia registrada | RES-6, RES-10 |
 | RNF-023 | El manuscrito no debe contener contradicciones entre capítulos | Número de hallazgos Bloqueantes abiertos tras la validación global | 0, salvo aceptación expresa del autor registrada | Veredicto de RF-055 sobre el manuscrito completo | E56 |
 | RNF-024 | La entrega debe producirse en los dos formatos exigidos | Número de formatos entregados con contenido idéntico | 2 de 2 (Markdown y PDF) | Comparación del texto de ambos ficheros capítulo a capítulo | E51 |
-| RNF-025 | El volumen de la investigación debe estar acotado | Número de afirmaciones verificadas por dimensión y en total; número de búsquedas por dimensión | 2 ≤ n ≤ 4 por dimensión; ≤ 52 en total; ≤ 2 búsquedas por dimensión | Recuento sobre el Contexto Histórico cerrado | E55, E76 |
+| RNF-025 | El volumen de la investigación debe estar acotado | Número de afirmaciones verificadas por dimensión y en total; rondas consumidas | ≤ 1 por dimensión; ≤ 5 en total; ≤ 3 rondas | Recuento sobre el Contexto Histórico cerrado | E55, E76, E82 |
 | RNF-026 | El arnés debe ser ampliable sin modificar lo existente | Número de artefactos que hay que crear o modificar para añadir un elemento | Un verificador nuevo: su definición + su entrada en el registro, y 0 modificaciones de agentes existentes. Una dimensión: 1 modificación de la lista. Una etapa: su definición + 1 modificación de la lista de etapas | Se añade un verificador de prueba y se comprueba que ninguna definición anterior cambia | E58, OBJ-7 |
 | RNF-027 | La orquestación no contiene código | Número de decisiones del flujo —aceptar, reintentar, descartar, bloquear, avanzar de etapa— tomadas por un programa en lugar de por un agente | 0 | Inspección de la orquestación y del registro de agentes. Las herramientas de hoja se enumeran aparte y se comprueba que ninguna decide | E57, E66, RES-11 |
 | RNF-028 | Las instrucciones de los agentes deben ser legibles por el autor | Número de definiciones de agente redactadas en lenguaje natural frente al total | 8 de 8 | Lectura por un tercero sin conocimiento del proyecto | E4, E5, E57 |
-| RNF-031 | ~~Revalidación tras intervención~~ — **OBSOLETO desde v1.8** (E74). El identificador se conserva y no se reutiliza | — | — | — | — |
+| RNF-031 | ~~Revalidación tras intervención~~ — **OBSOLETO** por revocación de E74. El identificador se conserva y no se reutiliza | — | — | — | — |
 | RNF-030 | Los dos canales de entrada deben producir el mismo Encargo | Diferencias entre el Encargo congelado obtenido por diálogo y el obtenido por fichero con los mismos datos | 0 | Se cumplimenta el mismo encargo por ambos canales y se comparan los artefactos resultantes | E65, RES-12 |
 | RNF-029 | Todo rechazo debe ser accionable | Porcentaje de hallazgos Bloqueantes y Mayores que incluyen número de criterio, cita literal y corrección esperada | 100 % | Inspección de la bitácora sobre una ejecución completa | E64, RF-061 |
 
@@ -2378,7 +2387,7 @@ Transversal a las tres etapas. Define qué recibe un agente cada vez que se le i
 
 RES-11 elimina la posibilidad de comprobaciones deterministas. Las métricas de esta sección se mantienen porque sin ellas los requisitos serían deseos, pero su verificación pasa a depender del juicio de un agente y deja de ser exacta. Esto se declara aquí en lugar de disimularse en los umbrales:
 
-| Requisito | Verificación antes de v1.3 | Verificación bajo RES-11 | Pérdida |
+| Requisito | Verificación que el enunciado sugiere | Verificación bajo RES-11 | Pérdida |
 |---|---|---|---|
 | RNF-004 (anacronismos) | Búsqueda literal de cada entrada del inventario sobre el manuscrito | Lectura del manuscrito por el Agente Verificador de Canon e Historia con el inventario delante | Puede pasarse por alto una coincidencia; no hay garantía de cero |
 | RNF-006 (longitud) | Recuento exacto de palabras | Estimación del agente | Las tolerancias del 20 % y el 10 % son orientativas; el hallazgo es Menor y no bloquea (RF-051) |
@@ -2497,15 +2506,15 @@ Artefacto cerrado del arnés (RF-056). El Verificador de Canon comprueba contra 
 
 ### 12.1 Modo de operación
 
-El arnés opera en **ejecución continua con puntos de control condicionales**: las tres etapas se encadenan sin intervención humana, y el sistema solo se detiene cuando se cumple la condición de un punto de control —un bloqueo por agotamiento de intentos, una contradicción que arbitrar o una cobertura deficitaria—. El autor sustituyó en v1.4 el troceado en tres sesiones por la ejecución de corrido (E63), y la invocación por etapa se conserva como capacidad para reanudar, reejecutar o probar una etapa aislada (RF-033). Los puntos de control opcionales PCH-4, PCH-6 y PCH-9 dejan de interrumpir la marcha por defecto y pasan a estar disponibles a petición del autor.
+El arnés opera en **ejecución continua con puntos de control condicionales**: las tres etapas se encadenan sin intervención humana, y el sistema solo se detiene cuando se cumple la condición de un punto de control —un bloqueo por agotamiento de intentos, una contradicción que arbitrar o una cobertura deficitaria—. El autor sustituyó el troceado en tres sesiones por la ejecución de corrido (E63), y la invocación por etapa se conserva como capacidad para reanudar, reejecutar o probar una etapa aislada (RF-033). Los puntos de control opcionales PCH-4, PCH-6 y PCH-9 dejan de interrumpir la marcha por defecto y pasan a estar disponibles a petición del autor.
 
 ### 12.2 Puntos de control
 
 | ID | Punto de control | Carácter | Qué decide el autor | Origen |
 |---|---|---|---|---|
-| PCH-1 | Diálogo de captura del Encargo | Condicional desde v1.5: solo si el Encargo no llega completo por fichero | Los campos que falten o sean inválidos | A17, E8, E65 |
+| PCH-1 | Diálogo de captura del Encargo | Condicional: solo si el Encargo no llega completo por fichero | Los campos que falten o sean inválidos | A17, E8, E65 |
 | PCH-2 | Arbitraje de contradicciones del contexto | Condicional: solo si RF-015 detecta pares contradictorios | Cuál de las dos afirmaciones conservar | SUP-008 |
-| PCH-3 | Cierre de la Etapa 1 con cobertura deficitaria | Condicional: solo si alguna dimensión queda por debajo del umbral | Continuar igualmente o repetir la investigación | RF-014 |
+| PCH-3 | Cierre de la Etapa 1 sin las cinco afirmaciones | **Retirado por E82:** la etapa se cierra como Incompleta con su salvedad declarada y la ejecución continúa sin escalar. El identificador se conserva y no se reutiliza | — | RF-014 |
 | PCH-4 | Revisión del Contexto Histórico cerrado | Opcional | Lanzar la Etapa 2 o repetir la Etapa 1 | E6 |
 | PCH-5 | Descarte de canon que deja hueco estructural | Condicional: tras dos ciclos de sustitución fallidos | Aceptar el hueco, aportar el elemento o repetir la etapa | RF-023 |
 | PCH-6 | Revisión del Canon congelado | Opcional | Lanzar la Etapa 3 o repetir la Etapa 2 | E6 |
@@ -2686,13 +2695,13 @@ Todos los puntos de control se presentan y se resuelven a través del canal de i
 
 | ID | Supuesto | Impacto si es falso |
 |---|---|---|
-| SUP-001 | ~~La Escena es una agrupación de uno o más párrafos~~ **Resuelto en v1.2: escena ≡ párrafo (E46).** Deja de ser supuesto | — |
+| SUP-001 | ~~La Escena es una agrupación de uno o más párrafos~~ **Resuelto: escena ≡ párrafo (E46).** Deja de ser supuesto | — |
 | SUP-002 | ~~Español~~ **Confirmado por el autor (E51).** Deja de ser supuesto | — |
 | SUP-003 | ~~Entrega en Markdown~~ **Confirmado y ampliado por el autor: Markdown y PDF (E51).** Deja de ser supuesto | — |
 | SUP-004 | La reproducibilidad exigida es de trazabilidad, no de determinismo | Si se exige que la misma entrada produzca la misma salida exacta, RNF-007 cambia por completo y entra en conflicto con la naturaleza del modelo |
-| SUP-005 | Los límites de iteración son 2, 2, 3 y 2 (§7.4), confirmados por el autor para la primera ejecución de prueba | Límites menores producen más bloqueos y menos autonomía (criterio de éxito a); límites mayores disparan coste y tiempo sin garantía de convergencia. Con escena ≡ párrafo el efecto es mayor que en v1.1, porque el bucle interior se ejecuta una vez por párrafo |
+| SUP-005 | Los límites de iteración son 2, 2, 3 y 2 (§7.4), confirmados por el autor para la primera ejecución de prueba | Límites menores producen más bloqueos y menos autonomía (criterio de éxito a); límites mayores disparan coste y tiempo sin garantía de convergencia. Con escena ≡ párrafo el efecto es mayor de lo que se estimó al proponerlos, porque el bucle interior se ejecuta una vez por párrafo |
 | SUP-006 | El Encargo es inmutable tras congelarse | Si se permite modificarlo, la trazabilidad deja de ser cierta y hay que versionar el encargo, lo que no está especificado |
-| SUP-007 | La investigación se acota con un mínimo de 2 y un máximo de 4 afirmaciones verificadas por dimensión, un tope global de 52 y un máximo de 2 búsquedas por dimensión | **Revisado en v1.1** al pasar de siete a diecisiete dimensiones: los valores anteriores (3/8/50) eran aritméticamente imposibles, porque 17 × 3 = 51 supera el tope global y toda ejecución habría cerrado incompleta. Un mínimo más bajo permite cerrar contextos pobres; un máximo más bajo deja fuera detalles de época y aumenta el riesgo de anacronismo; uno más alto engorda el contexto que viaja en todas las invocaciones posteriores y puede desbordarlo (RF-047). El tope de búsquedas es el que gobierna la duración real de la Etapa 1 |
+| SUP-007 | La investigación se acota con un mínimo de 2 y un máximo de 4 afirmaciones verificadas por dimensión, un tope global de 52 y un máximo de 2 búsquedas por dimensión | Los valores nacieron para **siete** dimensiones (3/8/50) y no sobreviven a diecisiete: 17 × 3 = 51 supera el tope global, de modo que toda ejecución habría cerrado incompleta. Un mínimo más bajo permite cerrar contextos pobres; un máximo más bajo deja fuera detalles de época y aumenta el riesgo de anacronismo; uno más alto engorda el contexto que viaja en todas las invocaciones posteriores y puede desbordarlo (RF-047). El tope de búsquedas es el que gobierna la duración real de la Etapa 1 |
 | SUP-008 | Es necesario detectar contradicciones entre afirmaciones verificadas | Si se prescinde, RF-015 y PCH-2 desaparecen; el contexto puede contener verdades incompatibles que el canon heredará |
 | SUP-009 | «Giro raro» = giro no preparado por el canon precedente; «cliché» = coincidencia con lista enumerada | Si el autor tiene otro criterio, RF-022 valida lo que no debe y rechaza lo que no toca; es el requisito más expuesto a desacuerdo estético |
 | SUP-010 | La tolerancia de longitud es del 20 % por párrafo y del 10 % por capítulo, en palabras, y 0 en número de capítulos y de párrafos | Con tolerancia menor, el sistema perseguirá la cifra y producirá párrafos forzados; con tolerancia mayor, el parámetro de longitud deja de controlar la extensión real de la novela |
@@ -2709,12 +2718,12 @@ Todos los puntos de control se presentan y se resuelven a través del canal de i
 | SUP-021 | La bitácora local sigue siendo la fuente de verdad; la plataforma de observabilidad es un consumidor | Si la plataforma fuera la fuente de verdad, RF-036 y RNF-022 cambian y el sistema pasa a depender de su disponibilidad |
 | SUP-022 | La validación global dispone de una sola vuelta de corrección | Con más vueltas, el coste de la fase final crece sin cota clara; con ninguna, la validación global solo informaría y no corregiría nada |
 | SUP-023 | La tabla de correspondencia entre tipo de hallazgo y severidad de RF-051 refleja el criterio del autor | Si el autor considera Bloqueante lo que aquí es Mayor —por ejemplo los errores gramaticales—, el número de reescrituras y de bloqueos cambia sustancialmente |
-| SUP-031 | ~~Alcance de la revalidación~~ **Obsoleto desde v1.8** (E74): sin edición parcial no hay revalidación | — |
+| SUP-031 | ~~Alcance de la revalidación~~ **Obsoleto** por revocación de E74: sin edición parcial no hay revalidación | — |
 | SUP-030 | ~~El fichero contiene solo el Encargo~~ **Confirmado por el autor (E70).** Consecuencia asumida: ajustar límites, topes, tolerancias o severidades para comparar ejecuciones exige editar las instrucciones de los agentes, no basta con cambiar el fichero | Consecuencia registrada, no supuesto |
 | SUP-028 | El Verificador de Canon e Historia recibe íntegros los tres capítulos inmediatamente anteriores, y el resto mediante el resumen acumulado | Con menos, se pierde el detalle literal que permite detectar el desajuste; con más, la ventana se agota en novelas de más de diez capítulos y RF-047 empieza a recortar sin criterio |
 | SUP-029 | El estado del orquestador vive en un artefacto persistido que se lee y escribe en cada paso | Si el estado se confía a la conversación, la ejecución continua funciona hasta que la ventana se agota y a partir de ahí el orquestador pierde el hilo sin avisar |
 | SUP-025 | La ampliabilidad se consigue con un registro declarado de agentes y un contrato uniforme de veredicto | Si el autor esperaba otra forma de crecer —por ejemplo agentes que se llamen entre sí—, RF-057 y RF-058 sobran y el mecanismo real queda sin especificar |
-| SUP-026 | ~~RES-11 rige el arnés y no la envoltura~~ **Resuelto en v1.6 (PA-022): RES-11 no cubre interfaz ni Langfuse, y además queda relajada.** Deja de ser supuesto | — |
+| SUP-026 | ~~RES-11 rige el arnés y no la envoltura~~ **Resuelto (PA-022): RES-11 no cubre interfaz ni Langfuse, y además queda relajada.** Deja de ser supuesto | — |
 | SUP-027 | ~~Asignación de la validación global y la lista de clichés a agentes existentes~~ **Confirmado por el autor (E69).** Deja de ser supuesto | — |
 | SUP-024 | El Escritor necesita el texto íntegro de las escenas ya aprobadas del capítulo en curso | Si no se le aportan, los párrafos resultan inconexos; si se le aportan además los capítulos anteriores completos, el contexto desborda con novelas largas |
 
@@ -2753,7 +2762,7 @@ Los identificadores se conservan y no se reutilizan.
 | PA-025 | Tres capítulos anteriores íntegros, más resumen acumulado | RF-030, SUP-028 |
 | PA-026 | El fichero de entrada contiene solo el Encargo | RF-063, SUP-030 confirmado |
 | PA-014 | La gestión de contexto es la ya especificada: qué recibe cada agente, registrado, con regla de omisión al desbordar | RF-045 a RF-047, §9.7 confirmados |
-| PA-016 | **Revisada en v1.8:** ni el contexto ni el canon se pueden tocar una vez sellados. La única vía de cambio es repetir la etapa | RF-066; RF-064, RF-065 y RNF-031 obsoletos; invariantes de RF-013 y RF-024 restablecidas |
+| PA-016 | **Revisada:** ni el contexto ni el canon se pueden tocar una vez sellados. La única vía de cambio es repetir la etapa | RF-066; RF-064, RF-065 y RNF-031 obsoletos; invariantes de RF-013 y RF-024 restablecidas |
 | PA-028 | Sin objeto: al no existir edición parcial, no hay intervención cuyo alcance advertir. La advertencia se traslada a la repetición de etapa | RF-066 |
 | PA-027 | La lista de clichés es fija y aportada con el arnés; esos son los que se verifican | RF-056 reescrito, §11.5 |
 
@@ -2798,7 +2807,7 @@ Ninguna. Las veintiocho preguntas planteadas están resueltas en §15.1. Los sup
 
 ### 17.1 Fuera de alcance (recapitulación)
 
-Recogido en §4.2 y §4.3. En síntesis: RAG (descartado de forma definitiva), etapa de refinamiento independiente, rescate de afirmaciones descartadas, multiusuario, maquetación editorial, otros idiomas, ilustraciones, comparación de modelos, diseño visual de la interfaz y reproducibilidad determinista. La validación global del manuscrito, que en v1.1 estaba aquí, ha pasado a ser el requisito RF-055.
+Recogido en §4.2 y §4.3. En síntesis: RAG (descartado de forma definitiva), etapa de refinamiento independiente, rescate de afirmaciones descartadas, multiusuario, maquetación editorial, otros idiomas, ilustraciones, comparación de modelos, diseño visual de la interfaz y reproducibilidad determinista. La validación global del manuscrito, que durante la elaboración figuró aquí como propuesta, es desde la línea base el requisito RF-055.
 
 ### 17.2 Propuestas propias
 
@@ -2807,7 +2816,7 @@ Recogido en §4.2 y §4.3. En síntesis: RAG (descartado de forma definitiva), e
 | ID | Propuesta | Motivación | Coste estimado de añadirla |
 |---|---|---|---|
 | **P-01** | Pase de pulido estilístico sobre el manuscrito aprobado, capítulo a capítulo, sin poder alterar hechos ni canon | Recupera la intención del nodo N6 «Refinamiento». La validación léxica rechaza defectos, pero nadie mejora la prosa que simplemente es correcta y sosa | Una etapa más y una invocación por capítulo |
-| ~~**P-02**~~ | **Retirada en v1.2: adoptada como requisito RF-055** tras el arbitraje de PA-012 | — | — |
+| ~~**P-02**~~ | **Retirada: adoptada como requisito RF-055** tras el arbitraje de PA-012 | — | — |
 | **P-03** | Guía de estilo explícita como parte del Encargo: persona narrativa, tiempo verbal, registro, longitud media de frase | Hoy la voz de la novela es un residuo de lo que produzca el modelo. Con guía declarada, la adherencia de estilo pasa a ser verificable como el resto | Cuatro preguntas más en RF-001 y una comprobación más en RF-028 |
 | **P-04** | Variación deliberada de la extensión entre capítulos, dentro de un presupuesto total de palabras | Los parámetros actuales producen capítulos de tamaño idéntico, que es un artefacto reconocible de generación automática (riesgo R-07) | Cambiar RF-026 de tolerancia por capítulo a presupuesto global con reparto variable |
 | **P-05** | Ficha de continuidad por personaje, ahora la propuesta más rentable de la lista: con escena ≡ párrafo, el redactor trabaja con una ventana más estrecha y la validación global (RF-055) necesita elementos rastreables contra los que comparar (PA-018), actualizada tras cada capítulo: dónde está, qué sabe, qué posee, cómo ha cambiado | Refuerza la memoria de largo alcance (R-01) con un estado explícito y barato de consultar, en lugar de confiar solo en el resumen narrativo | Una actualización estructurada por capítulo |
@@ -2840,7 +2849,7 @@ Estas reglas rigen todas las versiones posteriores a v1 y no se alteran sin acue
 2. **Nada se borra.** Un requisito que deja de aplicarse se marca como OBSOLETO, conserva su identificador y declara la versión y el motivo de su retirada. RF-064, RF-065 y RNF-031 son el precedente.
 3. **Todo cambio entra como afirmación.** Una petición nueva del responsable del producto se registra primero como afirmación E-nnn en §1.3, con su clasificación, y solo después se deriva en requisitos. Un requisito sin afirmación de origen o sin etiqueta de supuesto no es admisible.
 4. **La entrada posterior prevalece.** Si una afirmación nueva contradice a otra anterior, prevalece la nueva, la anterior se marca como revocada y la contradicción se registra en §1.4. E74 revocando a E72 es el precedente.
-5. **Numeración de versiones.** Sube la parte mayor (v2, v3) cuando cambia el alcance, el pipeline o el conjunto de agentes; sube la menor (v1.1, v1.2) cuando se añaden, modifican o retiran requisitos sin alterar la arquitectura; sube la de parche (v1.0.1) cuando solo se corrigen erratas, redacción o referencias cruzadas.
+5. **Numeración de versiones.** Sube la parte mayor (v2, v3) cuando cambia el alcance, el pipeline o el conjunto de agentes, o cuando el documento se reescribe como línea base nueva; sube la menor cuando se añaden, modifican o retiran requisitos sin alterar la arquitectura; sube la de parche cuando solo se corrigen erratas, redacción o referencias cruzadas. Esta numeración es la de **publicación** y empieza en v1: las iteraciones de borrador anteriores a la línea base no se numeran aquí, y donde se mencionan se hace por su hito, no por su número, para que no se confundan con estas.
 6. **El documento es la fuente de verdad.** Ninguna decisión vive solo en una conversación. Si algo se acordó y no está aquí, no está acordado.
 
 ### 18.3 Procedimiento de cambio
@@ -2870,35 +2879,76 @@ Trabajo previo a la línea base. Se conserva porque explica por qué la especifi
 | Ajuste de restricciones | E66 a E71 | Código admitido en herramientas de hoja; interfaz y Langfuse fuera de la primera implementación; lista de clichés simple |
 | Edición y revocación | E72 a E74 | Se introduce y se revoca la edición de artefactos sellados; inmutabilidad estricta restablecida y repetición de etapa como única vía de cambio |
 
-### 18.5 Registro de cambios posteriores a v1
+### 18.5 Registro de cambios
 
 Tabla de altas. Se rellena hacia abajo, una fila por versión publicada, sin reescribir las anteriores.
 
 | Versión | Fecha | Afirmaciones nuevas | Requisitos añadidos | Requisitos modificados | Requisitos obsoletos | Motivo |
 |---|---|---|---|---|---|---|
-| v1 | 18-09-2026 | E1 a E74 | RF-001 a RF-066, RNF-001 a RNF-031 | — | RF-064, RF-065, RNF-031 | Línea base |
-| v1.1 | 18-09-2026 | E75, E76, E77, E78 | — | RF-005, RF-014, RF-028, RF-030, RF-054, RNF-025, SUP-007, §3, §6.1, §7.1, §11.1 | — | Propagación de cuatro decisiones del autor tomadas durante la implementación. Ver detalle abajo |
-| v1.3 | 18-09-2026 | — | — | RF-051 | — | Siete tipos de hallazgo que los verificadores emiten y la tabla no recogía. Corrección de un defecto detectado en la primera ejecución. Ver detalle abajo |
-| v1.2 | 18-09-2026 | E79 | — | RF-050, RNF-007, RNF-021 | — | Las instrucciones de los agentes dejan de versionarse: se editan en su sitio y la unidad de comparación pasa a ser la versión del arnés. Ver detalle abajo |
+| v1 | 18-09-2026 | E1 a E74 | RF-001 a RF-066, RNF-001 a RNF-031 | — | RF-064, RF-065, RNF-031 | Línea base inicial |
+| **v2** | 18-09-2026 | E75 a E80 | — | RF-005, RF-014, RF-028, RF-030, RF-050, RF-051, RF-054, RNF-007, RNF-021, RNF-025, SUP-007 | — | **Línea base reescrita.** Consolida seis decisiones del autor tomadas al construir el arnés y ejercitarlo por primera vez. Detalle abajo |
+| v2.1 | 18-09-2026 | E81 | — | RF-002, RF-026, RF-063, §1.4, §3, §6.1, §7.0, §9.1, RNF-030 | — | El tercer parámetro de longitud es *líneas por párrafo*, no por capítulo. Resuelve PA-001. Detalle abajo |
+| v2.2 | 18-09-2026 | E82 | — | RF-005, RF-010, RF-011, RF-013, RF-014, RF-054, RNF-025, PCH-3, §7.1, §11.1 | — | El Contexto Histórico se relaja a cinco afirmaciones y tres rondas. PCH-3 deja de bloquear. Detalle abajo |
 |  |  |  |  |  |  |  |
 
-**Detalle de v1.3.** La tabla de correspondencia de RF-051 recogía diez tipos de hallazgo, pero los verificadores emiten más: los cuatro criterios del Verificador de Investigación en modo respaldo, el de contradicciones, el giro no preparado del Verificador de Canon y la reproducción de fuente de la validación global **no tenían fila**. La regla por defecto los resolvía como Mayor.
+#### v2.2 · El Contexto Histórico se relaja a cinco afirmaciones
 
-**El daño fue real y medido.** En la primera ejecución (PRY-20260918-el-asedio-de-zamora) se registraron 21 anomalías de tipo no previsto, y dos afirmaciones —AF-0002 y AF-0029— que el propio verificador había calificado de **Menores** fueron elevadas a Mayor por la tabla y **descartadas** al agotar sus intentos. Dos afirmaciones correctas no llegaron al Contexto Histórico porque faltaba una fila.
+**Qué cambia.** El Contexto Histórico pasa de **52 afirmaciones verificadas con cobertura mínima en diecisiete dimensiones obligatorias** a **cinco afirmaciones, como máximo una por dimensión, sin ninguna dimensión obligatoria**. El bucle cambia de forma: ya no son dos intentos por afirmación con descarte, sino **tres rondas** en las que el Investigador entrega las cinco y sustituye las que el Verificador rechace. Agotadas las tres rondas, **la ejecución continúa** con las aceptadas que haya.
 
-**La lección de diseño**, que se incorpora al caso límite del requisito: una regla por defecto que **endurece** parece prudente, pero en un bucle con límite de intentos no se limita a ser estricta — **descarta trabajo**. La severidad de cada fila nueva se elige por esa lógica: `dimension_incorrecta` es Menor porque la afirmación es cierta y solo está mal clasificada; `reproduccion_fuente` es Mayor y **no** Bloqueante porque bajo RES-11 el arnés no puede medir ese umbral (A-02), y hacerlo bloqueante daría una falsa confianza además de impedir la entrega por un control que no se verifica.
+**Qué se retira.** La cobertura mínima por dimensión, el tope global de 52, el descarte por segundo rechazo de RF-011 y el escalado de PCH-3. **Es el único límite del arnés que no lleva a un punto de control**: al agotarse, no bloquea.
 
-**Detalle de v1.2.** El autor retiró el versionado por instrucción: «quiero no tener versionados los agentes, si lo cambiamos, lo hemos cambiado» (E79). Desaparecen los ficheros con la versión en el nombre (`investigador.md@2`) y queda uno por agente. **Qué se conserva:** cada traza sigue registrando una versión —la del arnés—, de modo que RF-050, RNF-007 y RNF-021 siguen siendo medibles y dos ejecuciones siguen siendo comparables. **Qué se pierde:** la granularidad. Ya no se puede afirmar que dos ejecuciones difieren «solo en el Verificador de Lingüística», sino que corrieron con arneses distintos; para saber qué cambió dentro hay que ir al repositorio. **Consecuencia sobre la idempotencia:** la clave deja de incluir la versión de instrucción, luego mejorar un agente ya no fuerza a rehacer los pasos que ya resolvió en un Proyecto en curso.
+**El asterisco.** Cuando no se alcanzan las cinco, el Contexto se sella igualmente como `Cerrado_incompleta` con una **advertencia declarada y obligatoria** que dice cuántas se lograron. No hace falta confirmación del autor: el arnés continúa solo y el asterisco viaja con el artefacto hasta el bloque 6 del informe.
 
-**Detalle de v1.1.** Cuatro decisiones, tomadas al construir el arnés y ejercitarlo por primera vez:
+**Lo que esto cuesta, y consta para que nadie lo descubra después.** Con cinco afirmaciones el Contexto deja de ser una cobertura del periodo y pasa a ser **un puñado de anclajes**. El efecto más severo no está en la Etapa 1 sino tres etapas más allá: el **Inventario de Prohibidos** se construye a partir de las afirmaciones verificadas, y con una sola de la dimensión `ausencias` quedará casi vacío. El criterio 1 del Verificador de Canon e Historia —el único que caza anacronismos desde E77— seguirá ejecutándose, pero con muy poco contra qué contrastar. **OBJ-2 se debilita de forma sustancial**, y la distancia entre lo que el arnés ejecuta y lo que puede afirmar se ensancha.
 
-| # | Decisión | Origen | Qué cambia | Por qué |
-|---|---|---|---|---|
-| **1** | **Las dimensiones pasan de siete a diecisiete**, con un esquema historiográfico en lugar del de vida cotidiana | E75 | RF-005, §3, §6.1, §7.1, §11.1 | Las siete originales describían cómo se vivía y dejaban fuera el acontecer del periodo —quién gobernaba, qué guerra había, qué pasó ese año—, sin lo cual el canon carece de anclaje histórico y RF-020 no puede detectar el error más típico: situar a un personaje en un acontecimiento que no le corresponde. La decimoséptima, «Ausencias y anacronismos», sustituye a la antigua «inexistente» y conserva su papel de alimentar el Inventario de Prohibidos (RF-008) |
-| **2** | **Los topes de investigación se revisan** a 2/4/52 y se añade un tope de 2 búsquedas por dimensión | E76, consecuencia de E75 | RF-014, RF-054, RNF-025, SUP-007 | Los valores anteriores (3/8/50) eran **aritméticamente imposibles** con diecisiete dimensiones: 17 × 3 = 51 supera el tope global, de modo que toda ejecución habría cerrado incompleta y bloqueado en PCH-3. Los nuevos conservan las dos propiedades del diseño: el mínimo cabe (17 × 2 = 34 ≤ 52) y el tope global sigue siendo la condición de parada que ata (17 × 4 = 68 > 52). El tope de búsquedas se añade porque es el número de consultas web, y no el de afirmaciones, lo que gobierna la duración real de la Etapa 1 |
-| **3** | **El Inventario de Prohibidos pasa del Verificador de Lingüística al Verificador de Canon e Historia** | E77 | RF-028, RF-030 | El reparto queda por competencia y no por artefacto: **el bucle interior juzga cómo está escrito el párrafo; el bucle exterior juzga qué dice**. RF-028 baja de siete criterios a seis y pierde su escenario de anacronismo léxico; RF-030 gana el Inventario como entrada obligatoria y el escenario correspondiente. Concentra todo juicio sobre el contenido en el único agente que tiene delante el Canon y el Contexto completos, que antes juzgaba anacronismos con solo el Inventario. **Coste asumido:** la detección se retrasa del párrafo al capítulo, de modo que un anacronismo obliga a una vuelta del bucle exterior además de la reescritura. Se mitiga con la localización obligatoria del hallazgo por escena (RF-031), que evita devolver el capítulo entero |
-| **4** | **La investigación la realiza una sola invocación al Agente Investigador** | E78 | Ninguno: es materia del CÓMO | Ninguna RF fijaba la cardinalidad de la invocación, luego el cambio no altera este documento. Queda registrado aquí porque explica la revisión de las cotas de invocación de la Etapa 1, y se especifica en la Técnica |
+Es una decisión deliberada del autor en favor de la rapidez, y la relajación más profunda hecha hasta ahora. Se mitiga en parte haciendo que `ausencias` entre siempre que pueda sostenerse, y que la elección de las cinco dimensiones se justifique en el plan para que sea inspeccionable.
+
+#### v2.1 · El tercer parámetro de longitud es *líneas por párrafo*
+
+**Qué decía E36.** Los cuatro parámetros eran capítulos, párrafos por capítulo, **líneas por capítulo** y palabras por línea. De ahí salía la extensión del párrafo dividiendo: `redondeo((líneas_por_capítulo / párrafos_por_capítulo) × palabras_por_línea)`.
+
+**Qué dice E81.** El tercero es **líneas por párrafo**. La extensión del párrafo es una multiplicación directa: `líneas_por_párrafo × palabras_por_línea`.
+
+**Esto no es una preferencia de nomenclatura: la formulación anterior estaba mal y hacía daño.** §1.4 había detectado la ambigüedad desde el principio y enumerado tres lecturas, entre ellas la (c), «`líneas por capítulo` es en realidad `líneas por párrafo`». Se adoptó provisionalmente la (a) y la duda se elevó como **PA-001**. E81 la resuelve en favor de la (c), y por la regla 4 de §18.2 la entrada posterior prevalece: PA-001 queda resuelta y la parte de E36 que sostenía la lectura (a), revocada.
+
+**El daño, medido.** En el Proyecto `PRY-20260918-el-asedio-de-zamora` el autor pidió 12 líneas y 4 párrafos por capítulo. Bajo la formulación anterior eso daba **3 líneas por párrafo**, es decir 45 palabras: párrafos demasiado cortos para prosa histórica, y el autor no tenía forma de advertirlo al rellenar el Encargo, porque los números que introducía no eran los que gobernaban el resultado. Bajo E81, esos mismos 12 y 15 dan **180 palabras por párrafo**, que es lo que cabía esperar.
+
+**Lo que se retira.** La restricción cruzada `líneas_por_capítulo ≥ párrafos_por_capítulo` desaparece, y con ella su escenario en RF-002 y su caso en `ERR-101`. Existía solo porque había una división: sin ella, los cuatro parámetros son independientes, se multiplican en cadena y **cualquier combinación de enteros ≥ 1 describe una novela posible**. También desaparece el redondeo, de modo que la extensión objetivo pasa a ser exacta en lugar de aproximada.
+
+#### Qué consolida la línea base v2
+
+Las seis decisiones nacieron entre la construcción del arnés y su primera ejecución completa, la del Proyecto `PRY-20260918-el-asedio-de-zamora`. Ninguna altera la arquitectura, el pipeline ni el conjunto de agentes: por la regla 5 de §18.2 serían versiones menores. Se publican como **v2** porque el documento se ha reescrito de corrido para incorporarlas como texto de base, en lugar de seguir acumulando notas de parche sobre v1.
+
+| # | Decisión | Afirmación | Requisitos tocados |
+|---|---|---|---|
+| **1** | Las dimensiones de investigación pasan de **siete a diecisiete**, con un esquema historiográfico en lugar del de vida cotidiana | E75 | RF-005, §3, §6.1, §7.1, §11.1 |
+| **2** | Los topes de investigación se revisan a **2/4/52** y se añade un tope de **2 búsquedas por dimensión** | E76 | RF-014, RF-054, RNF-025, SUP-007 |
+| **3** | El **Inventario de Prohibidos** pasa del Verificador de Lingüística al Verificador de Canon e Historia | E77 | RF-028, RF-030 |
+| **4** | La investigación la realiza **una sola invocación** al Agente Investigador | E78 | Ninguno: la cardinalidad no la fijaba ninguna RF |
+| **5** | Las instrucciones de los agentes **dejan de versionarse**: se editan en su sitio | E79 | RF-050, RNF-007, RNF-021 |
+| **6** | La tabla de severidades se completa y su **regla por defecto ablanda** en lugar de endurecer | E80 | RF-051 |
+
+**1 · Diecisiete dimensiones.** Las siete originales describían cómo se vivía —vestimenta, actividades, sociedad, preocupaciones, materiales, qué existía y qué no— y dejaban fuera el acontecer del periodo: quién gobernaba, qué guerra había, qué pasó ese año. Sin eso, el canon carece de anclaje histórico y RF-020 no puede detectar el error más típico, que es situar a un personaje en un acontecimiento que no le corresponde. La decimoséptima, «Ausencias y anacronismos», sustituye a la antigua «inexistente» y conserva su papel: es la que alimenta el Inventario de Prohibidos (RF-008), y de ella depende toda la detección de anacronismos.
+
+**2 · Topes revisados.** Los valores de SUP-007 nacieron para siete dimensiones y con diecisiete eran **aritméticamente imposibles**: un mínimo de 3 exige 51 afirmaciones contra un tope global de 50, de modo que toda ejecución habría cerrado incompleta y bloqueado en PCH-3. Los nuevos conservan las dos propiedades que el diseño busca: el mínimo cabe —17 × 2 = 34 ≤ 52— y el tope global sigue siendo la condición de parada que ata —17 × 4 = 68 > 52—. El tope de búsquedas se añade porque es el número de consultas web, y no el de afirmaciones, lo que gobierna cuánto dura la Etapa 1.
+
+**3 · El Inventario cambia de verificador.** El reparto queda por competencia y no por artefacto: **el bucle interior juzga cómo está escrito el párrafo; el bucle exterior juzga qué dice**. RF-028 baja de siete criterios a seis y pierde su escenario de anacronismo léxico; RF-030 gana el Inventario como entrada obligatoria. Concentra todo juicio sobre el contenido en el único agente que tiene delante el Canon y el Contexto completos, cuando antes lo juzgaba uno que solo veía el Inventario. **Coste asumido:** la detección se retrasa del párrafo al capítulo, de modo que un anacronismo cuesta una vuelta del bucle exterior además de la reescritura. Se mitiga con la localización obligatoria del hallazgo por escena (RF-031), que devuelve solo la señalada.
+
+**4 · Una invocación para toda la investigación.** Ninguna RF fijaba cuántas veces se invoca al Investigador, luego el cambio no modifica este documento. Consta aquí porque explica la revisión de las cotas de invocación de la Etapa 1 y porque es una decisión expresa del autor.
+
+**5 · Sin versionado por instrucción.** Desaparecen los ficheros con la versión en el nombre y queda uno por agente. **Qué se conserva:** cada traza sigue registrando una versión —la del arnés—, de modo que RF-050, RNF-007 y RNF-021 siguen siendo medibles y dos ejecuciones siguen siendo comparables. **Qué se pierde:** la granularidad. Ya no puede afirmarse que dos ejecuciones difieren «solo en el Verificador de Lingüística», sino que corrieron con arneses distintos; para saber qué cambió dentro hay que ir al control de versiones. **Y una consecuencia sobre la idempotencia:** la clave deja de incluir la versión de instrucción, luego mejorar un agente ya no fuerza a rehacer los pasos que ya resolvió en un Proyecto en curso.
+
+**6 · La tabla de severidades y su regla por defecto.** La tabla de RF-051 recogía diez tipos de hallazgo y los verificadores emitían más: los cuatro criterios del Verificador de Investigación en modo respaldo, el de contradicciones, el giro no preparado del Verificador de Canon y la reproducción de fuente de la validación global **no tenían fila**. Pasan a ser diecisiete tipos.
+
+El daño de esa omisión fue real y está medido. En la primera ejecución se registraron **21 anomalías de tipo no previsto**, y dos afirmaciones —AF-0002 y AF-0029— que el propio verificador había calificado de **Menores** fueron elevadas a Mayor por la regla por defecto y **descartadas** al agotar sus intentos. Dos afirmaciones correctas no llegaron al Contexto Histórico porque faltaba una fila en una tabla.
+
+Por eso la regla por defecto se invierte: un tipo no previsto se resuelve ahora como **Menor**, se registra como anomalía y **no fuerza reescritura**. La intuición contraria —ante la duda, ser estricto— parecía prudente y resultó destructiva: en un bucle con límite de intentos, endurecer por defecto no se limita a ser severo, **descarta trabajo**. Ablandar tiene el riesgo simétrico de dejar pasar algo que importaba, pero ese riesgo es **visible** —la anomalía consta en el informe y el artefacto sigue ahí— mientras que el descarte es **irreversible**.
+
+#### Cómo se registran los cambios a partir de v2
+
+Los seis pasos de §18.3 siguen rigiendo sin excepción, y la regla 6 de §18.2 con ellos: si algo se acordó y no está aquí, no está acordado. Toda decisión del autor entra primero como afirmación `E-nnn` en §1.3 y solo después se deriva en requisitos. Las filas nuevas se añaden a la tabla de arriba **sin reescribir las anteriores**.
 
 ---
 
-*Fin del documento. Los identificadores RF-001 a RF-066, RNF-001 a RNF-031, SUP-001 a SUP-031, PA-001 a PA-028, R-01 a R-24, OBJ-1 a OBJ-7, RES-1 a RES-12, PCH-1 a PCH-10, CL-01 a CL-27, P-01 a P-08 y E1 a E79 son estables y no se renumerarán. SUP-001, SUP-002, SUP-003 y SUP-031 quedan obsoletos por resolución del autor; RF-064, RF-065 y RNF-031 quedan obsoletos por revocación de E72; P-02 queda retirada por haberse convertido en RF-055. Ninguno de esos identificadores se reutiliza. El procedimiento para toda modificación posterior está en §18.3.*
+
+*Fin del documento. Los identificadores RF-001 a RF-066, RNF-001 a RNF-031, SUP-001 a SUP-031, PA-001 a PA-028, R-01 a R-24, OBJ-1 a OBJ-7, RES-1 a RES-12, PCH-1 a PCH-10, CL-01 a CL-27, P-01 a P-08 y E1 a E82 son estables y no se renumerarán. SUP-001, SUP-002, SUP-003 y SUP-031 quedan obsoletos por resolución del autor; RF-064, RF-065 y RNF-031 quedan obsoletos por revocación de E72; P-02 queda retirada por haberse convertido en RF-055. Ninguno de esos identificadores se reutiliza. El procedimiento para toda modificación posterior está en §18.3. Esta es la línea base **v2**: reescrita de corrido, con todos los identificadores de v1 conservados.*

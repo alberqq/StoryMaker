@@ -8,7 +8,7 @@ Sus parametros son deliberadamente pequenos —2 capitulos x 4 parrafos— para 
 del orden de decenas de invocaciones y no de centenares. Sus derivados:
 
 ```
-palabras_por_parrafo_objetivo  = redondeo((40 / 4) x 12) = 120
+palabras_por_parrafo_objetivo  = 10 x 12 = 120
 palabras_por_capitulo_objetivo = 120 x 4 = 480
 escenas_totales                = 2 x 4 = 8
 ```

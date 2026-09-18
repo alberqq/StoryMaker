@@ -1,12 +1,14 @@
 {
   "esquema": "severidades@1",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "descripcion": "Tabla de correspondencia entre tipo de hallazgo y severidad (RF-051). Declarada y versionada: sin ella la severidad la decidiria el criterio variable del agente en cada invocacion y dejaria de ser un control.",
   "regla_por_defecto": {
-    "severidad": "Mayor",
+    "severidad": "Menor",
     "condicion": "Todo hallazgo cuya clave no figure en esta tabla",
-    "efecto_adicional": "Se registra en bitacora el evento 'anomalia' con motivo 'tipo_de_hallazgo_no_previsto' (ERR-306, RF-051 escenario 2) y aparece en el bloque 13 del informe.",
-    "_aviso": "La regla por defecto ENDURECE: eleva a Mayor, que es la severidad que fuerza reescritura. En un sistema con limite de intentos eso puede DESCARTAR trabajo que nadie considero grave. Ocurrio en la primera ejecucion: AF-0002 y AF-0029, calificadas Menor por el verificador, se elevaron a Mayor por falta de fila y se descartaron al agotar intentos. Por eso toda clave que un verificador pueda emitir debe tener su fila aqui, y por eso cada criterio del registro declara la suya."
+    "fuerza_reescritura": false,
+    "efecto_adicional": "Se registra el evento anomalia con motivo tipo_de_hallazgo_no_previsto (ERR-306, RF-051 escenario 2) y aparece en el bloque 13 del informe.",
+    "_por_que": "ADR-027. Endurecer por defecto parecia prudente y resulto destructivo: en un bucle con limite de intentos no se limita a ser severo, DESCARTA trabajo. En la primera ejecucion AF-0002 y AF-0029, calificadas Menor por el verificador, se elevaron a Mayor por falta de fila y se descartaron al agotar intentos. Ablandar tiene el riesgo simetrico de dejar pasar algo grave, pero ese riesgo es VISIBLE -la anomalia consta en el informe y el artefacto sigue ahi- mientras que el descarte es irreversible.",
+    "_mitigacion": "Todo criterio de verificador declara su clave_severidad en registro-agentes.json, de modo que esta regla sea un seguro y no el camino habitual."
   },
   "nota_sobre_la_clave": "El campo 'tipo' de CTR-003 es un enum grueso pensado para el informe; una misma entrada del enum cubre filas de RF-051 con severidades distintas (p. ej. error gramatical es Mayor y repeticion lexica es Menor, y ambas son 'defecto_lexico'). Por eso la severidad se resuelve por 'clave', que el verificador declara en cada hallazgo junto al 'tipo'. Es un detalle del COMO: no anade funcionalidad y es legal segun la politica de §9 (los artefactos internos admiten campos adicionales).",
   "filas": [

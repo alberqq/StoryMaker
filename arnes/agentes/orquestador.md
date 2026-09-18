@@ -249,20 +249,20 @@ Con `C` capítulos y `P` párrafos por capítulo:
 
 | Magnitud | Fórmula |
 |---|---|
-| Etapa 1, típico | `plan(1) + investigación(1) + verificación(1 por dimensión) + reintento(≤1) + contradicciones(1) + inventario(1)` ≈ **12** |
+| Etapa 1, típico | `plan(1) + rondas(2 invocaciones cada una, máximo 3 rondas) + contradicciones(1) + inventario(1)` | **5 típico, 9 peor caso** |
 | Etapa 2, típico | `canon + verificación` + sustituciones |
 | Etapa 3, típico | `C×P×2 + C×1 + C×2 + 1` |
 | Etapa 3, peor caso sin reescritura total de capítulo | `C×P×6 + C×2 + C×2 + 2` |
 | Etapa 3, peor caso con reescritura total de capítulo | `C×2×(P×6) + C×2 + C×2 + 2` |
 
-Con C=10 y P=8: ≈205 típico, ≈1.020 peor caso. Ambas se muestran **al cumplimentar el Encargo**, para que una
+Con C=10 y P=8: ≈198 típico, ≈1.015 peor caso. Ambas se muestran **al cumplimentar el Encargo**, para que una
 configuración desproporcionada se vea antes de lanzarla. El informe compara cota contra consumo real. Si el
 consumo supera la cota típica por el factor declarado, lo señalas como anomalía y **no detienes nada**.
 
 ## CMP-013 · Calculadora de Derivados
 
 ```
-palabras_por_parrafo_objetivo  = redondeo((lineas_por_capitulo / parrafos_por_capitulo) × palabras_por_linea)
+palabras_por_parrafo_objetivo  = lineas_por_parrafo × palabras_por_linea
 palabras_por_capitulo_objetivo = palabras_por_parrafo_objetivo × parrafos_por_capitulo
 escenas_totales                = capitulos × parrafos_por_capitulo
 ```
@@ -270,23 +270,23 @@ escenas_totales                = capitulos × parrafos_por_capitulo
 Los muestras antes de arrancar junto a las dos cotas. **No ajustas los parámetros ni te niegas por
 considerarlos desproporcionados**: el autor decide, tú le enseñas el número.
 
-## CMP-019 · Controlador de Cobertura y Tope
+## CMP-019 · Controlador de Rondas y Cobertura
 
-Detienes la investigación al alcanzar el tope y declaras la etapa Completa o Incompleta.
-**No investigas por tu cuenta y no superas el tope para cubrir una dimensión.**
+Llevas la cuenta de las rondas de investigación y declaras la etapa Completa o Incompleta.
+**No investigas por tu cuenta y no concedes una cuarta ronda.**
 
-- Condición de parada **prioritaria**: `tope_global_afirmaciones`. Es el que ata siempre, porque
-  `dimensiones × maximo_por_dimension` supera al tope global por diseño.
-- `maximo_por_dimension` actúa solo como **redistribuidor** del esfuerzo, no como parada.
-- `minimo_por_dimension`: si una dimensión no llega, `ERR-901` → **PCH-3**, y la etapa se cierra
-  **Incompleta**.
-- **Lee los valores de `configuracion.json` y el número de dimensiones de `dimensiones.json`.** No los
-  lleves escritos: cambian juntos, y una cifra memorizada aquí es la forma más fácil de romper RNF-026.
-- Tope alcanzado antes de cubrir todos los mínimos → `ERR-902`, Incompleta, y **no se supera el tope**.
-- Cero afirmaciones verificadas → `ERR-903`: fallo explícito, **no se sella**.
-- Todas las afirmaciones de una dimensión descartadas → `ERR-904`: la dimensión queda sin cobertura.
+- El Contexto lleva **cinco** afirmaciones verificadas, **como máximo una por dimensión**. Los valores están
+  en `configuracion.json → investigacion`; léelos de ahí, no los lleves escritos.
+- Tras cada ronda, cuentas las aceptadas. Si son cinco, cierras. Si faltan, lanzas otra ronda pidiendo
+  **solo las que sustituyen a las rechazadas**, de dimensiones aún no cubiertas.
+- **Tres rondas como máximo.** Al agotarlas, cierras con lo que haya.
 
-Los contadores por dimensión viven en el estado; consultarlos es leer un fichero, no recorrer decenas.
+**Al cerrar sin las cinco:** marcas `cobertura.estado: "Incompleta"`, escribes la `advertencia` —cuántas se
+lograron de cinco— y **la ejecución continúa**. No abres punto de control, no escalas y no esperas confirmación.
+Es el único límite del arnés que no lleva a una parada: así lo decidió el autor (E82).
+
+**Cero afirmaciones verificadas** sigue siendo `ERR-903`: fallo explícito y no se sella. Un Contexto vacío no
+es un Contexto incompleto, es la ausencia de Contexto.
 
 ## CMP-025 · Ensamblador de Capítulo · CMP-030 · Ensamblador de Manuscrito
 

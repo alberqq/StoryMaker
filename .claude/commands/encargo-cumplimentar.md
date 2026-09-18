@@ -20,7 +20,7 @@ debe producir artefactos idénticos; si difieren, es un defecto.
 | `tema` | No vacío |
 | `personajes_partida` | Lista; la vacía equivale a «ninguno» y es válida |
 | `inspiracion` | «ninguna» es un valor válido |
-| `parametros` | Los cuatro, enteros ≥ 1, y **`lineas_por_capitulo` ≥ `parrafos_por_capitulo`** → `ERR-101` |
+| `parametros` | Los cuatro, enteros ≥ 1. **Sin restricciones cruzadas** → `ERR-101` solo si falta, está vacío o no es entero ≥ 1 |
 
 ## Por diálogo (CMP-011, PCH-1)
 
@@ -53,11 +53,11 @@ verificada que lo sitúe en la época, o una licencia literaria declarada.
 |---|---|
 | `capitulos` | Cuántos capítulos tendrá |
 | `parrafos_por_capitulo` | Párrafos por capítulo. **Cada párrafo es una escena**: es la unidad que se escribe y se valida |
-| `lineas_por_capitulo` | Líneas por capítulo. Sirve para derivar el tamaño del párrafo |
+| `lineas_por_parrafo` | Líneas que tendrá **cada párrafo**. Es el que fija el tamaño de la escena |
 | `palabras_por_linea` | Palabras por línea. Un valor razonable ronda 10-14 |
 
-Enteros ≥ 1 los cuatro, y **`lineas_por_capitulo` ≥ `parrafos_por_capitulo`** o es `ERR-101`: no puede haber
-menos líneas que párrafos.
+Enteros ≥ 1 los cuatro, y nada más: **no hay restricción cruzada**. Los cuatro se multiplican en cadena, así que
+cualquier combinación válida describe una novela posible.
 
 **Antes de congelar, enséñale los derivados y las dos cotas** (siguiente sección) y **pide confirmación**. Es
 el momento en que un autor ve que «10 capítulos × 8 párrafos» son unas 1.100 invocaciones en el peor caso y
@@ -87,7 +87,7 @@ decide si quiere empezar por algo más pequeño. Si dice que no, vuelve al bloqu
 Antes de congelar, calcula y **muestra**:
 
 ```
-palabras_por_parrafo_objetivo  = redondeo((lineas_por_capitulo / parrafos_por_capitulo) × palabras_por_linea)
+palabras_por_parrafo_objetivo  = lineas_por_parrafo × palabras_por_linea
 palabras_por_capitulo_objetivo = palabras_por_parrafo_objetivo × parrafos_por_capitulo
 escenas_totales                = capitulos × parrafos_por_capitulo
 ```

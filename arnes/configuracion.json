@@ -1,14 +1,9 @@
 {
   "esquema": "configuracion@1",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "descripcion": "CMP-037. Unico lugar donde viven los parametros del arnes. Ningun valor de este fichero puede fijarse desde el fichero de Encargo (E70, ERR-104).",
   "limites_iteracion": {
     "_origen": "§7.4 del funcional, SUP-005, SUP-022, arbitrajes A-06 y A-07. Seis bucles con limite (RNF-014 segun A-07).",
-    "verificacion_afirmacion": {
-      "intentos_totales": 2,
-      "al_agotarse": "descarte_con_registro",
-      "origen": "E33"
-    },
     "validacion_elemento_canon": {
       "intentos_totales": 2,
       "al_agotarse": "descarte_y_sustitucion",
@@ -43,18 +38,25 @@
       "intentos_totales": 1,
       "al_agotarse": "ERR-302",
       "origen": "RF-061, A-06"
+    },
+    "rondas_investigacion": {
+      "rondas_totales": 3,
+      "al_agotarse": "cerrar_incompleta_y_continuar",
+      "origen": "E82",
+      "_nota": "Sustituye al limite de 2 intentos por afirmacion. La unidad de reintento ya no es la afirmacion sino la RONDA COMPLETA, y las rechazadas se sustituyen en lugar de corregirse. Al agotarse NO bloquea: es el unico limite del arnes que no lleva a un punto de control."
     }
   },
   "investigacion": {
-    "_origen": "RF-014, RF-054, RNF-025, SUP-007. Son supuestos parametricos externalizados a proposito (ADR-023): cambiar un valor aqui no toca ninguna instruccion de agente.",
-    "minimo_por_dimension": 2,
-    "maximo_por_dimension": 4,
-    "tope_global_afirmaciones": 52,
+    "_origen": "E82. Sustituye al esquema de cobertura minima por dimension de RF-014 y RF-054.",
+    "total_afirmaciones": 5,
+    "maximo_por_dimension": 1,
+    "minimo_por_dimension": 0,
     "busquedas_maximas_por_dimension": 2,
-    "regla_de_parada": "El tope global es la condicion de parada prioritaria. El maximo por dimension solo actua como redistribuidor de esfuerzo (H-T10): 17 x 4 = 68 > 52, luego el tope global sigue atando, que es la propiedad que el diseno quiere conservar.",
-    "orden_de_trabajo": "Cubrir primero el minimo de TODAS las dimensiones y solo despues repartir lo que sobre hasta el tope global. Agotar una dimension antes de pasar a la siguiente llega al tope con dimensiones a cero y cierra la etapa Incompleta. Con dieciseis dimensiones esta regla pasa de recomendable a imprescindible.",
-    "_nota_acotacion": "SUP-007 fijaba 3/8/50 para SIETE dimensiones. Con las DIECISIETE de dimensiones@2.1 esos valores no caben: 17 x 3 = 51 de minimo no deja margen bajo un tope de 50. Por eso el minimo es 2 (17 x 2 = 34, con 18 de holgura bajo el tope de 52) y el maximo 4, que conserva la propiedad de que el tope global sea el que ata. Las busquedas se mantienen en 2 por dimension porque son el driver real del tiempo: 34 consultas como maximo. Para una investigacion mas profunda a costa de tiempo: busquedas a 3 y tope global a 68.",
-    "reparto_de_holgura": "Las afirmaciones que sobren tras cubrir el minimo de todas las dimensiones se reparten primero en las dimensiones marcadas con prioridad_al_repartir alta en dimensiones.json. Hoy es 'ausencias', porque de ella depende el Inventario de Prohibidos y con el toda la deteccion de anacronismos."
+    "rondas_maximas": 3,
+    "regla": "El Investigador produce 5 afirmaciones, cada una de una dimension DISTINTA. El Verificador las dictamina todas en una invocacion. Las rechazadas NO se corrigen: se SUSTITUYEN por afirmaciones nuevas en la ronda siguiente. Tres rondas como maximo.",
+    "al_agotar_rondas": "Se cierra el Contexto con las afirmaciones aceptadas que haya, marcado como Incompleta, y LA EJECUCION CONTINUA. No se bloquea ni se escala.",
+    "seleccion_de_dimensiones": "Las 5 dimensiones las elige el Investigador entre las declaradas, segun su pertinencia para el Encargo. Las marcadas con prioridad_al_repartir alta en dimensiones.json entran primero: hoy es 'ausencias', porque de ella sale el Inventario de Prohibidos.",
+    "_consecuencia_asumida": "Con 5 afirmaciones y una por dimension, el Contexto Historico deja de ser una cobertura del periodo y pasa a ser un puñado de anclajes. El Inventario de Prohibidos tendra como mucho una afirmacion de respaldo, de modo que la deteccion de anacronismos queda muy debilitada: el arnes sigue ejecutando el control, pero con mucho menos con que contrastar. Es una decision deliberada del autor (E82) en favor de la rapidez."
   },
   "tolerancias_longitud": {
     "_origen": "RNF-006, SUP-010, PA-020. La errata del 15 % de R-07 no rige (H-T03).",

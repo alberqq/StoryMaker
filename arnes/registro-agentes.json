@@ -1,6 +1,6 @@
 {
   "esquema": "registro-agentes@1",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "descripcion": "CMP-007. Enumera, por cada agente, su cometido, los pasos en que interviene y los contratos que consume y produce. El orquestador NO conoce a ningun verificador en particular: consulta este registro. Dar de alta un verificador nuevo = un fichero de instruccion + una entrada en 'agentes'. Cero modificaciones de agentes existentes (RNF-026, PRB-026). Las instrucciones NO llevan version propia desde arnes 2.0.0: se editan en su sitio y su historico lo guarda el control de versiones del repositorio. La version que identifica una ejecucion es la de este artefacto, anotada en proyecto.json y en cada traza.",
   "modelo": {
     "_origen": "RES-2, RNF-016, ADR-011, seccion 11.5",
@@ -142,8 +142,8 @@
           "parametros_muestreo": {
             "perfil": "generativo"
           },
-          "cardinalidad": "una_invocacion_para_toda_la_investigacion",
-          "_nota": "Devuelve TODAS las afirmaciones del plan en un array. El reintento se invoca solo con las rechazadas."
+          "cardinalidad": "una_invocacion_por_ronda",
+          "_nota": "Ronda 1: entrega 5 afirmaciones de 5 dimensiones distintas. Rondas 2 y 3: entrega solo las que SUSTITUYEN a las rechazadas, de dimensiones no cubiertas todavia. Maximo 3 rondas (E82)."
         },
         {
           "id": "inventario",
@@ -198,8 +198,8 @@
               "clave_severidad": "dimension_incorrecta"
             }
           ],
-          "cardinalidad": "una_invocacion_por_dimension",
-          "_nota": "Recibe todas las afirmaciones de una dimension y devuelve un veredicto por afirmacion, en el mismo orden."
+          "cardinalidad": "una_invocacion_por_ronda",
+          "_nota": "Recibe las afirmaciones de la ronda y devuelve un veredicto por afirmacion, en el mismo orden."
         },
         {
           "id": "contradicciones",

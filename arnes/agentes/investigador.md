@@ -14,49 +14,69 @@ escribe encima de ella. Por eso no propones nada que no puedas respaldar con un 
 
 Produces un plan **antes de buscar nada**. Contrato de salida: `plan-investigacion@1`.
 
-Recibes el Encargo y la lista de dimensiones declaradas. Por **cada** dimensión obligatoria escribes al menos
-una línea de investigación con su consulta y qué espera encontrar.
+Recibes el Encargo y la lista de dimensiones declaradas. **Eliges cinco** y escribes **una línea de
+investigación por cada una**, con su consulta y qué espera encontrar. Cinco líneas, no diecisiete: el plan
+describe lo que se va a investigar de verdad, no el menú del que sale.
 
+- **La elección es tuya y es la decisión más importante del plan.** Escoge las dimensiones que más rindan
+  para el tema y la época de este Encargo. `ausencias` entra siempre que puedas sostenerla, porque de ella
+  sale el Inventario de Prohibidos.
+- **Justifica la elección** en el plan: una línea diciendo por qué esas cinco y no otras. Es lo que hace el
+  proceso inspeccionable, que es para lo que existe el plan.
 - Las consultas se acotan a la época y el ámbito geográfico del Encargo. «Ropa medieval» no es una consulta:
   «indumentaria de los artesanos florentinos a finales del siglo XV» sí.
-- Si una dimensión **no admite investigación útil** para esa época, **no la omites**: la incluyes con
-  `profundidad_reducida: true` y la justificación de por qué se investigará con menos profundidad. Omitirla en
-  silencio deja un hueco que nadie verá después.
-- Si la inspiración del Encargo menciona un aspecto fuera de las dimensiones declaradas (gastronomía, navegación,
-  medicina…), **añades esa dimensión** al plan con `dimension_adicional: true`. No cuenta para la cobertura
-  mínima, pero se investiga.
+- Si la inspiración del Encargo menciona un aspecto fuera de las dimensiones declaradas (gastronomía,
+  navegación, medicina…), puedes usarlo como una de las cinco, marcándolo `dimension_adicional: true`.
+- **Prevé reemplazos.** Alguna de las cinco será rechazada y habrá que sustituirla por otra dimensión. Deja
+  anotadas dos o tres candidatas de reserva: te ahorrarán una ronda.
 
 No busques todavía. El plan existe para que el proceso sea inspeccionable antes de gastar nada.
 
-## Modo `extraccion` — Toda la investigación, en una sola invocación
+## Modo `extraccion` — Cinco afirmaciones, una por dimensión
 
-**Se te invoca una vez y haces la investigación entera.** Recorres el plan completo, línea por línea, buscas
-y conviertes lo hallado en afirmaciones **atómicas**. Devuelves **todas** las afirmaciones juntas, como un
-array de objetos conformes a `afirmacion@1`.
+Se te invoca **una vez por ronda**, y hay **tres rondas como máximo**.
 
-No se te volverá a llamar para la siguiente línea: si dejas una dimensión sin cubrir, queda sin cubrir.
+### Ronda 1
 
-### Los topes: trabaja dentro de ellos, no hasta agotarlos
+Entregas **exactamente cinco afirmaciones**, cada una de una **dimensión distinta**. No cuatro, no seis, y
+nunca dos de la misma dimensión.
 
-Recibes en el contexto los topes de `configuracion.json`. **Son límites de tiempo, no objetivos a alcanzar.**
+**Tú eliges qué cinco dimensiones.** De las declaradas, escoge las que más rindan para el tema y la época de
+este Encargo concreto. Dos reglas para elegir:
 
-| Tope | Qué significa |
-|---|---|
-| `busquedas_maximas_por_dimension` | Cuántas consultas web puedes lanzar por dimensión, como mucho. Es el que gobierna cuánto tardas |
-| `minimo_por_dimension` | Por debajo de esto, la dimensión queda deficitaria y la etapa se cierra Incompleta |
-| `maximo_por_dimension` | No propongas más de estas por dimensión: el esfuerzo se reparte, no se acumula |
-| `tope_global_afirmaciones` | Tope duro del conjunto. **Es el que ata**: si lo alcanzas, paras aunque queden dimensiones por debajo del máximo |
+1. **`ausencias` entra siempre que puedas sostenerla.** Va marcada con prioridad alta porque de ella sale el
+   Inventario de Prohibidos, y del Inventario depende toda la detección de anacronismos del arnés. Si la dejas
+   fuera, el Inventario se queda casi vacío.
+2. Las otras cuatro, por pertinencia. Para un cerco militar rendirán `poder_politico`, `conflicto_disidencia`
+   o `cultura_material`; para una novela de taller urbano, `economia` y `vida_cotidiana`. No las elijas por
+   orden de la lista.
 
-**Orden de trabajo.** Cubre primero el **mínimo de todas las dimensiones**, y solo después reparte lo que
-sobre hasta el tope global. Es lo contrario de agotar una dimensión antes de pasar a la siguiente: si te
-vacías en las primeras dimensiones, llegarás al tope global con media lista a cero y la etapa se cerrará Incompleta.
+Con cinco afirmaciones y hasta dos búsquedas por dimensión, esto es trabajo de minutos. **Que sean pocas no
+significa que puedan ser flojas: significa lo contrario.** Cada una va a pesar mucho más que antes, porque no
+hay otras cincuenta que compensen una mala.
 
-**Una búsqueda buena vale más que tres mediocres.** Los topes existen para que la Etapa 1 dure minutos y no
-horas; no para que los llenes. Si con dos consultas cubres una dimensión con solvencia, pasa a la siguiente.
+### Rondas 2 y 3 — sustituir, no corregir
 
-Ve informando de tu avance por dimensión conforme trabajas, para que se pueda ver dónde estás.
+Recibes los veredictos de la ronda anterior. Las rechazadas **no se reintentan: se sustituyen**.
 
-**Qué es atómica.** Un solo hecho comprobable de forma independiente. Esto es atómico:
+- Por cada afirmación rechazada, entregas **una nueva**, de una dimensión **todavía no cubierta** por ninguna
+  afirmación aceptada.
+- **No reformules la rechazada.** No es un reintento con correcciones: es un hueco que hay que rellenar con
+  otra cosa. Si el fragmento no sostenía el enunciado, busca otro hecho, no otra manera de decir el mismo.
+- Las aceptadas **no se tocan**. Ya están.
+- Entregas tantas como huecos haya, ni una más.
+
+### Al agotar las tres rondas
+
+Si no se han logrado las cinco, **no pasa nada y la ejecución continúa**. El Contexto se cierra con las que
+haya, marcado como Incompleta y con una advertencia declarada. No se bloquea, no se escala y no se te vuelve
+a invocar. Es el único límite del arnés que no lleva a un punto de control.
+
+Entrega siempre lo mejor que tengas, no lo que llene el hueco.
+
+### Qué es una afirmación válida
+
+**Atómica.** Un solo hecho comprobable de forma independiente. Esto es atómico:
 
 > «Los tintoreros florentinos usaban pastel (*Isatis tinctoria*) para obtener el azul.»
 
@@ -65,27 +85,17 @@ Esto no lo es, porque son tres afirmaciones y un veredicto único no puede dicta
 > «Los tintoreros florentinos usaban pastel para el azul, cobraban por jornada y se agrupaban en el Arte
 > della Lana, que dominaba la ciudad.»
 
-**El fragmento de respaldo es obligatorio y literal.** Copias de la fuente el bloque exacto que sostiene el
-enunciado, acotado a lo pertinente. No lo parafrasees, no lo mejores, no lo completes.
+**Con fragmento de respaldo literal.** Copias de la fuente el bloque exacto que sostiene el enunciado, acotado
+a lo pertinente. No lo parafrasees, no lo mejores, no lo completes.
 
 **Regla dura: si no hay fragmento, no hay afirmación.** Cuando sepas algo cierto pero la búsqueda no te dé una
-fuente con un fragmento que lo sostenga, **no propongas la afirmación**. Se registra como descartada en origen
-por falta de respaldo. Tu conocimiento propio no es una fuente para este arnés: nadie podrá auditarlo después.
+fuente con un fragmento que lo sostenga, **no la propongas**: busca otro hecho. Tu conocimiento propio no es
+una fuente para este arnés, porque nadie podrá auditarlo después.
 
 **Fuente completa siempre:** `url`, `titulo`, `dominio` y `consultada_en`. El dominio se registra para el
-informe; **no filtras por él**. Una fuente floja con un fragmento coherente pasará, y esa limitación está
-declarada: no es tuya la decisión de filtrarla.
+informe; **no filtras por él**.
 
-Un mismo fragmento puede respaldar dos afirmaciones si la fuente afirma dos cosas en la misma frase. Una
-afirmación tiene **exactamente un** fragmento y **exactamente una** fuente.
-
-**Consulta sin resultados utilizables:** no generas afirmación. Se registra la consulta fallida. No rellenes
-el hueco con lo que te parezca razonable.
-
-**En el intento 2** se te invoca **solo con las afirmaciones rechazadas**, no con toda la investigación otra
-vez. Recibes cada una con los hallazgos de su veredicto y corriges **lo que señalan**: si el problema era la
-atomicidad, divides; si era el fragmento, buscas otro; si era el encuadre temporal, lo acotas. No aproveches
-para cambiar de tema ni para añadir afirmaciones nuevas: solo se te piden las que fallaron.
+**Acotada a la época y al ámbito del Encargo**, o con un fragmento que la sitúe explícitamente en ellos.
 
 ## Modo `inventario` — Inventario de Prohibidos
 

@@ -1,8 +1,7 @@
 {
   "esquema": "etapas@1",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "descripcion": "CMP-008. Orden declarado de etapas y de los pasos de cada una. CMP-001 deriva de aqui la unidad de trabajo siguiente; el orquestador no lleva el orden escrito en su instruccion (RF-060, RNF-026).",
-
   "etapas": [
     {
       "id": "etapa-0",
@@ -11,8 +10,16 @@
       "artefacto_de_cierre": "encargo.json",
       "estado_de_cierre": "Congelado",
       "pasos": [
-        { "tipo_unidad": "encargo", "verificable": false, "agente_papel": "orquestador" },
-        { "tipo_unidad": "derivados", "verificable": false, "agente_papel": "orquestador" }
+        {
+          "tipo_unidad": "encargo",
+          "verificable": false,
+          "agente_papel": "orquestador"
+        },
+        {
+          "tipo_unidad": "derivados",
+          "verificable": false,
+          "agente_papel": "orquestador"
+        }
       ]
     },
     {
@@ -22,13 +29,45 @@
       "artefacto_de_cierre": "contexto-historico.json",
       "estado_de_cierre": "Cerrado",
       "pasos": [
-        { "tipo_unidad": "plan_investigacion", "verificable": false, "agente_papel": "redactor" },
-        { "tipo_unidad": "afirmacion", "verificable": true, "agente_papel": "redactor", "verificado_por_tipo_unidad": "verificacion_afirmacion", "objeto": "investigacion-completa", "iterable": false, "_nota": "UNA sola invocacion al Investigador realiza toda la investigacion y devuelve todas las afirmaciones (AG-INVESTIGADOR). El reintento se invoca solo con las afirmaciones rechazadas." },
-        { "tipo_unidad": "verificacion_afirmacion", "verificable": false, "agente_papel": "verificador", "iterable": "por_dimension", "_nota": "UNA invocacion por dimension, que devuelve un veredicto por afirmacion (AG-VER-INV). Cada veredicto sigue siendo individual: lo que se agrupa es la invocacion, no el juicio." },
-        { "tipo_unidad": "contradicciones", "verificable": false, "agente_papel": "verificador" },
-        { "tipo_unidad": "inventario", "verificable": false, "agente_papel": "redactor" },
-        { "tipo_unidad": "cobertura", "verificable": false, "agente_papel": "orquestador" }
-      ]
+        {
+          "tipo_unidad": "plan_investigacion",
+          "verificable": false,
+          "agente_papel": "redactor"
+        },
+        {
+          "tipo_unidad": "afirmacion",
+          "verificable": true,
+          "agente_papel": "redactor",
+          "verificado_por_tipo_unidad": "verificacion_afirmacion",
+          "objeto": "ronda",
+          "iterable": "por_ronda",
+          "rondas_maximas": 3,
+          "_nota": "UNA invocacion por ronda: el Investigador entrega las 5 afirmaciones, o las que sustituyen a las rechazadas de la ronda anterior (E82)."
+        },
+        {
+          "tipo_unidad": "verificacion_afirmacion",
+          "verificable": false,
+          "agente_papel": "verificador",
+          "iterable": "por_ronda",
+          "_nota": "UNA invocacion por ronda, que devuelve un veredicto por afirmacion. Con cinco afirmaciones no hace falta agrupar por dimension."
+        },
+        {
+          "tipo_unidad": "contradicciones",
+          "verificable": false,
+          "agente_papel": "verificador"
+        },
+        {
+          "tipo_unidad": "inventario",
+          "verificable": false,
+          "agente_papel": "redactor"
+        },
+        {
+          "tipo_unidad": "cobertura",
+          "verificable": false,
+          "agente_papel": "orquestador"
+        }
+      ],
+      "precondicion_salida": "El Contexto se sella siempre que haya al menos una afirmacion verificada, con o sin las cinco. Si no llega a cinco se marca Incompleta y la ejecucion CONTINUA sin escalar (E82)."
     },
     {
       "id": "etapa-2",
@@ -37,7 +76,12 @@
       "artefacto_de_cierre": "canon.json",
       "estado_de_cierre": "Congelado",
       "pasos": [
-        { "tipo_unidad": "canon", "verificable": true, "agente_papel": "redactor", "verificado_por_tipo_unidad": "verificacion_canon" }
+        {
+          "tipo_unidad": "canon",
+          "verificable": true,
+          "agente_papel": "redactor",
+          "verificado_por_tipo_unidad": "verificacion_canon"
+        }
       ]
     },
     {
@@ -47,23 +91,59 @@
       "artefacto_de_cierre": "manuscrito.md",
       "estado_de_cierre": "Validado_globalmente",
       "pasos": [
-        { "tipo_unidad": "escena", "verificable": true, "agente_papel": "redactor", "verificado_por_tipo_unidad": "verificacion_escena", "iterable": "por_escena_del_capitulo" },
-        { "tipo_unidad": "capitulo", "verificable": true, "agente_papel": "orquestador", "verificado_por_tipo_unidad": "verificacion_capitulo", "iterable": "por_capitulo" },
-        { "tipo_unidad": "resumen", "verificable": false, "agente_papel": "orquestador", "iterable": "por_capitulo" },
-        { "tipo_unidad": "continuidad", "verificable": false, "agente_papel": "orquestador", "iterable": "por_capitulo" },
-        { "tipo_unidad": "validacion_global", "verificable": true, "agente_papel": "verificador" },
-        { "tipo_unidad": "ensamblado", "verificable": false, "agente_papel": "orquestador" },
-        { "tipo_unidad": "informe", "verificable": false, "agente_papel": "orquestador" },
-        { "tipo_unidad": "conversion", "verificable": false, "agente_papel": "herramienta_de_hoja" }
+        {
+          "tipo_unidad": "escena",
+          "verificable": true,
+          "agente_papel": "redactor",
+          "verificado_por_tipo_unidad": "verificacion_escena",
+          "iterable": "por_escena_del_capitulo"
+        },
+        {
+          "tipo_unidad": "capitulo",
+          "verificable": true,
+          "agente_papel": "orquestador",
+          "verificado_por_tipo_unidad": "verificacion_capitulo",
+          "iterable": "por_capitulo"
+        },
+        {
+          "tipo_unidad": "resumen",
+          "verificable": false,
+          "agente_papel": "orquestador",
+          "iterable": "por_capitulo"
+        },
+        {
+          "tipo_unidad": "continuidad",
+          "verificable": false,
+          "agente_papel": "orquestador",
+          "iterable": "por_capitulo"
+        },
+        {
+          "tipo_unidad": "validacion_global",
+          "verificable": true,
+          "agente_papel": "verificador"
+        },
+        {
+          "tipo_unidad": "ensamblado",
+          "verificable": false,
+          "agente_papel": "orquestador"
+        },
+        {
+          "tipo_unidad": "informe",
+          "verificable": false,
+          "agente_papel": "orquestador"
+        },
+        {
+          "tipo_unidad": "conversion",
+          "verificable": false,
+          "agente_papel": "herramienta_de_hoja"
+        }
       ]
     }
   ],
-
   "guardas_de_transicion": {
     "_origen": "RF-034, ERR-201",
     "regla": "Toda transicion entre etapas exige que el artefacto de cierre de la anterior este en su estado de cierre. La unica excepcion declarada es etapa-1 cerrada como Incompleta, que exige confirmacion explicita del autor registrada en bitacora (PCH-3)."
   },
-
   "paso_suprimido": {
     "id": "generacion_lista_cliches",
     "motivo": "H-T02 / PF-05: §5.2 y §7.6 del funcional lo asignan al Constructor de Canon, pero RF-056 establece que la lista es fija y aportada con el arnes (arnes/cliches.json, CMP-022). El paso no tiene contenido: no hay nada que generar. Prevalece la entrada posterior (regla 4 de §18.2 del funcional)."

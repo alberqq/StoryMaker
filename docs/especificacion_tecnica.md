@@ -1,8 +1,9 @@
 # Especificación Técnica — StoryMaker
 ### Arnés (*harness*) generador de novelas históricas · Diseño del CÓMO
 
-**Versión:** v1.3 · **Estado:** Línea base aprobada, apta para consumo por un agente de codificación · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
-**Especificación Funcional de referencia:** StoryMaker **v1.2** (18-09-2026), línea base aprobada. Es el contrato: única fuente de verdad sobre el QUÉ. Esta Especificación Técnica está acoplada a esa versión exacta (Anexo A.4).
+**Versión:** v2.2 · **Estado:** Línea base aprobada, apta para consumo por un agente de codificación · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
+**Especificación Funcional de referencia:** StoryMaker **v2.2** (18-09-2026), línea base aprobada. Es el contrato: única fuente de verdad sobre el QUÉ. Esta Especificación Técnica está acoplada a esa versión exacta (Anexo A.4).
+**Qué es esta versión.** v2 es una **línea base reescrita**, no una revisión incremental. Incorpora como texto de base las decisiones tomadas al construir el arnés y ejercitarlo por primera vez, y las lecciones medidas de esa ejecución. El cuerpo se lee de corrido; el histórico vive en el Anexo A.5 y A.6. Ningún identificador `CMP`, `ADR`, `CTR`, `ERR`, `PRB`, `SPK`, `INC` ni `RT` se ha renumerado ni retirado.
 **Arbitrajes del responsable técnico incorporados:** A-01 a A-07 (§1.4).
 **Decisiones pendientes de arbitraje:** ninguna. Las tres elevadas durante la elaboración —ARB-01, ARB-02 y ARB-03— están resueltas como A-05, A-06 y A-07.
 **Trabajo abierto:** doce propagaciones sobre la Especificación Funcional (§1.5, PF-01 a PF-12) y diez spikes (§19), de los cuales SPK-002, SPK-007 y SPK-010 son bloqueantes.
@@ -443,11 +444,11 @@ Ficha por componente. «No le corresponde» delimita la responsabilidad tanto co
 | ID | Agente anfitrión | Responsabilidad | No le corresponde | Entradas | Salidas | Satisface |
 |---|---|---|---|---|---|---|
 | **CMP-014** | Investigador (modo plan) | Producir un plan con al menos una línea de investigación por dimensión declarada, antes de buscar nada | Buscar, ni omitir en silencio una dimensión no aplicable | Encargo, CMP-008 | Plan persistido | RF-005, RF-060 |
-| **CMP-015** | Investigador (modo extracción) | Realizar **toda** la investigación en **una sola invocación**, recorriendo el plan completo y convirtiendo lo hallado en afirmaciones atómicas, cada una con su fuente y su fragmento literal | Proponer una afirmación sin fragmento literal; juzgar si el fragmento la sostiene; superar los topes de búsqueda | Plan, herramienta de búsqueda, topes de CMP-037 | Afirmaciones Propuestas, todas juntas | RF-006, RF-007, RF-054, RNF-002, RNF-025, E78 |
+| **CMP-015** | Investigador (modo extracción) | Entregar, **una invocación por ronda**, las cinco afirmaciones atómicas del Contexto —una por dimensión— con su fuente y su fragmento literal, y sustituir en las rondas siguientes las que el Verificador rechace | Proponer una afirmación sin fragmento literal; juzgar si el fragmento la sostiene; superar los topes de búsqueda | Plan, herramienta de búsqueda, topes de CMP-037 | Afirmaciones Propuestas, todas juntas | RF-006, RF-007, RF-054, RNF-002, RNF-025, E78 |
 | **CMP-016** | Verificador de Investigación (modo A) | Dictaminar, **solo sobre el fragmento aportado**, si sostiene el enunciado. Se invoca **una vez por dimensión** y emite **un veredicto por afirmación** | Reabrir la fuente, consultar su propio conocimiento, reformular la afirmación ni juzgar las afirmaciones en bloque | Afirmaciones de una dimensión, con sus fragmentos | Array de veredictos uniformes, uno por afirmación | RF-009, RF-010, RF-011, RES-5 |
 | **CMP-017** | Verificador de Investigación (modo B) | Señalar los pares de afirmaciones verificadas que se contradicen entre sí | Elegir cuál conservar: eso lo decide el autor en PCH-2 | Conjunto de afirmaciones verificadas | Lista de pares | RF-015, PCH-2 |
 | **CMP-018** | Investigador (modo inventario) | Enumerar lo que no existía en la época, remitiendo cada entrada a una afirmación verificada | Incluir entradas sin sustento ni juzgar el manuscrito | Afirmaciones verificadas | Inventario de Prohibidos | RF-008, OBJ-2 |
-| **CMP-019** | Orquestador | Detener la investigación al alcanzar el tope y declarar la etapa Completa o Incompleta según la cobertura por dimensión | Investigar por su cuenta ni superar el tope para cubrir una dimensión | Afirmaciones verificadas, CMP-037 | Marca de cobertura | RF-014, RF-054, RNF-025, PCH-3 |
+| **CMP-019** | Orquestador | Llevar la cuenta de las rondas, detener la investigación al reunir las cinco o al agotar la tercera, y declarar la etapa Completa o Incompleta | Investigar por su cuenta, conceder una cuarta ronda ni escalar al autor: al agotarse **no bloquea** | Afirmaciones verificadas, CMP-037 | Marca de cobertura y advertencia | RF-014, RF-054, RNF-025, E82 |
 
 ### 6.5 Etapa 2 — redacción del canon
 
@@ -461,9 +462,9 @@ Ficha por componente. «No le corresponde» delimita la responsabilidad tanto co
 | ID | Agente anfitrión | Responsabilidad | No le corresponde | Entradas | Salidas | Satisface |
 |---|---|---|---|---|---|---|
 | **CMP-023** | Escritor | Escribir **un** párrafo que materialice una escena del canon con la extensión objetivo | Alterar el canon, escribir más de un párrafo ni corregir hallazgos que no se le hayan entregado | Escena del canon, escenas aprobadas del capítulo, Contexto, resumen, continuidad, hallazgos previos | Texto de la escena | RF-025, RF-026, RF-029 |
-| **CMP-024** | Verificador de Lingüística | Dictaminar la escena contra **seis** criterios numerados de forma, incluido el encaje con el párrafo anterior | Juzgar el **contenido**: anacronismos del Inventario, adherencia al canon o a la trama. Todo eso es del bucle exterior desde v1.1 | Escena, párrafos anteriores del capítulo | Veredicto uniforme | RF-028, RF-051, RF-061, RNF-029, E77 |
+| **CMP-024** | Verificador de Lingüística | Dictaminar la escena contra **seis** criterios numerados de forma, incluido el encaje con el párrafo anterior | Juzgar el **contenido**: anacronismos del Inventario, adherencia al canon o a la trama. Todo eso es del bucle exterior | Escena, párrafos anteriores del capítulo | Veredicto uniforme | RF-028, RF-051, RF-061, RNF-029, E77 |
 | **CMP-025** | Orquestador | Ensamblar en un capítulo las escenas aprobadas, en orden | Redactar, retocar ni reordenar | Escenas Aprobadas | Capítulo ensamblado | RF-030, §9.5 |
-| **CMP-026** | Verificador de Canon e Historia (modo capítulo) | Dictaminar el capítulo contra el **Inventario de Prohibidos**, el canon, el contexto y lo ya narrado, con los tres capítulos anteriores íntegros delante. Es el **único** componente que detecta anacronismos desde v1.1 | Corregir el texto, juzgar la forma del párrafo, ni mirar más allá de la ventana declarada | Capítulo, **Inventario**, Canon, Contexto, 3 capítulos, resumen, continuidad | Veredicto con hallazgos localizados | RF-030, RF-031, RF-008, RNF-005, SUP-028, E77 |
+| **CMP-026** | Verificador de Canon e Historia (modo capítulo) | Dictaminar el capítulo contra el **Inventario de Prohibidos**, el canon, el contexto y lo ya narrado, con los tres capítulos anteriores íntegros delante. Es el **único** componente que detecta anacronismos | Corregir el texto, juzgar la forma del párrafo, ni mirar más allá de la ventana declarada | Capítulo, **Inventario**, Canon, Contexto, 3 capítulos, resumen, continuidad | Veredicto con hallazgos localizados | RF-030, RF-031, RF-008, RNF-005, SUP-028, E77 |
 | **CMP-027** | Verificador de Canon e Historia (modo global) | Dictaminar el manuscrito completo buscando contradicciones entre capítulos distantes y reproducción literal de fragmentos de respaldo | Reescribir; ni sustituir al bucle exterior | Manuscrito, Canon, Contexto, continuidad, fragmentos | Veredicto global localizado por capítulo | RF-055, RNF-013, RNF-023, PA-018 |
 | **CMP-028** | Orquestador | Actualizar, tras aprobar cada capítulo, el resumen acumulado de lo ocurrido | Resumir lo no aprobado ni perder los hechos con consecuencias posteriores | Capítulo aprobado, resumen anterior | Resumen acumulado | RF-027, RNF-005, SUP-011 |
 | **CMP-029** | Orquestador | Actualizar, tras aprobar cada capítulo, el estado de continuidad por personaje y objeto: dónde está, qué sabe, qué posee, cómo ha cambiado | Inventar estado que el texto aprobado no sostenga; modificar el canon | Capítulo aprobado, continuidad anterior | Estado de continuidad | RF-030, RF-055, RNF-005, arbitraje A-01 |
@@ -587,9 +588,9 @@ Tipos lógicos: `texto`, `entero`, `decimal`, `booleano`, `fechahora` (ISO-8601 
 | | `congelado_en` | fechahora | — | Obligatorio si `estado = Congelado` |
 | PARAMETROS | `capitulos` | entero | NN | ≥ 1 |
 | | `parrafos_por_capitulo` | entero | NN | ≥ 1 |
-| | `lineas_por_capitulo` | entero | NN | ≥ 1 y ≥ `parrafos_por_capitulo` |
+| | `lineas_por_parrafo` | entero | NN | ≥ 1. Líneas por **párrafo**, no por capítulo (E81) |
 | | `palabras_por_linea` | entero | NN | ≥ 1 |
-| DERIVADOS | `palabras_por_parrafo_objetivo` | entero | NN | `redondeo((lineas_por_capitulo / parrafos_por_capitulo) × palabras_por_linea)` |
+| DERIVADOS | `palabras_por_parrafo_objetivo` | entero | NN | `lineas_por_parrafo × palabras_por_linea`. Sin división y sin redondeo (E81) |
 | | `palabras_por_capitulo_objetivo` | entero | NN | `palabras_por_parrafo_objetivo × parrafos_por_capitulo` |
 | | `escenas_totales` | entero | NN | `capitulos × parrafos_por_capitulo` |
 | | `cota_invocaciones_tipica` | entero | NN | §12.6 |
@@ -881,11 +882,11 @@ Formaliza §9.1 del funcional. Es también el formato del fichero de entrada de 
     "inspiracion": { "type": "string" },
     "parametros": {
       "type": "object", "additionalProperties": false,
-      "required": ["capitulos","parrafos_por_capitulo","lineas_por_capitulo","palabras_por_linea"],
+      "required": ["capitulos","parrafos_por_capitulo","lineas_por_parrafo","palabras_por_linea"],
       "properties": {
         "capitulos": { "type": "integer", "minimum": 1 },
         "parrafos_por_capitulo": { "type": "integer", "minimum": 1 },
-        "lineas_por_capitulo": { "type": "integer", "minimum": 1 },
+        "lineas_por_parrafo": { "type": "integer", "minimum": 1 },
         "palabras_por_linea": { "type": "integer", "minimum": 1 }
       }
     }
@@ -893,7 +894,7 @@ Formaliza §9.1 del funcional. Es también el formato del fichero de entrada de 
 }
 ```
 
-**Restricción cruzada, no expresable en el esquema:** `lineas_por_capitulo ≥ parrafos_por_capitulo` (RF-002). La comprueba CMP-012/CMP-011 y su incumplimiento es `ERR-101`.
+**Sin restricciones cruzadas.** Desde E81 los cuatro parámetros son independientes y se multiplican en cadena: cualquier combinación de enteros ≥ 1 describe una novela posible. La formulación anterior dividía las líneas del capítulo entre sus párrafos, lo que obligaba a `lineas_por_parrafo ≥ parrafos_por_capitulo`, introducía un redondeo y **encogía los párrafos en silencio**: 12 líneas y 4 párrafos daban párrafos de 3 líneas, no de 12. `ERR-101` conserva su cometido para campos ausentes, vacíos o menores que 1.
 **Campos que el fichero puede traer y el arnés ignora enumerándolos:** cualquiera fuera de los declarados, en particular límites de iteración, topes, tolerancias y severidades (E70, RF-063, escenario 4). Se registran como anomalía `campo_ignorado`.
 **Lista vacía admitida:** `personajes_partida: []` equivale a «ninguno»; `inspiracion: "ninguna"` es un valor válido.
 
@@ -1040,7 +1041,9 @@ La condición final **es RNF-029 hecha esquema**: un hallazgo que fuerza reescri
 }
 ```
 
-**Invariantes que el esquema no expresa** y comprueba CMP-009 al sellar: ninguna afirmación en estado distinto de `Verificada`; toda entrada del inventario remite a una afirmación presente; `3 ≤ n ≤ 8` por dimensión obligatoria y total `≤ 50` (RF-014, RF-054, RNF-025); ninguna contradicción sin arbitrar.
+**Invariantes que el esquema no expresa** y comprueba CMP-009 al sellar: ninguna afirmación en estado distinto de `Verificada`; toda entrada del inventario remite a una afirmación presente; **la cobertura por dimensión y el total respetan los topes declarados en `configuracion.json`** (RF-014, RF-054, RNF-025); ninguna contradicción sin arbitrar.
+
+**Por qué los topes se referencian y no se escriben aquí.** Los valores viven en un único sitio, `configuracion.json` (CMP-037, ADR-023), precisamente para que cambiar uno no obligue a tocar nada más. Escribirlos también en este contrato los duplica, y un duplicado se desincroniza: ocurrió en la primera ejecución, con el esquema exigiendo `3 ≤ n ≤ 8` y total `≤ 50` —valores pensados para siete dimensiones— mientras la configuración declaraba `2 ≤ n ≤ 4` y total `≤ 52` para diecisiete. Ningún reparto satisfacía ambos y el sellado quedó suspendido hasta que el autor decidió en PCH-3. **Un invariante que repite un valor configurable no es un invariante: es una copia esperando a envejecer.**
 
 ### 9.5 CTR-005 · Canon congelado (Etapa 2 → Etapa 3)
 
@@ -1122,7 +1125,7 @@ Formaliza §9.4 del funcional. Es lo que CMP-002 entrega al Escritor y al Verifi
 
 **Lo que este paquete deliberadamente no contiene:** el texto íntegro de los capítulos anteriores (RF-045, escenario 1). Su ausencia es un requisito, no una omisión.
 
-**Sobre `inventario_prohibidos` desde v1.1.** Sigue viajando en el paquete, pero su destinatario es el **Escritor**, para que no cometa el anacronismo de entrada. El Verificador de Linguistica ya **no** lo juzga: esa competencia paso al bucle exterior (ADR-026, E77).
+**Sobre `inventario_prohibidos`.** Viaja en el paquete, pero su destinatario es el **Escritor**, para que no cometa el anacronismo de entrada, que es más barato que corregirlo. El Verificador de Lingüística **no** lo juzga: esa competencia es del bucle exterior (ADR-026, E77).
 
 ### 9.7 CTR-007 · Paquete de invocación del bucle exterior (capítulo)
 
@@ -1154,7 +1157,7 @@ Formaliza §9.5. Diferencias con CTR-006: sustituye la escena por el capítulo e
 
 `parrafos` es **exacto** porque es el número de ficheros de escena aprobados, que el Orquestador cuenta sin juicio: es la única magnitud de longitud que sobrevive a RES-11 como garantía dura (§13.4).
 
-**`inventario_prohibidos` es obligatorio desde v1.1** y es dependencia dura (P3), nunca descartable: sin el, el criterio 1 de CMP-026 no tiene contra que contrastar y la deteccion de anacronismos del arnes desaparece por completo (ADR-026, E77).
+**`inventario_prohibidos` es obligatorio** y es dependencia dura (P3), nunca descartable: sin él, el criterio 1 de CMP-026 no tiene contra qué contrastar y la detección de anacronismos del arnés desaparece por completo (ADR-026, E77).
 
 ### 9.8 CTR-008 · Manifiesto de contexto
 
@@ -1301,7 +1304,7 @@ Categorías, reintentabilidad y acción. «Reintentable» significa que el **orq
 
 | Código | Categoría | Situación | Reintentable | Acción |
 |---|---|---|---|---|
-| **ERR-101** | Entrada inválida | Campo del Encargo ausente, vacío o que incumple la restricción cruzada | No | Repreguntar solo por el campo que falla; no rellenar (RF-001, RF-002, RF-063) |
+| **ERR-101** | Entrada inválida | Campo del Encargo ausente, vacío o que no es entero ≥ 1 | No | Repreguntar solo por el campo que falla; no rellenar (RF-001, RF-002, RF-063) |
 | **ERR-102** | Entrada inválida | Época sin intervalo temporal o sin ámbito geográfico | No | Repreguntar hasta obtener ambos (RF-003) |
 | **ERR-103** | Entrada inválida | Fichero de Encargo mal formado e ilegible | No | Declararlo y ofrecer el diálogo; **no interpretar a medias** (RF-063, caso límite) |
 | **ERR-104** | Entrada inválida | Campo desconocido en el fichero de Encargo | — | Ignorar, enumerar en bitácora como `campo_ignorado`, continuar (RF-063, escenarios 3 y 4) |
@@ -1599,7 +1602,7 @@ Ejemplo: `PRY-20260918-florencia:e3:verificacion_escena:CAP-04/ESC-02:2:AG-VER-L
 | Antes de invocar | CMP-001 comprueba si la clave está en `claves_resueltas` o si existe el fichero de salida correspondiente |
 | Si ya está resuelta | **No se invoca.** Se reutiliza el artefacto persistido y se registra el evento como reutilización, no como invocación nueva (no suma al contador de coste) |
 | Si el fichero existe y la clave no está registrada | Corte entre los pasos 1 y 2 de §8.6: se adopta el artefacto, se completa su entrada de bitácora y se continúa |
-| La versión de instrucción **ya no** forma parte de la clave | Desde v1.2 las instrucciones no se versionan (E79). Consecuencia asumida: mejorar un agente **no** fuerza a rehacer los pasos que ya resolvió en un Proyecto en curso, y esa mejora queda enmascarada por el caché hasta el Proyecto siguiente. Quien quiera aplicarla a un Proyecto vivo usa `etapa.repetir` |
+| La versión de instrucción **no** forma parte de la clave | Las instrucciones no se versionan (E79). Consecuencia asumida: mejorar un agente **no** fuerza a rehacer los pasos que ya resolvió en un Proyecto en curso, y esa mejora queda enmascarada por el caché hasta el Proyecto siguiente. Quien quiera aplicarla a un Proyecto vivo usa `etapa.repetir` |
 | Reejecución de una unidad ya aprobada | No ocurre por el flujo normal. Forzarla exige `etapa.repetir` (RF-066), que archiva y empieza de cero |
 | Alcance del caché | **Dentro de un Proyecto.** No hay caché entre Proyectos: dos Proyectos con el mismo Encargo son ejecuciones independientes, que es lo que permite compararlos |
 
@@ -2195,6 +2198,18 @@ Anatomía constante: contexto · opciones · criterios · decisión · consecuen
 - **Consecuencias positivas.** Todo juicio sobre el contenido queda en un solo agente, y ademas en el unico que tiene delante el Canon y el Contexto completos: CMP-024 juzgaba anacronismos con solo el Inventario, lo que hacia su comprobacion estructuralmente mas superficial. La frontera pasa a ser explicable en una frase, que es lo que DRV-13 pide.
 - **Consecuencias negativas asumidas.** **La deteccion se retrasa del parrafo al capitulo.** Un anacronismo en la escena 2 ya no se caza al escribirla, sino cuando el capitulo entero esta redactado; entonces esa escena vuelve al bucle interior y consume intentos, de modo que el hallazgo cuesta una vuelta del bucle exterior ademas de la reescritura. Se mitiga con la localizacion obligatoria por escena, que devuelve solo la senalada y no el capitulo entero (RF-031, H-T16); si el verificador deja de localizar, el coste se dispara. El Escritor sigue recibiendo el Inventario en CTR-006 para no cometer el anacronismo de entrada, que es mas barato que corregirlo.
 - **Revisar si.** El coste de las vueltas de capitulo por anacronismo resulta mayor que el ahorro, o los hallazgos llegan sistematicamente sin localizar.
+
+### ADR-027 · La regla por defecto de severidad ablanda, no endurece
+
+- **Contexto.** La tabla de severidades resuelve el tipo de hallazgo que un verificador emite. Cuando una clave no figura en la tabla, hace falta una regla por defecto. La primera implementación eligió **Mayor**, por la intuición de que ante la duda conviene ser estricto. La primera ejecución midió lo que eso cuesta: 21 anomalías de tipo no previsto y **dos afirmaciones descartadas** —AF-0002 y AF-0029— que el propio verificador había calificado de Menores y que la regla elevó a Mayor hasta agotar sus intentos.
+- **Opciones.** (a) Mantener Mayor por defecto. (b) Menor por defecto, con la anomalía registrada. (c) Detener la ejecución ante una clave desconocida y exigir que se declare.
+- **Criterios.** Reversibilidad del error · visibilidad del error · terminación (DRV-04) · lo que el arnés promete cuando no puede garantizar.
+- **Decisión.** (b). Un tipo de hallazgo sin fila se resuelve como **Menor**, se registra como anomalía `ERR-306` y **no fuerza reescritura**. Aparece en el bloque 13 del informe.
+- **Consecuencias positivas.** El fallo pasa de destructivo a visible. Endurecer por defecto, en un bucle con límite de intentos, **no se limita a ser severo: descarta trabajo**, y el trabajo descartado no vuelve. Ablandar deja el artefacto en su sitio y la anomalía en el informe, de modo que un tercero puede revisarla después y decidir. Entre un fallo que se ve y uno que destruye, el arnés elige el que se ve.
+- **Consecuencias negativas asumidas.** Un hallazgo que de verdad era grave puede colarse por no tener fila, y la severidad correcta solo se recupera añadiendo la fila y repitiendo la etapa. Se acepta porque el riesgo es **simétrico en probabilidad pero no en daño**: dejar pasar algo revisable cuesta menos que destruir algo correcto.
+- **Se descarta (c)** porque convertiría cada clave nueva en un bloqueo duro, contra el principio de que el arnés corra de corrido (E63) y sin ganar nada que la anomalía registrada no dé ya.
+- **Mitigación estructural.** Todo criterio de verificador declara su `clave_severidad` en el registro de agentes (CMP-007), de modo que la regla por defecto sea un seguro y no el camino habitual. Que el modo `respaldo` de AG-VER-INV fuese el único sin declararlas es exactamente lo que produjo los 21 casos.
+- **Revisar si.** Aparecen hallazgos graves sistemáticamente sin fila, lo que indicaría que el problema está en el registro y no en la regla.
 ---
 
 ## 18. Matriz de trazabilidad técnica
@@ -2449,7 +2464,7 @@ Rigen todas las versiones posteriores a v1 y no se alteran sin acuerdo expreso d
 3. **Toda decisión lleva ADR.** Modificar una decisión existente se hace con un **ADR nuevo que declare cuál supera**, no editando el anterior: los ADR son historia, no estado. Un cambio de diseño sin alternativas reales consideradas no es admisible.
 4. **Nada se decide fuera del documento.** Si algo se acordó y no está aquí, no está acordado. Un arbitraje del responsable entra como `A-nn` en §1.4 **antes** de derivarse en diseño.
 5. **El funcional manda.** Ante discrepancia entre este documento y la Especificación Funcional prevalece la funcional, **salvo** en los puntos que §1.4 recoge como arbitraje expreso y §1.5 declara como propagación pendiente. Este documento no crea requisitos: los implementa.
-6. **Numeración de versiones.** Sube la parte **mayor** (v2, v3) cuando cambia la arquitectura seleccionada, el conjunto de componentes o la versión mayor de la funcional de referencia; sube la **menor** (v1.1, v1.2) cuando se añaden, modifican o retiran componentes, decisiones, contratos o pruebas sin cambiar la arquitectura; sube la de **parche** (v1.0.1) cuando solo se corrigen erratas, redacción o referencias cruzadas.
+6. **Numeración de versiones.** Sube la parte **mayor** (v2, v3) cuando cambia la arquitectura seleccionada, el conjunto de componentes o la versión mayor de la funcional de referencia; sube la **menor** cuando se añaden, modifican o retiran componentes, decisiones, contratos o pruebas sin cambiar la arquitectura; sube la de **parche** cuando solo se corrigen erratas, redacción o referencias cruzadas.
 7. **Ningún umbral sin mecanismo ni prueba.** Todo requisito con umbral numérico que entre o cambie sale de la revisión con su fila completa en §18 y con su nivel declarado en §13.4: garantizado, verificado o solo auditable. Si no se sabe medir, se declara como spike.
 8. **Ningún alcance nuevo.** Lo que el diseño reclame y el funcional no pida va a §22, nunca al diseño derivado. Convertir una propuesta `PT-nn` en diseño exige primero una afirmación nueva en el funcional.
 9. **Ningún secreto.** Ningún artefacto, instrucción ni ejemplo contiene credenciales, claves ni identificadores reales: solo marcadores del tipo `TU_CLAVE_AQUI`.
@@ -2496,36 +2511,64 @@ Trabajo previo a la línea base. Se conserva porque explica por qué el diseño 
 | Segundo arbitraje | Respuesta a ARB-01, ARB-02 y ARB-03 | A-05 lectura de §11.4 criterio a) · A-06 una sola devolución en RF-061 · A-07 RNF-014 de «4 de 4» a «6 de 6». Se abre la lista de propagación PF-01 a PF-12 |
 | Línea base | — | Publicación como **v1** y apertura de este anexo |
 
-### A.6 Registro de cambios posteriores a v1
+### A.6 Registro de cambios
 
 Tabla de altas. Se rellena hacia abajo, una fila por versión publicada, sin reescribir las anteriores.
 
 | Versión | Fecha | Funcional de ref. | Origen del cambio | Elementos añadidos | Modificados | Obsoletos | Motivo |
 |---|---|---|---|---|---|---|---|
-| v1 | 18-09-2026 | v1 | - | CMP-001 a CMP-039 - ADR-001 a ADR-024 - CTR-001 a CTR-011 - ERR-101 a ERR-904 - PRB-001 a PRB-047 - SPK-001 a SPK-010 - INC-01 a INC-11 - RT-01 a RT-14 | - | - | Linea base |
-| v1.1 | 18-09-2026 | v1.1 | E75, E76, E77, E78 - Funcional v1.1 | ADR-025, ADR-026 | CMP-015, CMP-016, CMP-024, CMP-026 - CTR-006, CTR-007 - 12.6 (cotas) | - | Propagacion de las cuatro decisiones del autor recogidas en 18.5 de la Funcional. Ver detalle abajo |
-| v1.3 | 18-09-2026 | v1.2 | — | `arnes/herramientas/md-a-pdf.py` | HOJ-002 · 16.3 | — | Se aporta la implementación de la conversión a PDF, que estaba declarada y no existía en el entorno |
-| v1.2 | 18-09-2026 | v1.2 | E79 | — | ADR-010 · CTR-002, CTR-009, CTR-011 · 12.3 (idempotencia) · 8.1 (disposición) | — | Las instrucciones dejan de versionarse. Ver detalle abajo |
+| v1 | 18-09-2026 | v1 | — | CMP-001 a CMP-039 · ADR-001 a ADR-024 · CTR-001 a CTR-011 · ERR-101 a ERR-904 · PRB-001 a PRB-047 · SPK-001 a SPK-010 · INC-01 a INC-11 · RT-01 a RT-14 | — | — | Línea base inicial |
+| **v2** | 18-09-2026 | v2 | E75 a E80 · primera ejecución completa | ADR-025, ADR-026, ADR-027 · `arnes/herramientas/md-a-pdf.py` | ADR-010 · CMP-015, CMP-016, CMP-024, CMP-026, CMP-037 · CTR-002, CTR-004, CTR-006, CTR-007, CTR-009, CTR-011 · §8.1, §12.3, §12.6, §16.3 | — | **Línea base reescrita.** Detalle abajo |
+| v2.1 | 18-09-2026 | v2.1 | E81 | — | CTR-001 · CMP-013 · ERR-101 · §7.2 | — | El tercer parámetro de longitud es *líneas por párrafo*. Se retira la restricción cruzada y el redondeo. Detalle abajo |
+| v2.2 | 18-09-2026 | v2.2 | E82 | — | CMP-015, CMP-016, CMP-019, CMP-037 · CTR-004 · §12.6 | — | El Contexto Histórico se relaja a cinco afirmaciones y tres rondas. Detalle abajo |
 |  |  |  |  |  |  |  |  |
 
-**Detalle de v1.3.** Se aporta la implementación de **HOJ-002**, la conversión Markdown → PDF, en `arnes/herramientas/md-a-pdf.py`. Hasta ahora el arnés declaraba la herramienta y daba por supuesto que el entorno la tenía; no la tenía, y la primera entrega completó el manuscrito en Markdown registrando `ERR-405`, que es el comportamiento correcto pero dejaba RF-053 a medias. Es codigo, y cabe porque RES-11 exceptua expresamente las herramientas de hoja (E66, ADR-016): **transforma y no decide**, y su unica licencia sobre el texto es retirar las marcas de enfasis de Markdown sin alterar lo que envuelven. Verificado sobre el manuscrito de PRY-20260918-el-asedio-de-zamora: 16 de 16 bloques presentes en el PDF (RNF-024). No cambia ningun requisito: cubre uno que estaba declarado y sin implementar.
+#### v2.2 · Contexto Histórico de cinco afirmaciones
 
-**Detalle de v1.2.** Retirado el versionado por instrucción (E79). Los ficheros `arnes/agentes/*.md@N` pasan a `arnes/agentes/*.md`, uno por agente, y se editan en su sitio. El campo `version_instruccion` de CTR-002 y CTR-011 se sustituye por `version_arnes`; CTR-009 deja de declararlo por agente. La clave de idempotencia de 12.3 pierde el sufijo de versión. **Lo que esto cuesta**, y conviene que conste: el arnés deja de poder decir qué agente concreto cambió entre dos ejecuciones —solo que el arnés era otro—, y una mejora de un agente ya no invalida el caché de idempotencia, de modo que un Proyecto en curso la ignora. Ambas pérdidas son deliberadas y su contrapartida es que el arnés tiene nueve ficheros de instrucción en lugar de catorce, y que cambiar uno es cambiarlo.
+La unidad de reintento de la Etapa 1 deja de ser la afirmación y pasa a ser la **ronda**: CMP-015 entrega cinco afirmaciones de cinco dimensiones distintas, CMP-016 las dictamina todas en una invocación, y las rechazadas se **sustituyen** en lugar de corregirse. Tres rondas. CMP-019 deja de comprobar cobertura mínima por dimensión y pasa a contar rondas; al agotarlas **no abre punto de control**, que lo convierte en el único límite del arnés que no lleva a una parada.
 
-**Detalle de v1.1.**
+**Cota de la Etapa 1: de ≈ 22 invocaciones a 5 típicas y 9 en el peor caso.** El total para C=10, P=8 baja a ≈ 198.
 
-| Elemento | Cambio | Origen |
+**Riesgo técnico que esto introduce.** El Inventario de Prohibidos (CMP-018) se construye desde las afirmaciones verificadas, y con una sola de la dimensión `ausencias` quedará casi vacío. El criterio 1 de CMP-026 —único detector de anacronismos desde ADR-026— seguirá ejecutándose con muy poco contra qué contrastar. **El control se ejecuta; su capacidad de detectar cae mucho.** Es exactamente la clase de distancia entre lo ejecutado y lo prometido que §13.4 existe para declarar, y debe constar en la memoria académica junto a las otras dos limitaciones estructurales.
+
+#### v2.1 · Líneas por párrafo
+
+El parámetro `lineas_por_capitulo` pasa a `lineas_por_parrafo` (E81) y la derivación de CMP-013 deja de dividir: `palabras_por_parrafo_objetivo = lineas_por_parrafo × palabras_por_linea`. Con ello **desaparecen tres cosas a la vez**: la restricción cruzada de CTR-001, el caso de `ERR-101` que la comprobaba y el redondeo, de modo que la extensión objetivo pasa a ser exacta en lugar de aproximada.
+
+La formulación anterior encogía los párrafos sin que el autor lo advirtiera: en la primera ejecución, 12 líneas y 4 párrafos produjeron párrafos de 45 palabras en lugar de 180. Es un recordatorio de que **un parámetro que el autor introduce y que no gobierna directamente lo que cree gobernar es un defecto de diseño**, aunque la aritmética sea correcta.
+
+#### Qué consolida la línea base v2
+
+**Tres decisiones de arquitectura**, cada una con su ADR:
+
+| ADR | Decisión | Qué cuesta |
 |---|---|---|
-| **CMP-015** | Pasa de una invocacion por linea de plan a **una sola** que realiza toda la investigacion, acotada por los topes de busqueda de CMP-037 | E78, ADR-025 |
-| **CMP-016** | Pasa de una invocacion por afirmacion a **una por dimension**, devolviendo un veredicto por afirmacion | ADR-025 |
-| **CMP-024** | Baja de siete criterios a **seis**: pierde el Inventario de Prohibidos y deja de recibirlo como entrada de juicio | E77, ADR-026 |
-| **CMP-026** | Sube de cuatro criterios a **cinco**: gana el Inventario de Prohibidos como dependencia dura. Es el unico componente que detecta anacronismos | E77, ADR-026 |
-| **CTR-006** | El Inventario deja de ser entrada de juicio del verificador; sigue siendolo del Escritor, para prevenir el anacronismo en origen | ADR-026 |
-| **CTR-007** | El Inventario pasa a campo **obligatorio** del paquete de capitulo | ADR-026 |
-| **12.6** | Cota de la Etapa 1 de unas 105 a unas 22 invocaciones; total tipico de unas 300 a unas 215; peor caso de unas 1.110 a unas 1.030 | ADR-025 |
-| **CMP-037 / CMP-008** | Topes de investigacion a 2/4/52 mas 2 busquedas por dimension, y diecisiete dimensiones | E75, E76, Funcional v1.1 |
+| **ADR-025** | La Etapa 1 se invoca por lotes: una llamada de investigación, una verificación por dimensión | La unidad de reanudación se engorda: si se corta a mitad de la investigación, se repite entera |
+| **ADR-026** | El Inventario de Prohibidos se juzga en el bucle exterior, no en el interior | La detección se retrasa del párrafo al capítulo |
+| **ADR-027** | La regla por defecto de severidad ablanda en lugar de endurecer | Un hallazgo grave sin fila puede colarse; a cambio, ninguno destruye trabajo |
 
-**Defecto de implementacion corregido, sin cambio de especificacion.** Durante la primera ejecucion el orquestador invoco varios Agentes Investigadores **en paralelo**, contra ADR-013, y el resultado fue el que ese ADR predice: treinta y un artefactos escritos en disco sin una sola entrada de bitacora, con el estado detenido en la invocacion 1 y la procedencia de todo lo producido perdida. No exige cambiar nada de este documento -ADR-013 ya lo prohibia-, pero se registra porque es la primera confirmacion empirica de por que el escritor unico no es negociable. La instruccion del orquestador incorpora ahora una tabla de cardinalidad por paso y la prohibicion explicita de abanicar.
+**Cambios de componente y contrato.** CMP-015 pasa de una invocación por línea de plan a una sola para toda la investigación; CMP-016 de una por afirmación a una por dimensión, emitiendo un veredicto por afirmación. CMP-024 baja de siete criterios a seis y CMP-026 sube de cuatro a cinco, al cambiar de manos el Inventario. CMP-037 recoge diecisiete dimensiones y los topes 2/4/52 más dos búsquedas por dimensión. En los contratos, `version_instruccion` se sustituye por `version_arnes` (CTR-002, CTR-009, CTR-011), la clave de idempotencia de §12.3 pierde el sufijo de versión, y **CTR-004 deja de repetir los topes de cobertura y los referencia**.
+
+**Por qué CTR-004 se corrige.** El contrato escribía `3 ≤ n ≤ 8` y total `≤ 50` mientras la configuración declaraba `2 ≤ n ≤ 4` y total `≤ 52`. Ningún reparto satisfacía ambos y el sellado del Contexto quedó suspendido en la primera ejecución hasta que el autor decidió en PCH-3. Un invariante que repite un valor configurable no es un invariante: es una copia esperando a envejecer.
+
+**Se aporta HOJ-002.** El arnés declaraba la conversión Markdown → PDF y daba por supuesto que el entorno la tenía; no la tenía. Ahora se aporta en `arnes/herramientas/md-a-pdf.py`, con `fpdf2` y sin dependencias de sistema. Es código, y cabe porque RES-11 exceptúa expresamente las herramientas de hoja (E66, ADR-016): **transforma y no decide**. Verificado sobre el manuscrito de la primera ejecución, 16 de 16 bloques presentes en el PDF (RNF-024).
+
+#### Lo que la primera ejecución enseñó y no exigió cambiar
+
+Se registra porque es evidencia, y porque explica por qué varias decisiones no se tocan:
+
+- **El orquestador amnésico sobrevivió a morir tres veces.** Cada parada fue en frontera de paso, con bitácora y estado escritos, sin perder trabajo y sin pagar dos veces. ADR-001 se sostiene.
+- **El escritor único se validó por contraejemplo.** Una invocación en paralelo contra ADR-013 dejó treinta y un artefactos en disco sin una sola entrada de bitácora, con la procedencia perdida. El ADR ya lo prohibía; ahora hay medida.
+- **El modelo de coste acertó.** 73 invocaciones reales contra una cota típica declarada de 77, calculada antes de ejecutar.
+- **El presupuesto de contexto sobra con holgura.** La invocación mayor usó 2.200 palabras de 40.000, y ninguna desbordó: la prelación P0–P8 de §11.2 no llegó a actuar. Se conserva porque el coste de tenerla es nulo y la novela de prueba era pequeña.
+- **Dos verificadores pueden pedir cosas opuestas sobre el mismo pasaje, y el diseño ya lo resuelve.** No hace falta arbitraje: el bloque P1 es indescartable, de modo que al redactor le llegan ambos conjuntos de hallazgos a la vez y busca una tercera salida que satisfaga a los dos. Ocurrió en CAP-03/ESC-03 y se resolvió en una sola devolución.
+- **El punto de fallo dominante es el Encargo, no el arnés.** Una época de un año y una villa no da material para diecisiete dimensiones, y la Etapa 1 cerró incompleta. Ningún ajuste de límites compensa un encargo desproporcionado.
+
+#### Cómo se registran los cambios a partir de v2
+
+Rige el Anexo A.3 sin excepción, y con él el acoplamiento del A.4: esta Técnica está atada a una versión exacta de la Funcional, y un cambio en el QUÉ obliga a revisar el CÓMO antes de publicar. Las filas nuevas se añaden a la tabla de arriba **sin reescribir las anteriores**.
+
+---
 
 ### A.7 Ámbito de los identificadores
 

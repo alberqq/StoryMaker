@@ -6,14 +6,20 @@
   },
   "tema": "Un aprendiz de tintorero descubre que el gremio encubre la adulteracion de los panos destinados a la exportacion, y debe elegir entre denunciarlo y conservar el unico oficio que lo saca de la miseria.",
   "personajes_partida": [
-    { "nombre_o_descripcion": "Nanni di Piero, aprendiz de tintorero, diecisiete anos, huerfano de padre", "naturaleza": "Ficticio" },
-    { "nombre_o_descripcion": "Maestro Bartolomeo, tintorero acomodado y consul del Arte della Lana", "naturaleza": "Ficticio" }
+    {
+      "nombre_o_descripcion": "Nanni di Piero, aprendiz de tintorero, diecisiete anos, huerfano de padre",
+      "naturaleza": "Ficticio"
+    },
+    {
+      "nombre_o_descripcion": "Maestro Bartolomeo, tintorero acomodado y consul del Arte della Lana",
+      "naturaleza": "Ficticio"
+    }
   ],
   "inspiracion": "El tono de las cronicas de taller: el oficio contado desde dentro, con los materiales y los olores por delante de la politica.",
   "parametros": {
     "capitulos": 2,
     "parrafos_por_capitulo": 4,
-    "lineas_por_capitulo": 40,
+    "lineas_por_parrafo": 10,
     "palabras_por_linea": 12
   }
 }

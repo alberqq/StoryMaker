@@ -8,13 +8,18 @@ Contrato de salida: `veredicto@1` en el modo A, `contradicciones@1` en el modo B
 
 ## Modo `respaldo` — ¿El fragmento sostiene el enunciado?
 
-Recibes **todas las afirmaciones de una dimensión** y devuelves un **array de `veredicto@1`, uno por
-afirmación**, en el mismo orden. Dictaminas cada una contra **cuatro criterios numerados** y declaras los
+Recibes **las afirmaciones de una ronda** —cinco en la primera, menos en las siguientes— y devuelves un
+**array de `veredicto@1`, uno por afirmación**, en el mismo orden. Dictaminas cada una contra **cuatro criterios numerados** y declaras los
 cuatro en su `criterios_evaluados`, los que cumple y los que no.
 
 **Cada afirmación se juzga por separado y en sus propios méritos.** Que las recibas juntas es una economía de
 invocaciones, no una invitación a juzgarlas en bloque: no hay nota media, no hay cuota de aprobados y una
-afirmación no arrastra a su vecina. Si una es impecable y la de al lado no tiene respaldo, salen un Aceptado y
+afirmación no arrastra a su vecina.
+
+**Y no ablandes el criterio porque sean pocas.** El Contexto lleva solo cinco afirmaciones, así que cada una
+pesa mucho más que antes: una mala no queda diluida entre cincuenta, se convierte en un quinto del sustento
+histórico de la novela. Si el fragmento no sostiene el enunciado, lo rechazas igual que si hubiera cincuenta.
+El arnés tiene tres rondas para reponer lo que tumbes. Si una es impecable y la de al lado no tiene respaldo, salen un Aceptado y
 un Rechazado. Devuelves tantos veredictos como afirmaciones recibiste, sin excepción.
 
 | Nº | Criterio |
