@@ -1,0 +1,66 @@
+{
+  "titulo_provisional": "Un dia de menos",
+
+  "semillas": [
+    {
+      "tipo": "personaje",
+      "texto_literal": "un tonelero embarcado en la armada de Magallanes, que lleva la cuenta del viaje por los barriles que abre"
+    },
+    {
+      "tipo": "idea",
+      "texto_literal": "al volver a Sanlucar, la cuenta de los dias que trae escrita no cuadra con la de tierra: le falta uno, y nadie sabe explicar por que"
+    }
+  ],
+
+  "premisa": "Un tonelero de la armada de las Molucas mide el viaje en duelas, aros y agua podrida. Anota cada barril que abre y cada dia que pasa, porque es lo unico que puede contar con certeza. Tres anos despues, de las cinco naos vuelve una, y su cuenta esta un dia por detras de la del puerto.",
+
+  "epoca": { "desde": "1519-09", "hasta": "1522-09", "precision": "periodo" },
+  "ambito_geografico": "De Sanlucar de Barrameda a las Molucas y vuelta, a bordo de la nao Victoria",
+
+  "extension_por_capitulo": {
+    "valor_palabras": 180,
+    "valor_origen": 12,
+    "unidad_origen": "lineas",
+    "palabras_por_linea": 15,
+    "origen": "conversion_declarada_en_captura"
+  },
+  "extension_objetivo_palabras": 540,
+  "capitulos_objetivo": 3,
+  "tolerancia_extension": 0.15,
+
+  "politica_hechos_sensibles": {
+    "valor": "El hambre, la enfermedad y los muertos aparecen por sus efectos en el trabajo diario, no como catalogo de horrores. Los pueblos que la armada encuentra se cuentan desde la ignorancia del tonelero, sin corregirle con lo que hoy sabemos y sin adornarle la mirada",
+    "origen": "autor"
+  },
+  "politica_figuras_reales": {
+    "valor": "Se admiten figuras historicas reales con nombre propio, pero cada una exige ficha documentada con su fuente antes de aparecer. El punto de vista es siempre el del tonelero: los que mandan se ven de lejos y de abajo",
+    "origen": "autor"
+  },
+
+  "ejes_tematicos": [
+    "el oficio del tonelero a bordo: duelas, aros de avellano, brea y estopa, y por que un barril mal cerrado mata a la tripulacion",
+    "el agua y el bizcocho: como se estibaba, como se pudria y como se racionaba",
+    "la navegacion sin longitud: altura de sol con astrolabio y ballestilla, ampolleta de arena y corredera",
+    "la enfermedad de las encias que se llevo a media tripulacion, vivida sin saber su causa",
+    "la cuenta de los dias a bordo y el dia que faltaba al volver"
+  ],
+
+  "restricciones_autor": [
+    "No existe el sextante, que es del siglo XVIII: se mide con astrolabio, cuadrante y ballestilla",
+    "La longitud no se puede determinar en el mar: no hay cronometro de marina. Solo latitud",
+    "Nadie dice escorbuto ni conoce su causa: se habla del mal de las encias o de la enfermedad",
+    "Los pesos y medidas son quintales, arrobas, varas y leguas. Ni kilos ni metros",
+    "El tiempo a bordo se cuenta por ampolletas y guardias, no en horas de reloj",
+    "El dia perdido se constata, no se explica: los husos horarios y la linea de cambio de fecha son invenciones muy posteriores"
+  ],
+
+  "guia_estilo": {
+    "persona_narrativa": { "valor": "primera", "estado": "declarado" },
+    "tiempo_verbal": { "valor": "pasado", "estado": "declarado" },
+    "registro": { "valor": "llano y marinero, con el lexico del oficio sin glosarlo", "estado": "declarado" },
+    "densidad_descriptiva": { "valor": "baja: solo lo que el tonelero toca, huele o cuenta", "estado": "declarado" },
+    "recursos_apertura": { "valor": "in medias res, con un barril abierto", "estado": "declarado" },
+    "longitud_media_frase": { "valor": 14, "estado": "declarado" },
+    "prohibiciones": { "valor": "sin epica de descubrimiento y sin anticipar lo que el narrador no puede saber todavia", "estado": "declarado" }
+  }
+}

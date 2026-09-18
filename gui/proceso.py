@@ -85,10 +85,28 @@ def ahora() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def entorno() -> dict[str, str]:
+def entorno(proyecto: str | None = None) -> dict[str, str]:
+    """El entorno de una sesion o de una llamada al nucleo.
+
+    `STORYMAKER_PROYECTO` no es opcional en cuanto hay mas de una novela en
+    disco, y esto costo caro descubrirlo. Los hooks resuelven el Proyecto de esa
+    variable o, si no esta, del unico que haya; **con varios y sin variable
+    devuelven None y permiten en lugar de adivinar**, que es la decision correcta
+    --- adivinar el Proyecto equivocado seria peor que no comprobar --- pero
+    significa que los cinco hooks que dependen del Proyecto se apagan solos:
+    `guard_canon` (INV-1), `guard_presupuesto` (INV-7), `guard_proteccion`,
+    `ledger_llamada` y `cierre_unidad`.
+
+    Es decir: **el segundo de los tres mecanismos de ADR-02 dejaba de existir en
+    cuanto empezabas la segunda novela**, y sin ruido. El estado seguia protegido
+    por los permisos y por el nucleo, que es el tercero y el que de verdad
+    escribe, pero la redundancia que ADR-02 declara no estaba ahi.
+    """
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FUENTE)
     env["STORYMAKER_RAIZ"] = "proyectos"
+    if proyecto:
+        env["STORYMAKER_PROYECTO"] = proyecto
     return env
 
 
@@ -99,7 +117,7 @@ def nucleo(proyecto: str | None, argumentos: list[str]) -> dict[str, Any]:
     orden += argumentos
     try:
         hecho = subprocess.run(
-            orden, cwd=RAIZ, env=entorno(), capture_output=True, text=True,
+            orden, cwd=RAIZ, env=entorno(proyecto), capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=TIEMPO_NUCLEO,
         )
     except subprocess.TimeoutExpired:
@@ -128,7 +146,10 @@ HERRAMIENTAS_DE_ETAPA = (
 )
 
 
-def etapa(prompt: str, anotar=None, *, al_lanzar=None, actividad=None) -> dict[str, Any]:
+def etapa(
+    prompt: str, anotar=None, *,
+    proyecto: str | None = None, al_lanzar=None, actividad=None,
+) -> dict[str, Any]:
     """Lanza una sesion de Claude Code para que despache una etapa.
 
     Sin ventana. Hubo una consola propia por etapa, y se retiro porque no
@@ -159,8 +180,13 @@ def etapa(prompt: str, anotar=None, *, al_lanzar=None, actividad=None) -> dict[s
 
     lineas: list[str] = []
     resultado: dict[str, Any] = {}
+    # La cuenta que se va llevando por si `result` no llega nunca.
+    acumulado: dict[str, dict[str, int]] = {}
+    # Y la misma cuenta repartida por quien la gasto: el conductor, o la llamada
+    # `Task` que despacho a cada subagente.
+    por_rol: dict[str, dict[str, dict[str, int]]] = {}
     proceso_ = subprocess.Popen(
-        orden, cwd=RAIZ, env=entorno(), stdout=subprocess.PIPE,
+        orden, cwd=RAIZ, env=entorno(proyecto), stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace",
         bufsize=1,
     )
@@ -174,10 +200,17 @@ def etapa(prompt: str, anotar=None, *, al_lanzar=None, actividad=None) -> dict[s
     try:
         for cruda in proceso_.stdout or ():
             evento = _evento(cruda)
+            _acumular_uso(evento, acumulado)
             if evento.get("type") == "result":
                 resultado = evento
+            _acumular_uso(evento, acumulado, por_rol)
             if actividad is not None:
                 for suceso in _actividad(evento):
+                    # Al cerrarse un despacho ya esta contado lo que gasto: se le
+                    # adjunta aqui, que es el unico punto donde ambas cosas --- el
+                    # suceso y la cuenta --- estan a la vez a la vista.
+                    if suceso.get("suceso") == "acaba":
+                        suceso["uso"] = por_rol.get(suceso.get("id")) or {}
                     actividad(suceso)
             legible = _legible(cruda)
             if legible:
@@ -190,14 +223,81 @@ def etapa(prompt: str, anotar=None, *, al_lanzar=None, actividad=None) -> dict[s
             al_lanzar(None)
 
     salida = "\n".join(lineas).strip()
+
+    # Si la sesion murio sin emitir `result`, se entrega la cuenta parcial con la
+    # forma que espera quien la consume, y marcada como tal: es preferible un
+    # consumo incompleto y declarado a ninguno.
+    if not resultado.get("modelUsage") and acumulado:
+        resultado = {
+            **resultado,
+            "modelUsage": {m: {**u, "canonicalModel": m} for m, u in acumulado.items()},
+            "consumo_parcial": True,
+            "motivo_parcial": "la sesion termino sin emitir su evento `result`",
+        }
+
     return {
         "ok": codigo == 0,
-        "datos": {"salida": salida[-6000:], "consumo": resultado},
+        "datos": {"salida": salida[-6000:], "consumo": resultado, "por_rol": por_rol},
         "error": None if codigo == 0 else {
             "codigo": "GUI-013", "mensaje": f"La etapa termino con codigo {codigo}",
             "salida": salida[-6000:],
         },
     }
+
+
+# Quien gasto. El conductor es la sesion que dirige el tramo; los demas son los
+# subagentes que despacha, identificados por la llamada que los lanzo.
+CONDUCTOR = "conductor"
+
+
+def _acumular_uso(
+    evento: dict[str, Any],
+    por_modelo: dict[str, dict[str, int]],
+    por_rol: dict[str, dict[str, dict[str, int]]] | None = None,
+) -> None:
+    """Suma el consumo de un mensaje segun llega, por modelo y por quien lo gasto.
+
+    Dos motivos, y los dos nacen de un problema real.
+
+    El primero: el consumo definitivo viaja en el evento `result`, y ese evento
+    **no llega si la etapa muere**. El tramo de la novela se corto en el limite de
+    media hora y todo lo que habia gastado redactando desaparecio de la
+    contabilidad. Sumando por el camino queda siempre una cuenta parcial.
+
+    El segundo: saber cuanto cuesta el conductor frente a los subagentes exigia
+    deducirlo del modelo --- opus era el conductor, haiku los subagentes ---, y esa
+    deduccion **deja de valer en cuanto se le baje el modelo al conductor**, que es
+    justo la optimizacion que los numeros piden. Es decir, la medida que justifica
+    el cambio se rompe al hacerlo.
+
+    La atribucion exacta esta en `parent_tool_use_id`: vale `null` en los mensajes
+    del conductor y trae el identificador de la llamada `Task` en los del
+    subagente que esa llamada despacho. No hay que deducir nada.
+    """
+    if evento.get("type") != "assistant":
+        return
+    mensaje = evento.get("message") or {}
+    uso = mensaje.get("usage") or {}
+    modelo = mensaje.get("model")
+    if not modelo or not uso:
+        return
+
+    trozo = {
+        "inputTokens": uso.get("input_tokens") or 0,
+        "outputTokens": uso.get("output_tokens") or 0,
+        "cacheReadInputTokens": uso.get("cache_read_input_tokens") or 0,
+        "cacheCreationInputTokens": uso.get("cache_creation_input_tokens") or 0,
+    }
+
+    def sumar(destino: dict[str, dict[str, int]], clave: str) -> None:
+        ficha = destino.setdefault(clave, dict.fromkeys(trozo, 0))
+        for k, v in trozo.items():
+            ficha[k] += v
+
+    sumar(por_modelo, modelo)
+    if por_rol is not None:
+        quien = evento.get("parent_tool_use_id") or CONDUCTOR
+        sumar(por_rol.setdefault(quien, {}), modelo)
 
 
 def _evento(cruda: str) -> dict[str, Any]:
@@ -422,7 +522,7 @@ Ya no hay verificacion de fidelidad ni pasada de refutacion: se retiraron del
 arnes. Una Restriccion se deriva directamente de su afirmacion.
 
 NO cierres el Contexto. Lo siguiente que pasa es que el Autor lo lee y decide."""
-                     + reproche("tramo_contexto"), anotar, **extra)
+                     + reproche("tramo_contexto"), anotar, proyecto=proyecto, **extra)
 
     def tramo_dos(anotar=None, **extra) -> dict[str, Any]:
         return etapa(comun + """
@@ -448,7 +548,7 @@ Cierra el Contexto historico y construye el Canon, en ese orden y de una sentada
    una validacion ni emite hallazgos: es lo que el Autor leera antes de decidir.
 
 Propon el Canon como borrador y no lo apruebes."""
-                     + reproche("tramo_canon"), anotar, **extra)
+                     + reproche("tramo_canon"), anotar, proyecto=proyecto, **extra)
 
     def tramo_tres(anotar=None, **extra) -> dict[str, Any]:
         plan = plan_vigente(proyecto) or {}
@@ -483,7 +583,7 @@ emite `novela pasada-global`, cierra con `novela cerrar` y genera la entrega con
 `entrega generar`.
 
 Si algo se atasca, informa de que y para. No inventes una salida.""",
-                     anotar, **extra)
+                     anotar, proyecto=proyecto, **extra)
 
     todos = [
         {"clave": "tramo_contexto", "titulo": "Contexto historico", "tipo": "etapa",
@@ -512,6 +612,69 @@ Si algo se atasca, informa de que y para. No inventes una salida.""",
     for paso in todos[:desde]:
         paso["ya_estaba"] = True
     return todos
+
+
+CONSUMO = RAIZ / "tmp" / "consumo"
+
+
+def _guardar_consumo(
+    id_proceso: str, proyecto: str, clave: str,
+    consumo: dict[str, Any], error: dict[str, Any] | None = None,
+    por_rol: dict[str, dict[str, dict[str, int]]] | None = None,
+) -> None:
+    """Deja el consumo de un tramo en disco, pase lo que pase.
+
+    No va al Run Ledger porque `unidad llamada` exige un identificador de unidad
+    y el gasto de un conductor no es de ninguna unidad: es del tramo entero. Y no
+    va bajo `proyectos/` porque ahi solo escribe el nucleo, que es la regla.
+
+    Va a disco antes que a Langfuse, y no en lugar de Langfuse, por un motivo que
+    ya nos mordio: el coste de una Ejecucion solo existia en un servicio externo
+    que necesita credenciales, cambio de API a mitad del proyecto y apaga la
+    anterior en noviembre. Un dato que solo vive fuera puede perderse fuera.
+
+    Nunca levanta una excepcion: si esto fallara y tumbara el tramo, el remedio
+    seria peor que la enfermedad.
+    """
+    try:
+        CONSUMO.mkdir(parents=True, exist_ok=True)
+        fila = {
+            "momento": ahora(),
+            "proceso": id_proceso,
+            "proyecto": proyecto,
+            "tramo": clave,
+            "coste_usd": (consumo or {}).get("total_cost_usd"),
+            "parcial": bool((consumo or {}).get("consumo_parcial")),
+            "motivo_parcial": (consumo or {}).get("motivo_parcial"),
+            "error": (error or {}).get("codigo"),
+            "por_modelo": {
+                modelo: {
+                    "entrada": uso.get("inputTokens"),
+                    "salida": uso.get("outputTokens"),
+                    "cache_lectura": uso.get("cacheReadInputTokens"),
+                    "cache_escritura": uso.get("cacheCreationInputTokens"),
+                    "coste_usd": uso.get("costUSD"),
+                }
+                for modelo, uso in ((consumo or {}).get("modelUsage") or {}).items()
+            },
+            # El reparto entre el conductor y cada subagente, en tokens. Es la
+            # unica medida que sigue valiendo si conductor y subagentes acaban
+            # compartiendo modelo.
+            "tokens_por_rol": {
+                quien: {
+                    "total": sum(
+                        v for u in modelos.values()
+                        for k, v in u.items() if k != "costUSD"
+                    ),
+                    "por_modelo": modelos,
+                }
+                for quien, modelos in (por_rol or {}).items()
+            },
+        }
+        with (CONSUMO / f"{proyecto}.jsonl").open("a", encoding="utf-8") as fichero:
+            fichero.write(json.dumps(fila, ensure_ascii=False) + "\n")
+    except Exception:  # noqa: BLE001 - la contabilidad no tumba una Ejecucion
+        pass
 
 
 def arrancar(proyecto: str, *, coste: float, iteraciones: int) -> dict[str, Any]:
@@ -549,13 +712,21 @@ def arrancar(proyecto: str, *, coste: float, iteraciones: int) -> dict[str, Any]
 
     id_proceso = f"prc_{uuid.uuid4().hex[:12]}"
     senal = threading.Event()
-    traza = langfuse.Traza(id_proceso, f"Ejecucion · {estado.get('titulo_provisional', proyecto)}", {
-        "proyecto": proyecto,
-        "modo": estado.get("modo"),
-        "encargo": estado.get("encargo_version_vigente"),
-        "coste_presupuestado": coste,
-        "iteraciones_presupuestadas": iteraciones,
-    })
+    # La traza se identifica por el **Proyecto**, no por este proceso. Una novela
+    # que se relanza tres veces es una sola traza con tres tiradas dentro, y no
+    # tres trazas con el mismo nombre.
+    traza = langfuse.Traza(
+        id_proceso,
+        f"Ejecucion · {estado.get('titulo_provisional', proyecto)}",
+        {
+            "proyecto": proyecto,
+            "modo": estado.get("modo"),
+            "encargo": estado.get("encargo_version_vigente"),
+            "coste_presupuestado": coste,
+            "iteraciones_presupuestadas": iteraciones,
+        },
+        clave_traza=proyecto,
+    )
     with CERROJO:
         SENALES[id_proceso] = senal
         PROCESOS[id_proceso] = {
@@ -643,6 +814,11 @@ def arrancar(proyecto: str, *, coste: float, iteraciones: int) -> dict[str, Any]
                             vivo.append(linea)
                             p_["salida_viva"] = vivo[-400:]
 
+            # Cuando empezo cada despacho, en nanosegundos, para poder emitir su
+            # span cuando vuelva. Un span de OpenTelemetry viaja entero, con su
+            # principio y su final a la vez.
+            relojes: dict[str, tuple[int, str, str]] = {}
+
             def apuntar(suceso: dict[str, Any], clave: str = paso["clave"]) -> None:
                 """Lleva la cuenta de quien esta despachado y quien ya volvio."""
                 with CERROJO:
@@ -665,9 +841,29 @@ def arrancar(proyecto: str, *, coste: float, iteraciones: int) -> dict[str, Any]
                             })
                         p_["agenda"] = agenda[-200:]
 
+                # Y, fuera del cerrojo del panel, la traza. Solo los subagentes:
+                # las ordenes al nucleo son cientos y ahogarian el arbol.
+                identificador = suceso.get("id")
+                if not identificador:
+                    return
+                if suceso["suceso"] == "empieza":
+                    relojes[identificador] = (
+                        langfuse._nanos(), suceso["quien"], suceso["que"])
+                elif suceso["suceso"] == "acaba" and identificador in relojes:
+                    desde, quien, que = relojes.pop(identificador)
+                    traza.subagente(
+                        clave, identificador, quien, que,
+                        desde, langfuse._nanos(), bool(suceso.get("error")),
+                        uso=suceso.get("uso"))
+
             sobre = paso["correr"](anotar, al_lanzar=al_lanzar, actividad=apuntar)
             datos = sobre.get("datos") or {}
-            traza.consumo(paso["clave"], datos.get("consumo") or {})
+            # Primero al disco y despues a la traza. Langfuse puede estar caido,
+            # sin credenciales o haber cambiado de API otra vez; el fichero no.
+            _guardar_consumo(id_proceso, proyecto, paso["clave"], datos.get("consumo") or {},
+                             sobre.get("error"), datos.get("por_rol") or {})
+            traza.consumo(paso["clave"], datos.get("consumo") or {},
+                          datos.get("por_rol") or {})
             traza.paso_fin(
                 paso["clave"],
                 str(datos.get("salida") or json.dumps(datos, ensure_ascii=False, default=str)),

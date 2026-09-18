@@ -762,6 +762,7 @@ orden van». Hay dos vistas, y la diferencia importa:
 |---|---|---|---|
 | Panel en vivo de cada tramo | La salida `stream-json` de la sesión, en memoria | Qué subagente está despachado **ahora mismo** y desde cuándo | Se pierde al reiniciar el servidor |
 | *El flujo de agentes* (`/api/flujo/<prj>`) | El **Run Ledger**, en disco | Cada unidad de trabajo con su etapa, su duración, su modo de cierre y sus iteraciones | No es tiempo real: se ve cuando la unidad se cierra |
+| Langfuse | La traza exportada por OTLP | El árbol entero: Ejecución → tramo → despacho de subagente (`agent`) → consumo por modelo (`generation`), con coste | Depende de que haya credenciales; el coste se lee por la API de métricas, no por la de observaciones |
 
 El segundo se construye emparejando `unidad_iniciada` y `unidad_cerrada` por el
 identificador de unidad. **No usa `unidades.jsonl` a propósito**: ahí el estado se queda
@@ -822,6 +823,27 @@ Declarado en §18.2 de la Funcional.
 Porque una garantía que depende de que un modelo con ochenta mil palabras de contexto
 recuerde una regla no es comprobable desde fuera. El núcleo permite responder «esto no
 pudo pasar» en lugar de «esto no debería haber pasado».
+
+**«¿Estaban los tres mecanismos de ADR‑02 realmente activos?»**
+Durante un tiempo, **no**. Los hooks resuelven sobre qué Proyecto actúan con la
+variable `STORYMAKER_PROYECTO` o, si no está, con el único Proyecto que haya; con
+varios y sin variable devuelven `None` y **permiten en lugar de adivinar**. Esa
+decisión es correcta —adivinar el Proyecto equivocado sería peor que no comprobar—
+pero tenía una consecuencia que nadie había mirado: la interfaz no declaraba la
+variable al lanzar sus sesiones, así que **en cuanto hubo una segunda novela en disco
+los cinco hooks que dependen del Proyecto se apagaron solos y sin ruido**:
+`guard_canon` (INV‑1), `guard_presupuesto` (INV‑7), `guard_proteccion`,
+`ledger_llamada` y `cierre_unidad`.
+
+El estado nunca estuvo en peligro: los permisos seguían denegando la escritura y el
+núcleo seguía comprobando sus invariantes antes de persistir, que es el tercer
+mecanismo y el único que de verdad escribe. Pero la **redundancia** que ADR‑02 declara
+no existía, y el síntoma por el que se descubrió fue indirecto: las unidades de
+trabajo no se cerraban nunca, porque quien las cierra es uno de esos hooks.
+
+Es un buen ejemplo de la tesis del propio proyecto: una garantía que no se comprueba
+desde fuera no es una garantía. Aquí el que falló fue el mecanismo de comprobación, y
+tardamos en verlo porque **fallaba permitiendo**, que es la forma silenciosa de fallar.
 
 **«¿Y si el agente decide saltarse el núcleo?»**
 No puede. Los permisos deniegan la escritura, los hooks deniegan la llamada antes de

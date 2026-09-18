@@ -1,11 +1,12 @@
 # Ejemplos
 
-Tres Encargos listos para ingerir y un recorrido completo del núcleo sin llamar a
+Cuatro Encargos listos para ingerir y un recorrido completo del núcleo sin llamar a
 ningún modelo. Sirven para dos cosas distintas: comprobar que la maquinaria muerde,
 y arrancar una novela de verdad sin componer el Encargo a mano.
 
 | Fichero | Qué es |
 |---|---|
+| [`encargo-magallanes.json`](encargo-magallanes.json) | **Un día de menos.** Un tonelero en la primera vuelta al mundo, 1519‑1522 |
 | [`encargo-revolucion-francesa.json`](encargo-revolucion-francesa.json) | **El peso del bronce.** Un fundidor de campanas en el París de 1793 |
 | [`encargo-roma.json`](encargo-roma.json) | **La mano del copista.** Un copista griego en la Roma de Domiciano |
 | [`encargo-tres-capitulos.json`](encargo-tres-capitulos.json) | El Encargo mínimo, con la conversión de líneas a palabras ya declarada |
@@ -13,6 +14,36 @@ y arrancar una novela de verdad sin componer el Encargo a mano.
 | [`prueba_tres_capitulos.py`](prueba_tres_capitulos.py) | El recorrido completo sin llamadas a modelo |
 
 ---
+
+## Un día de menos
+
+Tres capítulos, 540 palabras. Un tonelero embarcado en la armada de Magallanes mide
+el viaje en duelas, aros y agua podrida, y anota cada día que pasa porque es lo único
+que puede contar con certeza. Tres años después vuelve una sola nao, y su cuenta está
+**un día por detrás** de la del puerto.
+
+Ese desajuste ocurrió de verdad, y es el primer indicio empírico de lo que hoy
+llamamos línea de cambio de fecha. Aquí sirve para lo que el arnés hace mejor: el
+Encargo prohíbe explicarlo. El narrador **constata** que le falta un día y no puede
+entenderlo, porque los husos horarios son una invención de tres siglos después.
+
+Es el Encargo que más aprieta las **Restricciones de época**, con seis declaradas:
+
+| Trampa | Por qué muerde |
+|---|---|
+| El sextante | Es de 1731. Se mide con astrolabio, cuadrante y ballestilla |
+| La longitud | No se puede determinar en el mar sin cronómetro de marina. Sólo latitud |
+| El escorbuto | Nadie lo nombra ni conoce su causa: es «el mal de las encías» |
+| Kilos y metros | Se pesa en quintales y arrobas, se mide en varas y leguas |
+| Las horas de reloj | A bordo el tiempo son ampolletas y guardias |
+| Los husos horarios | El día perdido se constata, no se explica |
+
+Y se diferencia de los otros dos en una cosa a propósito: **sí admite figuras
+históricas reales con nombre propio**, pero cada una exige ficha documentada con su
+fuente antes de aparecer. Eso ejercita `contexto figura` e **INV‑3** —toda afirmación
+sobre una figura real, respaldada o con licencia—, que los otros Encargos dejan sin
+tocar. El punto de vista sigue siendo el del tonelero: los que mandan se ven de lejos
+y de abajo.
 
 ## El peso del bronce
 
@@ -118,7 +149,7 @@ Es el camino más corto.
 python gui/servidor.py     # http://127.0.0.1:8765
 ```
 
-En **Componer Encargo**, sube el JSON que quieras de los tres. Manda sobre lo que
+En **Componer Encargo**, sube el JSON que quieras de los cuatro. Manda sobre lo que
 haya en el formulario, y el núcleo rechaza nombrándolo cualquier campo que no
 conozca: no lo ignora ni lo corrige por su cuenta. Después, **Crear el Proyecto e
 ingerir el Encargo**, confirmarlo, y arrancar desde *Proceso*.

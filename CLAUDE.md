@@ -94,6 +94,8 @@ Los grupos son `proyecto`, `encargo`, `contexto`, `canon`, `escena`, `sinopsis`,
   INV, puntos de control PC.
 - `docs/especificaciones_tecnicas.md` — el cómo. Decisiones ADR, contratos CT,
   taxonomía de errores ERR.
+- `docs/especificaciones_mejoras.md` — sólo mejoras de optimización, cada una con
+  la medida de Langfuse que la justifica. No describe el arnés: dice qué cambiar.
 - `ARQUITECTURA.md` — mapa de qué fichero del código implementa qué parte.
 
 Cuando el código y la especificación discrepen, **gana la especificación**: el código

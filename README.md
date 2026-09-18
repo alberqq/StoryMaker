@@ -113,6 +113,7 @@ una pérdida de garantía aceptada a cambio de que la Ejecución corra entera.
 | [`DEFENSA.md`](DEFENSA.md) | El recorrido completo de una novela: qué hace cada pieza, qué genera y dónde se guarda |
 | [`docs/especificaciones_funcionales.md`](docs/especificaciones_funcionales.md) | El qué: requisitos, invariantes, puntos de control |
 | [`docs/especificaciones_tecnicas.md`](docs/especificaciones_tecnicas.md) | El cómo: decisiones de arquitectura, contratos, errores |
+| [`docs/especificaciones_mejoras.md`](docs/especificaciones_mejoras.md) | Sólo mejoras: qué optimizar, con la medida que lo justifica |
 | [`ARQUITECTURA.md`](ARQUITECTURA.md) | Qué fichero del código implementa qué parte |
 | [`CLAUDE.md`](CLAUDE.md) | Las reglas que siempre están en contexto |
 

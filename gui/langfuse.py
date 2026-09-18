@@ -25,12 +25,16 @@ no se cae porque falte la observabilidad.
     LANGFUSE_SECRET_KEY   sk-lf-...
     LANGFUSE_HOST         https://cloud.langfuse.com  (o tu instancia)
 
-Lo que se traza, ahora como arbol de spans de OpenTelemetry:
+Lo que se traza, como arbol de spans de OpenTelemetry:
 
-    span raiz   una Ejecucion completa del proceso
-      span        cada paso: los tres tramos y las dos paradas del Autor
-        generation  el consumo de cada modelo que intervino en ese paso, con sus
-                    tokens y su coste, sacados del evento `result` de Claude Code
+    span raiz     una Ejecucion completa del proceso
+      span          cada paso: los tres tramos y las dos paradas del Autor
+        agent         cada despacho de subagente, con su etapa y su tarea
+        generation    el consumo de cada modelo que intervino en ese paso, con sus
+                      tokens y su coste, sacados del evento `result` de Claude Code
+
+Las llamadas al nucleo no se trazan: son cientos por Ejecucion y ahogarian el
+arbol. Quedan en el Run Ledger, que es su sitio.
 
 El envio va en segundo plano y **nunca levanta una excepcion hacia el que traza**.
 Una traza perdida es una molestia; una Ejecucion caida por telemetria seria un
@@ -181,6 +185,19 @@ def _atributo(clave: str, valor: Any) -> dict[str, Any] | None:
     return {"key": clave, "value": {"stringValue": str(valor)}}
 
 
+def _sumar_modelos(por_modelo: dict[str, dict[str, int]]) -> dict[str, int]:
+    """Junta el consumo de varios modelos en una sola ficha de uso."""
+    total = {"input": 0, "output": 0,
+             "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}
+    for uso in por_modelo.values():
+        total["input"] += uso.get("inputTokens") or 0
+        total["output"] += uso.get("outputTokens") or 0
+        total["cache_read_input_tokens"] += uso.get("cacheReadInputTokens") or 0
+        total["cache_creation_input_tokens"] += uso.get("cacheCreationInputTokens") or 0
+    total["total"] = sum(total.values())
+    return total
+
+
 def _atributos(pares: dict[str, Any]) -> list[dict[str, Any]]:
     return [a for a in (_atributo(k, v) for k, v in pares.items()) if a is not None]
 
@@ -229,8 +246,29 @@ def _enviar(spans: list[dict[str, Any]]) -> None:
         except Exception:  # noqa: BLE001
             pass
         _ultimo_error = f"HTTP {error.code} al exportar a Langfuse: {detalle}".strip()
+        _apartar(spans)
     except Exception as error:  # noqa: BLE001 - la telemetria no tumba nada
         _ultimo_error = f"{type(error).__name__} al exportar a Langfuse"
+        _apartar(spans)
+
+
+def _apartar(spans: list[dict[str, Any]]) -> None:
+    """Guarda en disco los spans que no se pudieron exportar.
+
+    Antes se perdian en silencio: si Langfuse estaba caido o las credenciales
+    habian caducado, la traza de esa Ejecucion simplemente no existia y nadie se
+    enteraba hasta ir a buscarla. Aqui quedan, en OTLP tal cual, listos para
+    reenviarse o para mirarlos a mano.
+    """
+    try:
+        destino = RAIZ / "tmp" / "trazas_sin_enviar"
+        destino.mkdir(parents=True, exist_ok=True)
+        fichero = destino / f"{datetime.now(timezone.utc).strftime('%Y%m%d')}.jsonl"
+        with fichero.open("a", encoding="utf-8") as salida:
+            for span in spans:
+                salida.write(json.dumps(span, ensure_ascii=False) + "\n")
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _bombear() -> None:
@@ -272,16 +310,51 @@ class Traza:
     la traza salia con cada paso duplicado --- y aqui ya no se puede caer en ello.
     """
 
-    def __init__(self, identificador: str, nombre: str, metadatos: dict[str, Any]):
+    def __init__(
+        self, identificador: str, nombre: str, metadatos: dict[str, Any],
+        clave_traza: str | None = None,
+    ):
+        """`identificador` es el proceso; `clave_traza`, lo que la traza representa.
+
+        Son cosas distintas y confundirlas salia caro. Una Ejecucion cortada se
+        relanza --- porque la sesion murio, porque el Autor la paro, porque se
+        rechazo un tramo --- y cada relanzamiento levanta un proceso nuevo. Cuando
+        la traza se identificaba por el proceso, **cada relanzamiento aparecia en
+        Langfuse como una traza aparte**, con el mismo nombre que las anteriores y
+        sin forma de distinguirlas: cuatro «Ejecucion - El cartografo de Amberes»
+        para una sola novela.
+
+        Con la clave estable --- el Proyecto --- todas las tiradas de una novela
+        caen en la misma traza y se ven como lo que son: intentos sucesivos de
+        terminar el mismo trabajo. El proceso no se pierde: viaja en los
+        identificadores de los spans, para que dos tiradas no se pisen, y en los
+        metadatos, para saber cual emitio cada cosa.
+        """
         self.id = identificador
+        self.clave = clave_traza or identificador
         self.nombre = nombre
         self.metadatos = metadatos
         self.activa = activo()
-        self.traza_otel = _hex(identificador, 16)
-        self.span_raiz = _hex(identificador + ":raiz", 8)
+        self.traza_otel = _hex(self.clave, 16)
+        # La raiz es **por tirada**, no por traza. Reemitir una misma raiz en cada
+        # relanzamiento no la actualiza: Langfuse no funde dos spans con el mismo
+        # identificador, y la traza acababa con una raiz por tirada y todas con el
+        # mismo nombre. Asi cada una se ve como lo que es, un intento fechado, y
+        # la traza entera sigue llamandose como la novela.
+        self.span_raiz = _hex(f"{self.clave}:{self.id}:raiz", 8)
         self.inicio = _nanos()
         self._inicios: dict[str, int] = {}
         self._esperas: set[str] = set()
+        self._por_rol: dict[str, dict[str, dict[str, dict[str, int]]]] = {}
+
+    def _span_paso(self, clave: str) -> str:
+        """El span de un paso, unico por tirada.
+
+        Lleva el proceso dentro a proposito: si dos tiradas de la misma Ejecucion
+        compartieran identificador de span, la segunda machacaria a la primera y
+        se perderia justo lo que interesa mirar --- por que hubo que relanzar.
+        """
+        return _hex(f"{self.clave}:{self.id}:{clave}", 8)
 
     # -- construccion de spans --------------------------------------------
 
@@ -321,7 +394,7 @@ class Traza:
         if not self.activa:
             return
         _encolar(self._span(
-            _hex(f"{self.id}:{clave}", 8), self.span_raiz, clave,
+            self._span_paso(clave), self.span_raiz, clave,
             self._inicios.get(clave, _nanos()), _nanos(),
             {
                 "langfuse.observation.type": "span",
@@ -332,7 +405,51 @@ class Traza:
             error,
         ))
 
-    def consumo(self, clave: str, resultado: dict[str, Any]) -> None:
+    def subagente(
+        self, clave: str, identificador: str, quien: str, que: str,
+        inicio: int, fin: int, error: bool = False,
+        uso: dict[str, dict[str, int]] | None = None,
+    ) -> None:
+        """Un despacho de subagente, como span hijo del tramo que lo lanzo.
+
+        Sin esto, la traza de una Ejecucion son tres cajas --- un span por tramo ---
+        y no se ve quien trabajo dentro de cada una. El gasto se atribuia al
+        modelo, que dice si la culpa es del conductor o de los subagentes, pero no
+        **cual** subagente ni sobre que: un `tramo_novela` de seis euros no decia
+        si se fueron en redactar, en refinar o en un capitulo que el validador
+        devolvio cuatro veces.
+
+        El tipo `agent` es uno de los que Langfuse entiende, asi que estos spans
+        salen distinguidos de los tramos y de las generaciones en su interfaz.
+
+        Las llamadas al nucleo no se emiten: son cientos por Ejecucion, ahogarian
+        el arbol, y ya quedan en el Run Ledger, que es su sitio.
+        """
+        if not self.activa:
+            return
+        _encolar(self._span(
+            _hex(f"{self.clave}:{self.id}:{clave}:{identificador}", 8),
+            self._span_paso(clave),
+            f"{quien} · {que}"[:120] if que else quien,
+            inicio, fin,
+            {
+                "langfuse.observation.type": "agent",
+                "langfuse.observation.input": que,
+                "langfuse.observation.metadata.etapa": quien,
+                "langfuse.observation.metadata.tramo": clave,
+                "langfuse.observation.metadata.rol": "subagente",
+                # Lo que gasto **este** despacho, no el modelo que lo sirvio. Se
+                # busca por el identificador de la llamada que lo lanzo.
+                "langfuse.observation.usage_details": _sumar_modelos(uso) if uso else None,
+                "langfuse.trace.name": self.nombre,
+            },
+            {"mensaje": "el subagente devolvio error"} if error else None,
+        ))
+
+    def consumo(
+        self, clave: str, resultado: dict[str, Any],
+        por_rol: dict[str, dict[str, dict[str, int]]] | None = None,
+    ) -> None:
         """El gasto real de una etapa, del evento `result` de Claude Code.
 
         Se emite una generacion por modelo y no una sola agregada, porque una
@@ -347,7 +464,26 @@ class Traza:
         por_modelo = resultado.get("modelUsage") or {}
         inicio = self._inicios.get(clave, _nanos())
         fin = _nanos()
-        padre = _hex(f"{self.id}:{clave}", 8)
+        padre = self._span_paso(clave)
+
+        # El reparto entre el conductor y los subagentes se guarda para que los
+        # spans de cada uno puedan llevarlo, y se anota tambien aqui: sin esto,
+        # distinguir quien gasta exige mirar el modelo, y eso deja de funcionar
+        # en cuanto conductor y subagentes compartan modelo.
+        self._por_rol[clave] = por_rol or {}
+        conductor = (por_rol or {}).get("conductor") or {}
+        if conductor:
+            _encolar(self._span(
+                _hex(f"{self.clave}:{self.id}:{clave}:conductor", 8), padre,
+                f"{clave} · conductor", inicio, fin,
+                {
+                    "langfuse.observation.type": "generation",
+                    "langfuse.observation.model.name": sorted(conductor)[0],
+                    "langfuse.observation.usage_details": _sumar_modelos(conductor),
+                    "langfuse.observation.metadata.rol": "conductor",
+                    "langfuse.trace.name": self.nombre,
+                },
+            ))
 
         for modelo, uso in por_modelo.items():
             if not isinstance(uso, dict):
@@ -359,7 +495,7 @@ class Traza:
             nombre_modelo = uso.get("canonicalModel") or modelo
 
             _encolar(self._span(
-                _hex(f"{self.id}:{clave}:{modelo}", 8), padre,
+                _hex(f"{self.clave}:{self.id}:{clave}:{modelo}", 8), padre,
                 f"{clave} · {nombre_modelo}", inicio, fin,
                 {
                     "langfuse.observation.type": "generation",
@@ -389,8 +525,10 @@ class Traza:
         """
         if not self.activa:
             return
+        momento = datetime.fromtimestamp(self.inicio / 1e9, timezone.utc)
         _encolar(self._span(
-            self.span_raiz, None, self.nombre, self.inicio, _nanos(),
+            self.span_raiz, None,
+            f"Tirada · {momento.strftime('%d/%m %H:%M:%S')}", self.inicio, _nanos(),
             {
                 "langfuse.observation.type": "span",
                 "langfuse.trace.name": self.nombre,
