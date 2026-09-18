@@ -1,6 +1,6 @@
 {
   "esquema": "configuracion@1",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "descripcion": "CMP-037. Unico lugar donde viven los parametros del arnes. Ningun valor de este fichero puede fijarse desde el fichero de Encargo (E70, ERR-104).",
   "limites_iteracion": {
     "_origen": "§7.4 del funcional, SUP-005, SUP-022, arbitrajes A-06 y A-07. Seis bucles con limite (RNF-014 segun A-07).",
@@ -40,23 +40,47 @@
       "origen": "RF-061, A-06"
     },
     "rondas_investigacion": {
-      "rondas_totales": 3,
+      "rondas_totales": 4,
+      "patron": "buscar - rehacer - buscar_nuevas - rehacer",
       "al_agotarse": "cerrar_incompleta_y_continuar",
-      "origen": "E82",
-      "_nota": "Sustituye al limite de 2 intentos por afirmacion. La unidad de reintento ya no es la afirmacion sino la RONDA COMPLETA, y las rechazadas se sustituyen en lugar de corregirse. Al agotarse NO bloquea: es el unico limite del arnes que no lleva a un punto de control."
+      "origen": "E82, E83",
+      "_nota": "La unidad de reintento es la RONDA, no la afirmacion. Al agotarse NO bloquea: es el unico limite del arnes que no lleva a un punto de control."
     }
   },
   "investigacion": {
-    "_origen": "E82. Sustituye al esquema de cobertura minima por dimension de RF-014 y RF-054.",
-    "total_afirmaciones": 5,
+    "_origen": "E82 y E83.",
+    "afirmaciones_de_existencia": 5,
+    "afirmaciones_de_inexistencia": 5,
+    "total_afirmaciones": 10,
     "maximo_por_dimension": 1,
-    "minimo_por_dimension": 0,
     "busquedas_maximas_por_dimension": 2,
-    "rondas_maximas": 3,
-    "regla": "El Investigador produce 5 afirmaciones, cada una de una dimension DISTINTA. El Verificador las dictamina todas en una invocacion. Las rechazadas NO se corrigen: se SUSTITUYEN por afirmaciones nuevas en la ronda siguiente. Tres rondas como maximo.",
+    "rondas_maximas": 4,
+    "ciclo": [
+      {
+        "ronda": 1,
+        "accion": "buscar",
+        "que": "Producir las 10 afirmaciones: 5 de existencia, una por dimension, y 5 de inexistencia."
+      },
+      {
+        "ronda": 2,
+        "accion": "rehacer",
+        "que": "Corregir las rechazadas tomando sus hallazgos como entrada. Mismo hecho, mejor formulado o mejor respaldado."
+      },
+      {
+        "ronda": 3,
+        "accion": "buscar_nuevas",
+        "que": "Sustituir las que sigan rechazadas por hechos DISTINTOS. Lo que no se arreglo en la ronda 2 no se arregla."
+      },
+      {
+        "ronda": 4,
+        "accion": "rehacer",
+        "que": "Corregir las rechazadas de la ronda 3, que son las ultimas."
+      }
+    ],
+    "_por_que_alterna": "Hay dos modos de fallo distintos y pedian respuestas distintas. Un rechazo por falta de atomicidad, dimension equivocada o mal encuadre temporal se ARREGLA: el hecho vale, la formulacion no. Un rechazo porque el fragmento no sostiene el enunciado necesita OTRA FUENTE, y reformular no lo salva. Alternar da a cada fallo su remedio en lugar de gastar las rondas sustituyendo lo que solo habia que pulir.",
     "al_agotar_rondas": "Se cierra el Contexto con las afirmaciones aceptadas que haya, marcado como Incompleta, y LA EJECUCION CONTINUA. No se bloquea ni se escala.",
-    "seleccion_de_dimensiones": "Las 5 dimensiones las elige el Investigador entre las declaradas, segun su pertinencia para el Encargo. Las marcadas con prioridad_al_repartir alta en dimensiones.json entran primero: hoy es 'ausencias', porque de ella sale el Inventario de Prohibidos.",
-    "_consecuencia_asumida": "Con 5 afirmaciones y una por dimension, el Contexto Historico deja de ser una cobertura del periodo y pasa a ser un puñado de anclajes. El Inventario de Prohibidos tendra como mucho una afirmacion de respaldo, de modo que la deteccion de anacronismos queda muy debilitada: el arnes sigue ejecutando el control, pero con mucho menos con que contrastar. Es una decision deliberada del autor (E82) en favor de la rapidez."
+    "seleccion_de_dimensiones": "Las 5 de existencia salen de dimensiones DISTINTAS, elegidas por su pertinencia para el Encargo. Las 5 de inexistencia no consumen dimension: son su propio bloque.",
+    "_consecuencia_asumida": "Diez afirmaciones siguen siendo un Contexto pequeno, pero las cinco de inexistencia devuelven al Inventario de Prohibidos un sustento propio y verificado, que es lo que E82 le habia quitado."
   },
   "tolerancias_longitud": {
     "_origen": "RNF-006, SUP-010, PA-020. La errata del 15 % de R-07 no rige (H-T03).",

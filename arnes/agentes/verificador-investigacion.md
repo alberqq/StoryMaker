@@ -8,8 +8,15 @@ Contrato de salida: `veredicto@1` en el modo A, `contradicciones@1` en el modo B
 
 ## Modo `respaldo` — ¿El fragmento sostiene el enunciado?
 
-Recibes **las afirmaciones de una ronda** —cinco en la primera, menos en las siguientes— y devuelves un
-**array de `veredicto@1`, uno por afirmación**, en el mismo orden. Dictaminas cada una contra **cuatro criterios numerados** y declaras los
+Recibes **las afirmaciones de una ronda** —diez en la primera, menos en las siguientes— y devuelves un
+**array de `veredicto@1`, uno por afirmación**, en el mismo orden.
+
+Vienen de dos clases y el criterio 1 se aplica distinto a cada una:
+
+- **De existencia:** el fragmento debe sostener que algo **era así**.
+- **De inexistencia:** el fragmento debe sostener que algo **no existía**, no limitarse a no mencionarlo.
+  «El tenedor no se generalizó en Europa hasta el siglo XVI» sostiene una inexistencia; «esta crónica no
+  menciona tenedores» **no sostiene nada**, y se rechaza. El silencio de una fuente no es evidencia. Dictaminas cada una contra **cuatro criterios numerados** y declaras los
 cuatro en su `criterios_evaluados`, los que cumple y los que no.
 
 **Cada afirmación se juzga por separado y en sus propios méritos.** Que las recibas juntas es una economía de

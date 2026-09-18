@@ -1,6 +1,6 @@
 {
   "esquema": "etapas@1",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "descripcion": "CMP-008. Orden declarado de etapas y de los pasos de cada una. CMP-001 deriva de aqui la unidad de trabajo siguiente; el orquestador no lleva el orden escrito en su instruccion (RF-060, RNF-026).",
   "etapas": [
     {
@@ -41,8 +41,8 @@
           "verificado_por_tipo_unidad": "verificacion_afirmacion",
           "objeto": "ronda",
           "iterable": "por_ronda",
-          "rondas_maximas": 3,
-          "_nota": "UNA invocacion por ronda: el Investigador entrega las 5 afirmaciones, o las que sustituyen a las rechazadas de la ronda anterior (E82)."
+          "rondas_maximas": 4,
+          "_nota": "UNA invocacion por ronda, con el patron buscar - rehacer - buscar_nuevas - rehacer (E83). Entrega 5 afirmaciones de existencia y 5 de inexistencia."
         },
         {
           "tipo_unidad": "verificacion_afirmacion",
@@ -59,7 +59,8 @@
         {
           "tipo_unidad": "inventario",
           "verificable": false,
-          "agente_papel": "redactor"
+          "agente_papel": "redactor",
+          "_nota": "Compone el Inventario de Prohibidos a partir de las afirmaciones de INEXISTENCIA verificadas (E83). Cada entrada remite a una de ellas y anade sus variantes; no inventa entradas nuevas."
         },
         {
           "tipo_unidad": "cobertura",

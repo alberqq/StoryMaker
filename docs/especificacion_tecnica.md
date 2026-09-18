@@ -1,8 +1,8 @@
 # Especificación Técnica — StoryMaker
 ### Arnés (*harness*) generador de novelas históricas · Diseño del CÓMO
 
-**Versión:** v2.2 · **Estado:** Línea base aprobada, apta para consumo por un agente de codificación · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
-**Especificación Funcional de referencia:** StoryMaker **v2.2** (18-09-2026), línea base aprobada. Es el contrato: única fuente de verdad sobre el QUÉ. Esta Especificación Técnica está acoplada a esa versión exacta (Anexo A.4).
+**Versión:** v2.3 · **Estado:** Línea base aprobada, apta para consumo por un agente de codificación · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
+**Especificación Funcional de referencia:** StoryMaker **v2.3** (18-09-2026), línea base aprobada. Es el contrato: única fuente de verdad sobre el QUÉ. Esta Especificación Técnica está acoplada a esa versión exacta (Anexo A.4).
 **Qué es esta versión.** v2 es una **línea base reescrita**, no una revisión incremental. Incorpora como texto de base las decisiones tomadas al construir el arnés y ejercitarlo por primera vez, y las lecciones medidas de esa ejecución. El cuerpo se lee de corrido; el histórico vive en el Anexo A.5 y A.6. Ningún identificador `CMP`, `ADR`, `CTR`, `ERR`, `PRB`, `SPK`, `INC` ni `RT` se ha renumerado ni retirado.
 **Arbitrajes del responsable técnico incorporados:** A-01 a A-07 (§1.4).
 **Decisiones pendientes de arbitraje:** ninguna. Las tres elevadas durante la elaboración —ARB-01, ARB-02 y ARB-03— están resueltas como A-05, A-06 y A-07.
@@ -447,7 +447,7 @@ Ficha por componente. «No le corresponde» delimita la responsabilidad tanto co
 | **CMP-015** | Investigador (modo extracción) | Entregar, **una invocación por ronda**, las cinco afirmaciones atómicas del Contexto —una por dimensión— con su fuente y su fragmento literal, y sustituir en las rondas siguientes las que el Verificador rechace | Proponer una afirmación sin fragmento literal; juzgar si el fragmento la sostiene; superar los topes de búsqueda | Plan, herramienta de búsqueda, topes de CMP-037 | Afirmaciones Propuestas, todas juntas | RF-006, RF-007, RF-054, RNF-002, RNF-025, E78 |
 | **CMP-016** | Verificador de Investigación (modo A) | Dictaminar, **solo sobre el fragmento aportado**, si sostiene el enunciado. Se invoca **una vez por dimensión** y emite **un veredicto por afirmación** | Reabrir la fuente, consultar su propio conocimiento, reformular la afirmación ni juzgar las afirmaciones en bloque | Afirmaciones de una dimensión, con sus fragmentos | Array de veredictos uniformes, uno por afirmación | RF-009, RF-010, RF-011, RES-5 |
 | **CMP-017** | Verificador de Investigación (modo B) | Señalar los pares de afirmaciones verificadas que se contradicen entre sí | Elegir cuál conservar: eso lo decide el autor en PCH-2 | Conjunto de afirmaciones verificadas | Lista de pares | RF-015, PCH-2 |
-| **CMP-018** | Investigador (modo inventario) | Enumerar lo que no existía en la época, remitiendo cada entrada a una afirmación verificada | Incluir entradas sin sustento ni juzgar el manuscrito | Afirmaciones verificadas | Inventario de Prohibidos | RF-008, OBJ-2 |
+| **CMP-018** | Investigador (modo inventario) | Componer el Inventario a partir de las afirmaciones de **inexistencia** verificadas, clasificando cada entrada y añadiendo sus **variantes** | Investigar, inventar entradas sin afirmación que las sustente, ni juzgar el manuscrito | Afirmaciones de inexistencia verificadas | Inventario de Prohibidos | RF-008, OBJ-2, E83 |
 | **CMP-019** | Orquestador | Llevar la cuenta de las rondas, detener la investigación al reunir las cinco o al agotar la tercera, y declarar la etapa Completa o Incompleta | Investigar por su cuenta, conceder una cuarta ronda ni escalar al autor: al agotarse **no bloquea** | Afirmaciones verificadas, CMP-037 | Marca de cobertura y advertencia | RF-014, RF-054, RNF-025, E82 |
 
 ### 6.5 Etapa 2 — redacción del canon
@@ -2521,7 +2521,16 @@ Tabla de altas. Se rellena hacia abajo, una fila por versión publicada, sin ree
 | **v2** | 18-09-2026 | v2 | E75 a E80 · primera ejecución completa | ADR-025, ADR-026, ADR-027 · `arnes/herramientas/md-a-pdf.py` | ADR-010 · CMP-015, CMP-016, CMP-024, CMP-026, CMP-037 · CTR-002, CTR-004, CTR-006, CTR-007, CTR-009, CTR-011 · §8.1, §12.3, §12.6, §16.3 | — | **Línea base reescrita.** Detalle abajo |
 | v2.1 | 18-09-2026 | v2.1 | E81 | — | CTR-001 · CMP-013 · ERR-101 · §7.2 | — | El tercer parámetro de longitud es *líneas por párrafo*. Se retira la restricción cruzada y el redondeo. Detalle abajo |
 | v2.2 | 18-09-2026 | v2.2 | E82 | — | CMP-015, CMP-016, CMP-019, CMP-037 · CTR-004 · §12.6 | — | El Contexto Histórico se relaja a cinco afirmaciones y tres rondas. Detalle abajo |
+| v2.3 | 18-09-2026 | v2.3 | E83 | — | CMP-015, CMP-016, CMP-018, CMP-019, CMP-037 · CTR-004 · §12.6 | — | Cinco de existencia y cinco de inexistencia; cuatro rondas alternas. Detalle abajo |
 |  |  |  |  |  |  |  |  |
+
+#### v2.3 · Diez afirmaciones y ciclo alterno
+
+El Contexto pasa a **cinco afirmaciones de existencia** —una por dimensión— y **cinco de inexistencia**, que no consumen dimensión. CMP-018 deja de enumerar por su cuenta y pasa a **componer** el Inventario desde las de inexistencia, aportando la clasificación y las **variantes**, que son lo que decide si una entrada sirve de algo contra un capítulo. La dimensión `ausencias` se retira de CMP-008.
+
+**Esto corrige el riesgo que v2.2 introdujo y dejó declarado:** el Inventario vuelve a tener sustento propio y verificado en lugar de depender de una sola afirmación. La distancia entre lo que el arnés ejecuta y lo que puede afirmar se estrecha de nuevo, aunque no vuelve al nivel anterior a E82.
+
+**El ciclo de CMP-015 alterna:** buscar, rehacer, buscar nuevas, rehacer. Distingue los dos modos de fallo —formulación defectuosa contra respaldo inexistente— y da a cada uno su remedio, en lugar de sustituir siempre y desperdiciar las afirmaciones que solo había que pulir. **Cota de la Etapa 1: 5 invocaciones típicas, 11 en el peor caso.**
 
 #### v2.2 · Contexto Histórico de cinco afirmaciones
 

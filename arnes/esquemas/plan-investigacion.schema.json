@@ -25,7 +25,7 @@
     },
     "lineas": {
       "type": "array",
-      "description": "Una linea por cada una de las CINCO dimensiones elegidas (E82). No una por dimension declarada: el plan describe lo que se va a investigar, no el menu del que sale.",
+      "description": "Cinco lineas para las afirmaciones de existencia, una por dimension elegida, mas una o dos para las de inexistencia (E83).",
       "items": {
         "type": "object",
         "required": [
@@ -59,10 +59,16 @@
           "dimension_adicional": {
             "type": "boolean",
             "description": "Dimension anadida por la inspiracion del Encargo. No cuenta para la cobertura minima."
+          },
+          "clase": {
+            "enum": [
+              "existencia",
+              "inexistencia"
+            ]
           }
         }
       },
-      "maxItems": 5
+      "maxItems": 7
     },
     "dimensiones_elegidas": {
       "type": "array",

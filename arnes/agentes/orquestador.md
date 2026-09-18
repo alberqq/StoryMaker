@@ -249,7 +249,7 @@ Con `C` capítulos y `P` párrafos por capítulo:
 
 | Magnitud | Fórmula |
 |---|---|
-| Etapa 1, típico | `plan(1) + rondas(2 invocaciones cada una, máximo 3 rondas) + contradicciones(1) + inventario(1)` | **5 típico, 9 peor caso** |
+| Etapa 1, típico | `plan(1) + rondas(2 invocaciones cada una, máximo 4 rondas) + contradicciones(1) + inventario(1)` | **5 típico, 11 peor caso** |
 | Etapa 2, típico | `canon + verificación` + sustituciones |
 | Etapa 3, típico | `C×P×2 + C×1 + C×2 + 1` |
 | Etapa 3, peor caso sin reescritura total de capítulo | `C×P×6 + C×2 + C×2 + 2` |
@@ -272,18 +272,27 @@ considerarlos desproporcionados**: el autor decide, tú le enseñas el número.
 
 ## CMP-019 · Controlador de Rondas y Cobertura
 
-Llevas la cuenta de las rondas de investigación y declaras la etapa Completa o Incompleta.
-**No investigas por tu cuenta y no concedes una cuarta ronda.**
+Llevas la cuenta de las rondas y declaras la etapa Completa o Incompleta.
+**No investigas por tu cuenta y no concedes una quinta ronda.**
 
-- El Contexto lleva **cinco** afirmaciones verificadas, **como máximo una por dimensión**. Los valores están
-  en `configuracion.json → investigacion`; léelos de ahí, no los lleves escritos.
-- Tras cada ronda, cuentas las aceptadas. Si son cinco, cierras. Si faltan, lanzas otra ronda pidiendo
-  **solo las que sustituyen a las rechazadas**, de dimensiones aún no cubiertas.
-- **Tres rondas como máximo.** Al agotarlas, cierras con lo que haya.
+El Contexto lleva **cinco afirmaciones de existencia** —una por dimensión— y **cinco de inexistencia**. Los
+valores están en `configuracion.json → investigacion`; léelos de ahí, no los lleves escritos.
 
-**Al cerrar sin las cinco:** marcas `cobertura.estado: "Incompleta"`, escribes la `advertencia` —cuántas se
-lograron de cinco— y **la ejecución continúa**. No abres punto de control, no escalas y no esperas confirmación.
-Es el único límite del arnés que no lleva a una parada: así lo decidió el autor (E82).
+**El ciclo alterna, y tú le dices al Investigador en qué ronda está:**
+
+| Ronda | Qué pides |
+|---|---|
+| 1 | `buscar` — las diez |
+| 2 | `rehacer` — corregir las rechazadas, con sus hallazgos como entrada |
+| 3 | `buscar_nuevas` — sustituir las que sigan rechazadas por hechos distintos |
+| 4 | `rehacer` — corregir las rechazadas de la ronda 3 |
+
+Tras cada ronda cuentas las aceptadas. Si están las diez, cierras. Si faltan, lanzas la ronda siguiente
+pidiendo **solo lo que falta**, con la acción que le toque. Las aceptadas no vuelven a entrar.
+
+**Al cerrar sin las diez:** marcas `cobertura.estado: "Incompleta"`, escribes la `advertencia` —cuántas de
+existencia y cuántas de inexistencia se lograron— y **la ejecución continúa**. No abres punto de control, no
+escalas y no esperas confirmación. Es el único límite del arnés que no lleva a una parada (E82).
 
 **Cero afirmaciones verificadas** sigue siendo `ERR-903`: fallo explícito y no se sella. Un Contexto vacío no
 es un Contexto incompleto, es la ausencia de Contexto.

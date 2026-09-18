@@ -1,7 +1,7 @@
 # Especificación Funcional — StoryMaker
 ### Arnés generador de novelas históricas
-**Versión:** v2.2 · **Estado:** Línea base aprobada · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
-**Entradas consumidas:** `StoryMaker.drawio` (diagrama), la especificación en prosa del autor con sus respuestas de arbitraje, y las decisiones tomadas durante la construcción del arnés y su primera ejecución completa. Todas ellas están descompuestas en las afirmaciones E1 a E82 de §1.3.
+**Versión:** v2.3 · **Estado:** Línea base aprobada · **Fecha:** 18 de septiembre de 2026 · **Idioma:** español
+**Entradas consumidas:** `StoryMaker.drawio` (diagrama), la especificación en prosa del autor con sus respuestas de arbitraje, y las decisiones tomadas durante la construcción del arnés y su primera ejecución completa. Todas ellas están descompuestas en las afirmaciones E1 a E83 de §1.3.
 **Qué es esta versión.** v2 es una **línea base reescrita**, no una revisión incremental. Recoge como texto de base todo lo decidido hasta hoy: las diecisiete dimensiones de investigación, los topes revisados, el reparto de competencias entre verificadores, la retirada del versionado por instrucción y la corrección de la tabla de severidades. El cuerpo se lee de corrido, sin notas de parche; el histórico completo vive en §18.4 y §18.5, que es donde debe estar.
 **Qué no cambia en v2.** Los identificadores. Ningún RF, RNF, SUP, PA, R, OBJ, RES, PCH, CL, P ni E se ha renumerado, reordenado ni retirado al reescribir (regla 1 de §18.2). Una línea base reescrita no es una oportunidad para soltar lastre.
 **Preguntas abiertas:** ninguna. Las veintiocho planteadas están resueltas (§15.1).
@@ -208,6 +208,7 @@ flowchart TD
 | E80 | Un tipo de hallazgo que la tabla de severidades no prevea no debe endurecerse por defecto, porque endurecer descarta trabajo que nadie consideró grave | Requisito funcional |
 | E81 | El tercer parámetro de longitud es **líneas por párrafo**, no líneas por capítulo. Los cuatro son: capítulos, escenas o párrafos por capítulo, líneas por párrafo y palabras por línea | Requisito funcional |
 | E82 | El Contexto Histórico se relaja a **cinco afirmaciones**, como máximo una por dimensión. El Investigador produce cinco, el Verificador dictamina, y las rechazadas se sustituyen por nuevas: tres rondas. Si no se logran las cinco, se sigue adelante con las que haya, aceptadas con esa salvedad declarada | Requisito funcional |
+| E83 | El Contexto Histórico lleva **cinco afirmaciones de existencia** y **cinco de inexistencia**. El ciclo es: buscar, rehacer las rechazadas, buscar nuevas para las que sigan rechazadas, rehacer esas, y continuar con salvedad si aun así no se completan | Requisito funcional |
 
 **Afirmaciones vagas marcadas para operacionalización en las fases 5 y 6:** E5, E20, E22, E25 («correcto a nivel léxico»), E35, E39 («licencias»), E42 («tendrá GUI», sin alcance funcional declarado), E43 («gestión de contexto etc.», sin definición).
 
@@ -2889,7 +2890,20 @@ Tabla de altas. Se rellena hacia abajo, una fila por versión publicada, sin ree
 | **v2** | 18-09-2026 | E75 a E80 | — | RF-005, RF-014, RF-028, RF-030, RF-050, RF-051, RF-054, RNF-007, RNF-021, RNF-025, SUP-007 | — | **Línea base reescrita.** Consolida seis decisiones del autor tomadas al construir el arnés y ejercitarlo por primera vez. Detalle abajo |
 | v2.1 | 18-09-2026 | E81 | — | RF-002, RF-026, RF-063, §1.4, §3, §6.1, §7.0, §9.1, RNF-030 | — | El tercer parámetro de longitud es *líneas por párrafo*, no por capítulo. Resuelve PA-001. Detalle abajo |
 | v2.2 | 18-09-2026 | E82 | — | RF-005, RF-010, RF-011, RF-013, RF-014, RF-054, RNF-025, PCH-3, §7.1, §11.1 | — | El Contexto Histórico se relaja a cinco afirmaciones y tres rondas. PCH-3 deja de bloquear. Detalle abajo |
+| v2.3 | 18-09-2026 | E83 | — | RF-005, RF-006, RF-008, RF-009, RF-010, RF-011, RF-014, RF-054, RNF-025 | — | Cinco afirmaciones de existencia y cinco de inexistencia; el bucle pasa a cuatro rondas alternas. Detalle abajo |
 |  |  |  |  |  |  |  |
+
+#### v2.3 · Cinco afirmaciones de existencia, cinco de inexistencia, cuatro rondas alternas
+
+**Qué cambia.** El Contexto Histórico pasa de cinco afirmaciones a **diez**: cinco de **existencia**, cada una de una dimensión distinta, y cinco de **inexistencia**, que no consumen dimensión y forman su propio bloque. La dimensión `ausencias` se retira de la lista, porque deja de competir por una plaza y pasa a tener cinco propias.
+
+**Por qué.** E82 había dejado el Inventario de Prohibidos con una sola afirmación de respaldo, y con él el único criterio que caza anacronismos en toda la novela. Las cinco de inexistencia le devuelven sustento propio **y verificado**: pasan por el Verificador de Investigación igual que las demás, de modo que el Inventario no depende de conocimiento sin auditar.
+
+**El bucle alterna en lugar de repetir.** Cuatro rondas: **buscar · rehacer · buscar nuevas · rehacer**. La razón es que hay **dos modos de fallo distintos y pedían respuestas distintas**. Un rechazo por falta de atomicidad, dimensión equivocada o mal encuadre temporal se **arregla**: el hecho vale y lo que falla es cómo se presentó. Un rechazo porque el fragmento no sostiene el enunciado necesita **otra fuente**, y reformular no lo salva. El esquema anterior sustituía siempre, y con ello gastaba rondas tirando afirmaciones que solo había que pulir.
+
+**Una regla nueva sobre la inexistencia.** Una afirmación de inexistencia necesita un fragmento que sostenga la **ausencia**, no el silencio de la fuente. «El tenedor no se generalizó en Europa hasta el siglo XVI» sirve; «esta crónica no menciona tenedores» no sostiene nada y se rechaza. El silencio de una fuente no es evidencia, y sin esta regla el bloque de inexistencia se llenaría de afirmaciones indemostrables que además son las que más peso tienen aguas abajo.
+
+**Lo que no cambia.** Al agotar las rondas sigue sin bloquear: el Contexto se cierra como Incompleta con su advertencia declarada y la ejecución continúa. Sigue siendo el único límite del arnés que no lleva a un punto de control.
 
 #### v2.2 · El Contexto Histórico se relaja a cinco afirmaciones
 
@@ -2951,4 +2965,4 @@ Los seis pasos de §18.3 siguen rigiendo sin excepción, y la regla 6 de §18.2 
 ---
 
 
-*Fin del documento. Los identificadores RF-001 a RF-066, RNF-001 a RNF-031, SUP-001 a SUP-031, PA-001 a PA-028, R-01 a R-24, OBJ-1 a OBJ-7, RES-1 a RES-12, PCH-1 a PCH-10, CL-01 a CL-27, P-01 a P-08 y E1 a E82 son estables y no se renumerarán. SUP-001, SUP-002, SUP-003 y SUP-031 quedan obsoletos por resolución del autor; RF-064, RF-065 y RNF-031 quedan obsoletos por revocación de E72; P-02 queda retirada por haberse convertido en RF-055. Ninguno de esos identificadores se reutiliza. El procedimiento para toda modificación posterior está en §18.3. Esta es la línea base **v2**: reescrita de corrido, con todos los identificadores de v1 conservados.*
+*Fin del documento. Los identificadores RF-001 a RF-066, RNF-001 a RNF-031, SUP-001 a SUP-031, PA-001 a PA-028, R-01 a R-24, OBJ-1 a OBJ-7, RES-1 a RES-12, PCH-1 a PCH-10, CL-01 a CL-27, P-01 a P-08 y E1 a E83 son estables y no se renumerarán. SUP-001, SUP-002, SUP-003 y SUP-031 quedan obsoletos por resolución del autor; RF-064, RF-065 y RNF-031 quedan obsoletos por revocación de E72; P-02 queda retirada por haberse convertido en RF-055. Ninguno de esos identificadores se reutiliza. El procedimiento para toda modificación posterior está en §18.3. Esta es la línea base **v2**: reescrita de corrido, con todos los identificadores de v1 conservados.*

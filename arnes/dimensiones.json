@@ -1,6 +1,6 @@
 {
   "esquema": "dimensiones@1",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "descripcion": "CMP-008. Lista editable de dimensiones de investigacion. Anadir o quitar una dimension es editar este array: ninguna instruccion de agente enumera las dimensiones (RF-060, RNF-026). El campo 'nombre' es la clave con la que el estado de ejecucion lleva los contadores de cobertura por dimension; 'etiqueta' es como se presenta al autor.",
   "_cambio_v2": "Las siete dimensiones de v1 (vestimenta, actividades, sociedad, preocupaciones, materiales, existente, inexistente) se sustituyen por las dieciseis que fija el autor. La cobertura pasa de un esquema de vida cotidiana a uno de historiografia general. Consecuencia sobre los topes: 16 dimensiones no caben en los valores de v1, y configuracion.json se ajusta en consecuencia (ver _nota_acotacion alli).",
   "dimensiones": [
@@ -99,14 +99,6 @@
       "etiqueta": "Conflicto y disidencia",
       "descripcion": "Revueltas, bandolerismo, censura, represion, movimientos de reforma.",
       "obligatoria": false
-    },
-    {
-      "nombre": "ausencias",
-      "etiqueta": "Ausencias y anacronismos",
-      "descripcion": "Que NO existia todavia, no habia llegado a ese lugar o no podia pensarse: objetos, materiales, tecnicas, instituciones, alimentos, palabras e ideas. Interesa sobre todo lo dificil de ver hoy, porque nos parece natural: conceptos como intimidad, estres, adolescencia, eficiencia, ocio, higiene o merito; unidades de tiempo y medida; formas de tratar el cuerpo, la infancia o la muerte. Un objeto fuera de epoca salta a la vista; una mentalidad fuera de epoca, no.",
-      "obligatoria": false,
-      "prioridad_al_repartir": "alta",
-      "_por_que": "Es la unica dimension que investiga la AUSENCIA y la que alimenta el Inventario de Prohibidos (RF-008). De ella depende que el Verificador de Canon e Historia pueda cazar anacronismos: sin entradas, su criterio 1 no tiene contra que contrastar. Cuando sobren afirmaciones bajo el tope global, se reparten aqui primero."
     }
   ],
   "dimensiones_adicionales": {
@@ -121,10 +113,18 @@
     "quien_lo_usa": "Verificador de Canon e Historia, modo capitulo, criterio 1 (desde AG-VER-CH). Antes lo usaba el Verificador de Linguistica; ver la Funcional v1.1, RF-028 y RF-030, y ADR-026 de la Tecnica."
   },
   "cobertura": {
-    "_origen": "E82",
-    "regla": "NINGUNA dimension es obligatoria. El Contexto Historico lleva 5 afirmaciones de 5 dimensiones DISTINTAS, elegidas por su pertinencia para el Encargo. Las 12 dimensiones restantes quedan sin cubrir, y eso no impide cerrar la etapa.",
+    "_origen": "E82, E83",
+    "regla": "El Contexto lleva 5 afirmaciones de EXISTENCIA, cada una de una dimension distinta de esta lista, mas 5 afirmaciones de INEXISTENCIA que no consumen dimension.",
     "maximo_por_dimension": 1,
-    "orden_de_preferencia": "Primero las marcadas con prioridad_al_repartir alta; despues, las que el Investigador juzgue mas pertinentes para el tema y la epoca del Encargo.",
-    "_antes": "Hasta E82 las diecisiete eran obligatorias con un minimo de 2 afirmaciones cada una y un tope global de 52. La lista se conserva completa porque sigue siendo el menu del que se eligen las cinco."
+    "ninguna_obligatoria": true,
+    "orden_de_preferencia": "Las que mas rindan para el tema y la epoca del Encargo. No por orden de la lista."
+  },
+  "inexistencia": {
+    "_origen": "E83",
+    "regla": "Las afirmaciones de inexistencia sustituyen a la antigua dimension 'ausencias', que se retira de la lista. Ya no compiten por una plaza con las demas: tienen cinco propias.",
+    "que_afirman": "Que algo NO existia todavia, no habia llegado a ese lugar o no podia pensarse: objetos, materiales, tecnicas, instituciones, alimentos, palabras e ideas.",
+    "que_interesa": "Sobre todo lo dificil de ver hoy porque nos parece natural: intimidad, estres, adolescencia, eficiencia, ocio, higiene, merito; unidades de tiempo y medida; formas de tratar el cuerpo, la infancia y la muerte. Un objeto fuera de epoca salta a la vista; una mentalidad fuera de epoca, no.",
+    "para_que": "Son la materia prima del Inventario de Prohibidos (RF-008), y del Inventario depende el unico criterio que caza anacronismos en toda la novela.",
+    "se_verifican_igual": "Pasan por el Verificador de Investigacion como las de existencia: fragmento literal que sostenga la INEXISTENCIA, no el silencio de la fuente. Que una fuente no mencione algo no prueba que no existiera."
   }
 }

@@ -42,11 +42,11 @@
         "required": [
           "id",
           "enunciado",
-          "dimension",
           "estado",
           "fuente",
           "fragmento",
-          "veredicto_ref"
+          "veredicto_ref",
+          "clase"
         ],
         "properties": {
           "id": {
@@ -100,6 +100,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 2
+          },
+          "clase": {
+            "enum": [
+              "existencia",
+              "inexistencia"
+            ]
           }
         }
       }
@@ -184,7 +190,7 @@
         "rondas_consumidas": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 3
+          "maximum": 4
         },
         "advertencia": {
           "type": "string",
@@ -195,6 +201,16 @@
           "items": {
             "type": "string"
           }
+        },
+        "de_existencia": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "de_inexistencia": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
         }
       }
     }
@@ -203,13 +219,13 @@
     "_comprueba": "CMP-009",
     "lista": [
       "Ninguna afirmacion en estado distinto de Verificada.",
-      "Toda entrada del inventario remite a una afirmacion presente en el artefacto.",
-      "COMO MAXIMO una afirmacion por dimension (E82).",
-      "COMO MAXIMO el total declarado en configuracion.json (E82: cinco).",
-      "No hay minimo por dimension: ninguna dimension es obligatoria desde E82.",
+      "COMO MAXIMO cinco afirmaciones de existencia, cada una de una dimension distinta (E83).",
+      "COMO MAXIMO cinco afirmaciones de inexistencia, que no consumen dimension (E83).",
+      "Toda entrada del inventario remite a una afirmacion de INEXISTENCIA presente en el artefacto.",
+      "Ninguna dimension es obligatoria y no hay minimo por dimension.",
       "Ninguna contradiccion detectada sin arbitrar (RF-015, PCH-2).",
-      "Si no se alcanzo el total, estado = Incompleta y advertencia no vacia. NO hace falta confirmacion del autor: la ejecucion continua (E82).",
-      "Cero afirmaciones verificadas impide sellar: la etapa termina en fallo explicito (ERR-903)."
+      "Si no se alcanzaron las diez, estado = Incompleta y advertencia no vacia. NO hace falta confirmacion del autor: la ejecucion continua (E82).",
+      "Cero afirmaciones verificadas impide sellar: fallo explicito (ERR-903)."
     ]
   }
 }
