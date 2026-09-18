@@ -1,0 +1,106 @@
+{
+  "esquema": "configuracion@1",
+  "version": "1.0.0",
+  "descripcion": "CMP-037. Unico lugar donde viven los parametros del arnes. Ningun valor de este fichero puede fijarse desde el fichero de Encargo (E70, ERR-104).",
+  "limites_iteracion": {
+    "_origen": "§7.4 del funcional, SUP-005, SUP-022, arbitrajes A-06 y A-07. Seis bucles con limite (RNF-014 segun A-07).",
+    "verificacion_afirmacion": {
+      "intentos_totales": 2,
+      "al_agotarse": "descarte_con_registro",
+      "origen": "E33"
+    },
+    "validacion_elemento_canon": {
+      "intentos_totales": 2,
+      "al_agotarse": "descarte_y_sustitucion",
+      "origen": "E34"
+    },
+    "ciclos_sustitucion_canon": {
+      "intentos_totales": 2,
+      "al_agotarse": "bloqueo_PCH-5",
+      "origen": "RF-023, H-T06, A-07"
+    },
+    "bucle_interior_escena": {
+      "intentos_totales": 3,
+      "al_agotarse": "bloqueo_PCH-7",
+      "origen": "E48, SUP-005"
+    },
+    "bucle_exterior_capitulo": {
+      "vueltas_totales": 2,
+      "al_agotarse": "bloqueo_PCH-8",
+      "origen": "E48, SUP-005"
+    },
+    "validacion_global": {
+      "vueltas_correccion": 1,
+      "al_agotarse": "bloqueo_PCH-10",
+      "origen": "E56, SUP-022"
+    },
+    "reparacion_contrato": {
+      "intentos_totales": 1,
+      "al_agotarse": "ERR-302",
+      "origen": "ADR-012, H-T05, A-06"
+    },
+    "devolucion_hallazgo_generico": {
+      "intentos_totales": 1,
+      "al_agotarse": "ERR-302",
+      "origen": "RF-061, A-06"
+    }
+  },
+  "investigacion": {
+    "_origen": "RF-014, RF-054, RNF-025, SUP-007. Son supuestos parametricos externalizados a proposito (ADR-023): cambiar un valor aqui no toca ninguna instruccion de agente.",
+    "minimo_por_dimension": 2,
+    "maximo_por_dimension": 4,
+    "tope_global_afirmaciones": 52,
+    "busquedas_maximas_por_dimension": 2,
+    "regla_de_parada": "El tope global es la condicion de parada prioritaria. El maximo por dimension solo actua como redistribuidor de esfuerzo (H-T10): 17 x 4 = 68 > 52, luego el tope global sigue atando, que es la propiedad que el diseno quiere conservar.",
+    "orden_de_trabajo": "Cubrir primero el minimo de TODAS las dimensiones y solo despues repartir lo que sobre hasta el tope global. Agotar una dimension antes de pasar a la siguiente llega al tope con dimensiones a cero y cierra la etapa Incompleta. Con dieciseis dimensiones esta regla pasa de recomendable a imprescindible.",
+    "_nota_acotacion": "SUP-007 fijaba 3/8/50 para SIETE dimensiones. Con las DIECISIETE de dimensiones@2.1 esos valores no caben: 17 x 3 = 51 de minimo no deja margen bajo un tope de 50. Por eso el minimo es 2 (17 x 2 = 34, con 18 de holgura bajo el tope de 52) y el maximo 4, que conserva la propiedad de que el tope global sea el que ata. Las busquedas se mantienen en 2 por dimension porque son el driver real del tiempo: 34 consultas como maximo. Para una investigacion mas profunda a costa de tiempo: busquedas a 3 y tope global a 68.",
+    "reparto_de_holgura": "Las afirmaciones que sobren tras cubrir el minimo de todas las dimensiones se reparten primero en las dimensiones marcadas con prioridad_al_repartir alta en dimensiones.json. Hoy es 'ausencias', porque de ella depende el Inventario de Prohibidos y con el toda la deteccion de anacronismos."
+  },
+  "tolerancias_longitud": {
+    "_origen": "RNF-006, SUP-010, PA-020. La errata del 15 % de R-07 no rige (H-T03).",
+    "parrafo": 0.2,
+    "capitulo": 0.1,
+    "naturaleza": "Control declarado sobre estimacion de agente, no recuento exacto. Bajo RES-11 no es garantia (A-02, §13.4)."
+  },
+  "contexto": {
+    "_origen": "§11.2, ADR-007, RF-047, ERR-601, ERR-602",
+    "unidad_de_medida": "palabras_aproximadas",
+    "nota_medida": "Bajo RES-11 no hay recuento de tokens. Se estima por longitud de texto. Es una aproximacion declarada, no una medida (§13.4).",
+    "presupuesto_entrada_palabras": 40000,
+    "margen_palabras": 2000,
+    "reserva_salida_palabras_por_tipo": {
+      "plan_investigacion": 1500,
+      "afirmacion": 800,
+      "verificacion_afirmacion": 600,
+      "contradicciones": 1200,
+      "inventario": 1500,
+      "canon": 6000,
+      "verificacion_canon": 2500,
+      "escena": 800,
+      "verificacion_escena": 1000,
+      "verificacion_capitulo": 2000,
+      "resumen": 1200,
+      "continuidad": 2000,
+      "validacion_global": 4000,
+      "informe": 4000
+    },
+    "politica_prelacion": "prelacion@1"
+  },
+  "coste": {
+    "_origen": "E49, RNF-009, §12.6. No hay presupuesto maximo: ninguna ejecucion se aborta por coste.",
+    "factor_anomalia_sobre_cota_tipica": 1.5,
+    "accion_al_superar": "senalar_en_informe_no_detener"
+  },
+  "proveedor": {
+    "_origen": "RES-2, RNF-016, ERR-401 a ERR-403",
+    "reintentos_por_fallo_de_invocacion": 3,
+    "espera_creciente": true,
+    "reintentos_por_timeout": 1,
+    "modelo_de_reserva": "ninguno"
+  },
+  "severidades_ref": "arnes/severidades.json",
+  "cliches_ref": "arnes/cliches.json",
+  "dimensiones_ref": "arnes/dimensiones.json",
+  "etapas_ref": "arnes/etapas.json",
+  "herramientas_ref": "arnes/herramientas.json"
+}

@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0022",
+  "enunciado": "Vellido Dolfos fingió ser un desertor y asesinó a Sancho II en el campamento de asedio a Zamora.",
+  "dimension": "poder_politico",
+  "linea_plan_ref": "LI-015",
+  "fuente": {
+    "url": "https://www.espanafascinante.com/articulo/historia/historia-de-bellido-dolfos-zamora/20140421145323273905.html",
+    "titulo": "Bellido Dolfos traidor o heroe de Zamora",
+    "dominio": "espanafascinante.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Uno de los nobles leoneses que ayudaban a Urraca a defender Zamora era Bellido Dolfos; el 6 de octubre de 1072 salió de las murallas zamorana desertando al campamento castellano.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

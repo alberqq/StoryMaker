@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0004",
+  "enunciado": "Zamora estaba emplazada sobre una meseta rocosa de 26 a 32 metros de altura al borde del río Duero.",
+  "dimension": "espacio",
+  "linea_plan_ref": "LI-003",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Zamora",
+    "titulo": "Zamora - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "El núcleo principal del casco antiguo se alza sobre una amplia meseta rocosa de 26 a 32 metros de altura, emplazada al borde del río Duero.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

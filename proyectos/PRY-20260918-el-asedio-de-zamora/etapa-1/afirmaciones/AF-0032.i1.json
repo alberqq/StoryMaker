@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0032",
+  "enunciado": "La cota de armas era una túnica elaborada con tela fuerte que se vestía sobre la loriga, principalmente para evitar que la reverberación del sol la recalentase.",
+  "dimension": "cultura_material",
+  "linea_plan_ref": "LI-027",
+  "fuente": {
+    "url": "https://www.battlemerchant.com/es/blog/ropa-medieval-masculina-para-cada-ocasion",
+    "titulo": "Indumentaria masculina medieval en detalle",
+    "dominio": "battlemerchant.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La cota de armas era inicialmente una túnica elaborada con tela fuerte que se vestía sobre la lóriga, principalmente para evitar que la reverberación del sol la recalentase.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

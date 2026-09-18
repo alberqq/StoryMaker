@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/paquete-capitulo@1",
+  "title": "CTR-007 - Paquete de invocacion del bucle exterior (capitulo)",
+  "description": "Diferencias con CTR-006: sustituye la escena por el capitulo ensamblado y anade los tres capitulos anteriores integros (SUP-028).",
+  "type": "object",
+  "required": [
+    "esquema",
+    "invocacion",
+    "capitulo",
+    "canon",
+    "contexto_historico",
+    "recuento",
+    "vuelta",
+    "manifiesto",
+    "inventario_prohibidos"
+  ],
+  "properties": {
+    "esquema": {
+      "const": "paquete-capitulo@1"
+    },
+    "invocacion": {
+      "type": "object",
+      "required": [
+        "proyecto",
+        "etapa",
+        "agente",
+        "modo",
+        "unidad",
+        "intento",
+        "version_arnes",
+        "clave_idempotencia"
+      ]
+    },
+    "capitulo": {
+      "type": "object",
+      "required": [
+        "orden",
+        "escenas"
+      ],
+      "description": "Todas sus escenas en estado Aprobada o Aceptada_con_observaciones."
+    },
+    "canon": {
+      "type": "object"
+    },
+    "contexto_historico": {
+      "type": "object"
+    },
+    "capitulos_anteriores_integros": {
+      "type": "array",
+      "maxItems": 3,
+      "description": "Los tres inmediatamente previos, en orden. Obligatorio salvo en los tres primeros capitulos. Prioridad P7: caen del mas antiguo al mas reciente, porque el n-1 es el que mas contradicciones revela."
+    },
+    "resumen_acumulado": {
+      "type": "string",
+      "description": "Obligatorio salvo en el capitulo 1."
+    },
+    "continuidad": {
+      "type": "object"
+    },
+    "recuento": {
+      "type": "object",
+      "required": [
+        "parrafos",
+        "palabras_estimadas"
+      ],
+      "properties": {
+        "parrafos": {
+          "type": "integer",
+          "description": "EXACTO: es el numero de ficheros de escena aprobados, que el Orquestador cuenta sin juicio. Es la unica magnitud de longitud que sobrevive a RES-11 como garantia dura."
+        },
+        "palabras_estimadas": {
+          "type": "integer",
+          "description": "Estimacion de agente, no recuento (seccion 13.4)."
+        },
+        "palabras_objetivo": {
+          "type": "integer"
+        }
+      }
+    },
+    "vuelta": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2
+    },
+    "hallazgos_vuelta_anterior": {
+      "type": "array",
+      "items": {
+        "$ref": "storymaker/hallazgo@1"
+      }
+    },
+    "manifiesto": {
+      "$ref": "storymaker/manifiesto-contexto@1"
+    },
+    "inventario_prohibidos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Dependencia dura del contrato (P3): nunca descartable. Desde AG-VER-CH el Verificador de Canon e Historia es quien juzga los anacronismos (criterio 1), y sin el Inventario delante ese criterio no tiene contra que contrastar. Ver la Funcional v1.1, RF-028 y RF-030, y ADR-026 de la Tecnica."
+    }
+  }
+}

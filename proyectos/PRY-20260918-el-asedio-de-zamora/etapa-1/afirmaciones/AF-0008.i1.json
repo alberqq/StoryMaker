@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0008",
+  "enunciado": "La esperanza de vida media en el Reino de León medieval era de 24,6 años, siendo muy superior para quienes alcanzaban la edad adulta.",
+  "dimension": "demografia",
+  "linea_plan_ref": "LI-006",
+  "fuente": {
+    "url": "https://www.diariodeleon.es/cultura/101025/836773/guerra-diezmo-vida-leon-medieval-debajo-30-anos.html",
+    "titulo": "La guerra diezmó la vida en el León medieval por debajo de los 30 años",
+    "dominio": "diariodeleon.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La esperanza de vida media de los habitantes del Reino de León era de 24,6 años, dato al que contribuía sin duda su alta mortalidad infantil.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

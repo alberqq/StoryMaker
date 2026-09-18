@@ -1,0 +1,485 @@
+{
+  "esquema": "registro-agentes@1",
+  "version": "2.1.0",
+  "descripcion": "CMP-007. Enumera, por cada agente, su cometido, los pasos en que interviene y los contratos que consume y produce. El orquestador NO conoce a ningun verificador en particular: consulta este registro. Dar de alta un verificador nuevo = un fichero de instruccion + una entrada en 'agentes'. Cero modificaciones de agentes existentes (RNF-026, PRB-026). Las instrucciones NO llevan version propia desde arnes 2.0.0: se editan en su sitio y su historico lo guarda el control de versiones del repositorio. La version que identifica una ejecucion es la de este artefacto, anotada en proyecto.json y en cada traza.",
+  "modelo": {
+    "_origen": "RES-2, RNF-016, ADR-011, seccion 11.5",
+    "valor": "haiku",
+    "regla": "El modelo se declara UNA sola vez, aqui. Ninguna instruccion de agente nombra el modelo. Cambiar de proveedor es editar este campo. En v1 todos los agentes declaran el mismo valor, y esa uniformidad es lo que comprueba PRB-016. El campo 'modelo' por agente existe para el futuro y en v1 se omite en todos.",
+    "modelo_de_reserva": "ninguno"
+  },
+  "capa_sistema": {
+    "id": "L1",
+    "instruccion_ref": "arnes/agentes/L1-sistema.md"
+  },
+  "agentes": [
+    {
+      "id": "AG-ORQUESTADOR",
+      "nombre": "Agente Orquestador",
+      "papel": "orquestador",
+      "cometido": "Calcular la unica unidad de trabajo siguiente, ensamblar su contexto contra el contrato declarado, invocar al agente que este registro declara, validar la salida, aplicar la politica de veredicto y escribir bitacora y estado. No emite ningun juicio sobre el contenido.",
+      "instruccion_ref": "arnes/agentes/orquestador.md",
+      "vinculo_claude_code": "Sesion principal, via los comandos de .claude/commands/",
+      "componentes": [
+        "CMP-001",
+        "CMP-002",
+        "CMP-003",
+        "CMP-004",
+        "CMP-005",
+        "CMP-006",
+        "CMP-009",
+        "CMP-010",
+        "CMP-013",
+        "CMP-019",
+        "CMP-025",
+        "CMP-028",
+        "CMP-029",
+        "CMP-030",
+        "CMP-031",
+        "CMP-033",
+        "CMP-034",
+        "CMP-035"
+      ],
+      "modos": [
+        {
+          "id": "planificar",
+          "paso": "*",
+          "contrato_entrada": "estado-ejecucion@1",
+          "contrato_salida": "unidad-trabajo@1"
+        },
+        {
+          "id": "encargo",
+          "paso": "encargo",
+          "contrato_entrada": "-",
+          "contrato_salida": "encargo@1"
+        },
+        {
+          "id": "derivados",
+          "paso": "derivados",
+          "contrato_entrada": "encargo@1",
+          "contrato_salida": "derivados@1"
+        },
+        {
+          "id": "cobertura",
+          "paso": "cobertura",
+          "contrato_entrada": "estado-ejecucion@1",
+          "contrato_salida": "cobertura@1"
+        },
+        {
+          "id": "ensamblar",
+          "paso": "capitulo",
+          "contrato_entrada": "escenas-aprobadas",
+          "contrato_salida": "capitulo-md"
+        },
+        {
+          "id": "resumir",
+          "paso": "resumen",
+          "contrato_entrada": "capitulo-md",
+          "contrato_salida": "resumen-md"
+        },
+        {
+          "id": "continuidad",
+          "paso": "continuidad",
+          "contrato_entrada": "capitulo-md",
+          "contrato_salida": "continuidad@1"
+        },
+        {
+          "id": "manuscrito",
+          "paso": "ensamblado",
+          "contrato_entrada": "capitulos",
+          "contrato_salida": "manuscrito-md"
+        },
+        {
+          "id": "informar",
+          "paso": "informe",
+          "contrato_entrada": "bitacora-entrada@1",
+          "contrato_salida": "informe-md"
+        },
+        {
+          "id": "sellar",
+          "paso": "*",
+          "contrato_entrada": "*",
+          "contrato_salida": "*"
+        },
+        {
+          "id": "escalar",
+          "paso": "*",
+          "contrato_entrada": "*",
+          "contrato_salida": "punto-control@1"
+        }
+      ]
+    },
+    {
+      "id": "AG-INVESTIGADOR",
+      "nombre": "Agente Investigador",
+      "papel": "redactor",
+      "cometido": "Planificar la investigacion por dimensiones, buscar en la web y convertir lo hallado en afirmaciones atomicas con su fuente y su fragmento literal; y enumerar lo que no existia en la epoca.",
+      "instruccion_ref": "arnes/agentes/investigador.md",
+      "vinculo_claude_code": ".claude/agents/investigador.md",
+      "componentes": [
+        "CMP-014",
+        "CMP-015",
+        "CMP-018"
+      ],
+      "herramientas_de_hoja": [
+        "HOJ-001"
+      ],
+      "modos": [
+        {
+          "id": "plan",
+          "paso": "plan_investigacion",
+          "contrato_entrada": "encargo@1",
+          "contrato_salida": "plan-investigacion@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        },
+        {
+          "id": "extraccion",
+          "paso": "afirmacion",
+          "contrato_entrada": "plan-investigacion@1",
+          "contrato_salida": "afirmacion@1[]",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          },
+          "cardinalidad": "una_invocacion_para_toda_la_investigacion",
+          "_nota": "Devuelve TODAS las afirmaciones del plan en un array. El reintento se invoca solo con las rechazadas."
+        },
+        {
+          "id": "inventario",
+          "paso": "inventario",
+          "contrato_entrada": "afirmaciones-verificadas",
+          "contrato_salida": "inventario-prohibidos@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        }
+      ]
+    },
+    {
+      "id": "AG-VER-INV",
+      "nombre": "Agente Verificador de Investigacion",
+      "papel": "verificador",
+      "cometido": "Dictaminar, solo sobre el fragmento aportado, si sostiene el enunciado; y senalar los pares de afirmaciones verificadas que se contradicen entre si.",
+      "instruccion_ref": "arnes/agentes/verificador-investigacion.md",
+      "vinculo_claude_code": ".claude/agents/verificador-investigacion.md",
+      "componentes": [
+        "CMP-016",
+        "CMP-017"
+      ],
+      "modos": [
+        {
+          "id": "respaldo",
+          "paso": "verificacion_afirmacion",
+          "contrato_entrada": "afirmacion@1[]",
+          "contrato_salida": "veredicto@1[]",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "El fragmento aportado sostiene el enunciado de la afirmacion de forma directa, sin exigir inferencia externa ni conocimiento propio del verificador.",
+              "clave_severidad": "respaldo_insuficiente"
+            },
+            {
+              "numero": 2,
+              "enunciado": "La afirmacion es atomica: contiene un solo hecho comprobable de forma independiente.",
+              "clave_severidad": "afirmacion_no_atomica"
+            },
+            {
+              "numero": 3,
+              "enunciado": "La afirmacion esta acotada a la epoca y al ambito geografico del Encargo, o el fragmento la situa explicitamente en ellos.",
+              "clave_severidad": "fuera_de_epoca_o_ambito"
+            },
+            {
+              "numero": 4,
+              "enunciado": "La afirmacion pertenece a la dimension que declara.",
+              "clave_severidad": "dimension_incorrecta"
+            }
+          ],
+          "cardinalidad": "una_invocacion_por_dimension",
+          "_nota": "Recibe todas las afirmaciones de una dimension y devuelve un veredicto por afirmacion, en el mismo orden."
+        },
+        {
+          "id": "contradicciones",
+          "paso": "contradicciones",
+          "contrato_entrada": "afirmaciones-verificadas",
+          "contrato_salida": "contradicciones@1",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "Dos afirmaciones verificadas se contradicen cuando no pueden ser ambas ciertas a la vez en la misma epoca y el mismo ambito geografico.",
+              "clave_severidad": "par_contradictorio"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AG-CANON",
+      "nombre": "Agente Constructor de Canon",
+      "papel": "redactor",
+      "cometido": "Derivar del Encargo y del Contexto Historico el canon completo, con la estructura exacta que fijan los parametros y con las licencias literarias declaradas; y sustituir los elementos descartados.",
+      "instruccion_ref": "arnes/agentes/constructor-canon.md",
+      "vinculo_claude_code": ".claude/agents/constructor-canon.md",
+      "componentes": [
+        "CMP-020"
+      ],
+      "modos": [
+        {
+          "id": "construccion",
+          "paso": "canon",
+          "contrato_entrada": "encargo@1",
+          "contrato_salida": "canon@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        },
+        {
+          "id": "sustitucion",
+          "paso": "canon",
+          "contrato_entrada": "canon@1",
+          "contrato_salida": "canon@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        }
+      ]
+    },
+    {
+      "id": "AG-VER-CANON",
+      "nombre": "Agente Verificador de Canon",
+      "papel": "verificador",
+      "cometido": "Dictaminar el canon contra cuatro criterios numerados. No reescribe el canon ni inventa cliches fuera del catalogo.",
+      "instruccion_ref": "arnes/agentes/verificador-canon.md",
+      "vinculo_claude_code": ".claude/agents/verificador-canon.md",
+      "componentes": [
+        "CMP-021"
+      ],
+      "modos": [
+        {
+          "id": "unico",
+          "paso": "verificacion_canon",
+          "contrato_entrada": "canon@1",
+          "contrato_salida": "veredicto@1",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "Conformidad historica: ningun elemento del canon contradice una afirmacion verificada del Contexto Historico sin una Licencia Literaria que lo cubra, ni emplea un elemento del Inventario de Prohibidos.",
+              "clave_severidad": "contradiccion_afirmacion_sin_licencia",
+              "origen": "RF-020"
+            },
+            {
+              "numero": 2,
+              "enunciado": "Coherencia interna: ningun personaje esta en dos lugares distintos en el mismo momento narrativo; no hay referencias a personajes ni escenas inexistentes; no hay rupturas del orden cronologico salvo salto temporal declarado.",
+              "clave_severidad": "desvio_canon",
+              "origen": "RF-021"
+            },
+            {
+              "numero": 3,
+              "enunciado": "Preparacion de los giros: todo giro de la trama esta preparado por al menos un elemento anterior del canon.",
+              "clave_severidad": "giro_no_preparado",
+              "origen": "RF-022"
+            },
+            {
+              "numero": 4,
+              "enunciado": "Cliches: ningun elemento del canon coincide con una entrada del catalogo CL-01..CL-27, salvo que el canon lo declare como uso deliberado con su justificacion.",
+              "clave_severidad": "cliche_catalogado",
+              "origen": "RF-022, RF-056"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AG-ESCRITOR",
+      "nombre": "Agente Escritor",
+      "papel": "redactor",
+      "cometido": "Escribir UN parrafo que materialice una escena del canon con la extension objetivo, y reescribirlo cuando reciba hallazgos.",
+      "instruccion_ref": "arnes/agentes/escritor.md",
+      "vinculo_claude_code": ".claude/agents/escritor.md",
+      "componentes": [
+        "CMP-023"
+      ],
+      "modos": [
+        {
+          "id": "redaccion",
+          "paso": "escena",
+          "contrato_entrada": "paquete-escena@1",
+          "contrato_salida": "escena-texto@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        },
+        {
+          "id": "reescritura",
+          "paso": "escena",
+          "contrato_entrada": "paquete-escena@1",
+          "contrato_salida": "escena-texto@1",
+          "parametros_muestreo": {
+            "perfil": "generativo"
+          }
+        }
+      ]
+    },
+    {
+      "id": "AG-VER-LING",
+      "nombre": "Agente Verificador de Linguistica de Escenas",
+      "papel": "verificador",
+      "cometido": "Dictaminar la forma de la escena contra seis criterios numerados: registro, gramatica, repeticion, longitud, parrafo unico y encaje con el parrafo anterior. NO juzga anacronismos de contenido ni adherencia al canon.",
+      "instruccion_ref": "arnes/agentes/verificador-linguistica.md",
+      "vinculo_claude_code": ".claude/agents/verificador-linguistica.md",
+      "componentes": [
+        "CMP-024"
+      ],
+      "modos": [
+        {
+          "id": "unico",
+          "paso": "verificacion_escena",
+          "contrato_entrada": "paquete-escena@1",
+          "contrato_salida": "veredicto@1",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "No hay expresiones ajenas al registro de la epoca: giros contemporaneos, jerga moderna, tecnicismos actuales o calcos del castellano de hoy.",
+              "clave_severidad": "registro_ajeno_a_la_epoca"
+            },
+            {
+              "numero": 2,
+              "enunciado": "No hay errores gramaticales ni ortograficos.",
+              "clave_severidad": "error_gramatical_u_ortografico"
+            },
+            {
+              "numero": 3,
+              "enunciado": "Ninguna palabra no funcional se repite mas de tres veces.",
+              "clave_severidad": "repeticion_lexica"
+            },
+            {
+              "numero": 4,
+              "enunciado": "La extension no se desvia de las palabras objetivo mas alla de la tolerancia declarada para el parrafo.",
+              "clave_severidad": "longitud_fuera_de_tolerancia"
+            },
+            {
+              "numero": 5,
+              "enunciado": "El texto es UN solo parrafo.",
+              "clave_severidad": "parrafo_multiple"
+            },
+            {
+              "numero": 6,
+              "enunciado": "El parrafo encaja con el parrafo inmediatamente anterior del capitulo: lugar, momento, personajes presentes y accion en curso se continuan sin salto injustificado.",
+              "clave_severidad": "falta_encaje"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "AG-VER-CANON-HIST",
+      "nombre": "Agente Verificador de Canon e Historia",
+      "papel": "verificador",
+      "cometido": "Dictaminar el capitulo contra el Inventario de Prohibidos, el canon, el contexto y lo ya narrado; y, en modo global, dictaminar el manuscrito completo. Es el UNICO agente que caza anacronismos de contenido (desde arnes 1.2.0).",
+      "instruccion_ref": "arnes/agentes/verificador-canon-historia.md",
+      "vinculo_claude_code": ".claude/agents/verificador-canon-historia.md",
+      "componentes": [
+        "CMP-026",
+        "CMP-027"
+      ],
+      "modos": [
+        {
+          "id": "capitulo",
+          "paso": "verificacion_capitulo",
+          "contrato_entrada": "paquete-capitulo@1",
+          "contrato_salida": "veredicto@1",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "No aparece en el capitulo ningun termino, objeto, institucion, tecnica ni concepto del Inventario de Prohibidos, incluidas las variantes de cada entrada.",
+              "clave_severidad": "anacronismo_inventario"
+            },
+            {
+              "numero": 2,
+              "enunciado": "El capitulo no se desvia del canon congelado: personajes, lugares y acontecimientos son los previstos para sus escenas.",
+              "clave_severidad": "desvio_canon"
+            },
+            {
+              "numero": 3,
+              "enunciado": "El capitulo no contradice ninguna afirmacion verificada del Contexto Historico sin una Licencia Literaria que lo cubra.",
+              "clave_severidad": "contradiccion_afirmacion_sin_licencia"
+            },
+            {
+              "numero": 4,
+              "enunciado": "El capitulo no contradice lo ya narrado en los capitulos anteriores, ni el resumen acumulado, ni las fichas de continuidad.",
+              "clave_severidad": "contradiccion_capitulo_anterior"
+            },
+            {
+              "numero": 5,
+              "enunciado": "La extension del capitulo no se desvia de las palabras objetivo mas alla de la tolerancia declarada para el capitulo.",
+              "clave_severidad": "longitud_fuera_de_tolerancia"
+            }
+          ],
+          "_nota": "Recibe ademas el Inventario de Prohibidos como dependencia dura (P3) desde arnes 1.2.0."
+        },
+        {
+          "id": "global",
+          "paso": "validacion_global",
+          "contrato_entrada": "manuscrito-md",
+          "contrato_salida": "veredicto@1",
+          "parametros_muestreo": {
+            "perfil": "dictaminador"
+          },
+          "criterios": [
+            {
+              "numero": 1,
+              "enunciado": "No hay contradicciones entre capitulos distantes en los elementos rastreables: personajes, objetos, fechas y lugares. Estos se comprueban primero.",
+              "clave_severidad": "contradiccion_capitulo_anterior",
+              "origen": "RF-055, PA-018"
+            },
+            {
+              "numero": 2,
+              "enunciado": "El manuscrito no reproduce de forma literal, ni en tramos largos, ningun fragmento de respaldo de las fuentes.",
+              "clave_severidad": "reproduccion_fuente",
+              "origen": "RNF-013. Control declarado, no garantia (A-02, seccion 13.4)."
+            },
+            {
+              "numero": 3,
+              "enunciado": "El manuscrito no contradice el Canon congelado en su conjunto, incluida la resolucion del arco.",
+              "clave_severidad": "desvio_canon",
+              "origen": "RF-055"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reglas": {
+    "dos_agentes_para_el_mismo_paso": "Admitido (RF-057, caso limite). CMP-001 los invoca a ambos y CMP-003 combina los veredictos por la regla de severidad mas alta.",
+    "agente_sin_instruccion": "ERR-202. El Orquestador se detiene al llegar a su paso y lo comunica. NO improvisa (RF-057, escenario 2).",
+    "paso_sin_agente": "ERR-202. Mismo tratamiento.",
+    "alta_de_verificador": "Un fichero de instruccion nuevo, una entrada en 'agentes' y un vinculo en .claude/agents/. Ninguna definicion anterior cambia (RNF-026).",
+    "criterios_obligatorios": "Todo modo cuyo agente tenga papel 'verificador' declara 'criterios' como lista numerada (RF-058). Sin ella, el numero de criterio que cita un hallazgo no es resoluble.",
+    "clave_severidad_en_criterio": "Cada criterio de verificador lleva la clave con la que se resuelve la severidad de sus hallazgos contra arnes/severidades.json. Es un detalle del COMO: el enum 'tipo' de CTR-003 es demasiado grueso para distinguir filas de RF-051 con severidades distintas.",
+    "versionado_de_instrucciones": "Ninguna. Una instruccion se edita en su sitio; no se crean ficheros con la version en el nombre. El historico vive en el repositorio y la comparabilidad entre ejecuciones la da la version de este registro (campo 'version'), que queda anclada en proyecto.json al crear el Proyecto."
+  },
+  "perfiles_de_muestreo": {
+    "_nota": "[SUPUESTO TECNICO] El grado de control real sobre el muestreo de un subagente en Claude Code es incierto; se eleva a SPK-009. Los perfiles se declaran y se registran en cada traza para que dos ejecuciones sean comparables, aunque el entorno no los honre.",
+    "generativo": {
+      "intencion": "Muestreo mas libre: su trabajo es generar."
+    },
+    "dictaminador": {
+      "intencion": "Muestreo lo mas contenido que el entorno permita: su trabajo es dictaminar, y la varianza de un juez es ruido."
+    }
+  }
+}

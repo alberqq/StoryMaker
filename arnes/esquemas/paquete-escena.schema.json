@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/paquete-escena@1",
+  "title": "CTR-006 - Paquete de invocacion del bucle interior (escena)",
+  "description": "Lo que CMP-002 entrega al Escritor y al Verificador de Linguistica. Lo que este paquete deliberadamente NO contiene es el texto integro de los capitulos anteriores (RF-045, escenario 1): su ausencia es un requisito, no una omision.",
+  "type": "object",
+  "required": [
+    "esquema",
+    "invocacion",
+    "escena_plan",
+    "palabras_objetivo",
+    "intento",
+    "manifiesto"
+  ],
+  "properties": {
+    "esquema": {
+      "const": "paquete-escena@1"
+    },
+    "invocacion": {
+      "type": "object",
+      "required": [
+        "proyecto",
+        "etapa",
+        "agente",
+        "modo",
+        "unidad",
+        "intento",
+        "version_arnes",
+        "clave_idempotencia"
+      ]
+    },
+    "escena_plan": {
+      "type": "object",
+      "required": [
+        "id",
+        "sinopsis",
+        "lugar",
+        "momento_narrativo",
+        "personajes"
+      ]
+    },
+    "escenas_aprobadas_del_capitulo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "orden",
+          "texto"
+        ]
+      },
+      "description": "Integras y en orden. Obligatorio salvo en la escena 1 del capitulo. Prioridad P4: al desbordar caen de la mas antigua a la mas reciente, porque el encaje inmediato lo da la ultima."
+    },
+    "contexto_historico": {
+      "type": "object",
+      "description": "Proyeccion segun la politica de prelacion. Por defecto entra completo (ADR-009)."
+    },
+    "inventario_prohibidos": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Dependencia dura del contrato (P3): nunca descartable. Lo consume el ESCRITOR, para no cometer el anacronismo de entrada, que es mas barato que corregirlo. Desde AG-VER-LING el Verificador de Linguistica ya NO juzga contra el: los anacronismos son del Verificador de Canon e Historia en el bucle exterior. Ver la Funcional v1.1, RF-028 y RF-030, y ADR-026 de la Tecnica."
+    },
+    "resumen_acumulado": {
+      "type": "string"
+    },
+    "continuidad_personajes_presentes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "licencias_aplicables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "palabras_objetivo": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "tolerancia": {
+      "type": "number",
+      "description": "Tolerancia de parrafo declarada en configuracion.json."
+    },
+    "intento": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "hallazgos_intento_anterior": {
+      "type": "array",
+      "items": {
+        "$ref": "storymaker/hallazgo@1"
+      },
+      "description": "Prioridad P1: NUNCA descartable. Sin ellos el reintento es ciego, consume intento y acerca el bloqueo, que es exactamente lo que RF-061 quiere evitar."
+    },
+    "manifiesto": {
+      "$ref": "storymaker/manifiesto-contexto@1"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "intento": {
+            "minimum": 2
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "hallazgos_intento_anterior"
+        ],
+        "properties": {
+          "hallazgos_intento_anterior": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

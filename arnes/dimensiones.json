@@ -1,0 +1,127 @@
+{
+  "esquema": "dimensiones@1",
+  "version": "2.1.0",
+  "descripcion": "CMP-008. Lista editable de dimensiones de investigacion. Anadir o quitar una dimension es editar este array: ninguna instruccion de agente enumera las dimensiones (RF-060, RNF-026). El campo 'nombre' es la clave con la que el estado de ejecucion lleva los contadores de cobertura por dimension; 'etiqueta' es como se presenta al autor.",
+  "_cambio_v2": "Las siete dimensiones de v1 (vestimenta, actividades, sociedad, preocupaciones, materiales, existente, inexistente) se sustituyen por las dieciseis que fija el autor. La cobertura pasa de un esquema de vida cotidiana a uno de historiografia general. Consecuencia sobre los topes: 16 dimensiones no caben en los valores de v1, y configuracion.json se ajusta en consecuencia (ver _nota_acotacion alli).",
+  "dimensiones": [
+    {
+      "nombre": "tiempo",
+      "etiqueta": "Tiempo",
+      "descripcion": "Limites cronologicos, hechos que abren y cierran el periodo, ritmo de los acontecimientos, calendario liturgico y agricola.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "espacio",
+      "etiqueta": "Espacio",
+      "descripcion": "Territorio, fronteras, geografia fisica, clima, urbanismo, distancias y rutas.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "demografia",
+      "etiqueta": "Demografia",
+      "descripcion": "Poblacion, natalidad, mortalidad, esperanza de vida, epidemias, migraciones.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "economia",
+      "etiqueta": "Economia",
+      "descripcion": "Modo de produccion, agricultura, oficios, comercio, moneda, precios, salarios, propiedad.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "estructura_social",
+      "etiqueta": "Estructura social",
+      "descripcion": "Estamentos o clases, movilidad, servidumbre y esclavitud, grupos marginados, minorias.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "poder_politico",
+      "etiqueta": "Poder politico",
+      "descripcion": "Forma de gobierno, dinastias, administracion, fiscalidad, ejercito, guerra.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "derecho_justicia",
+      "etiqueta": "Derecho y justicia",
+      "descripcion": "Leyes, tribunales, delito, pena, notariado, derecho de familia y herencia.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "religion",
+      "etiqueta": "Religion",
+      "descripcion": "Creencias, instituciones eclesiasticas, practica cotidiana, herejia, tolerancia, ritos de paso.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "mentalidad",
+      "etiqueta": "Mentalidad y cultura simbolica",
+      "descripcion": "Vision del mundo, honor, supersticion, concepto de persona, tiempo y muerte.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "ciencia_tecnica",
+      "etiqueta": "Ciencia y tecnica",
+      "descripcion": "Conocimientos disponibles, medicina, ingenieria, energia, innovaciones difundidas.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "cultura_material",
+      "etiqueta": "Cultura material",
+      "descripcion": "Vivienda, vestido, alimentacion, mobiliario, herramientas, higiene.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "vida_cotidiana",
+      "etiqueta": "Vida cotidiana y privada",
+      "descripcion": "Jornada, familia, infancia, cortejo, sexualidad, ocio, fiestas.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "comunicacion_saber",
+      "etiqueta": "Comunicacion y saber",
+      "descripcion": "Lengua, alfabetizacion, escritura, imprenta, correo, circulacion de noticias.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "arte_estetica",
+      "etiqueta": "Arte y estetica",
+      "descripcion": "Arquitectura, literatura, musica, teatro, gusto dominante.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "relaciones_exteriores",
+      "etiqueta": "Relaciones exteriores",
+      "descripcion": "Diplomacia, imperios, intercambios, percepcion del extranjero.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "conflicto_disidencia",
+      "etiqueta": "Conflicto y disidencia",
+      "descripcion": "Revueltas, bandolerismo, censura, represion, movimientos de reforma.",
+      "obligatoria": true
+    },
+    {
+      "nombre": "ausencias",
+      "etiqueta": "Ausencias y anacronismos",
+      "descripcion": "Que NO existia todavia, no habia llegado a ese lugar o no podia pensarse: objetos, materiales, tecnicas, instituciones, alimentos, palabras e ideas. Interesa sobre todo lo dificil de ver hoy, porque nos parece natural: conceptos como intimidad, estres, adolescencia, eficiencia, ocio, higiene o merito; unidades de tiempo y medida; formas de tratar el cuerpo, la infancia o la muerte. Un objeto fuera de epoca salta a la vista; una mentalidad fuera de epoca, no.",
+      "obligatoria": true,
+      "prioridad_al_repartir": "alta",
+      "_por_que": "Es la unica dimension que investiga la AUSENCIA y la que alimenta el Inventario de Prohibidos (RF-008). De ella depende que el Verificador de Canon e Historia pueda cazar anacronismos: sin entradas, su criterio 1 no tiene contra que contrastar. Cuando sobren afirmaciones bajo el tope global, se reparten aqui primero."
+    }
+  ],
+  "dimensiones_adicionales": {
+    "_origen": "RF-005, caso limite",
+    "regla": "Si la inspiracion del Encargo menciona un aspecto no cubierto por las dimensiones obligatorias, el plan de investigacion anade la dimension. Las dimensiones anadidas por Encargo NO se persisten aqui: viven en el plan del Proyecto.",
+    "cuentan_para_cobertura_minima": false
+  },
+  "dimension_no_aplicable": {
+    "_origen": "RF-005, escenario 2",
+    "regla": "Una dimension que no admita investigacion util para la epoca indicada NO se omite en silencio: se incluye en el plan con la justificacion de por que se investigara con menor profundidad. Con dieciseis dimensiones este caso deja de ser excepcional y pasa a ser frecuente: para una novela de taller urbano, 'relaciones_exteriores' o 'arte_estetica' rendiran poco, y declararlo es lo correcto."
+  },
+  "inventario_de_prohibidos": {
+    "_origen": "RF-008, OBJ-2",
+    "dimension_que_lo_alimenta": "ausencias",
+    "nota": "El modo 'inventario' del Investigador construye el Inventario de Prohibidos a partir de las afirmaciones verificadas, y las de la dimension 'ausencias' son su materia prima directa: son las unicas que afirman una inexistencia en lugar de una presencia. Las demas dimensiones acotan por implicacion, que es una inferencia mas debil.",
+    "quien_lo_usa": "Verificador de Canon e Historia, modo capitulo, criterio 1 (desde AG-VER-CH). Antes lo usaba el Verificador de Linguistica; ver la Funcional v1.1, RF-028 y RF-030, y ADR-026 de la Tecnica."
+  }
+}

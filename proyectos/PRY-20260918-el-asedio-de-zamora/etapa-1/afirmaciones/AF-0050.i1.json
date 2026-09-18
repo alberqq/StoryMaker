@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0050",
+  "enunciado": "La traición podía ocurrir por distintas formas y las circunstancias políticas y sociales favorecían su aparición en momentos de crisis.",
+  "dimension": "conflicto_disidencia",
+  "linea_plan_ref": "LI-040",
+  "fuente": {
+    "url": "https://dialnet.unirioja.es/descarga/articulo/2050337.pdf",
+    "titulo": "Traición y alevosía en la alta edad media",
+    "dominio": "dialnet.unirioja.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La traición podía ocurrir por distintas formas —por dinero, ambición, despecho, poder, ideología o amor— y las circunstancias políticas y sociales favorecían su aparición en momentos de crisis, cambios de régimen o enfrentamientos entre facciones.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

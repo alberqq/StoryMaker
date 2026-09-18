@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/plan-investigacion@1",
+  "title": "Plan de investigacion (RF-005)",
+  "description": "Se produce ANTES de buscar nada. Hace el proceso inspeccionable (OBJ-5) y da un criterio de cobertura.",
+  "type": "object",
+  "required": [
+    "esquema",
+    "proyecto",
+    "creado_en",
+    "lineas"
+  ],
+  "properties": {
+    "esquema": {
+      "const": "plan-investigacion@1"
+    },
+    "proyecto": {
+      "type": "string"
+    },
+    "creado_en": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lineas": {
+      "type": "array",
+      "description": "Al menos una linea por cada dimension obligatoria declarada en arnes/dimensiones.json. El numero minimo NO se fija aqui a proposito: anadir o quitar una dimension no debe obligar a tocar este esquema (RF-060, RNF-026). Una dimension no aplicable NO se omite: se incluye con su justificacion (RF-005, escenario 2).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "dimension",
+          "consulta",
+          "que_busca"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^LI-[0-9]{3}$"
+          },
+          "dimension": {
+            "type": "string"
+          },
+          "consulta": {
+            "type": "string",
+            "minLength": 1
+          },
+          "que_busca": {
+            "type": "string",
+            "minLength": 1
+          },
+          "profundidad_reducida": {
+            "type": "boolean"
+          },
+          "justificacion_profundidad": {
+            "type": "string"
+          },
+          "dimension_adicional": {
+            "type": "boolean",
+            "description": "Dimension anadida por la inspiracion del Encargo. No cuenta para la cobertura minima."
+          }
+        }
+      }
+    }
+  }
+}

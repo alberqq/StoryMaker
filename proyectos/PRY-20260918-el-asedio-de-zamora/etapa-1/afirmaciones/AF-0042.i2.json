@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0042",
+  "enunciado": "Los cantares de gesta son poesía épica",
+  "dimension": "arte_estetica",
+  "linea_plan_ref": "LI-035",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+    "titulo": "Cantar de gesta",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Los cantares de gesta son poesía épica",
+  "intento": 2,
+  "estado": "Propuesta"
+}

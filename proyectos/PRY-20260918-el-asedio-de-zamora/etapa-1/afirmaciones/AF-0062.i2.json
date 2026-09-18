@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0062",
+  "enunciado": "Los ingenios de asedio estuvieron ausentes en la Península Ibérica durante el siglo XI",
+  "dimension": "ausencias",
+  "linea_plan_ref": "LI-042",
+  "fuente": {
+    "url": "https://www.acami.es/publicacion/polvora-militar-en-espana/",
+    "titulo": "Pólvora militar en España",
+    "dominio": "acami.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La pólvora apareció en la Península Ibérica en el siglo XIII. No hay constancia de su uso en el siglo XI.",
+  "intento": 2,
+  "estado": "Propuesta"
+}

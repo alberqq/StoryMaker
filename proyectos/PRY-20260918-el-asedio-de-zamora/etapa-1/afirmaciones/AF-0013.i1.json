@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0013",
+  "enunciado": "Por debajo de la alta nobleza estaban los infanzones, que eran nobles de linaje que combatían a caballo.",
+  "dimension": "estructura_social",
+  "linea_plan_ref": "LI-010",
+  "fuente": {
+    "url": "https://www.redalyc.org/journal/3796/379677866002/html/",
+    "titulo": "La nobleza castellanoleonesa entre los siglos XI y XII. Sociedad, territorios y memorias",
+    "dominio": "redalyc.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Por debajo de la alta nobleza estaban los infanzones y los hidalgos (baja nobleza). Los infanzones eran nobles de linaje que combatían a caballo, de ahí que también se les llame caballeros infanzones.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

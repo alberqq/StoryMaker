@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/hallazgo@1",
+  "title": "CTR-003 - Hallazgo",
+  "description": "La condicion final de este esquema es RNF-029 hecha esquema: un hallazgo que fuerza reescritura sin criterio, sin cita y sin correccion esperada es malformado, y CMP-034 lo devuelve al verificador una sola vez (RF-061, ERR-304, H-T05).",
+  "type": "object",
+  "required": ["id", "criterio", "tipo", "severidad", "localizacion"],
+  "properties": {
+    "id": { "type": "string" },
+    "criterio": { "type": "integer", "minimum": 1, "description": "Numero del criterio incumplido, resoluble contra criterios_evaluados del veredicto." },
+    "tipo": {
+      "enum": ["anacronismo", "incoherencia", "cliche", "inverosimilitud", "defecto_lexico", "desvio_canon", "longitud", "falta_encaje", "parrafo_multiple", "contradiccion_capitulo", "reproduccion_fuente", "no_previsto"],
+      "description": "Enum grueso, para el desglose del bloque 3 del informe."
+    },
+    "clave_severidad": {
+      "type": "string",
+      "description": "Clave con la que se resuelve la severidad contra arnes/severidades.json. Si falta o no figura en la tabla, rige la regla por defecto: Mayor + anomalia (ERR-306, RF-051 escenario 2)."
+    },
+    "severidad": { "enum": ["Bloqueante", "Mayor", "Menor"] },
+    "localizacion": {
+      "type": "object",
+      "required": ["unidad", "id"],
+      "properties": {
+        "unidad": { "enum": ["afirmacion", "canon", "escena", "capitulo", "manuscrito"] },
+        "id": { "type": "string" },
+        "referencia_textual": {
+          "type": "string",
+          "description": "Frase u orden aproximado; NO desplazamiento exacto de caracter. Bajo RES-11 el arnes no cuenta caracteres (seccion 13.4)."
+        }
+      }
+    },
+    "cita_literal": { "type": "string", "description": "El texto concreto que incumple." },
+    "punto_de_ausencia": { "type": "string", "description": "Sustituye a cita_literal cuando el hallazgo es una ausencia: no se puede citar lo que no esta (RF-061, caso limite)." },
+    "correccion_esperada": { "type": "string", "description": "Que deberia cambiar. No es el texto reescrito: escribir es competencia del redactor." },
+    "entrada_inventario": { "type": "string", "description": "Entrada del Inventario de Prohibidos que se infringe, si el hallazgo es un anacronismo." },
+    "entrada_cliche": { "type": "string", "pattern": "^CL-[0-9]{2}$", "description": "Entrada del catalogo fijo de cliches. Un topico que no figure en el catalogo no es motivo de rechazo por cliche." },
+    "afirmacion_ref": { "type": "string", "pattern": "^AF-[0-9]{4}$", "description": "Afirmacion verificada que el hallazgo contradice." },
+    "severidad_elevada_desde": {
+      "enum": ["Menor", "Mayor"],
+      "description": "Solo cuando el bucle exterior agrega hallazgos repetidos (RF-051, caso limite). La elevacion la aplica CMP-003, nunca el verificador."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "severidad": { "enum": ["Bloqueante", "Mayor"] } } },
+      "then": {
+        "required": ["correccion_esperada"],
+        "anyOf": [
+          { "required": ["cita_literal"] },
+          { "required": ["punto_de_ausencia"] }
+        ]
+      }
+    }
+  ]
+}

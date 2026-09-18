@@ -1,0 +1,12 @@
+{
+  "esquema": "escena-texto@1",
+  "id": "CAP-03/ESC-04",
+  "escena_plan": "CAP-03/ESC-04",
+  "texto_ref": "etapa-3/capitulos/cap-03/esc-04.i1.md",
+  "intento": 1,
+  "estado": "Aprobada",
+  "palabras_estimadas": 47,
+  "palabras_objetivo": 45,
+  "autoria": "agente",
+  "veredicto_ref": "bitacora/e3-cap-03.jsonl#secuencia:255"
+}

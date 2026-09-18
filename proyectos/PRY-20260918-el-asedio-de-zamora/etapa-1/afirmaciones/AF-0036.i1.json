@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0036",
+  "enunciado": "El joven aprendiz de caballero comenzaba su adiestramiento a los 8 años de edad aproximadamente, realizando ejercicios como correr largas distancias y ejercicios gimnásticos con la armadura.",
+  "dimension": "vida_cotidiana",
+  "linea_plan_ref": "LI-030",
+  "fuente": {
+    "url": "https://okdiario.com/historia/dia-vida-caballero-medieval-castilla-13834052",
+    "titulo": "Un día en la vida de un caballero medieval en Castilla",
+    "dominio": "okdiario.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "El joven aprendiz comenzaba su adiestramiento a los 8 años de edad aproximadamente y debía realizar rutinas de ejercicios como: correr largas distancias en prados, bosques o montañas para conseguir resistencia física y realizar ejercicios gimnásticos con la armadura puesta.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

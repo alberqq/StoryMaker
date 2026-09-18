@@ -1,0 +1,1 @@
+Diez días después, a la entrada del pabellón, Armas vio a Bellido bromear con los nobles más cercanos al rey, como si fuera uno de ellos, riendo entre las tiendas donde los hombres afilaban picas. Armas observó en silencio. Ya no había a quién decírselo.

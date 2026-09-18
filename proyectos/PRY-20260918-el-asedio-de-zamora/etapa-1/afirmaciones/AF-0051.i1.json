@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0051",
+  "enunciado": "La Edad Media no conocía la ansiedad o la depresión como diagnósticos clínicos en el sentido actual.",
+  "dimension": "ausencias",
+  "linea_plan_ref": "LI-041",
+  "fuente": {
+    "url": "https://donporque.com/como-trataba-la-edad-media-la-ansiedad-y-la-depresion/",
+    "titulo": "¿Cómo trataba la Edad Media la ansiedad, ira, envidia y depresión?",
+    "dominio": "donporque.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La Edad Media no conocía la ansiedad o la depresión como diagnósticos clínicos en el sentido actual, ni disponía de psicólogos, antidepresivos o una ciencia de la conducta comparable a la moderna.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

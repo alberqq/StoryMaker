@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0007",
+  "enunciado": "En el siglo XI hubo un incremento significativo de población en las ciudades principales de Zamora, aumentando el número de iglesias.",
+  "dimension": "demografia",
+  "linea_plan_ref": "LI-005",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Historia_de_la_provincia_de_Zamora",
+    "titulo": "Historia de la provincia de Zamora - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "El esplendor económico y artístico de la provincia comienza en el siglo XI, justo cuando la población se ve incrementada en sus ciudades más importantes, aumenta el número de iglesias.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

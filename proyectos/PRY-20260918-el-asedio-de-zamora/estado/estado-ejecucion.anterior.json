@@ -1,0 +1,885 @@
+{
+  "esquema": "estado-ejecucion@1",
+  "proyecto": "PRY-20260918-el-asedio-de-zamora",
+  "version_arnes": "1.0.0",
+  "actualizado_en": "2026-09-18T16:27:47Z",
+  "secuencia_bitacora": 279,
+  "etapa_en_curso": "etapa-3",
+  "cursor": {
+    "tipo_unidad": "entrega",
+    "objeto": "manuscrito",
+    "intento": 1,
+    "clave_idempotencia": "PRY-20260918-el-asedio-de-zamora:entrega:entrega:manuscrito:1:AG-ORQ"
+  },
+  "contadores": {
+    "invocaciones": 73,
+    "por_etapa": {
+      "etapa-0": 0,
+      "etapa-1": 33,
+      "etapa-2": 6,
+      "etapa-3": 34
+    },
+    "rechazos_por_etapa": {
+      "etapa-1": 26,
+      "etapa-2": 3,
+      "etapa-3": 2
+    },
+    "afirmaciones_verificadas_por_dimension": {
+      "tiempo": 2,
+      "espacio": 3,
+      "demografia": 2,
+      "economia": 5,
+      "estructura_social": 5,
+      "poder_politico": 4,
+      "derecho_justicia": 2,
+      "religion": 3,
+      "mentalidad": 3,
+      "ciencia_tecnica": 2,
+      "cultura_material": 4,
+      "vida_cotidiana": 4,
+      "comunicacion_saber": 1,
+      "arte_estetica": 4,
+      "relaciones_exteriores": 2,
+      "conflicto_disidencia": 4,
+      "ausencias": 2
+    },
+    "afirmaciones_verificadas_total": 52,
+    "reutilizaciones": 0
+  },
+  "unidades": {
+    "encargo": {
+      "estado": "Congelado",
+      "intentos_consumidos": 1,
+      "autoria": "autor"
+    },
+    "derivados": {
+      "estado": "Calculado",
+      "intentos_consumidos": 1,
+      "autoria": "agente"
+    },
+    "plan_investigacion:plan": {
+      "estado": "Producido",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "no_verificable",
+      "autoria": "agente"
+    },
+    "afirmacion:investigacion-completa": {
+      "estado": "Propuesta",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "pendiente_de_verificacion",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:tiempo": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "1 verificadas, 2 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0003": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0001": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0002": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:espacio": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "3 verificadas, 0 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0004": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0005": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0006": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:demografia": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "0 verificadas, 2 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0007": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0008": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:economia": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "3 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0009": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0010": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0011": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0012": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:estructura_social": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "5 verificadas, 0 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0013": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0014": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0015": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0016": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0017": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:poder_politico": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "3 verificadas, 2 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0018": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0019": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0021": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0020": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0022": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:derecho_justicia": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "0 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0023": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:religion": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "1 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0024": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0025": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:mentalidad": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "3 verificadas, 0 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0026": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0027": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0028": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:ciencia_tecnica": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "1 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0030": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0029": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:cultura_material": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "3 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0031": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0032": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0034": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0033": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:vida_cotidiana": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "4 verificadas, 0 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0035": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0036": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0037": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0038": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:comunicacion_saber": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "1 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0040": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0039": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:arte_estetica": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "0 verificadas, 3 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0041": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0042": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0043": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:relaciones_exteriores": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "2 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0044": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0046": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0045": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:conflicto_disidencia": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "4 verificadas, 0 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0047": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0048": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0049": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0050": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:ausencias": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "1 verificadas, 1 rechazadas",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0051": {
+      "estado": "Verificada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0052": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0053": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0054": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0055": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0056": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0057": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0058": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0059": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0060": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0061": {
+      "estado": "Verificada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "afirmacion:AF-0062": {
+      "estado": "Descartada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:tiempo:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "1 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:demografia:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "2 verificadas, 0 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:economia:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "2 verificadas, 0 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:poder_politico:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "1 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:derecho_justicia:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "2 verificadas, 0 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:religion:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "2 verificadas, 0 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:ciencia_tecnica:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "1 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:cultura_material:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "1 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:arte_estetica:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "4 verificadas, 3 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:relaciones_exteriores:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "0 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "verificacion_afirmacion:ausencias:i2": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "1 verificadas, 1 descartadas",
+      "autoria": "agente"
+    },
+    "contradicciones:afirmaciones-verificadas": {
+      "estado": "Producido",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "0 pares",
+      "autoria": "agente"
+    },
+    "inventario:inventario-prohibidos": {
+      "estado": "Producido",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "no_verificable",
+      "autoria": "agente"
+    },
+    "cobertura": {
+      "estado": "Incompleta",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "ERR-901",
+      "autoria": "agente"
+    },
+    "contexto-historico": {
+      "estado": "Cerrado_incompleta",
+      "intentos_consumidos": 1,
+      "autoria": "autor"
+    },
+    "canon:canon": {
+      "estado": "Descartado",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Rechazado (criterio 2, 3 Bloqueantes)",
+      "autoria": "agente"
+    },
+    "verificacion_canon:canon": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Rechazado",
+      "autoria": "agente"
+    },
+    "canon:sustitucion": {
+      "estado": "Congelado",
+      "intentos_consumidos": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "verificacion_canon:canon-sustituto": {
+      "estado": "Dictaminada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-01/ESC-01": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-01/ESC-02": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-01/ESC-03": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-01/ESC-04": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "capitulo:CAP-01": {
+      "estado": "Aprobado",
+      "intentos_consumidos": 1,
+      "vueltas_exterior": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-02/ESC-01": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-02/ESC-02": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-02/ESC-03": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-02/ESC-04": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "capitulo:CAP-02": {
+      "estado": "Aprobado",
+      "intentos_consumidos": 1,
+      "vueltas_exterior": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-03/ESC-01": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-03/ESC-02": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-03/ESC-03": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 3,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "escena:CAP-03/ESC-04": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "capitulo:CAP-03": {
+      "estado": "Aprobado",
+      "intentos_consumidos": 2,
+      "vueltas_exterior": 2,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "validacion_global:manuscrito": {
+      "estado": "Aprobada",
+      "intentos_consumidos": 2,
+      "vueltas_correccion_consumidas": 1,
+      "ultimo_veredicto": "Aceptado",
+      "autoria": "agente"
+    },
+    "ensamblado:manuscrito": {
+      "estado": "Validado_globalmente",
+      "intentos_consumidos": 0,
+      "autoria": "agente"
+    },
+    "informe:informe-ejecucion": {
+      "estado": "Emitido",
+      "intentos_consumidos": 0,
+      "autoria": "agente"
+    },
+    "conversion:manuscrito": {
+      "estado": "Fallida_ERR-405",
+      "intentos_consumidos": 0,
+      "autoria": "herramienta_de_hoja"
+    }
+  },
+  "claves_resueltas": [
+    "PRY-20260918-el-asedio-de-zamora:etapa-0:encargo:encargo:1:AG-ORQ@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-0:derivados:derivados:1:AG-ORQ@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:plan_investigacion:plan:1:AG-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:afirmacion:investigacion-completa:1:AG-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:tiempo:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:espacio:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:demografia:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:economia:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:estructura_social:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:poder_politico:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:derecho_justicia:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:religion:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:mentalidad:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:ciencia_tecnica:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:cultura_material:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:vida_cotidiana:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:comunicacion_saber:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:arte_estetica:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:relaciones_exteriores:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:conflicto_disidencia:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:ausencias:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:afirmacion:reintento-rechazadas:2:AG-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:tiempo:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:demografia:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:economia:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:poder_politico:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:derecho_justicia:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:religion:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:ciencia_tecnica:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:cultura_material:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:arte_estetica:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:relaciones_exteriores:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:verificacion_afirmacion:ausencias:2:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:contradicciones:afirmaciones-verificadas:1:AG-VER-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:inventario:inventario-prohibidos:1:AG-INV@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-1:cobertura:cobertura:1:AG-ORQ@2",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:canon:canon:1:AG-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:canon:canon:2:AG-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:verificacion_canon:canon:1:AG-VER-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:canon:canon-sustituto:1:AG-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:canon:canon-sustituto:2:AG-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-2:verificacion_canon:canon-sustituto:1:AG-VER-CANON@1",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-01/ESC-01:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-01/ESC-01:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-01/ESC-02:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-01/ESC-02:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-01/ESC-03:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-01/ESC-03:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-01/ESC-04:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-01/ESC-04:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_capitulo:CAP-01:1:AG-VER-CANON-HIST",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-02/ESC-01:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-02/ESC-01:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-02/ESC-02:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-02/ESC-02:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-02/ESC-03:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-02/ESC-03:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-02/ESC-04:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-02/ESC-04:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_capitulo:CAP-02:1:AG-VER-CANON-HIST",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-01:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-01:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-02:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-02:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-03:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-03:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-03:2:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-03:2:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-04:1:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-04:1:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_capitulo:CAP-03:1:AG-VER-CANON-HIST",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:validacion_global:manuscrito:1:AG-VER-CANON-HIST",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:escena:CAP-03/ESC-03:3:AG-ESCRITOR",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_escena:CAP-03/ESC-03:3:AG-VER-LING",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:verificacion_capitulo:CAP-03:2:AG-VER-CANON-HIST",
+    "PRY-20260918-el-asedio-de-zamora:etapa-3:validacion_global:manuscrito:2:AG-VER-CANON-HIST"
+  ],
+  "puntos_control_pendientes": [],
+  "bloqueado": false,
+  "afirmaciones_propuestas_por_dimension": {
+    "tiempo": 3,
+    "espacio": 3,
+    "demografia": 2,
+    "economia": 4,
+    "estructura_social": 5,
+    "poder_politico": 5,
+    "derecho_justicia": 1,
+    "religion": 2,
+    "mentalidad": 3,
+    "ciencia_tecnica": 2,
+    "cultura_material": 4,
+    "vida_cotidiana": 4,
+    "comunicacion_saber": 2,
+    "arte_estetica": 3,
+    "relaciones_exteriores": 3,
+    "conflicto_disidencia": 4,
+    "ausencias": 2
+  },
+  "cobertura": {
+    "estado": "Incompleta",
+    "dimensiones_deficitarias": [
+      "comunicacion_saber"
+    ]
+  },
+  "version_arnes_en_curso": {
+    "anclada_en_proyecto": "1.0.0",
+    "en_disco_desde_etapa_3": "registro-agentes 2.0.0, instrucciones sin version en el nombre",
+    "mezcla": true
+  }
+}

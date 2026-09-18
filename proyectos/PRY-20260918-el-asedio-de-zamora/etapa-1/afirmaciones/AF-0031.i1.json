@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0031",
+  "enunciado": "La camisa de malla o loriga podía incorporar el almófar o llevarlo aparte, pesaba entre 20 y 25 kg.",
+  "dimension": "cultura_material",
+  "linea_plan_ref": "LI-027",
+  "fuente": {
+    "url": "https://www.battlemerchant.com/es/blog/ropa-medieval-masculina-para-cada-ocasion",
+    "titulo": "Indumentaria masculina medieval en detalle",
+    "dominio": "battlemerchant.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La camisa de malla (loriga o cota de malla) podía incorporar el almófar o llevarlo aparte, era de una pieza sin cierres que se metía por la cabeza con apoyo del escudero, pues pesaba en torno a 20-25 kg.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0020",
+  "enunciado": "Sancho II consiguió la reunificación del reino y se proclamó rey de Castilla, León y Galicia tras su victoria en Golpejera en 1072.",
+  "dimension": "poder_politico",
+  "linea_plan_ref": "LI-013",
+  "fuente": {
+    "url": "http://genealogiabermudezdecastro.es/CONTEXTO-HISTORICO/La-Nobleza-durante-el-reinado-de-Fernando-I-de-Leon-1037-1065/El-reinado-de-Sancho-II-de-Castilla-1065-1072/",
+    "titulo": "El reinado de Sancho II de Castilla (1065-1072)",
+    "dominio": "genealogiabermudezdecastro.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Gracias a ello Sancho II consiguió la reunificación del reino que había dividido su padre y se proclamó rey de Castilla, León y Galicia.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,1082 @@
+{
+  "esquema": "contexto-historico@1",
+  "proyecto": "PRY-20260918-el-asedio-de-zamora",
+  "estado": "Cerrado",
+  "sellado_en": "2026-09-18T14:46:40Z",
+  "dimensiones": [
+    "tiempo",
+    "espacio",
+    "demografia",
+    "economia",
+    "estructura_social",
+    "poder_politico",
+    "derecho_justicia",
+    "religion",
+    "mentalidad",
+    "ciencia_tecnica",
+    "cultura_material",
+    "vida_cotidiana",
+    "comunicacion_saber",
+    "arte_estetica",
+    "relaciones_exteriores",
+    "conflicto_disidencia",
+    "ausencias"
+  ],
+  "afirmaciones": [
+    {
+      "id": "AF-0002",
+      "enunciado": "Bellido Dolfos asesinó a Sancho II el 7 de octubre de 1072 en el campamento de asedio a Zamora",
+      "dimension": "tiempo",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.espanafascinante.com/articulo/historia/historia-de-bellido-dolfos-zamora/20140421145323273905.html",
+        "titulo": "Bellido Dolfos traidor o heroe de Zamora",
+        "dominio": "espanafascinante.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El 7 de octubre de 1072, a las afueras de la ciudad de Zamora, junto a las murallas, Bellido Dolfos, un noble leonés, acabó con la vida del rey Sancho el Fuerte, clavándole su propia espada en la espalda.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:101",
+      "intento": 2
+    },
+    {
+      "id": "AF-0003",
+      "enunciado": "En el calendario medieval agrícola, julio era el mes de la siega y de las cosechas.",
+      "dimension": "tiempo",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.figzafra.es/calendario-agricola-medieval/",
+        "titulo": "Calendario agrícola medieval: El trabajo en la edad media",
+        "dominio": "figzafra.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Julio era el mes de la siega y de las cosechas, mientras que la trilla era típica de agosto.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:13",
+      "intento": 1
+    },
+    {
+      "id": "AF-0004",
+      "enunciado": "Zamora estaba emplazada sobre una meseta rocosa de 26 a 32 metros de altura al borde del río Duero.",
+      "dimension": "espacio",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Zamora",
+        "titulo": "Zamora - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El núcleo principal del casco antiguo se alza sobre una amplia meseta rocosa de 26 a 32 metros de altura, emplazada al borde del río Duero.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:16",
+      "intento": 1
+    },
+    {
+      "id": "AF-0005",
+      "enunciado": "Zamora llegó a contar con tres recintos amurallados, siendo el primero del siglo XI el mejor conservado.",
+      "dimension": "espacio",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Zamora",
+        "titulo": "Zamora - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La ciudad llegó a contar con tres recintos amurallados, ganando fama como la bien cercada. El primero, construido en el siglo XI, es el mejor conservado.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:17",
+      "intento": 1
+    },
+    {
+      "id": "AF-0006",
+      "enunciado": "El alfoz era un distrito administrativo y fiscal similar a la contribución general pero de extensión más vasta.",
+      "dimension": "espacio",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.figzafra.es/calendario-agricola-medieval/",
+        "titulo": "Calendario agrícola medieval: El trabajo en la edad media",
+        "dominio": "figzafra.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El alfoz era un término similar a la contribución general, aunque de extensión más vasta, siendo un distrito administrativo y fiscal.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:18",
+      "intento": 1
+    },
+    {
+      "id": "AF-0007",
+      "enunciado": "En el siglo XI hubo un incremento significativo de población en las ciudades principales de Zamora",
+      "dimension": "demografia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Historia_de_la_provincia_de_Zamora",
+        "titulo": "Historia de la provincia de Zamora",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El esplendor económico y artístico de la provincia comienza en el siglo XI, justo cuando la población se ve incrementada en sus ciudades más importantes",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:104",
+      "intento": 2
+    },
+    {
+      "id": "AF-0008",
+      "enunciado": "La esperanza de vida media en el Reino de León medieval era de 24,6 años",
+      "dimension": "demografia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.diariodeleon.es/cultura/101025/836773/guerra-diezmo-vida-leon-medieval-debajo-30-anos.html",
+        "titulo": "La guerra diezmó la vida en el León medieval por debajo de los 30 años",
+        "dominio": "diariodeleon.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La esperanza de vida media de los habitantes del Reino de León era de 24,6 años",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:105",
+      "intento": 2
+    },
+    {
+      "id": "AF-0009",
+      "enunciado": "El trigo era el principal producto agrícola medieval dedicado a la alimentación humana.",
+      "dimension": "economia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.aytocolladomediano.es/tu-ciudad/historia/raices-historicas/produccion-agropecuaria-en-la-edad-media",
+        "titulo": "Producción Agropecuaria en la Edad Media",
+        "dominio": "aytocolladomediano.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El trigo era el principal producto agrícola y estaba dedicado a la alimentación humana.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:27",
+      "intento": 1
+    },
+    {
+      "id": "AF-0010",
+      "enunciado": "La ganadería medieval suministraba productos al consumo humano en forma de carne y leche, así como lana y cuero para el vestido.",
+      "dimension": "economia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.aytocolladomediano.es/tu-ciudad/historia/raices-historicas/produccion-agropecuaria-en-la-edad-media",
+        "titulo": "Producción Agropecuaria en la Edad Media",
+        "dominio": "aytocolladomediano.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La ganadería suministraba numerosos productos al consumo humano, tanto para la alimentación (carne, leche) como para el vestido (lana o cuero).",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:28",
+      "intento": 1
+    },
+    {
+      "id": "AF-0011",
+      "enunciado": "En el siglo XI el sueldo era una moneda de cuenta base del sistema monetario medieval, equivalente a 12 dineros.",
+      "dimension": "economia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/3702361.pdf",
+        "titulo": "Moneda medieval en el reino de león",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El sueldo, como moneda de cuenta, se usará prácticamente para todo tipo de transacciones en las que se marque un valor. El sueldo era una moneda de cuenta base del sistema monetario medieval, equivalente a 12 dineros.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:29",
+      "intento": 1
+    },
+    {
+      "id": "AF-0012",
+      "enunciado": "La libra y la onza funcionaban como unidades de cuenta en el sistema monetario medieval",
+      "dimension": "economia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/3702361.pdf",
+        "titulo": "Moneda medieval en el reino de león",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En el sistema monetario libra-onza-sueldo o solidus o dinar califal, las únicas monedas físicas o reales eran los solidus o los dinares, mientras que la libra y su divisor la onza funcionaban como unidades de cuenta.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:107",
+      "intento": 2
+    },
+    {
+      "id": "AF-0013",
+      "enunciado": "Por debajo de la alta nobleza estaban los infanzones, que eran nobles de linaje que combatían a caballo.",
+      "dimension": "estructura_social",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.redalyc.org/journal/3796/379677866002/html/",
+        "titulo": "La nobleza castellanoleonesa entre los siglos XI y XII. Sociedad, territorios y memorias",
+        "dominio": "redalyc.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Por debajo de la alta nobleza estaban los infanzones y los hidalgos (baja nobleza). Los infanzones eran nobles de linaje que combatían a caballo, de ahí que también se les llame caballeros infanzones.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:33",
+      "intento": 1
+    },
+    {
+      "id": "AF-0014",
+      "enunciado": "Desde la segunda mitad del siglo X los infanzones se conocían en lengua romance con una categoría personal de superioridad respecto de los hombres libres.",
+      "dimension": "estructura_social",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.redalyc.org/journal/3796/379677866002/html/",
+        "titulo": "La nobleza castellanoleonesa entre los siglos XI y XII. Sociedad, territorios y memorias",
+        "dominio": "redalyc.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Desde la segunda mitad del siglo X comienzan a ser conocidos ya en lengua romance como infanzones, con una categoría personal de superioridad respecto de los hombres libres en general, que les vendría por sangre.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:34",
+      "intento": 1
+    },
+    {
+      "id": "AF-0015",
+      "enunciado": "El contrato de vasallaje integraba el homenaje con su juramento de fidelidad y la concesión del feudo.",
+      "dimension": "estructura_social",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Vasallaje",
+        "titulo": "Vasallaje - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El contrato de vasallaje integra el homenaje con su juramento de fidelidad y la concesión del feudo.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:35",
+      "intento": 1
+    },
+    {
+      "id": "AF-0016",
+      "enunciado": "El vasallo juraba fidelidad a su señor y se comprometía principalmente al apoyo político y militar (auxilium et consilium), recibiendo como contraprestación el feudo.",
+      "dimension": "estructura_social",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Vasallaje",
+        "titulo": "Vasallaje - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El vasallo juraba fidelidad a su señor y se comprometía a cumplir determinadas servidumbres, principalmente de apoyo político y militar (auxilium et consilium), y recibía como contraprestación un beneficio, habitualmente el control y jurisdicción sobre la tierra y la población de su feudo.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:36",
+      "intento": 1
+    },
+    {
+      "id": "AF-0017",
+      "enunciado": "La servidumbre medieval tenía carácter personal y hereditario, estando sujetos el hombre, su esposa e hijos al amo.",
+      "dimension": "estructura_social",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Servidumbre",
+        "titulo": "Servidumbre - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La servidumbre medieval tenía carácter personal y hereditaria, estando sujetos al amo el hombre, su esposa e hijos.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:37",
+      "intento": 1
+    },
+    {
+      "id": "AF-0018",
+      "enunciado": "Fernando I de León dividió sus reinos entre sus hijos: a Sancho el condado de Castilla, a Alfonso León, a García Galicia, a Urraca Zamora y a Elvira Toro.",
+      "dimension": "poder_politico",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Fernando_I_de_Le%C3%B3n",
+        "titulo": "Fernando I de León - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Al morir Fernando I, dividió sus reinos entre sus hijos: al primogénito Sancho le correspondió el condado de Castilla elevado a reino; a Alfonso le correspondió el Reino de León; García recibió el Reino de Galicia; a Urraca y Elvira les correspondieron las ciudades de Zamora y Toro con título real.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:39",
+      "intento": 1
+    },
+    {
+      "id": "AF-0019",
+      "enunciado": "La muerte de la reina Sancha en 1067 abrió la puerta para que Sancho II reivindicara la totalidad de la herencia.",
+      "dimension": "poder_politico",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "http://genealogiabermudezdecastro.es/CONTEXTO-HISTORICO/La-Nobleza-durante-el-reinado-de-Fernando-I-de-Leon-1037-1065/El-reinado-de-Sancho-II-de-Castilla-1065-1072/",
+        "titulo": "El reinado de Sancho II de Castilla (1065-1072)",
+        "dominio": "genealogiabermudezdecastro.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La muerte de la reina Sancha, viuda de Fernando I, en 1067 abrió la puerta para que Sancho II reivindicara la totalidad de la herencia.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:40",
+      "intento": 1
+    },
+    {
+      "id": "AF-0020",
+      "enunciado": "Sancho II consiguió la reunificación del reino y se proclamó rey de Castilla, León y Galicia",
+      "dimension": "poder_politico",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "http://genealogiabermudezdecastro.es/CONTEXTO-HISTORICO/La-Nobleza-durante-el-reinado-de-Fernando-I-de-Leon-1037-1065/El-reinado-de-Sancho-II-de-Castilla-1065-1072/",
+        "titulo": "El reinado de Sancho II de Castilla (1065-1072)",
+        "dominio": "genealogiabermudezdecastro.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Gracias a ello Sancho II consiguió la reunificación del reino que había dividido su padre y se proclamó rey de Castilla, León y Galicia.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:110",
+      "intento": 2
+    },
+    {
+      "id": "AF-0021",
+      "enunciado": "Zamora resistió bajo el mando de la infanta Urraca en 1072, con apoyo de la nobleza leonesa que estaba enfrentada a Sancho II.",
+      "dimension": "poder_politico",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Zamora",
+        "titulo": "Zamora - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En 1072, la nobleza leonesa se reunió en Zamora en torno a la infanta doña Urraca. Sancho II necesitaba tomar la ciudad para lograr la reunificación, y esta resistió durante meses un duro asedio.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:42",
+      "intento": 1
+    },
+    {
+      "id": "AF-0023",
+      "enunciado": "El derecho visigodo y leonés impedía dividir las posesiones reales entre los herederos",
+      "dimension": "derecho_justicia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://journals.openedition.org/e-spania/39795",
+        "titulo": "Revisando las sucesiones de Sancho III de Pamplona y Fernando I de León",
+        "dominio": "journals.openedition.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "A la muerte de Fernando I, en vez de respetar el derecho visigodo y leonés que impedía dividir las posesiones reales entre los herederos, siguió los principios jurídicos navarros de considerar al reino como un patrimonio familiar.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:115",
+      "intento": 2
+    },
+    {
+      "id": "AF-0024",
+      "enunciado": "Las reliquias despertaban en el Occidente medieval sentimientos religiosos sustentados sobre creencias colectivas.",
+      "dimension": "religion",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://hispaniasacra.revistas.csic.es/index.php/hispaniasacra/article/view/412",
+        "titulo": "Reliquias y relicarios: una aproximación al estudio del culto a los santos en la Navarra medieval",
+        "dominio": "hispaniasacra.revistas.csic.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Las reliquias despertaron en el Occidente medieval sentimientos religiosos sustentados sobre creencias colectivas, e impulsaron un deseo por poseerlas, acumularlas y custodiarlas.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:49",
+      "intento": 1
+    },
+    {
+      "id": "AF-0025",
+      "enunciado": "La Reforma Gregoriana en el siglo XI originó la separación entre clérigos y laicos",
+      "dimension": "religion",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://hispaniasacra.revistas.csic.es/index.php/hispaniasacra/article/view/1",
+        "titulo": "El cambio de rito en Castilla",
+        "dominio": "hispaniasacra.revistas.csic.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La Reforma Gregoriana en el siglo XI fue origen de la separación definitiva entre clérigos y laicos, influyendo en las formas de expresión de la religiosidad laica.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:118",
+      "intento": 2
+    },
+    {
+      "id": "AF-0026",
+      "enunciado": "El honor es el eje central que conecta al caballero con los novísimos de las postrimerías en la mentalidad medieval.",
+      "dimension": "mentalidad",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://educahistoria.com/el-codigo-de-caballeria-honor-deber-y-realidad-en-la-edad-media/",
+        "titulo": "El código de caballería: Honor, deber y realidad en la Edad Media",
+        "dominio": "educahistoria.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El honor es el axis mundi que conecta al caballero con los novísimos de las postrimerías (muerte, juicio, paraíso e infierno).",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:53",
+      "intento": 1
+    },
+    {
+      "id": "AF-0027",
+      "enunciado": "Honor y fama en la caballería medieval parecen justificar la hipérbole aumentativa con que se compusieron los cantares de gesta.",
+      "dimension": "mentalidad",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.elnacional.com/columnas/2023/09/el-codigo-caballeresco-medieval/",
+        "titulo": "El código caballeresco medieval",
+        "dominio": "elnacional.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Honor y fama son conceptos que se solapaban en la caballería medieval, y que parecen justificar la hipérbole aumentativa con que se compusieron principalmente los cantares de gesta.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:54",
+      "intento": 1
+    },
+    {
+      "id": "AF-0028",
+      "enunciado": "La justicia, fe y caridad parecen ser las virtudes cardinales que configuran el código de honor caballeresco medieval.",
+      "dimension": "mentalidad",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://educahistoria.com/el-codigo-de-caballeria-honor-deber-y-realidad-en-la-edad-media/",
+        "titulo": "El código de caballería: Honor, deber y realidad en la Edad Media",
+        "dominio": "educahistoria.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Justicia, fe y caridad parecen ser las virtudes cardinales que configuran todo el código de honor caballeresco, aglutinando en torno de cada una un conjunto de valores y perfilando como un todo el ideal de nobleza.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:55",
+      "intento": 1
+    },
+    {
+      "id": "AF-0030",
+      "enunciado": "La tecnología de máquinas de asedio medieval se basaba esencialmente en tres principios: torsión, tensión y contrapeso.",
+      "dimension": "ciencia_tecnica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://castillosyfortalezasdeltiempo.es/construccion-de-maquinas-de-asedio-historia-diseno-y-aplicaciones/",
+        "titulo": "Construcción de Máquinas de Asedio: Historia y Diseño",
+        "dominio": "castillosyfortalezasdeltiempo.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La tecnología de máquinas de asedio se basaba esencialmente en tres principios: torsión, tensión y contrapeso.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:58",
+      "intento": 1
+    },
+    {
+      "id": "AF-0031",
+      "enunciado": "La camisa de malla o loriga podía incorporar el almófar o llevarlo aparte, pesaba entre 20 y 25 kg.",
+      "dimension": "cultura_material",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.battlemerchant.com/es/blog/ropa-medieval-masculina-para-cada-ocasion",
+        "titulo": "Indumentaria masculina medieval en detalle",
+        "dominio": "battlemerchant.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La camisa de malla (loriga o cota de malla) podía incorporar el almófar o llevarlo aparte, era de una pieza sin cierres que se metía por la cabeza con apoyo del escudero, pues pesaba en torno a 20-25 kg.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:61",
+      "intento": 1
+    },
+    {
+      "id": "AF-0032",
+      "enunciado": "La cota de armas era una túnica elaborada con tela fuerte que se vestía sobre la loriga, principalmente para evitar que la reverberación del sol la recalentase.",
+      "dimension": "cultura_material",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.battlemerchant.com/es/blog/ropa-medieval-masculina-para-cada-ocasion",
+        "titulo": "Indumentaria masculina medieval en detalle",
+        "dominio": "battlemerchant.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La cota de armas era inicialmente una túnica elaborada con tela fuerte que se vestía sobre la lóriga, principalmente para evitar que la reverberación del sol la recalentase.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:62",
+      "intento": 1
+    },
+    {
+      "id": "AF-0033",
+      "enunciado": "El castillo-palacio del conde de Benavente en Benavente constituye un ejemplo notable de arquitectura nobiliaria en Zamora",
+      "dimension": "cultura_material",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.idealista.com/news/vacacional/destinos-turisticos/2026/03/31/891238-los-8-castillos-de-zamora-que-no-te-puedes-perder-si-visitas-la-provincia",
+        "titulo": "Los 8 castillos de Zamora que no te puedes perder",
+        "dominio": "idealista.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Destaca el excelente castillo-palacio del conde de Benavente en Benavente (Zamora)",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:126",
+      "intento": 2
+    },
+    {
+      "id": "AF-0034",
+      "enunciado": "Las construcciones nobiliarias medievales presentaban edificios sólidos en piedra, con al menos dos alturas, que sobresalían sobre las edificaciones del entorno.",
+      "dimension": "cultura_material",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.idealista.com/news/vacacional/destinos-turisticos/2026/03/31/891238-los-8-castillos-de-zamora-que-no-te-puedes-perder-si-visitas-la-provincia",
+        "titulo": "Los 8 castillos de Zamora que no te puedes perder si visitas la provincia",
+        "dominio": "idealista.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Las construcciones nobiliarias presentaban una fisonomía que recordaba a las antiguas fortalezas rurales: edificios sólidos en piedra, con al menos dos alturas, sobresaliendo sobre las edificaciones del entorno.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:64",
+      "intento": 1
+    },
+    {
+      "id": "AF-0035",
+      "enunciado": "La preparación del caballero medieval empezaba en la infancia, siendo alejados pronto de su familia para recibir educación especial.",
+      "dimension": "vida_cotidiana",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://okdiario.com/historia/dia-vida-caballero-medieval-castilla-13834052",
+        "titulo": "Un día en la vida de un caballero medieval en Castilla",
+        "dominio": "okdiario.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La preparación para la vida de caballero empezaba ya en la infancia y la adolescencia, siendo alejados pronto de su familia para recibir una educación especial.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:67",
+      "intento": 1
+    },
+    {
+      "id": "AF-0036",
+      "enunciado": "El joven aprendiz de caballero comenzaba su adiestramiento a los 8 años de edad aproximadamente, realizando ejercicios como correr largas distancias y ejercicios gimnásticos con la armadura.",
+      "dimension": "vida_cotidiana",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://okdiario.com/historia/dia-vida-caballero-medieval-castilla-13834052",
+        "titulo": "Un día en la vida de un caballero medieval en Castilla",
+        "dominio": "okdiario.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El joven aprendiz comenzaba su adiestramiento a los 8 años de edad aproximadamente y debía realizar rutinas de ejercicios como: correr largas distancias en prados, bosques o montañas para conseguir resistencia física y realizar ejercicios gimnásticos con la armadura puesta.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:68",
+      "intento": 1
+    },
+    {
+      "id": "AF-0037",
+      "enunciado": "Entre la aristocracia medieval, las mujeres eran consideradas piezas clave para la formación de alianzas familiares.",
+      "dimension": "vida_cotidiana",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.auladade.com/wp-content/uploads/2021/06/Tema-5-Las-mujeres-en-la-Edad-Media.pdf",
+        "titulo": "Nobles, monjas y campesinas: las mujeres en la Edad Media",
+        "dominio": "auladade.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Entre la aristocracia, las mujeres eran consideradas piezas clave para la formación de alianzas familiares, siendo habituales los matrimonios de conveniencia y la endogamia de clase.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:69",
+      "intento": 1
+    },
+    {
+      "id": "AF-0038",
+      "enunciado": "El matrimonio significaba un cambio radical para la mujer medieval, produciéndose un cambio de tutela generalmente del padre al marido.",
+      "dimension": "vida_cotidiana",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.auladade.com/wp-content/uploads/2021/06/Tema-5-Las-mujeres-en-la-Edad-Media.pdf",
+        "titulo": "Nobles, monjas y campesinas: las mujeres en la Edad Media",
+        "dominio": "auladade.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "El matrimonio significaba un cambio radical para la mujer, produciéndose un cambio de tutela, generalmente del padre al marido.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:70",
+      "intento": 1
+    },
+    {
+      "id": "AF-0040",
+      "enunciado": "Los heraldos medievales eran expertos en la redacción de cartas y documentos oficiales, utilizando lenguaje formal y preciso.",
+      "dimension": "comunicacion_saber",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.protocolo.org/miscelaneo/curiosidades/los-heraldos-los-mensajeros-de-la-edad-media-la-comunicacion-verbal-en-la-edad-media.html",
+        "titulo": "Los heraldos los mensajeros de la Edad Media",
+        "dominio": "protocolo.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Los heraldos eran expertos en la redacción de cartas y documentos oficiales, utilizando un lenguaje formal y preciso.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:73",
+      "intento": 1
+    },
+    {
+      "id": "AF-0041",
+      "enunciado": "La Iglesia de Santa Marta en Tera, Zamora, es uno de los templos más antiguos del románico español del siglo XI",
+      "dimension": "arte_estetica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.romanicozamora.es/es/el-romanico",
+        "titulo": "El Románico en Zamora y su historia",
+        "dominio": "romanicozamora.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En Tera encontramos la Iglesia de Santa Marta, uno de los templos más antiguos del románico español. El edificio actual es de pleno siglo XI",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:131",
+      "intento": 2
+    },
+    {
+      "id": "AF-0042",
+      "enunciado": "Los cantares de gesta son poesía épica",
+      "dimension": "arte_estetica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+        "titulo": "Cantar de gesta",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Los cantares de gesta son poesía épica",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:132",
+      "intento": 2
+    },
+    {
+      "id": "AF-0044",
+      "enunciado": "Entre 1072 y 1157 se volvió a unir Castilla con el reino de León bajo los reinados de Alfonso VI, Urraca y Alfonso VII el Emperador.",
+      "dimension": "relaciones_exteriores",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Reino_de_Castilla",
+        "titulo": "Reino de Castilla - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Entre 1072 y 1157 se volvió a unir Castilla con el reino de León bajo los reinados de Alfonso VI, Urraca y Alfonso VII el Emperador.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:81",
+      "intento": 1
+    },
+    {
+      "id": "AF-0046",
+      "enunciado": "Fernando I de León fue el primer gobernante en Occidente que exigió parias de las taifas de Sevilla, Toledo y Zaragoza desde al menos 1060.",
+      "dimension": "relaciones_exteriores",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Parias",
+        "titulo": "Parias - Wikipedia, la enciclopedia libre",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Ferdinand I de León y Castilla fue el primer gobernante en Occidente que exigió este tributo. Desde al menos 1060, posiblemente desde 1055, Ferdinand había estado exigiendo parias de las taifas de Sevilla, Toledo y Zaragoza.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:83",
+      "intento": 1
+    },
+    {
+      "id": "AF-0047",
+      "enunciado": "La guerra fratricida por la sucesión fue desencadenada por la decisión de Fernando I de dividir sus reinos entre sus hijos.",
+      "dimension": "conflicto_disidencia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://historia.nationalgeographic.com.es/a/urraca-leon-reina-batalladora_15555",
+        "titulo": "Urraca de León, la reina batalladora",
+        "dominio": "historia.nationalgeographic.com.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La guerra fratricida fue desencadenada por la decisión de Fernando I de dividir sus reinos entre sus hijos Sancho (Castilla), Alfonso (León), García (Galicia), Elvira (Toro) y Urraca (Zamora).",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:86",
+      "intento": 1
+    },
+    {
+      "id": "AF-0048",
+      "enunciado": "Sancho y Alfonso se enfrentaron primero en 1069 en la batalla de Llantada, en la que Alfonso fue derrotado.",
+      "dimension": "conflicto_disidencia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://historia.nationalgeographic.com.es/a/urraca-leon-reina-batalladora_15555",
+        "titulo": "Urraca de León, la reina batalladora",
+        "dominio": "historia.nationalgeographic.com.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Sancho y Alfonso se enfrentaron primero en 1069 en la llamada batalla de Llantada, en la que Alfonso fue derrotado.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:87",
+      "intento": 1
+    },
+    {
+      "id": "AF-0049",
+      "enunciado": "En las fuentes jurídicas alto-medievales de León y Castilla se empleaban los términos traidor, alevoso y aleve para designar a los autores de ciertos delitos.",
+      "dimension": "conflicto_disidencia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/2050337.pdf",
+        "titulo": "Traición y alevosía en la alta edad media",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En las fuentes jurídicas alto-medievales de León y Castilla se empleaban los términos traidor, alevoso y aleve para designar a los autores de ciertos delitos.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:88",
+      "intento": 1
+    },
+    {
+      "id": "AF-0050",
+      "enunciado": "La traición podía ocurrir por distintas formas y las circunstancias políticas y sociales favorecían su aparición en momentos de crisis.",
+      "dimension": "conflicto_disidencia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/2050337.pdf",
+        "titulo": "Traición y alevosía en la alta edad media",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La traición podía ocurrir por distintas formas —por dinero, ambición, despecho, poder, ideología o amor— y las circunstancias políticas y sociales favorecían su aparición en momentos de crisis, cambios de régimen o enfrentamientos entre facciones.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:89",
+      "intento": 1
+    },
+    {
+      "id": "AF-0051",
+      "enunciado": "La Edad Media no conocía la ansiedad o la depresión como diagnósticos clínicos en el sentido actual.",
+      "dimension": "ausencias",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://donporque.com/como-trataba-la-edad-media-la-ansiedad-y-la-depresion/",
+        "titulo": "¿Cómo trataba la Edad Media la ansiedad, ira, envidia y depresión?",
+        "dominio": "donporque.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La Edad Media no conocía la ansiedad o la depresión como diagnósticos clínicos en el sentido actual, ni disponía de psicólogos, antidepresivos o una ciencia de la conducta comparable a la moderna.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:91",
+      "intento": 1
+    },
+    {
+      "id": "AF-0052",
+      "enunciado": "La pólvora estuvo ausente en la Península Ibérica durante el siglo XI",
+      "dimension": "ausencias",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://www.acami.es/publicacion/polvora-militar-en-espana/",
+        "titulo": "Pólvora militar en España",
+        "dominio": "acami.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La pólvora apareció en la Península Ibérica en el siglo XIII de la mano de los árabes.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:147",
+      "intento": 2
+    },
+    {
+      "id": "AF-0053",
+      "enunciado": "El solidus era una moneda física real en el sistema monetario medieval",
+      "dimension": "economia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/3702361.pdf",
+        "titulo": "Moneda medieval en el reino de león",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En el sistema monetario libra-onza-sueldo o solidus o dinar califal, las únicas monedas físicas o reales eran los solidus o los dinares",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:108",
+      "intento": 2
+    },
+    {
+      "id": "AF-0054",
+      "enunciado": "En el sistema jurídico medieval leonés, quienes faltaban a sus juramentos de vasallaje podían incurrir en traición con pérdida de derechos y honra",
+      "dimension": "derecho_justicia",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://dialnet.unirioja.es/descarga/articulo/2050337.pdf",
+        "titulo": "Traición y alevosía en la alta edad media",
+        "dominio": "dialnet.unirioja.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "En las prácticas vasalláticas, quienes faltaban a sus juramentos podían ser considerados perjuros, infames y fementidos, e incurrir en caso de traición, con pérdida de derechos y honra.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:116",
+      "intento": 2
+    },
+    {
+      "id": "AF-0055",
+      "enunciado": "La Reforma Gregoriana influyó en las formas de expresión de la religiosidad laica en el siglo XI",
+      "dimension": "religion",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://hispaniasacra.revistas.csic.es/index.php/hispaniasacra/article/view/1",
+        "titulo": "El cambio de rito en Castilla",
+        "dominio": "hispaniasacra.revistas.csic.es",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "La Reforma Gregoriana en el siglo XI fue origen de la separación definitiva entre clérigos y laicos, influyendo en las formas de expresión de la religiosidad laica.",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:119",
+      "intento": 2
+    },
+    {
+      "id": "AF-0056",
+      "enunciado": "El ariete medieval evolucionó desde un simple tronco de árbol hasta arietes mecánicos móviles con ruedas",
+      "dimension": "ciencia_tecnica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://tutoriales.com/historia/historia-medieval/la-ingenieria-militar-medieval-estrategias-asedio-y-defensa-de-fortalezas",
+        "titulo": "La Ingeniería Militar Medieval",
+        "dominio": "tutoriales.com",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "desde el simple tronco de árbol al elaborado gran ariete mecánico y móvil con ruedas",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:123",
+      "intento": 2
+    },
+    {
+      "id": "AF-0059",
+      "enunciado": "Los juglares componían poemas narrativos para el canto y la representación pública",
+      "dimension": "arte_estetica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+        "titulo": "Cantar de gesta",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "Los juglares componían sus poemas narrativos para el canto y la representación pública",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:137",
+      "intento": 2
+    },
+    {
+      "id": "AF-0061",
+      "enunciado": "Los juglares transmitían sus composiciones de forma oral",
+      "dimension": "arte_estetica",
+      "estado": "Verificada",
+      "fuente": {
+        "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+        "titulo": "Cantar de gesta",
+        "dominio": "wikipedia.org",
+        "consultada_en": "2026-09-18T00:00:00Z"
+      },
+      "fragmento": "las transmitían oralmente",
+      "veredicto_ref": "bitacora/e1.jsonl#secuencia:140",
+      "intento": 2
+    }
+  ],
+  "inventario_prohibidos": [
+    {
+      "id": "IP-001",
+      "elemento": "pólvora",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0052"
+    },
+    {
+      "id": "IP-002",
+      "elemento": "arcabuz",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0052"
+    },
+    {
+      "id": "IP-003",
+      "elemento": "mosquete",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0052"
+    },
+    {
+      "id": "IP-004",
+      "elemento": "cañón",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0052"
+    },
+    {
+      "id": "IP-005",
+      "elemento": "arma de fuego",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0052"
+    },
+    {
+      "id": "IP-006",
+      "elemento": "imprenta",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0061"
+    },
+    {
+      "id": "IP-007",
+      "elemento": "reloj mecánico",
+      "categoria": "tecnologico",
+      "afirmacion_ref": "AF-0030"
+    },
+    {
+      "id": "IP-008",
+      "elemento": "estrés (como diagnóstico psicológico)",
+      "categoria": "lexico",
+      "afirmacion_ref": "AF-0051"
+    },
+    {
+      "id": "IP-009",
+      "elemento": "depresión (como diagnóstico clínico)",
+      "categoria": "lexico",
+      "afirmacion_ref": "AF-0051"
+    },
+    {
+      "id": "IP-010",
+      "elemento": "adolescencia (como etapa vital reconocida)",
+      "categoria": "lexico",
+      "afirmacion_ref": "AF-0035"
+    },
+    {
+      "id": "IP-011",
+      "elemento": "privacidad (como derecho individual)",
+      "categoria": "lexico",
+      "afirmacion_ref": "AF-0026"
+    },
+    {
+      "id": "IP-012",
+      "elemento": "infancia moderna (como edad protegida)",
+      "categoria": "lexico",
+      "afirmacion_ref": "AF-0035"
+    },
+    {
+      "id": "IP-013",
+      "elemento": "banca moderna",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0011"
+    },
+    {
+      "id": "IP-014",
+      "elemento": "empresa capitalista",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0009"
+    },
+    {
+      "id": "IP-015",
+      "elemento": "policía estatal",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-016",
+      "elemento": "ejército nacional moderno",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-017",
+      "elemento": "estado-nación moderno",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0023"
+    },
+    {
+      "id": "IP-018",
+      "elemento": "código civil moderno",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0023"
+    },
+    {
+      "id": "IP-019",
+      "elemento": "monarquía constitucional",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-020",
+      "elemento": "parlamento moderno",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-021",
+      "elemento": "democracia",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-022",
+      "elemento": "ciudadanía moderna",
+      "categoria": "institucional",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-023",
+      "elemento": "ansiedad como diagnóstico clínico",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0051"
+    },
+    {
+      "id": "IP-024",
+      "elemento": "psicología individual clínica",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0051"
+    },
+    {
+      "id": "IP-025",
+      "elemento": "psicoanálisis",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0051"
+    },
+    {
+      "id": "IP-026",
+      "elemento": "privacidad como valor individual",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0026"
+    },
+    {
+      "id": "IP-027",
+      "elemento": "intimidad personal moderna",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0026"
+    },
+    {
+      "id": "IP-028",
+      "elemento": "adolescencia como etapa vital distintiva",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0035"
+    },
+    {
+      "id": "IP-029",
+      "elemento": "infancia como edad protegida por derecho",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0035"
+    },
+    {
+      "id": "IP-030",
+      "elemento": "ocio como derecho individual",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0008"
+    },
+    {
+      "id": "IP-031",
+      "elemento": "mérito individual",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0013"
+    },
+    {
+      "id": "IP-032",
+      "elemento": "nacionalismo moderno",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0023"
+    },
+    {
+      "id": "IP-033",
+      "elemento": "igualdad social",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0017"
+    },
+    {
+      "id": "IP-034",
+      "elemento": "libertad individual como derecho natural",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-035",
+      "elemento": "derechos humanos",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0016"
+    },
+    {
+      "id": "IP-036",
+      "elemento": "secularismo moderno",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0024"
+    },
+    {
+      "id": "IP-037",
+      "elemento": "individuo como unidad social fundamental",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0015"
+    },
+    {
+      "id": "IP-038",
+      "elemento": "consentimiento moderno en matrimonio",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0038"
+    },
+    {
+      "id": "IP-039",
+      "elemento": "derechos de la mujer",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0037"
+    },
+    {
+      "id": "IP-040",
+      "elemento": "agencia personal femenina",
+      "categoria": "mentalidad",
+      "afirmacion_ref": "AF-0038"
+    }
+  ],
+  "contradicciones_arbitradas": [],
+  "cobertura": {
+    "estado": "Incompleta",
+    "por_dimension": {
+      "tiempo": 2,
+      "espacio": 3,
+      "demografia": 2,
+      "economia": 5,
+      "estructura_social": 5,
+      "poder_politico": 4,
+      "derecho_justicia": 2,
+      "religion": 3,
+      "mentalidad": 3,
+      "ciencia_tecnica": 2,
+      "cultura_material": 4,
+      "vida_cotidiana": 4,
+      "comunicacion_saber": 1,
+      "arte_estetica": 4,
+      "relaciones_exteriores": 2,
+      "conflicto_disidencia": 4,
+      "ausencias": 2
+    },
+    "dimensiones_deficitarias": [
+      "comunicacion_saber"
+    ],
+    "confirmacion_autor": {
+      "punto_control": "PCH-3",
+      "opcion_elegida": "continuar_con_cobertura_incompleta",
+      "motivo": "El autor confirma la cobertura Incompleta y autoriza el sellado pese al conflicto ERR-802 entre las invariantes_al_sellar de contexto-historico@1 y los valores de configuracion@1 para diecisiete dimensiones. Decision tomada con la solicitud completa delante: una dimension deficitaria (comunicacion_saber, 1 de 2), diez afirmaciones descartadas entre ellas AF-0001 y AF-0022, y las anomalias ERR-306 y ERR-902 registradas.",
+      "decidido_en": "2026-09-18T14:46:40Z",
+      "decision_ref": "puntos-control/PCH-3-cobertura.decision.json"
+    }
+  }
+}

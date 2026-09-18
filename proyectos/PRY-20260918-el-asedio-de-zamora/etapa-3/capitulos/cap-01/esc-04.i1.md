@@ -1,0 +1,1 @@
+Trece días después, un jinete llegó al campamento diciendo que desertaba de la corte de Urraca. Los nobles salieron presurosos a recibirlo con todos los honores debidos. Armas vio pasar entonces a Bellido Dolfos, alto y sereno en su montura, hacia el pabellón del rey.

@@ -1,0 +1,29 @@
+{
+  "esquema": "escena-texto@1",
+  "id": "CAP-03/ESC-03",
+  "escena_plan": "CAP-03/ESC-03",
+  "texto_ref": "etapa-3/capitulos/cap-03/esc-03.i3.md",
+  "intento": 3,
+  "estado": "Aprobada",
+  "palabras_estimadas": 43,
+  "palabras_objetivo": 45,
+  "autoria": "agente",
+  "veredicto_ref": "bitacora/e3-cap-03.jsonl#secuencia:268",
+  "hallazgos_abiertos": [
+    {
+      "id": "H-VER-LNG-001",
+      "criterio": 3,
+      "tipo": "repeticion_lexica",
+      "clave_severidad": "MENOR",
+      "severidad": "Mayor",
+      "severidad_declarada_por_verificador": "Menor",
+      "localizacion": {
+        "unidad": "escena",
+        "id": "CAP-03/ESC-03"
+      },
+      "cita_literal": "en silencio",
+      "correccion_esperada": "La expresion en silencio aparece tambien en el parrafo anterior. Considera variar la expresion.",
+      "_nota_orquestador": "Hallazgo ABIERTO Y SIN CORREGIR. El veredicto fue Aceptado y la escena se aprueba: un hallazgo Menor no fuerza reescritura. La clave MENOR no figura en severidades.json, de modo que la tabla la resuelve como Mayor por la regla por defecto (ERR-306), pero el resultado del veredicto manda sobre la transicion y el orquestador no lo reinterpreta. Aparece en el bloque 4 del informe."
+    }
+  ]
+}

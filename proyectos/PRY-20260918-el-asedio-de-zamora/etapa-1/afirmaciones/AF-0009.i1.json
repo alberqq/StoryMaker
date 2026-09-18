@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0009",
+  "enunciado": "El trigo era el principal producto agrícola medieval dedicado a la alimentación humana.",
+  "dimension": "economia",
+  "linea_plan_ref": "LI-007",
+  "fuente": {
+    "url": "https://www.aytocolladomediano.es/tu-ciudad/historia/raices-historicas/produccion-agropecuaria-en-la-edad-media",
+    "titulo": "Producción Agropecuaria en la Edad Media",
+    "dominio": "aytocolladomediano.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "El trigo era el principal producto agrícola y estaba dedicado a la alimentación humana.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

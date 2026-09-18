@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0017",
+  "enunciado": "La servidumbre medieval tenía carácter personal y hereditario, estando sujetos el hombre, su esposa e hijos al amo.",
+  "dimension": "estructura_social",
+  "linea_plan_ref": "LI-012",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Servidumbre",
+    "titulo": "Servidumbre - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La servidumbre medieval tenía carácter personal y hereditaria, estando sujetos al amo el hombre, su esposa e hijos.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

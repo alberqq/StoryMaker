@@ -1,0 +1,1 @@
+Cuando salió de la tienda al alba, el campamento estaba destrozado. Corrían hombres sin orden entre tiendas derribadas. Bellido Dolfos se erguía junto al pabellón del rey. Sancho II yacía en el polvo. Armas vio lo que había pasado. Se quedó inmóvil. Sabía, y no diría nada.

@@ -1,0 +1,1 @@
+Armas entró con el ánfora de agua. Cuando Sancho II se volvió, musitó: «Señor, he visto a Bellido en juntas nocturnas extrañas.» El rey lo miró con irritación, sin responder, y lo despidió con un gesto. Gonzalo, afuera, vio a su hermano salir cabeza baja.

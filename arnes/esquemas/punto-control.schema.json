@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/punto-control@1",
+  "title": "Punto de control y decision del autor (ADR-014)",
+  "description": "Par solicitud/decision en dos ficheros: <PCH>-<objeto>.solicitud.json y .decision.json. Al abrirse, la ejecucion TERMINA: no queda nada esperando en memoria. Sin respuesta, la ejecucion permanece detenida indefinidamente; no hay tiempo de espera y el sistema no decide por su cuenta (RF-043, escenario 2).",
+  "type": "object",
+  "required": ["esquema", "id_pch", "objeto", "abierto_en", "contexto_presentado", "opciones"],
+  "properties": {
+    "esquema": { "const": "punto-control@1" },
+    "id_pch": { "enum": ["PCH-1", "PCH-2", "PCH-3", "PCH-4", "PCH-5", "PCH-6", "PCH-7", "PCH-8", "PCH-9", "PCH-10"] },
+    "objeto": { "type": "string" },
+    "abierto_en": { "type": "string", "format": "date-time" },
+    "contexto_presentado": {
+      "type": "object",
+      "description": "El artefacto en su estado actual, TODOS los conjuntos de hallazgos acumulados (no solo el ultimo) y el numero de intentos consumidos.",
+      "required": ["artefacto_ref", "intentos_consumidos"],
+      "properties": {
+        "artefacto_ref": { "type": "string" },
+        "intentos_consumidos": { "type": "integer" },
+        "hallazgos_acumulados": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "opciones": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "enunciado", "consecuencia"],
+        "properties": {
+          "id": { "type": "string" },
+          "enunciado": { "type": "string" },
+          "consecuencia": { "type": "string", "description": "Que pasa si se elige. El autor no decide a ciegas." }
+        }
+      }
+    },
+    "opcion_elegida": { "type": "string" },
+    "motivo": { "type": "string" },
+    "texto_aportado": { "type": "string" },
+    "intentos_concedidos": { "type": "integer" },
+    "resuelto_en": { "type": "string", "format": "date-time" }
+  },
+  "opciones_de_bloqueo": {
+    "_aplica_a": ["PCH-7", "PCH-8", "PCH-10"],
+    "_origen": "RF-052",
+    "lista": ["continuar_aceptando_con_observaciones", "conceder_intentos_adicionales", "aportar_el_texto", "abortar"],
+    "regla": "En estos tres puntos las opciones son SIEMPRE las cuatro. Sin esa via, un solo parrafo irreductible impide entregar la novela."
+  }
+}

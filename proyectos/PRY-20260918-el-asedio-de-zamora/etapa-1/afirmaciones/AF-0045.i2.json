@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0045",
+  "enunciado": "Las parias fueron tributos anuales en moneda que los reinos cristianos de la Península Ibérica cobraban a los musulmanes bajo coacción militar en el siglo XI",
+  "dimension": "relaciones_exteriores",
+  "linea_plan_ref": "LI-037",
+  "fuente": {
+    "url": "https://www.lacrisisdelahistoria.com/el-sistema-de-parias/",
+    "titulo": "El sistema de parias. Un tributo en la España de la Edad Media",
+    "dominio": "lacrisisdelahistoria.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Las parias fueron un sistema tributario de época medieval por la que los reinos de taifas musulmanes de la península Ibérica del siglo XI abonaban de forma anual una determinada cantidad de dinero en concepto de parias a cambio de erigirse en una especie de protectorado.",
+  "intento": 2,
+  "estado": "Propuesta"
+}

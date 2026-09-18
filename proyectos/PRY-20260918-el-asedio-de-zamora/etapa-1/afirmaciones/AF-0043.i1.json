@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0043",
+  "enunciado": "Los juglares componían poemas narrativos para el canto y la representación pública, memorizaban sus obras y las transmitían oralmente.",
+  "dimension": "arte_estetica",
+  "linea_plan_ref": "LI-035",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+    "titulo": "Cantar de gesta - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Los juglares componían sus poemas narrativos para el canto y la representación pública, y estos juglares (frecuentemente analfabetos) memorizaban sus obras y las transmitían oralmente.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,1 @@
+Esa noche, en la tienda, Armas yacía despierto mientras el viento corría entre las filas de hombres dormidos. No podía cerrar los ojos. Rezaba en silencio, aunque sin saber exactamente por quién pedir protección ni contra qué.

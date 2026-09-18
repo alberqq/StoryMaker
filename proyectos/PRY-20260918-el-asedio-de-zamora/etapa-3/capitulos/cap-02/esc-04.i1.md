@@ -1,0 +1,1 @@
+A la noche del segundo de septiembre, al fuego, Armas susurró a Gonzalo y otros escuderos sus sospechas sobre Bellido: salidas nocturnas hacia el pabellón real, conversaciones con nobles. «Es un caballero de honor, desertor de Zamora,» respondió Gonzalo, riendo. Los otros lo secundaron. Armas calló. El miedo creció sin nombre.

@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0045",
+  "enunciado": "Las parias eran pagos anuales realizados en moneda por parte de un poder musulmán a otro cristiano bajo coacción militar en la Península Ibérica.",
+  "dimension": "relaciones_exteriores",
+  "linea_plan_ref": "LI-037",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Parias",
+    "titulo": "Parias - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Las parias pueden definirse como un pago anual que se realizaba en moneda por parte de un poder musulmán a otro cristiano bajo coacción militar en la Península Ibérica a cambio de un cese de las hostilidades.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

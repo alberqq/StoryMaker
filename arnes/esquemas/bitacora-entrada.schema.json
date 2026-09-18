@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/bitacora-entrada@1",
+  "title": "CTR-011 - Entrada de bitacora (con forma de traza)",
+  "description": "Una linea JSON por evento, en el segmento que le corresponde. ANADIDO PURO: no existe operacion de modificacion ni de borrado. La bitacora es la fuente de verdad; el estado de ejecucion es solo un cache de posicion. El bloque 'traza' existe desde v1 aunque nada lo consuma: se registra hoy lo que se emitira manana (ADR-024, DRV-12).",
+  "type": "object",
+  "required": [
+    "esquema",
+    "secuencia",
+    "marca_temporal",
+    "proyecto",
+    "etapa",
+    "tipo_evento"
+  ],
+  "properties": {
+    "esquema": {
+      "const": "bitacora-entrada@1"
+    },
+    "secuencia": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Entero monotono GLOBAL del Proyecto. Da orden cronologico pese a la segmentacion por etapa y capitulo (R-10)."
+    },
+    "marca_temporal": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "proyecto": {
+      "type": "string"
+    },
+    "etapa": {
+      "type": "string"
+    },
+    "tipo_evento": {
+      "enum": [
+        "invocacion_iniciada",
+        "artefacto_producido",
+        "veredicto",
+        "transicion",
+        "omision_contexto",
+        "punto_control_abierto",
+        "decision_autor",
+        "sellado",
+        "descarte",
+        "anomalia",
+        "error",
+        "archivado",
+        "campo_ignorado",
+        "reutilizacion"
+      ],
+      "description": "Taxonomia cerrada. Anadir un tipo es una modificacion del arnes."
+    },
+    "unidad": {
+      "type": "string"
+    },
+    "intento": {
+      "type": "integer"
+    },
+    "agente": {
+      "type": "string"
+    },
+    "modo": {
+      "type": "string"
+    },
+    "parametros_muestreo": {
+      "type": "object"
+    },
+    "semilla": {
+      "type": "null",
+      "description": "SIEMPRE null. El entorno no expone control de semilla. Se registra la ausencia para que nadie suponga lo contrario (seccion 11.6)."
+    },
+    "ref_entrada": {
+      "type": "string"
+    },
+    "ref_salida": {
+      "type": "string"
+    },
+    "salida_cruda_ref": {
+      "type": "string",
+      "description": "Ruta a la salida sin normalizar, cuando hubo reparacion. Diagnostico de ERR-3xx."
+    },
+    "resultado": {
+      "type": "string"
+    },
+    "motivo": {
+      "type": "string"
+    },
+    "hallazgos": {
+      "type": "array",
+      "items": {
+        "$ref": "storymaker/hallazgo@1"
+      }
+    },
+    "manifiesto": {
+      "$ref": "storymaker/manifiesto-contexto@1"
+    },
+    "coste": {
+      "type": "object",
+      "properties": {
+        "invocaciones": {
+          "type": "integer"
+        }
+      },
+      "description": "NO hay coste economico: el arnes no lo conoce. La unidad de coste es la invocacion (RNF-009)."
+    },
+    "latencia_ms": {
+      "type": "integer",
+      "description": "Se registra, no se exige: no hay umbral de duracion (E50)."
+    },
+    "decision_autor": {
+      "type": "object",
+      "properties": {
+        "punto_control": {
+          "type": "string"
+        },
+        "opcion_elegida": {
+          "type": "string"
+        },
+        "motivo": {
+          "type": "string"
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "codigo",
+        "categoria",
+        "mensaje"
+      ],
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "pattern": "^ERR-[0-9]{3}$"
+        },
+        "categoria": {
+          "type": "string"
+        },
+        "mensaje": {
+          "type": "string"
+        }
+      }
+    },
+    "traza": {
+      "type": "object",
+      "description": "Bloque con forma de traza y puntuacion de la plataforma futura (ADR-024). En v1 se escribe, NO se emite. RNF-020 se mide en v1 sobre este registro local.",
+      "properties": {
+        "traza_id": {
+          "type": "string"
+        },
+        "traza_padre": {
+          "type": "string"
+        },
+        "nombre": {
+          "type": "string"
+        },
+        "etiquetas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "puntuacion": {
+          "type": "object",
+          "properties": {
+            "nombre": {
+              "type": "string"
+            },
+            "valor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "comentario": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "version_arnes": {
+      "type": "string",
+      "description": "Version del arnes con que corrio el paso. Es lo que hace comparables dos ejecuciones (RF-050, RNF-021): se puede afirmar que difieren solo en que una corrio con arnes 1.2.0 y otra con 2.0.0. Las instrucciones de agente no llevan version propia; su historico vive en el control de versiones del repositorio."
+    }
+  },
+  "lo_que_no_se_persiste": "El contenido integro del contexto ensamblado. Se persiste su manifiesto, por identificador y tamano (CNF-05)."
+}

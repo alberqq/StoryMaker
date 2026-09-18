@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0035",
+  "enunciado": "La preparación del caballero medieval empezaba en la infancia, siendo alejados pronto de su familia para recibir educación especial.",
+  "dimension": "vida_cotidiana",
+  "linea_plan_ref": "LI-030",
+  "fuente": {
+    "url": "https://okdiario.com/historia/dia-vida-caballero-medieval-castilla-13834052",
+    "titulo": "Un día en la vida de un caballero medieval en Castilla",
+    "dominio": "okdiario.com",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La preparación para la vida de caballero empezaba ya en la infancia y la adolescencia, siendo alejados pronto de su familia para recibir una educación especial.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

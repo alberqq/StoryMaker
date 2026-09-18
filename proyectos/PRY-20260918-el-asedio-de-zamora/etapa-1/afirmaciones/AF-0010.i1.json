@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0010",
+  "enunciado": "La ganadería medieval suministraba productos al consumo humano en forma de carne y leche, así como lana y cuero para el vestido.",
+  "dimension": "economia",
+  "linea_plan_ref": "LI-007",
+  "fuente": {
+    "url": "https://www.aytocolladomediano.es/tu-ciudad/historia/raices-historicas/produccion-agropecuaria-en-la-edad-media",
+    "titulo": "Producción Agropecuaria en la Edad Media",
+    "dominio": "aytocolladomediano.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La ganadería suministraba numerosos productos al consumo humano, tanto para la alimentación (carne, leche) como para el vestido (lana o cuero).",
+  "intento": 1,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,19 @@
+{
+  "esquema": "encargo@1",
+  "epoca": {
+    "intervalo_temporal": "1072",
+    "ambito_geografico": "Zamora y su alfoz"
+  },
+  "tema": "La lealtad dividida de un caballero entre Sancho II y doña Urraca durante el cerco de Zamora.",
+  "personajes_partida": [],
+  "inspiracion": "ninguna",
+  "parametros": {
+    "capitulos": 3,
+    "parrafos_por_capitulo": 4,
+    "lineas_por_capitulo": 12,
+    "palabras_por_linea": 15
+  },
+  "estado": "Congelado",
+  "canal": "dialogo",
+  "congelado_en": "2026-09-18T11:59:06Z"
+}

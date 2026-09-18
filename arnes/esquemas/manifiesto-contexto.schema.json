@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/manifiesto-contexto@1",
+  "title": "CTR-008 - Manifiesto de contexto",
+  "description": "Hace observables RF-045, RF-046, RF-047 y RNF-019. Los bloques se registran por identificador y tamano, NO por valor (CNF-05): duplicar en la bitacora artefactos que ya estan en el Proyecto la haria ilegible y multiplicaria su tamano por el numero de invocaciones. La contrapartida es que reconstruir una invocacion exige resolver referencias.",
+  "type": "object",
+  "required": ["invocacion", "bloques", "tamano_total_aprox", "politica_prelacion"],
+  "properties": {
+    "invocacion": { "type": "string" },
+    "politica_prelacion": { "type": "string", "description": "Version de la politica de prelacion, p. ej. 'prelacion@1'." },
+    "bloques": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["prioridad", "fuente", "id_artefacto", "tamano_aprox"],
+        "properties": {
+          "prioridad": { "enum": ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"] },
+          "fuente": { "type": "string" },
+          "id_artefacto": { "type": "string" },
+          "tamano_aprox": { "type": "integer", "description": "Palabras aproximadas. Estimacion declarada, no medida." }
+        }
+      }
+    },
+    "omitidos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["prioridad", "id_artefacto", "motivo"],
+        "properties": {
+          "motivo": {
+            "enum": ["desbordamiento", "fuera_de_contrato"],
+            "description": "'fuera_de_contrato' cubre RF-045 escenario 2: una fuente que el ensamblado habria incluido pero el contrato no declara se excluye y se registra."
+          }
+        }
+      }
+    },
+    "tamano_total_aprox": { "type": "integer" },
+    "presupuesto_entrada": { "type": "integer" }
+  },
+  "nota_de_auditoria": "Cada bloque va rotulado en el prompt como [[bloque: <fuente> | id: <artefacto> | prioridad: Pn]]. El rotulo cumple dos funciones: el agente sabe que esta mirando, y el manifiesto puede comprobarse contra el prompt, que es lo que hace auditable RNF-019."
+}

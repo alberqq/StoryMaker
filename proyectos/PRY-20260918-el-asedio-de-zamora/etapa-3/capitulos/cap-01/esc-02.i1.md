@@ -1,0 +1,1 @@
+Trece días después, en la tienda de instructores, Gonzalo señalaba a los escuderos sus deberes: vigilancia nocturna, armas pulidas, provisiones contadas. Armas escuchaba con el cuerpo tenso. «Todo depende de los detalles», advertía Gonzalo, y el muchacho sabía que un fallo costaba más que su propio miedo.

@@ -1,0 +1,89 @@
+{
+  "esquema": "continuidad@1",
+  "proyecto": "PRY-20260918-el-asedio-de-zamora",
+  "actualizado_en": "2026-09-18T16:08:49Z",
+  "hasta_capitulo": 3,
+  "fichas": [
+    {
+      "clase": "personaje",
+      "id": "PJ-01",
+      "nombre": "Armas",
+      "donde_esta": "campamento destrozado, al alba del 7 de octubre de 1072",
+      "que_sabe": "todo lo que vio de Bellido Dolfos desde julio, y que el rey ha muerto a sus manos",
+      "que_posee": "sin declarar",
+      "como_ha_cambiado": "aviso dos veces, a los escuderos y al rey, y ninguna sirvio; su silencio es ya definitivo"
+    },
+    {
+      "clase": "personaje",
+      "id": "PJ-02",
+      "nombre": "Sancho II",
+      "donde_esta": "muerto, en el polvo del campamento",
+      "que_sabe": "nada: ha muerto",
+      "que_posee": "sin declarar",
+      "como_ha_cambiado": "asesinado por Bellido Dolfos el 7 de octubre de 1072; desoyo la advertencia de Armas el 18 de septiembre"
+    },
+    {
+      "clase": "personaje",
+      "id": "PJ-03",
+      "nombre": "Bellido Dolfos",
+      "donde_esta": "erguido junto al pabellon del rey",
+      "que_sabe": "sin declarar",
+      "que_posee": "sin declarar",
+      "como_ha_cambiado": "ha asesinado a Sancho II; su suerte posterior no se narra"
+    },
+    {
+      "clase": "personaje",
+      "id": "PJ-04",
+      "nombre": "Gonzalo",
+      "donde_esta": "sin declarar desde el 18 de septiembre",
+      "que_sabe": "que su hermano intento hablar con el rey y salio cabeza baja",
+      "que_posee": "sin declarar",
+      "como_ha_cambiado": "no aparece en las dos ultimas escenas"
+    },
+    {
+      "clase": "personaje",
+      "id": "PJ-05",
+      "nombre": "Urraca",
+      "donde_esta": "Zamora, tras los muros. Nunca estuvo en el campamento",
+      "que_sabe": "sin declarar",
+      "que_posee": "sin declarar",
+      "como_ha_cambiado": "sin cambio: solo referida"
+    },
+    {
+      "clase": "lugar",
+      "id": "LU-01",
+      "nombre": "Zamora",
+      "estado": "no ha sido tomada; el cerco se deshace con la muerte del rey"
+    },
+    {
+      "clase": "lugar",
+      "id": "LU-02",
+      "nombre": "campamento de asedio",
+      "estado": "destrozado al alba del 7 de octubre, con las tiendas derribadas y los hombres corriendo sin orden"
+    },
+    {
+      "clase": "hecho",
+      "id": "HE-03",
+      "nombre": "el nombre que Armas no retuvo",
+      "estado": "ABIERTO Y SIN RESOLVER: pronunciado el 8 de agosto, nunca recuperado ni revelado"
+    },
+    {
+      "clase": "hecho",
+      "id": "HE-04",
+      "nombre": "cartas de Leon",
+      "estado": "ABIERTO Y SIN RESOLVER: leidas por Sancho II el 20 de agosto, su contenido nunca se narra"
+    },
+    {
+      "clase": "hecho",
+      "id": "HE-06",
+      "nombre": "asesinato de Sancho II",
+      "estado": "consumado el 7 de octubre de 1072 en el campamento de asedio, conforme a AF-0002"
+    },
+    {
+      "clase": "hecho",
+      "id": "HE-07",
+      "nombre": "silencio de Armas",
+      "estado": "definitivo: sabe lo que vio y no lo dira"
+    }
+  ]
+}

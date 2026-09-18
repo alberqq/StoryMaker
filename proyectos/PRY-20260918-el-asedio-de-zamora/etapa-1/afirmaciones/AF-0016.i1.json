@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0016",
+  "enunciado": "El vasallo juraba fidelidad a su señor y se comprometía principalmente al apoyo político y militar (auxilium et consilium), recibiendo como contraprestación el feudo.",
+  "dimension": "estructura_social",
+  "linea_plan_ref": "LI-011",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Vasallaje",
+    "titulo": "Vasallaje - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "El vasallo juraba fidelidad a su señor y se comprometía a cumplir determinadas servidumbres, principalmente de apoyo político y militar (auxilium et consilium), y recibía como contraprestación un beneficio, habitualmente el control y jurisdicción sobre la tierra y la población de su feudo.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

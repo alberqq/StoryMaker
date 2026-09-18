@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0042",
+  "enunciado": "Los cantares de gesta son poemas épicos que, habiéndose recogido por escrito a partir del siglo XIII, serían testimonios de composiciones orales anteriores.",
+  "dimension": "arte_estetica",
+  "linea_plan_ref": "LI-035",
+  "fuente": {
+    "url": "https://es.wikipedia.org/wiki/Cantar_de_gesta",
+    "titulo": "Cantar de gesta - Wikipedia, la enciclopedia libre",
+    "dominio": "wikipedia.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "Los cantares de gesta son poesía épica que, habiéndose recogido por escrito a partir del siglo XIII, serían testimonios de composiciones orales anteriores.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

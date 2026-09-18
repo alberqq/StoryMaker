@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/afirmacion@1",
+  "title": "Afirmacion propuesta (RF-006, RF-007)",
+  "description": "Un fichero por afirmacion y por intento: AF-0001.i1.json, AF-0001.i2.json. La inmutabilidad se consigue por escritura unica con nombre que incluye el intento (ADR-006), no por permisos ni por convencion. NUNCA se propone una afirmacion sin fragmento literal: si no hay fuente, se registra como descartada en origen y no se propone (RF-007, escenario 2).",
+  "type": "object",
+  "required": ["esquema", "id", "enunciado", "dimension", "fuente", "fragmento", "intento", "estado"],
+  "properties": {
+    "esquema": { "const": "afirmacion@1" },
+    "id": { "type": "string", "pattern": "^AF-[0-9]{4}$" },
+    "enunciado": { "type": "string", "minLength": 1, "description": "Un solo hecho comprobable de forma independiente." },
+    "dimension": { "type": "string" },
+    "linea_plan_ref": { "type": "string", "pattern": "^LI-[0-9]{3}$", "description": "La linea del plan que motivo la consulta. Es el unico criterio de relevancia: no hay puntuacion de similitud." },
+    "fuente": {
+      "type": "object",
+      "required": ["url", "titulo", "dominio", "consultada_en"],
+      "properties": {
+        "url": { "type": "string" },
+        "titulo": { "type": "string" },
+        "dominio": { "type": "string" },
+        "consultada_en": { "type": "string", "format": "date-time" }
+      }
+    },
+    "fragmento": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Copiado LITERALMENTE de la fuente, acotado a lo estrictamente pertinente. Exactamente uno por afirmacion. Dos afirmaciones pueden compartir fragmento si la fuente afirma dos cosas en la misma frase."
+    },
+    "intento": { "type": "integer", "minimum": 1, "maximum": 2 },
+    "estado": { "enum": ["Propuesta", "Rechazada", "Verificada", "Descartada"] },
+    "veredictos": { "type": "array", "items": { "type": "string" } },
+    "hallazgos_intento_anterior": { "type": "array", "items": { "$ref": "storymaker/hallazgo@1" } }
+  },
+  "reapertura_de_la_fuente": "PROHIBIDA. El verificador juzga solo el fragmento aportado (RES-5). Si la fuente deja de ser accesible, el fragmento capturado sigue siendo valido."
+}

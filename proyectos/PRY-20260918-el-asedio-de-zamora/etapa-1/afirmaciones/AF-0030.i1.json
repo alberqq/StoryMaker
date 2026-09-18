@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0030",
+  "enunciado": "La tecnología de máquinas de asedio medieval se basaba esencialmente en tres principios: torsión, tensión y contrapeso.",
+  "dimension": "ciencia_tecnica",
+  "linea_plan_ref": "LI-025",
+  "fuente": {
+    "url": "https://castillosyfortalezasdeltiempo.es/construccion-de-maquinas-de-asedio-historia-diseno-y-aplicaciones/",
+    "titulo": "Construcción de Máquinas de Asedio: Historia y Diseño",
+    "dominio": "castillosyfortalezasdeltiempo.es",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "La tecnología de máquinas de asedio se basaba esencialmente en tres principios: torsión, tensión y contrapeso.",
+  "intento": 1,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/contradicciones@1",
+  "title": "Pares contradictorios del Contexto (RF-015)",
+  "description": "El Verificador de Investigacion en modo B senala los pares; NO elige cual conservar. Esa decision es del autor en PCH-2. Despues del sellado, una contradiccion descubierta solo se corrige repitiendo la Etapa 1.",
+  "type": "object",
+  "required": ["esquema", "proyecto", "pares"],
+  "properties": {
+    "esquema": { "const": "contradicciones@1" },
+    "proyecto": { "type": "string" },
+    "pares": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "afirmacion_a", "afirmacion_b", "motivo"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^PC-[0-9]{3}$" },
+          "afirmacion_a": { "type": "string", "pattern": "^AF-[0-9]{4}$" },
+          "afirmacion_b": { "type": "string", "pattern": "^AF-[0-9]{4}$" },
+          "motivo": { "type": "string", "minLength": 1, "description": "Por que no pueden ser ambas ciertas a la vez en la misma epoca y ambito." },
+          "arbitrado": { "type": "boolean" },
+          "decision_autor": { "type": "string" },
+          "decidido_en": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

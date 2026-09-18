@@ -1,0 +1,1 @@
+Carpas se alzaban entre filas de soldados sobre las llanuras de Zamora al atardecer, y Armas, escudero de dieciséis años, clavaba estacas junto a otros hombres mientras Sancho pasaba a caballo entre ellas, el rostro de quien se creía ya heredero de los tres reinos.

@@ -1,0 +1,16 @@
+{
+  "esquema": "afirmacion@1",
+  "id": "AF-0023",
+  "enunciado": "El derecho visigodo y leonés impedía dividir las posesiones reales entre los herederos",
+  "dimension": "derecho_justicia",
+  "linea_plan_ref": "LI-017",
+  "fuente": {
+    "url": "https://journals.openedition.org/e-spania/39795",
+    "titulo": "Revisando las sucesiones de Sancho III de Pamplona y Fernando I de León",
+    "dominio": "journals.openedition.org",
+    "consultada_en": "2026-09-18T00:00:00Z"
+  },
+  "fragmento": "A la muerte de Fernando I, en vez de respetar el derecho visigodo y leonés que impedía dividir las posesiones reales entre los herederos, siguió los principios jurídicos navarros de considerar al reino como un patrimonio familiar.",
+  "intento": 2,
+  "estado": "Propuesta"
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/escena-texto@1",
+  "title": "Escena redactada - metadatos",
+  "description": "Acompana al fichero .md con el texto. El texto vive en esc-nn.iN.md y sus metadatos en esc-nn.iN.json: el texto se lee sin herramienta (RNF-001) y el diff entre intentos es la resta de dos ficheros de texto plano.",
+  "type": "object",
+  "required": ["esquema", "id", "escena_plan", "intento", "estado", "autoria", "texto_ref"],
+  "properties": {
+    "esquema": { "const": "escena-texto@1" },
+    "id": { "type": "string", "pattern": "^CAP-[0-9]{2}/ESC-[0-9]{2}$" },
+    "escena_plan": { "type": "string", "description": "Escena del canon congelado que materializa." },
+    "texto_ref": { "type": "string", "description": "Ruta del fichero .md con el parrafo." },
+    "intento": { "type": "integer", "minimum": 1 },
+    "estado": { "enum": ["Planificada", "Redactada", "Rechazada", "Aprobada", "Aceptada_con_observaciones", "Aportada_por_autor"] },
+    "palabras_estimadas": { "type": "integer", "description": "ESTIMACION de agente, no recuento (seccion 13.4). Bajo RES-11 el arnes no cuenta palabras." },
+    "palabras_objetivo": { "type": "integer" },
+    "autoria": { "enum": ["agente", "autor"], "description": "El texto aportado por el autor se escribe como un intento mas y NO pasa por el bucle interior (RF-052, caso limite). Si entra en el bucle exterior y en la validacion global: el autor decide sobre la forma, no sobre la coherencia." },
+    "veredicto_ref": { "type": "string" },
+    "hallazgos_abiertos": { "type": "array", "items": { "$ref": "storymaker/hallazgo@1" }, "description": "Hallazgos sin corregir cuando la escena se acepta con observaciones. Aparecen uno a uno en el bloque 4 del informe." }
+  }
+}

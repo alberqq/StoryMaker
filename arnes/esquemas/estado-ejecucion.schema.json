@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "storymaker/estado-ejecucion@1",
+  "title": "Estado de ejecucion",
+  "description": "Unico fichero de escritura frecuente del Proyecto. Contiene SOLO lo reconstruible desde la bitacora: es un cache de posicion, no una fuente de verdad. Ante discrepancia prevalece la bitacora (RF-062 caso limite, ERR-504), y CMP-005 regenera este fichero recorriendola entera. La reconstruccion es cara, pero existe, y es lo que convierte la bitacora en fuente de verdad de verdad y no de boquilla.",
+  "type": "object",
+  "required": [
+    "esquema",
+    "proyecto",
+    "version_arnes",
+    "actualizado_en",
+    "secuencia_bitacora",
+    "etapa_en_curso",
+    "cursor",
+    "contadores",
+    "unidades",
+    "claves_resueltas",
+    "puntos_control_pendientes",
+    "bloqueado"
+  ],
+  "properties": {
+    "esquema": {
+      "const": "estado-ejecucion@1"
+    },
+    "proyecto": {
+      "type": "string"
+    },
+    "version_arnes": {
+      "type": "string"
+    },
+    "actualizado_en": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "secuencia_bitacora": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "etapa_en_curso": {
+      "type": "string"
+    },
+    "cursor": {
+      "type": "object",
+      "description": "El cursor precalculado es la decision de diseno que evita recorrer el Proyecto en cada paso. 'Cual es la unidad siguiente' se responde leyendo UN fichero.",
+      "required": [
+        "tipo_unidad",
+        "objeto",
+        "intento",
+        "clave_idempotencia"
+      ],
+      "properties": {
+        "tipo_unidad": {
+          "enum": [
+            "encargo",
+            "derivados",
+            "plan_investigacion",
+            "afirmacion",
+            "verificacion_afirmacion",
+            "contradicciones",
+            "inventario",
+            "cobertura",
+            "canon",
+            "verificacion_canon",
+            "escena",
+            "verificacion_escena",
+            "capitulo",
+            "verificacion_capitulo",
+            "resumen",
+            "continuidad",
+            "validacion_global",
+            "ensamblado",
+            "informe",
+            "conversion"
+          ],
+          "description": "Los dieciocho tipos de unidad de trabajo declarados en la Especificacion Tecnica, mas los dos pasos de la Etapa 0 ('encargo' y 'derivados'). La Etapa 0 necesita valor de cursor porque el estado se inicializa al crear el Proyecto, antes de que exista Encargo: sin el, el cursor arrancaria vacio. Ninguno de los dos consume invocacion a un agente de dominio ni es verificable, y por eso no figuran entre los dieciocho."
+        },
+        "objeto": {
+          "type": "string"
+        },
+        "intento": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "clave_idempotencia": {
+          "type": "string",
+          "description": "<proyecto>:<etapa>:<tipo_unidad>:<id_objeto>:<intento>:<agente>. Desde arnes 2.0.0 NO incluye version de instruccion: las instrucciones se editan en su sitio. Consecuencia asumida: mejorar un agente ya no fuerza a rehacer los pasos que ya resolvio."
+        }
+      }
+    },
+    "contadores": {
+      "type": "object",
+      "properties": {
+        "invocaciones": {
+          "type": "integer"
+        },
+        "por_etapa": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "rechazos_por_etapa": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "afirmaciones_verificadas_por_dimension": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "description": "Materializa el indice logico de AFIRMACION por dimension y estado. Recorrer decenas de ficheros tras cada veredicto seria el unico punto cuadratico del diseno."
+        },
+        "afirmaciones_verificadas_total": {
+          "type": "integer"
+        },
+        "reutilizaciones": {
+          "type": "integer"
+        }
+      }
+    },
+    "unidades": {
+      "type": "object",
+      "description": "Estado por unidad: su estado, los intentos consumidos y el ultimo veredicto. Es lo que responde 'cuantos intentos lleva esta unidad' sin recorrer la bitacora.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string"
+          },
+          "intentos_consumidos": {
+            "type": "integer"
+          },
+          "intentos_concedidos": {
+            "type": "integer",
+            "description": "Intentos adicionales concedidos por el autor en un punto de control (RF-052)."
+          },
+          "vueltas_exterior": {
+            "type": "integer"
+          },
+          "ultimo_veredicto": {
+            "type": "string"
+          },
+          "autoria": {
+            "enum": [
+              "agente",
+              "autor"
+            ]
+          }
+        }
+      }
+    },
+    "claves_resueltas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Indice de claves de idempotencia ya resueltas. Antes de invocar, CMP-001 lo consulta: una unidad ya resuelta no se reinvoca y no suma al contador de coste."
+    },
+    "puntos_control_pendientes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "abierto_en"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "abierto_en": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "solicitud_ref": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Se presentan en el orden en que se generaron (RF-043, caso limite)."
+    },
+    "bloqueado": {
+      "type": "boolean",
+      "description": "Mientras sea true no se calcula unidad siguiente. La ejecucion permanece detenida indefinidamente: el sistema no decide por su cuenta (RF-043, escenario 2)."
+    },
+    "ejecucion_viva": {
+      "type": "object",
+      "description": "Marca de ejecucion viva con marca temporal. Una segunda invocacion sobre el mismo Proyecto recibe ERR-503. Una marca huerfana de una sesion caida se considera caducada y se registra como anomalia.",
+      "properties": {
+        "sesion": {
+          "type": "string"
+        },
+        "desde": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "cobertura": {
+      "type": "object",
+      "properties": {
+        "estado": {
+          "enum": [
+            "Completa",
+            "Incompleta"
+          ]
+        },
+        "dimensiones_deficitarias": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
