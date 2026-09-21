@@ -21,14 +21,10 @@ La arquitectura, las definiciones y el conocimiento de dominio de StoryMaker no 
 
 ## Flujo de edición
 
-Todo cambio en StoryMaker recorre un ciclo de tres procesos, siempre en este orden. El ciclo es circular: terminar el tercero es volver al punto de partida del siguiente cambio, no un final.
+Todo cambio en StoryMaker recorre un ciclo de tres procesos, siempre en este orden y siempre circular: terminar el tercero es volver al punto de partida del siguiente cambio, no un final.
 
-1. **Edición de specs** (`specs/`) — el contexto específico del cambio: qué se va a hacer y por qué, antes de tocar código o documentación general.
-2. **Edición de código** (frontend en Three.js/React, backend en Python/FastAPI) — implementa lo que la spec ya cerrada describe. Este proceso no arranca mientras la spec correspondiente siga abierta: el código nunca va por delante de la spec que lo justifica.
-3. **Edición de docs** (`docs/`) — el contexto general (arquitectura, definiciones, dominio, verificadores). Arranca al terminar la edición de código, para que estos documentos queden alineados con lo ya implementado.
+1. **Edición de specs** (`specs/`), el contexto específico del cambio. Es el punto de entrada del ciclo: antes de tocar la spec, el agente usa la skill `grill-me` para preguntarle al usuario por qué pide ese cambio y qué decisión hay detrás, en vez de darlo por sabido o inferirlo. Solo con eso respondido se edita la spec y se cierra.
+2. **Edición de código** (frontend en Three.js/React, backend en Python/FastAPI), que implementa lo que la spec ya cerrada describe. Este proceso no arranca mientras la spec correspondiente siga abierta: el código nunca va por delante de la spec que lo justifica.
+3. **Edición de docs** (`docs/`), el contexto general (arquitectura, definiciones, dominio, verificadores). Arranca al terminar la edición de código, para que estos documentos queden alineados con lo ya implementado.
 
 De ahí se vuelve a empezar por specs en el siguiente cambio.
-
-### Grill-me antes de editar
-
-En los tres procesos, antes de aplicar el cambio el agente usa la skill `grill-me` para preguntarle al usuario por qué lo pide: qué decisión hay detrás de tocar esa spec, ese código o ese doc. El agente no da el motivo por sabido ni lo infiere del propio cambio — pregunta primero.
