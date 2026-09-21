@@ -1,1 +1,0 @@
-Doce días después, en la tienda del maestre de campo, Armas presenció la llegada del mensajero de León con cartas para el rey. Bellido Dolfos permanecía junto a la entrada mientras Sancho II rompía los sellos. Cuando terminó, el caballero desapareció hacia la tienda de uno de los nobles castellanos.

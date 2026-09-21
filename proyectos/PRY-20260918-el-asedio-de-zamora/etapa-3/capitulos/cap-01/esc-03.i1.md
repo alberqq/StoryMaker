@@ -1,1 +1,0 @@
-Quince días después, desde el puesto de vigilancia de la primera línea, Armas vio elevarse los muros de Zamora sobre la meseta rocosa: piedra gris y maciza, tres recintos, altura que devoraba el horizonte. Los hombres decían que el rey estaba seguro de la victoria. Armas no encontraba dónde vivía esa seguridad.

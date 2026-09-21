@@ -1,1 +1,0 @@
-Armas vio a Bellido Dolfos salir de su tienda pasada la medianoche, cuando los escuderos dormían, y caminar hacia el pabellón real con paso cauteloso. Las luces dentro se encendieron antes de que el caballero llegara a la entrada.

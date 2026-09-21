@@ -1,1 +1,0 @@
-Catorce días después, en el corral, Armas vio a Bellido Dolfos hablar en voz baja con tres nobles castellanos junto a las cuadras. Uno de ellos pronunció un nombre que Armas no retuvo. Gonzalo lo vio todo y le tiró del brazo sin decir palabra.
