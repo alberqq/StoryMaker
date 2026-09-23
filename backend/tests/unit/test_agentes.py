@@ -169,6 +169,19 @@ class TestInvocacion:
         assert llamada["herramientas"] == ("WebSearch", "WebFetch")
         assert llamada["max_turns"] == 12
 
+    async def test_el_esquema_de_salida_viaja_con_la_llamada(self, settings: Settings) -> None:
+        """REQ-BE-132: sin él, el rol improvisa los campos, como en la primera ejecución real."""
+        transporte = TransporteFalso(respuestas=['{"titulo": "x", "capitulos": 1}'])
+        await invocar_rol(
+            Perfil.ARQUITECTO, "construye la escaleta", SalidaDePrueba,
+            transporte=transporte, settings=settings,
+        )
+        (llamada,) = transporte.llamadas
+        prompt = str(llamada["prompt"])
+        assert prompt.startswith("construye la escaleta")
+        assert '"titulo"' in prompt and '"capitulos"' in prompt
+        assert '"required":["titulo","capitulos"]' in prompt
+
     async def test_reintenta_inyectando_el_error_de_validacion(
         self, settings: Settings
     ) -> None:

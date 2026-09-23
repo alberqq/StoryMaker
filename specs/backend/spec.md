@@ -127,6 +127,8 @@ Avanza de nodo en nodo hasta encontrar un `interrupt()` o hasta terminar, y devu
 
 **Lo que fija por invocación**, tomado de la tabla de §12 de la arquitectura: el modelo, `allowed_tools`, `max_turns` y el techo de tokens del rol.
 
+**El contrato de salida.** La función adjunta al prompt el **JSON Schema del esquema de salida**, generado con `model_json_schema()` del mismo modelo Pydantic contra el que después valida `schema_guard`, y la instrucción de responder solo con un objeto JSON que lo cumpla. El esquema forma parte del prompt a todos los efectos: **entra en la estimación de la guarda de presupuesto** y viaja igual en el reintento. Ningún nodo describe la forma de su salida por su cuenta, y el prompt de rol —Langfuse o su respaldo local— tampoco: si lo hiciera habría dos descripciones de un mismo contrato y una acabaría mintiendo.
+
 **Las tres guardas, todas por construcción:**
 
 | Guarda | Mecanismo | Qué impide |
@@ -595,6 +597,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-22 | Agotar los reintentos lleva a `Fail`, que es un estado declarado del grafo y no una excepción | §3.2 | P-60 |
 | REQ-BE-23 | Todas las llamadas a un modelo pasan por una única función de invocación; ningún módulo llama al Agent SDK por su cuenta | §3.3 | P-27 |
 | REQ-BE-24 | Cada invocación fija el modelo, `allowed_tools`, `max_turns` y el techo de tokens del rol | §3.3 | P-27, P-32 |
+| REQ-BE-132 | Cada invocación adjunta al prompt el JSON Schema del esquema de salida del rol, generado del mismo modelo contra el que valida `schema_guard`, y ese esquema cuenta en la estimación de presupuesto | §3.3 | P-27 |
 | REQ-BE-25 | El prompt ensamblado se **estima** antes de emitir, por lo alto y con margen declarado, y la llamada **no se emite** si excede el techo del rol | §3.3 | P-28 |
 | REQ-BE-26 | Un hook `PreToolUse` deniega la llamada en cuanto se agota la cuota de herramientas del rol | §3.3 | P-29 |
 | REQ-BE-27 | Un hook `PostToolUse` reescribe el resultado de la herramienta antes de que entre en el contexto del agente | §3.3 | P-30 |
@@ -728,6 +731,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §3.3 fija **el contrato de salida**: la función de invocación adjunta al prompt el JSON Schema del esquema del rol, que cuenta contra su techo. Entra **REQ-BE-132** | Se propaga la decisión nueva de §5 de la arquitectura. La primera ejecución real cayó en `Configure` porque el entrevistador validaba contra un `Brief` que nunca le habían enseñado |
 | 2026-09-23 | Al cablear los nodos y recorrer el sistema entero por primera vez: el estado del grafo gana seis punteros —`premisa`, `texto_pegado`, `capitulo_version_id`, `huecos_pendientes`, `a_regenerar` y `a_invalidar`—; **los cuatro gates dejan de ser terminales** y resuelven por «aprobar» en modo batch; `Plan` **planifica una sola vez** y no rehace la escaleta al volver de `FillGap`; y la Fase 6 resuelve la petición del lector con búsqueda semántica más la forma opcional `campo=valor`, sin que ningún modelo intervenga | Los nodos estaban cableados pero no llamaban a las funciones que hacen el trabajo, y al conectarlos apareció lo que faltaba. Los punteros son eso, punteros: el estado sigue sin llevar contenido. Los gates sin arista de salida hacían que el modo batch —el único en el que los cinco briefs de evaluación pueden correr— terminara en el primer gate. Y replanificar en cada hueco costaba cinco llamadas de arquitecto para duplicar personajes y capítulos |
 | 2026-09-23 | §7.1 gana el validador **`matrices_de_trazabilidad`** (22-b), que bloquea sobre la forma de las tres matrices y **el suelo de su inventario**, e informa del recuento de huecos | Las matrices afirmaban en verde y no las miraba nadie: se comprobaban a mano con `grep`, y un parche que se comió un separador dejó tres filas contándose sin poder leerse. Lo que sostiene una afirmación tiene que ser comprobable por la suite, no por quien la escribió |
 | 2026-09-23 | Se propaga la reescritura de §11d —**TLA+ directo**, cinco invariantes de estado y las rutas de `formal/tla/`— y entran las cuatro cosas que el frontend necesitaba: el **bloque de paratexto** en el endpoint de versión, la **ficha de personajes versionada**, **FastAPI sirviendo `frontend_dist`** con su URL base en `Settings`, y la **interceptación** con la que `render_visual` ve la versión candidata. §9 recoge además las clases de P-134 y P-135 | Escribir la spec del frontend destapó que la superficie que el backend le ofrecía no daba para dibujar la portada ni para enlazar una ficha a su capítulo, y que el validador que sostiene G5 no tenía forma de ver lo que juzga. Y la contradicción de §11d hacía que este documento midiera contra cuatro invariantes donde hay cinco |

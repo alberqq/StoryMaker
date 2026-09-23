@@ -256,6 +256,8 @@ La Fase 6 es la prueba de fuego del resto del sistema: solo funciona si el índi
 
 Todos en **Haiku 4.5**, con `max_turns` y `allowed_tools` declarados por invocación. Solo el investigador tiene acceso a internet; el resto —verificador incluido— trabaja exclusivamente sobre lo que el arnés le entrega.
 
+**El contrato de salida viaja con la llamada.** La salida de cada rol es un modelo Pydantic, y es ese mismo modelo el que le dice al rol qué forma tiene que tener su respuesta: la puerta única de invocación adjunta al prompt el **JSON Schema generado del modelo**, y `schema_guard` valida contra el mismo modelo. El prompt de Langfuse dice *qué* hacer; la *forma* no la escribe nadie a mano, así que no hay dos descripciones que puedan divergir. El esquema es parte del prompt y **cuenta contra el techo del rol** como cualquier otra. Sin esto, un rol que solo recibe su prompt de rol improvisa los nombres de los campos: es lo que hizo el entrevistador en la primera ejecución real.
+
 **Los dos extractores son roles y no funciones del arnés**, y conviene decirlo porque su salida no es prosa: es estructura. Lo son porque consumen contexto y por tanto necesitan techo declarado —el presupuesto de §12 se garantiza sumando techos, y un agente sin fila sería un hueco en ese método—, y porque su independencia es exactamente la misma que la del verificador: el de intake convierte texto no confiable en filas tipadas sin que el texto llegue nunca a un prompt de redacción, y el de capítulo mide qué se usó y qué se ejecutó sin ser quien lo escribió.
 
 **Investigador y verificador son dos agentes distintos por la misma razón que editor y juez.** Si el propio investigador declarase que sus hechos están respaldados, el respaldo mediría la seguridad en sí mismo de quien tiene incentivo en haber terminado, no si la página dice lo que él afirma. Es el mismo argumento que hace independiente al extractor que puebla `uso_hecho` en §4.
@@ -1040,6 +1042,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Contra qué compara el registro | Solo §7.2 de la spec · solo §11a · las tres por pares | Que §11a no pueda derivar en silencio siendo la fuente de verdad | Las tres, sobre el subconjunto determinista |
 | Ruido del inventario durante el desarrollo | Informar de todo · marcar hitos cerrados · dos cubos separados | Ver el código no especificado desde el primer día sin inventar un estado de hito que mantener a mano | Dos cubos |
 | Aristas del modelo TLA+ | Parsear `harness.tla` · volcado del grafo de estados de TLC · definición `Aristas` que gobierna el `Next` | Que lo que lee la prueba sea exactamente lo que TLC exploró, sin fragilidad ni una copia más | Definición `Aristas` |
+| Cómo conoce el rol la forma de su salida | Describirla en el prompt de Langfuse · adjuntar al prompt el JSON Schema del modelo Pydantic · salida estructurada del SDK (`output_format`) | Una sola fuente para la forma, que funcione igual con el transporte falso y sin Langfuse, y que no ate el contrato a una opción del SDK | JSON Schema adjunto al prompt; `schema_guard` sigue siendo la garantía, y `output_format` queda como salida si el reintento con el error inyectado no basta |
 
 ---
 
@@ -1099,6 +1102,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §5 fija que **el contrato de salida viaja con la llamada**: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, que cuenta contra su techo. Entra la fila correspondiente en §17 | La primera ejecución real cayó en `Configure`: el entrevistador solo recibía su prompt de rol, no sabía qué campos llevaba un `Brief` e improvisó los suyos. La arquitectura no decía cómo llega la forma al rol, y el código no la mandaba |
 | 2026-09-23 | Versión inicial | Cierre de la orquestación, el paso de contexto, la validación formal y los gates antes de escribir código |
 | 2026-09-23 | Se extrae el plan de verificación a `verification.md` y se enlaza desde §11 | La arquitectura fija qué se valida; el plan de verificación fija cómo se demuestra, con qué gate y con qué clase de confianza (T/A/I/D/U) |
 | 2026-09-23 | Se fija la pila (FastAPI + React), la organización *package by feature* y los embeddings locales con FastEmbed; §16 pasa a ser «Pila técnica y organización del código» | Faltaba declarar con qué se construye cada mitad del sistema, y la búsqueda semántica era un requisito no recogido |

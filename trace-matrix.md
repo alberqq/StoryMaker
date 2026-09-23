@@ -8,11 +8,11 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 
 **`ARQ-nn`** identifica un requisito de la arquitectura y lleva delante el apartado del que sale. Los identificadores son estables y **no se reutilizan jamás**: si un requisito desaparece, su fila se queda con nota en lugar de dejar el hueco a otro.
 
-**`IMP-ID`** identifica un ítem de plan. El repositorio tiene dos planes con espacios de identificadores propios, así que aquí se escriben con su prefijo: **`BE:P-nn`** para el backend y **`FE:IMP-nn`** para el frontend. La correspondencia detallada de cada mitad vive en su propia matriz —[`specs/backend/trace-matrix.md`](specs/backend/trace-matrix.md) y [`specs/frontend/trace-matrix.md`](specs/frontend/trace-matrix.md)—, y esta es la vista consolidada: `ARQ-01` a `ARQ-116` son uno a uno los requisitos `A-01` a `A-116` de la matriz del backend, y `ARQ-117` a `ARQ-136` son los del frontend que ninguna matriz anterior enumeraba.
+**`IMP-ID`** identifica un ítem de plan. El repositorio tiene dos planes con espacios de identificadores propios, así que aquí se escriben con su prefijo: **`BE:P-nn`** para el backend y **`FE:IMP-nn`** para el frontend. La correspondencia detallada de cada mitad vive en su propia matriz —[`specs/backend/trace-matrix.md`](specs/backend/trace-matrix.md) y [`specs/frontend/trace-matrix.md`](specs/frontend/trace-matrix.md)—, y esta es la vista consolidada: `ARQ-01` a `ARQ-116` son uno a uno los requisitos `A-01` a `A-116` de la matriz del backend, y `ARQ-117` a `ARQ-136` son los del frontend que ninguna matriz anterior enumeraba. Los que llegan después se numeran en orden de llegada: `ARQ-137` es `A-117` y `ARQ-138` es `A-118`.
 
 **Estado.** `CUBIERTO` solo si algún ítem lo materializa **con entregable concreto y criterio de hecho**; «implementar X» no cuenta, y donde la cobertura depende de algo que todavía no existe la nota lo dice. `GAP` en cualquier otro caso.
 
-**Lo que esta matriz no hace.** No elimina ni fusiona filas para reducir huecos: el inventario nació con **132 filas** y hoy son **137**; crece cuando la arquitectura decide algo nuevo, nunca mengua. Un hueco se cierra **añadiendo o ampliando ítems en los planes**, nunca borrando la exigencia. Y donde la arquitectura es ambigua, queda anotado en la nota sin inventar requisito.
+**Lo que esta matriz no hace.** No elimina ni fusiona filas para reducir huecos: el inventario nació con **132 filas** y hoy son **138**; crece cuando la arquitectura decide algo nuevo, nunca mengua. Un hueco se cierra **añadiendo o ampliando ítems en los planes**, nunca borrando la exigencia. Y donde la arquitectura es ambigua, queda anotado en la nota sin inventar requisito.
 
 **El orden sigue los apartados de la arquitectura, no el número.** Los identificadores son estables desde la matriz del backend, que agrupaba por apartado, y respetar ese orden vale más que tener la columna ordenada.
 
@@ -37,7 +37,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-13 | §1 · Pila: FastAPI *package by feature* con `commons`; React en FSD v2.1 | BE:P-01, FE:IMP-01, FE:IMP-02, FE:IMP-04 | CUBIERTO | Las dos mitades: el backend en P-01, el frontend en IMP-01 a IMP-04 |
 | ARQ-14 | §1 · Embeddings FastEmbed local, 384 dimensiones, indexados con `sqlite-vec` | BE:P-22, BE:P-23 | CUBIERTO | — |
 | ARQ-111 | §1 · Correspondencia documento↔código comprobada por **tests de trazabilidad y no por lectura**: lo que la spec declara y el plan nombra tiene quien lo compruebe en CI | BE:P-62, BE:P-129, BE:P-130, BE:P-131, BE:P-132, BE:P-133, BE:P-137 | CUBIERTO | — |
-| ARQ-137 | §1, §11e · Cada spec **enumera sus requisitos con identificador propio** —`REQ-BE-nn` y `REQ-FE-nn`—, derivados de su propio contenido y no importados del encargo | BE:P-139 | CUBIERTO | El enunciado vive en la spec; el ítem solo lo comprueba. Los 131 del backend están en su §10 y los 51 del frontend en su §12 |
+| ARQ-137 | §1, §11e · Cada spec **enumera sus requisitos con identificador propio** —`REQ-BE-nn` y `REQ-FE-nn`—, derivados de su propio contenido y no importados del encargo | BE:P-139 | CUBIERTO | El enunciado vive en la spec; el ítem solo lo comprueba. Los 132 del backend están en su §10 y los 51 del frontend en su §12 |
 | ARQ-15 | §2 · El agente no busca su contexto, lo recibe | BE:P-33, BE:P-81 | CUBIERTO | — |
 | ARQ-16 | §2 · Quien escribe no aprueba: escritor, editor, juez y extractor separados | BE:P-81, BE:P-83, BE:P-86, BE:P-90 | CUBIERTO | — |
 | ARQ-17 | §2 · Determinista antes que modelo | BE:P-40, BE:P-82 | CUBIERTO | — |
@@ -70,6 +70,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-44 | §5 · La tabla de roles con su entrada, su salida y sus herramientas | BE:P-27, BE:P-32 | CUBIERTO | — |
 | ARQ-45 | §5 · Solo el investigador tiene acceso a internet | BE:P-06, BE:P-74, BE:P-123 | CUBIERTO | — |
 | ARQ-46 | §5 · La varianza del juez se mide, no se supone | BE:P-121 | CUBIERTO | — |
+| ARQ-138 | §5 · El contrato de salida viaja con la llamada: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, dentro de su techo | BE:P-27 | CUBIERTO | Es el `A-118` de la matriz del backend |
 | ARQ-47 | §6 · Siete bloques con sus techos, 12.000 en total | BE:P-33, BE:P-34 | CUBIERTO | — |
 | ARQ-48 | §6 · El bloque 4 lleva el texto íntegro de N−1 | BE:P-36 | CUBIERTO | — |
 | ARQ-49 | §6 · Bloques 2, 4 y 5 llenados por relevancia semántica, con `k = 8` | BE:P-23, BE:P-35 | CUBIERTO | — |
@@ -197,6 +198,7 @@ Seis cosas que este recorrido dejó por escrito.
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | Entra `ARQ-138`: el contrato de salida viaja con la llamada, realizado por `BE:P-27` | La primera ejecución real cayó porque ningún rol recibía la forma de su salida, y la arquitectura lo fijó en §5. El inventario sube de 137 a 138 filas |
 | 2026-09-23 | `ARQ-111` recoge **`BE:P-137`**, el validador que comprueba estas matrices | Esta matriz afirmaba cobertura de todo el repositorio y era el único artefacto de §11e que nadie miraba. Ahora la mira la suite, y se verificó rompiéndola a propósito |
 | 2026-09-23 | Entran `ARQ-133` a `ARQ-136`: las dos pantallas declaradas, el **cliente único** como condición de G5, **FastAPI sirviendo el `dist/`** y la **interceptación** de la versión candidata | Son las cuatro cosas que la arquitectura fijó al resolver las costuras del frontend. Estaban en los planes y no en el inventario, que es el fallo simétrico del hueco y el que menos se nota |
 | 2026-09-23 | Tercera pasada, tras resolver el Autor las dos discrepancias: **R-05 y R-06 quedan cerrados** —§11d reescrito y los artefactos formales declarados en `formal/`— y con ellos las notas de `ARQ-65`, `ARQ-74`, `ARQ-76`, `ARQ-78`, `ARQ-79`, `ARQ-119` y `ARQ-120`. Entran en la trazabilidad `BE:P-136`, que sirve el frontend construido | Los hallazgos de una matriz solo valen si alguien los cierra, y cerrarlos sin moverla la deja afirmando un problema que ya no existe |

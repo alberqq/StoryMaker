@@ -82,6 +82,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-44 | La tabla de roles con su entrada, su salida y sus herramientas | P-27, P-32 | Cubierto |
 | A-45 | Solo el investigador tiene acceso a internet | P-06, P-74, P-123 | Cubierto |
 | A-46 | La varianza del juez se mide, no se supone | P-121 | Cubierto |
+| A-118 | El contrato de salida viaja con la llamada: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, dentro de su techo | P-27 | Cubierto |
 
 ### §6 · Paso de contexto
 
@@ -246,7 +247,7 @@ Cada ítem del plan, con el requisito del que nace. **Ninguna fila está vacía*
 | P-24 | A-97 | P-88 | A-75 |
 | P-25 | A-59 | P-89 | A-09, A-74 |
 | P-26 | A-64, A-97 | P-90 | A-42, A-75 |
-| P-27 | A-02, A-03, A-44 | P-91 | A-77 |
+| P-27 | A-02, A-03, A-44, A-118 | P-91 | A-77 |
 | P-28 | A-12, A-81 | P-92 | A-42, A-74 |
 | P-29 | A-29, A-82 | P-93 | A-84, A-98 |
 | P-30 | A-30, A-82, A-108 | P-94 | A-42, A-95 |
@@ -329,6 +330,7 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | Entra `A-118` —el contrato de salida viaja con la llamada— con su ítem `P-27`, y la dirección inversa recoge el par | La arquitectura fijó en §5 cómo llega al rol la forma de su salida después de que la primera ejecución real cayera por no mandarla. Una matriz que no lo recogiera afirmaría en verde una cobertura que no comprueba entera |
 | 2026-09-23 | Se propaga la reescritura de §11d —A-10, A-65 y A-78 dejan de hablar de PlusCal y A-78 recoge los cinco invariantes—, `A-83` y `A-102` dejan de estar fuera de alcance con `P-134` y el plan del frontend, y entran `P-134`, `P-135` y `P-136` en el recorrido inverso | La arquitectura resolvió su contradicción y aparecieron dos planes donde había uno. Una matriz que no se mueve con ellos afirma en verde una cobertura que ya no ha comprobado |
 | 2026-09-23 | Se incorpora la familia **§11e** llegada a los tres documentos: entran A-111 a A-115 con sus ítems P-129 a P-133, A-65 pasa a comprobarse sobre nombres **y aristas**, y A-116 queda en §3 como requisito cuya mitigación es inspección y no código | La matriz se escribió antes de que §11e existiera, y una matriz desactualizada es peor que no tenerla: afirma en verde una cobertura que ya no ha comprobado |
 | 2026-09-23 | Pasada de congruencia entre la spec y el plan: entra **P-128** —la taxonomía de errores—, que sube el plan a 128 ítems; se corrigen las filas de A-66, A-100 y A-105 | La comparación con la spec, y no con la arquitectura, destapó cuatro contratos sin ítem. La matriz se mantiene al día en la misma operación o deja de servir para nada |

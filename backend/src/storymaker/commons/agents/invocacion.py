@@ -17,6 +17,7 @@ de integración comprueben algo real.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -82,6 +83,27 @@ class Resultado[T: BaseModel]:
     intentos: int
 
 
+def contrato_de_salida(esquema: type[BaseModel]) -> str:
+    """La forma de la salida, redactada para el rol a partir de su propio modelo Pydantic.
+
+    **El contrato de salida viaja con la llamada** (arq. §5). El rol valida contra un
+    esquema que tiene que ver: sin él, improvisa los nombres de los campos, que es lo que
+    hizo el entrevistador en la primera ejecución real. Se genera del mismo modelo contra
+    el que valida `schema_guard`, de modo que no hay una segunda descripción que pueda
+    divergir, y se compacta porque cuenta contra el techo del rol como el resto del prompt.
+    """
+    esquema_json = json.dumps(
+        esquema.model_json_schema(), ensure_ascii=False, separators=(",", ":")
+    )
+    return (
+        "\n\n## Formato de la respuesta\n"
+        "Responde **solo** con un objeto JSON que cumpla exactamente este JSON Schema: "
+        "los mismos nombres de campo, todos los obligatorios presentes, los tipos y los "
+        "valores de enumeración tal como se declaran. Sin texto antes ni después.\n"
+        f"```json\n{esquema_json}\n```"
+    )
+
+
 async def invocar_rol[T: BaseModel](
     perfil: Perfil,
     prompt: str,
@@ -104,9 +126,10 @@ async def invocar_rol[T: BaseModel](
     cuota = CuotaDeHerramientas.para(perfil)
     consumo = Consumo()
     texto_extra = ""
+    contrato = contrato_de_salida(esquema)
 
     for intento in range(1, reintentos_de_esquema + 2):
-        prompt_completo = prompt + texto_extra
+        prompt_completo = prompt + contrato + texto_extra
         guarda_techo(perfil, sistema + prompt_completo)
         respuesta = await transporte.pedir(
             perfil=perfil,

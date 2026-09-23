@@ -39,9 +39,9 @@ PLANES = {
 #: Cada matriz con el suelo de su inventario. El suelo no se baja **nunca**: si un requisito
 #: desaparece de la arquitectura, su fila se queda con nota en lugar de dejar hueco a otro.
 MATRICES = {
-    "raíz": (RAIZ / "trace-matrix.md", "ARQ", 136),
+    "raíz": (RAIZ / "trace-matrix.md", "ARQ", 138),
     "frontend": (RAIZ / "specs" / "frontend" / "trace-matrix.md", "ARQ", 36),
-    "backend": (RAIZ / "specs" / "backend" / "trace-matrix.md", "A", 116),
+    "backend": (RAIZ / "specs" / "backend" / "trace-matrix.md", "A", 118),
 }
 
 ESTADOS = {"CUBIERTO", "GAP"}
