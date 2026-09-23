@@ -203,6 +203,17 @@ class TestVectorizadorReal:
         assert vectorizador.nombre == NOMBRE_EN_FASTEMBED
         assert NOMBRE_EN_FASTEMBED.endswith("paraphrase-multilingual-MiniLM-L12-v2")
 
+    def test_el_nombre_de_settings_llega_con_su_organizacion(self) -> None:
+        """`invocar` le pasa el nombre de §19, que FastEmbed rechaza sin organización."""
+        from storymaker.commons.config import Settings
+        from storymaker.commons.embeddings.modelo import (
+            NOMBRE_EN_FASTEMBED,
+            FastEmbedVectorizador,
+        )
+
+        vectorizador = FastEmbedVectorizador(Settings(_env_file=None).modelo_embeddings)
+        assert vectorizador.nombre == NOMBRE_EN_FASTEMBED
+
 
 async def test_fase_run_no_es_necesaria_para_indexar(
     db: aiosqlite.Connection, vectorizador: VectorizadorFalso

@@ -10,6 +10,22 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ## 2026-09-24 · La primera ejecución contra el modelo
 
+### It-15 · El nombre del modelo de embeddings llegaba sin su organización
+
+**Causa.** Con Intake ya completo, la ejecución cayó en `Plan`: FastEmbed rechazó `paraphrase-multilingual-MiniLM-L12-v2`. El módulo de embeddings declaraba bien el nombre con prefijo, `NOMBRE_EN_FASTEMBED`, pero `invocar` construía el vectorizador con `settings.modelo_embeddings`, que guarda el nombre de §19 sin él. La suite no lo veía porque recorre el grafo con `VectorizadorFalso`.
+
+**Qué se hizo.** `FastEmbedVectorizador` antepone `sentence-transformers/` cuando el nombre no trae organización. Una prueba fija que el nombre de `Settings` llega completo.
+
+**Efecto.** El modelo real se descarga, carga y devuelve vectores de 384 dimensiones en el portátil del Autor. 665 pruebas pasan.
+
+### It-14 · Ningún rol recibía la forma de su salida
+
+**Causa.** Con los hooks ya arreglados, el entrevistador respondió, pero con un `Brief` de claves inventadas (`titulo`, `genero`) y `personajes_historicos` copiado de la forma del YAML. `invocar_rol` validaba contra el modelo Pydantic sin habérselo enseñado nunca al rol, y el prompt de respaldo, sin Langfuse, son dos líneas.
+
+**Qué se hizo.** Se decidió arriba primero —arquitectura §5 y §17, spec §3.3 con `REQ-BE-132`, plan `P-27`, `A-118` y `ARQ-138`— y después `invocar_rol` adjunta al prompt el JSON Schema del esquema, compactado y dentro de la estimación del techo. El mayor, el del arquitecto, ronda los 1.800 tokens frente a un techo de 25.000.
+
+**Efecto.** El tercer intento completó Intake: `Brief` validado y tres filas de `intake_dato`.
+
 ### It-13 · Los hooks del transporte tenían una forma que el SDK no acepta
 
 **Causa.** La primera novela real, `nueva ../ejemplos/brief-ejemplo.yaml --batch`, cayó en `Configure` **antes de la primera llamada al modelo**: `TypeError: 'function' object is not iterable` dentro del SDK. `TransporteAgentSDK._hooks` entregaba por evento la función suelta, y `ClaudeAgentOptions.hooks` exige una lista de `HookMatcher`. La suite no podía verlo porque recorre el grafo con `TransporteFalso` y el transporte real no se ejercita en ella; es exactamente la clase de fallo que su docstring deja para la ejecución de verdad.

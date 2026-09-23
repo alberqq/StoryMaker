@@ -43,7 +43,9 @@ class FastEmbedVectorizador:
     """
 
     def __init__(self, nombre: str = NOMBRE_EN_FASTEMBED) -> None:
-        self._nombre = nombre
+        # `Settings` guarda el nombre de §19, sin organización, y así llega desde `invocar`;
+        # FastEmbed lo rechaza sin ella, y la primera ejecución real cayó en `Plan` por eso.
+        self._nombre = nombre if "/" in nombre else f"sentence-transformers/{nombre}"
         self._modelo: TextEmbedding | None = None
 
     @property
