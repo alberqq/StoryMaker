@@ -1,0 +1,18 @@
+# spec: §7.1 n.o 8 · arq: §5
+# El investigador es el unico rol con acceso a internet. El resto -verificador incluido-
+# trabaja exclusivamente sobre lo que el arnes le entrega.
+rules:
+  - id: sin-red-fuera-del-investigador
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      WebSearch o WebFetch concedidos a un rol que no es el investigador. La unica puerta
+      a la red del sistema es la sesion de Investigation y la micro-sesion de Plotting
+      (arq. §5, §12).
+    paths:
+      include:
+        - "backend/src/**"
+      exclude:
+        - "backend/src/storymaker/investigation/**"
+        - "backend/src/storymaker/plotting/**"
+    pattern-regex: 'allowed_tools\s*=\s*\[[^\]]*(WebSearch|WebFetch)'

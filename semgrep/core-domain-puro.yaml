@@ -1,0 +1,27 @@
+# spec: §3.6 · arq: §15
+# El Core Domain es Python puro y agnostico a quien lo llama: el grafo lo ejecuta como
+# nodo y .claude/ lo expone como skill y como hook. Si importara el SDK o LangGraph,
+# la segunda puerta dejaria de poder abrirse.
+rules:
+  - id: core-domain-puro
+    languages: [python]
+    severity: ERROR
+    message: >-
+      commons/validation/ no puede importar el Agent SDK, LangGraph, httpx ni Langfuse.
+      Recibe datos y devuelve incidencias: ni escribe en la base, ni llama a un modelo,
+      ni sale a la red (arq. §15).
+    paths:
+      include:
+        - "backend/src/storymaker/commons/validation/**"
+    pattern-either:
+      - pattern: import claude_agent_sdk
+      - pattern: import langgraph
+      - pattern: import httpx
+      - pattern: import langfuse
+      - pattern: import aiosqlite
+      - pattern: from claude_agent_sdk import $X
+      - pattern: from langgraph import $X
+      - pattern: from langgraph.$MOD import $X
+      - pattern: from httpx import $X
+      - pattern: from langfuse import $X
+      - pattern: from aiosqlite import $X

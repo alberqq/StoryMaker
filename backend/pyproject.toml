@@ -1,0 +1,102 @@
+[project]
+name = "storymaker"
+version = "0.1.0"
+description = "Arnés multiagente para la generación de novelas históricas personalizadas"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "langgraph>=0.2",
+    "langgraph-checkpoint-sqlite>=2.0",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "aiosqlite>=0.20",
+    "sqlite-vec>=0.1.6",
+    "langfuse>=2.53",
+    "httpx>=0.27",
+    "typer>=0.15",
+    # Los briefs del comprador y los cinco de evaluacion se escriben en YAML porque los
+    # lee y los edita una persona. Es la unica razon: dentro del sistema nada usa YAML.
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# El Agent SDK, que es la unica puerta al modelo (P-27). Aparte porque H0 no lo usa.
+agentes = ["claude-agent-sdk>=0.1"]
+# FastEmbed arrastra onnxruntime, que pesa. Entra en H2, con `commons/embeddings`.
+embeddings = [
+    "fastembed>=0.4",
+]
+# Playwright imprime el PDF y valida el render. Entra en H6, con `publication`.
+render = ["playwright>=1.48"]
+
+[project.scripts]
+storymaker = "storymaker.cli.comandos:app"
+
+[dependency-groups]
+dev = [
+    "types-pyyaml>=6.0.12",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "hypothesis>=6.112",
+    "mypy>=1.13",
+    "ruff>=0.7",
+]
+# Herramientas que corren en CI sobre Linux y no en el portatil del Autor, por dos motivos
+# distintos: Semgrep no publica rueda para Windows, y `mutmut` se niega a correr ahi y remite
+# a WSL. `crosshair` si funciona en local, y conviene, porque es la que encuentra bordes que
+# nadie escribe a mano; se deja en este grupo para que la nocturna instale una sola cosa.
+ci = [
+    "semgrep>=1.95",
+    "pip-audit>=2.7",
+    "schemathesis>=3.38",
+    "crosshair-tool>=0.0.78",
+    "mutmut>=3.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/storymaker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# `S` es bandit dentro de ruff: inyeccion SQL por interpolacion, `shell=True`,
+# `pickle` y aserciones en produccion (validador n.o 2 de la spec §7.1).
+select = ["E", "F", "I", "UP", "B", "S", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# En las pruebas, `assert` es la herramienta, no un descuido.
+"tests/**" = ["S101"]
+# Typer declara los argumentos con `typer.Argument()` y `typer.Option()` en el default:
+# es su idioma documentado y no una llamada por descuido.
+"src/storymaker/cli/comandos.py" = ["B008"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["storymaker"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+# sqlite-vec no publica tipos: es una biblioteca nativa con una envoltura minima.
+module = ["sqlite_vec.*", "claude_agent_sdk.*", "fastembed.*", "playwright.*"]
+ignore_missing_imports = true
+
+# Mutacion restringida al Core Domain (verif. §3.7). Fuera de `commons/validation/` no se
+# ejecuta: mutar codigo que habla con SQLite mide la calidad de los dobles, no la de las
+# pruebas, y el objetivo del 80 % dejaria de significar nada.
+[tool.mutmut]
+paths_to_mutate = ["src/storymaker/commons/validation/"]
+tests_dir = ["tests/unit/", "tests/propiedades/"]

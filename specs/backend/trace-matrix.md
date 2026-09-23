@@ -23,12 +23,13 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-07 | Capítulos inmutables más manifiesto | P-12, P-17, P-98 | Cubierto |
 | A-08 | Grafo de `fase_run` inmutables: rehacer, reanudar, ramificar y regenerar son la misma operación | P-58, P-71, P-102 | Cubierto |
 | A-09 | Cinco gates bloqueantes con notificación, desactivables en batch | P-103, P-127, P-73, P-78, P-89, P-100 | Cubierto |
-| A-10 | Validación formal en dos planos: Lean 4 para la historia, TLA+/PlusCal para el arnés | P-47, P-48, P-61 | Cubierto |
+| A-10 | Validación formal en dos planos: Lean 4 para la historia, TLA+ para el arnés | P-47, P-48, P-61 | Cubierto |
 | A-11 | Observabilidad en Langfuse con spans manuales autorizados y OTLP opcional | P-50, P-53 | Cubierto |
 | A-12 | Presupuesto de 100.000 tokens concurrentes, garantizado por construcción | P-28, P-32 | Cubierto |
 | A-13 | Pila: FastAPI *package by feature* con `commons`; React en FSD v2.1 | P-01 · frontend en §3 | Cubierto en su mitad |
 | A-14 | Embeddings FastEmbed local, 384 dimensiones, indexados con `sqlite-vec` | P-22, P-23 | Cubierto |
-| A-111 | Correspondencia documento↔código comprobada por **tests de trazabilidad y no por lectura**: lo que la spec declara y el plan nombra tiene quien lo compruebe en CI | P-62, P-129, P-130, P-131, P-132, P-133 | Cubierto |
+| A-111 | Correspondencia documento↔código comprobada por **tests de trazabilidad y no por lectura**: lo que la spec declara y el plan nombra tiene quien lo compruebe en CI | P-62, P-129, P-130, P-131, P-132, P-133, P-137 | Cubierto |
+| A-117 | Cada spec **enumera sus requisitos con identificador propio** —`REQ-BE-nn` y `REQ-FE-nn`—, derivados de su propio contenido, con el apartado del que nacen y los ítems que los realizan en su propia fila | P-139 | Cubierto |
 
 ### §2 · Principios
 
@@ -119,7 +120,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
-| A-65 | Los nodos se llaman igual que las acciones de PlusCal, y la identidad se comprueba sobre nombres **y aristas** | P-55, P-62, P-133 | Cubierto |
+| A-65 | Los nodos se llaman igual que las acciones de la especificación TLA+, y la identidad se comprueba sobre nombres **y aristas** | P-55, P-62, P-133 | Cubierto |
 | A-66 | La máquina de estados con sus aristas, y `Fail` como estado declarado | P-56, P-60, P-128 | Cubierto |
 | A-67 | `ResumeFromCheckpoint` como arista de entrada a cualquier nodo | P-58 | Cubierto |
 
@@ -142,7 +143,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-75 | Los cinco validadores semánticos, tres de ellos no bloqueantes, con los avisos que viajan | P-43, P-72, P-88, P-90, P-122 | Cubierto |
 | A-76 | Los cuatro invariantes de Lean, verificados por `decide` | P-47, P-49 | Cubierto |
 | A-77 | Lean en tres puntos: escaleta, pasada del extractor y publicación | P-80, P-84, P-91, P-97 | Cubierto |
-| A-78 | TLA+/PlusCal sobre las seis fases, con `Extract` como acción propia y los cuatro invariantes de seguridad | P-61, P-115 | Cubierto |
+| A-78 | TLA+ directo sobre las seis fases, con `Extract` como acción propia, los **cinco invariantes de estado** —incluido `CorpusSelladoNoSeToca`— y `PreviousVersionPreserved` como propiedad temporal | P-61, P-115, P-133 | Cubierto |
 | A-79 | *Liveness* bajo equidad débil, y TLC en desarrollo y no en cada generación | P-61, P-63 | Cubierto |
 | A-110 | §11 delega en `verification.md` el plan de verificación completo: técnica, clase de confianza y gate por riesgo | P-04, P-05, P-07, P-45, P-49, P-112, P-114 a P-124 | Cubierto |
 | A-112 | §11e `inventario_del_plan`: rutas y símbolos del plan contra el árbol y a la inversa, informando **en dos cubos** | P-129 | Cubierto |
@@ -157,7 +158,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-80 | La tabla de techos por rol, los diez | P-32 | Cubierto |
 | A-81 | La guarda que rechaza la llamada antes de emitirla | P-28 | Cubierto |
 | A-82 | Los hooks `PreToolUse` y `PostToolUse`, programados una vez en `commons/agents` | P-29, P-30 | Cubierto |
-| A-83 | El semáforo que sumaría los techos si las micro-sesiones se paralelizaran | — | **Fuera de alcance declarado** (plan §11) |
+| A-83 | El semáforo que sumaría los techos si las micro-sesiones se paralelizaran | P-134 | Cubierto en su condición: P-134 afirma la serialidad que hoy lo hace innecesario. El semáforo sigue fuera de alcance |
 
 ### §13 · Reproducibilidad
 
@@ -196,12 +197,12 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-99 | No se usan claves de partición | P-23 | Cubierto |
 | A-100 | La carga de `sqlite-vec` se comprueba al abrir y nunca degrada en silencio | P-19, P-128 | Cubierto |
 | A-101 | La organización del backend *package by feature*, con el grafo en `commons/graph/` | P-01, P-55 | Cubierto |
-| A-102 | El frontend en FSD v2.1 con Steiger informando sin bloquear | — | **Fuera de alcance declarado** (plan §11) |
-| A-103 | Dos puntos de entrada sobre un solo camino de código | P-57, P-109, P-113 | Cubierto |
+| A-102 | El frontend en FSD v2.1 con Steiger informando sin bloquear | `specs/frontend/plan.md`: IMP-02, IMP-03, IMP-04 | Cubierto en el plan del frontend |
+| A-103 | Dos puntos de entrada sobre un solo camino de código | P-57, P-109, P-113, P-138 | Cubierto |
 | A-104 | La invocación que reanuda un gate se atiende en tarea de fondo | P-109 | Cubierto |
 | A-105 | Cerrojo de fichero por novela; quien llega segundo es rechazado, no encolado | P-59, P-113, P-128 | Cubierto |
 | A-106 | El directorio `proyectos/` es el registro; no hay base de datos global de novelas | P-111 | Cubierto |
-| A-107 | El webhook protegido con secreto, y el resto de la API abierto por decisión declarada (U-17) | P-109, P-110 | Cubierto |
+| A-107 | El webhook protegido con secreto, y el resto de la API abierto por decisión declarada (U-17) | P-109, P-110, P-136 | Cubierto |
 
 ### §18 y §19 · Riesgos y valores por defecto
 
@@ -209,6 +210,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 |---|---|---|---|
 | A-108 | Las mitigaciones de §18 que son código: recuento por dimensión, tope de fetch, recuento de afectados, carga comprobada, varianza medida | P-19, P-30, P-73, P-100, P-121 | Cubierto |
 | A-109 | Los valores por defecto de §19, parametrizables y con nombre | P-02, P-03 | Cubierto |
+| A-116 | §18 · «Los documentos pueden ser coherentes y estar equivocados»: la familia §11e comprueba que código y especificación dicen lo mismo, no que lo que dicen sea correcto | P-135 | Cubierto por inspección: el acta de grilling y de revisión es su entregable |
 
 ---
 
@@ -286,19 +288,21 @@ Cada ítem del plan, con el requisito del que nace. **Ninguna fila está vacía*
 | | | P-130 | A-111, A-114 |
 | | | P-131 | A-113 |
 | | | P-132 | A-111, A-113 |
-| | | P-133 | A-65, A-115 |
+| | | P-133 | A-65, A-78, A-115 |
+| P-137 | A-111 |
+| P-139 | A-117 |
+| P-138 | A-103, A-107 |
+| P-134 | A-83 |
+| P-135 | A-116 |
+| P-136 | A-103, A-107 |
 
 ---
 
 ## 3. Requisitos fuera del alcance de este plan
 
-Dos requisitos de la arquitectura no tienen ítem, y ninguno de los dos es un olvido. Se escriben aquí para que su ausencia sea una decisión visible en lugar de un hueco silencioso.
+**Ninguno.** Este apartado listaba tres, y los tres se han cerrado: `A-102`, el frontend en FSD, lo cubre su propio plan desde que existe; `A-116`, la veracidad de los documentos, tiene entregable en `P-135`, el acta de grilling y de revisión; y `A-83`, el semáforo de sesiones concurrentes, tiene ítem para **su condición** en `P-134`, que afirma por construcción la serialidad de las micro-sesiones.
 
-| # | Requisito | Por qué no tiene ítem | Dónde le tocará |
-|---|---|---|---|
-| A-83 | El semáforo que suma los techos de las micro-sesiones concurrentes del arquitecto | La propia arquitectura lo condiciona a que algún día se paralicen: hoy `fill_gap` es un nodo secuencial y el peor caso sigue siendo un solo agente abierto. Construirlo ahora sería código sin caso de uso | El día que se paralelicen, con el techo de 14.000 ya declarado en §12 |
-| A-116 | §18 · «Los documentos pueden ser coherentes y estar equivocados»: la familia §11e comprueba que código y especificación dicen lo mismo, no que lo que dicen sea lo correcto | Su mitigación declarada no es código sino **inspección**: el grilling de cada documento y la revisión del Autor en el gate de cada hito. Un ítem de plan no puede realizarla | El grilling del flujo de `AGENTS.md` y G4 |
-| A-102 | El frontend en Feature-Sliced Design v2.1, con Steiger informando sin bloquear | El alcance de esta spec es `backend/src/storymaker/`, y §16.3 da al frontend una metodología propia | `specs/frontend/`, aún sin escribir |
+Conviene precisar lo último, porque no es una cobertura completa y decir que lo es sería justo lo que esta matriz existe para evitar: **el semáforo no se construye**. La arquitectura lo condiciona a que algún día las micro-sesiones se paralelicen, y lo que `P-134` garantiza es que hoy no lo están y que nadie podrá paralelizarlas por descuido sin que una prueba se queje. El día que se decida paralelizarlas, el semáforo vuelve a ser trabajo pendiente con el techo de 14.000 ya declarado en §12.
 
 ---
 
@@ -325,6 +329,8 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-23 | Se propaga la reescritura de §11d —A-10, A-65 y A-78 dejan de hablar de PlusCal y A-78 recoge los cinco invariantes—, `A-83` y `A-102` dejan de estar fuera de alcance con `P-134` y el plan del frontend, y entran `P-134`, `P-135` y `P-136` en el recorrido inverso | La arquitectura resolvió su contradicción y aparecieron dos planes donde había uno. Una matriz que no se mueve con ellos afirma en verde una cobertura que ya no ha comprobado |
 | 2026-09-23 | Se incorpora la familia **§11e** llegada a los tres documentos: entran A-111 a A-115 con sus ítems P-129 a P-133, A-65 pasa a comprobarse sobre nombres **y aristas**, y A-116 queda en §3 como requisito cuya mitigación es inspección y no código | La matriz se escribió antes de que §11e existiera, y una matriz desactualizada es peor que no tenerla: afirma en verde una cobertura que ya no ha comprobado |
 | 2026-09-23 | Pasada de congruencia entre la spec y el plan: entra **P-128** —la taxonomía de errores—, que sube el plan a 128 ítems; se corrigen las filas de A-66, A-100 y A-105 | La comparación con la spec, y no con la arquitectura, destapó cuatro contratos sin ítem. La matriz se mantiene al día en la misma operación o deja de servir para nada |
 | 2026-09-23 | Versión inicial: 110 requisitos de arquitectura y 127 ítems de plan, trazados en ambas direcciones, con diez hallazgos resueltos y dos requisitos declarados fuera de alcance | Un plan derivado a mano de un documento de mil líneas pierde cosas, y las pierde en silencio. La matriz convierte esa pérdida en una fila vacía que se ve |
+| 2026-09-23 | Entra `A-117` —los requisitos enumerados de cada spec— con su ítem `P-139`, y la dirección inversa recoge el par | La arquitectura fijó el requisito como unidad que se traza contra el plan, y una matriz que no lo recogiera afirmaría en verde una cobertura que ya no comprueba entera |

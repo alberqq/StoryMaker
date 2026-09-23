@@ -1,0 +1,22 @@
+# spec: §7.1 n.o 5 · arq: §2 principio 5, §7
+# "Nada se sobrescribe" tiene dos cerrojos: este impide escribir el codigo, y los
+# triggers BEFORE UPDATE / BEFORE DELETE (P-17) impiden que se ejecute.
+rules:
+  - id: no-update-inmutables
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      UPDATE o DELETE sobre una tabla inmutable. Capitulos, ejecuciones de fase y
+      versiones no se sobrescriben: lo que parece una modificacion es siempre una
+      fila nueva que apunta a la anterior (arq. §2, §7).
+    paths:
+      include:
+        - "backend/src/**"
+      exclude:
+        - "**/esquema/inmutabilidad.sql"
+    pattern-either:
+      - pattern-regex: >-
+          (?i)\bUPDATE\s+(capitulo_version|fase_run|version_novela|version_capitulo)\b
+      - pattern-regex: >-
+          (?i)\bDELETE\s+FROM\s+(capitulo_version|fase_run|version_novela|version_capitulo)\b
+      - pattern-regex: '(?i)\bUPDATE\s+mundo_hecho\s+SET\s+(?!respaldo|estado)'

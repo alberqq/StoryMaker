@@ -1,0 +1,15 @@
+# spec: §4.2 · arq: §15
+# Los datos del homenajeado viven en el fichero de su novela y no salen de el. El
+# investigador es el unico rol con red, asi que es el unico por el que podrian salir.
+rules:
+  - id: pii-fuera-del-investigador
+    languages: [python]
+    severity: ERROR
+    message: >-
+      El prompt del investigador no se construye con campos personales del Brief. Recibe
+      periodo y lugar, y nada mas: es el unico rol con red (arq. §15, spec §4.2).
+    paths:
+      include:
+        - "backend/src/storymaker/investigation/**"
+    pattern-regex: >-
+      (brief|self\.brief)\.(nombre_homenajeado|fecha_nacimiento|ocasion|elementos_personalizacion|palabras_prohibidas|rol_epoca)

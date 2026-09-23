@@ -1,0 +1,57 @@
+# spec: §4.5 · arq: §11b
+#
+# La rubrica del juez, y **el mismo fichero que usa la revision humana**. Que los dos lean
+# esto y no dos copias parecidas es lo que hace comparable el juicio de la persona con el
+# del modelo: si la persona puntuara con otros criterios, la comparacion no diria nada.
+#
+# Siete criterios, del 1 al 10, cada uno con justificacion. Lo que se pide en cada uno esta
+# escrito para que lo entienda tambien quien no ha leido la arquitectura.
+
+criterios:
+  - nombre: continuidad
+    pregunta: >-
+      ¿Lo que se dice en un capitulo sigue siendo cierto en los siguientes? Objetos que
+      cambian de sitio sin motivo, personajes que saben lo que no han visto, heridas que se
+      curan solas.
+
+  - nombre: arco
+    pregunta: >-
+      ¿La transformacion del homenajeado esta ganada o solamente anunciada? Un arco
+      declarado en la escaleta y no ejecutado en la prosa puntua bajo aunque los hitos
+      aparezcan.
+
+  - nombre: coherencia_de_personajes
+    pregunta: >-
+      ¿Cada personaje habla y actua como quien es? Un armador que razona como un notario
+      rompe esto aunque lo que diga sea correcto.
+
+  - nombre: ritmo
+    pregunta: >-
+      ¿La novela avanza? Escenas que no mueven nada, capitulos que repiten la funcion del
+      anterior, finales de capitulo sin gancho.
+
+  - nombre: prosa
+    pregunta: >-
+      ¿Se lee bien? Frases mecanicas, adjetivacion repetida, transiciones bruscas entre
+      escenas cosidas.
+
+  - nombre: naturalidad_de_la_personalizacion
+    pregunta: >-
+      ¿Los elementos del comprador estan tejidos o pegados? Un objeto que aparece porque
+      alguien lo puso en una lista se nota, y es lo que estropea el regalo.
+
+  - nombre: autenticidad_de_epoca
+    pregunta: >-
+      ¿El mundo se sostiene? Aqui es donde se juzga la frontera historia-ficcion contra la
+      politica declarada en el encargo: el grado de licencia, el arcaismo y el contenido
+      admisible. Una licencia declarada no penaliza; una no declarada, si.
+
+escala:
+  minimo: 1
+  maximo: 10
+  umbral_de_publicacion: 6.0
+
+nota: >-
+  El juez no edita. Su unica salida son estas siete notas con su justificacion, y esa
+  separacion no es negociable: si el mismo agente que optimiza la metrica fuera el que la
+  produce, los scores dejarian de significar nada.

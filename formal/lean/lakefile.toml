@@ -1,0 +1,13 @@
+name = "cronologia"
+defaultTargets = ["Cronologia", "verificar"]
+
+[[lean_lib]]
+name = "Cronologia"
+
+# El ejecutable que el arnés invoca desde `commons/formal/`. Sale con código 0 si la
+# cronología de la novela cumple los cuatro invariantes, y con 1 imprimiendo los
+# eventos culpables si no. El código de salida es el contrato: el nodo del grafo lo
+# lee y decide la arista, sin parsear prosa.
+[[lean_exe]]
+name = "verificar"
+root = "Verificar"

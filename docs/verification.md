@@ -57,7 +57,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 | 15 | CI/CD integration | **T/A** | GitHub Actions; misma tubería para código humano y generado | G1, G2 | Adoptada |
 | 16 | Progressive rollout | **D** | Versiones de prompt en Langfuse, ramas por fichero, *feature flags* | G2 | Reinterpretada (§4.8) |
 | 17 | Red-teaming | **T/I** | Suite adversaria determinista + sesión manual por hito | G1, G2 | Adoptada |
-| 18 | Model checking | **A** | TLA+/PlusCal, TLC sobre modelo pequeño | G1 | Adoptada, bloqueante |
+| 18 | Model checking | **A** | TLA+ directo, TLC sobre modelo pequeño | G1 | Adoptada, bloqueante |
 | 19 | Correspondencia documento↔código | **A/T** | Cuatro pruebas de trazabilidad sobre el repositorio: inventario del plan, registro de validadores, anclas de procedencia e identidad nodo↔acción | G1 | Adoptada, bloqueante en dos de las cuatro |
 
 ---
@@ -92,7 +92,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 
 - `ruff` con el conjunto `S` (reglas de bandit): inyección SQL por interpolación, `subprocess` con `shell=True`, `pickle`, aserciones en producción.
 - `pip-audit` sobre el *lockfile*.
-- `gitleaks` en pre-commit y en CI. El repositorio convive con un token de Telegram, claves de Langfuse y una clave de Anthropic: un secreto commiteado es el único fallo de este proyecto con consecuencias fuera de él.
+- `gitleaks` en pre-commit y en CI. El repositorio convive con un token de Telegram y claves de Langfuse: un secreto commiteado es el único fallo de este proyecto con consecuencias fuera de él. **No hay clave de Anthropic que proteger**, y conviene decirlo porque cambia la superficie: los modelos corren a través de Claude Code, que el Agent SDK lanza como subproceso, de modo que la autenticación la pone la sesión ya iniciada del Autor y nunca entra en el árbol ni en el entorno del arnés.
 
 **Reglas propias (Semgrep).** Son las que convierten principios escritos en prosa en comprobaciones mecánicas:
 
@@ -106,6 +106,8 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 | `indice-solo-por-embeddings` | `INSERT`, `UPDATE` o `DELETE` sobre cualquier tabla `vec_*` desde fuera de `commons/embeddings/` | «El índice se escribe en la misma transacción que la fila» (§16.2 arq.) |
 
 **Steiger, el linter de Feature-Sliced Design.** El frontend está organizado en FSD v2.1 (§16.3 arq.), cuyas dos reglas estructurales —un módulo solo importa de capas estrictamente inferiores, y dos *slices* de la misma capa nunca se importan entre sí— son comprobables sin ejecutar nada. `npx steiger src` las verifica en CI. Es la razón de haber preferido una metodología estándar a una convención propia: una convención propia no tiene quien la mire.
+
+**Lo que Steiger no ve, y sí sostiene una puerta.** La regla de que **ningún módulo fuera de `shared/api` emite una petición de red** no es una regla de capas y el linter de FSD no la mira, pero de ella depende que `render_visual` pueda servir al navegador la versión candidata (§4 y §16.3 de la arquitectura). Se comprueba con una prueba propia sobre el árbol del frontend, y **esa sí bloquea**, por el mismo criterio que se enuncia a continuación: bloquea lo que sostiene una puerta.
 
 **Steiger informa, no bloquea.** Es el primer caso de un criterio que este plan aplica en todas partes y conviene enunciar una sola vez: **bloquea lo que sostiene una puerta; informa lo que describe la forma del repositorio.** La forma de una carpeta no pone en riesgo ninguna de las propiedades que G3 y G5 protegen, y convertirla en parada contradiría el criterio de producto del proyecto. Bajo la misma regla informan `inventario_del_plan` y `anclas_de_procedencia` (§3.9), y bloquean `registro_de_validadores` e `identidad_nodo_accion`, porque el primero sostiene G3 y el segundo sostiene lo que TLC verificó. Todas publican su salida con el informe de G1.
 
@@ -381,7 +383,7 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 |---|---|---|---|
 | 1 · Estática | ruff y bandit, mypy `--strict`, gitleaks, reglas Semgrep propias | < 1 min | Sí |
 | 2 · Rápida | pytest unitarias, Hypothesis, contratos | < 3 min | Sí |
-| 3 · Formal del sistema | TLC sobre `spec/harness.cfg` (5 capítulos, 2 reintentos) | < 3 min | Sí |
+| 3 · Formal del sistema | TLC sobre `formal/tla/harness.cfg` (5 capítulos, 2 reintentos) | < 3 min | Sí |
 | 4 · Formal de la historia | `lake build` sobre una cronología de *fixture* | < 2 min | Sí |
 | 5 · Integración | Grafo completo con agente falso sobre SQLite temporal | < 5 min | Sí |
 | 6 · Nocturna | Mutación, CrossHair, suite de evals con modelo real, varianza del juez | Sin límite | No |
@@ -429,7 +431,7 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 
 **Qué garantiza.** Que el comportamiento del arnés —no su código: su comportamiento— cumple sus invariantes en **todos** los estados alcanzables del modelo, incluidos los entrelazados que a nadie se le ocurriría probar.
 
-**Implementación.** PlusCal traducido a TLA+ en `spec/harness.tla`, con los `process` nombrados **exactamente igual que los nodos de LangGraph**. La tabla de correspondencia acción↔nodo de §9 de la arquitectura no es una narración: es una lista de identidades, y es lo que hace que un contraejemplo de TLC se lea como una secuencia de nodos reales.
+**Implementación.** Especificación escrita **directamente en TLA+** en `formal/tla/harness.tla`, con los nombres de los nodos de LangGraph como valores del contador de programa y todas las acciones moviéndolo por `Mueve(de, a)` sobre la definición `Aristas`. La tabla de correspondencia acción↔nodo de §9 de la arquitectura no es una narración: es una lista de identidades, y es lo que hace que un contraejemplo de TLC se lea como una secuencia de nodos reales.
 
 **Alcance.** Las seis fases, incluidas reanudación y regeneración. Modelar solo el bucle de generación dejaría fuera precisamente los invariantes interesantes, porque viven en lo que se habría excluido.
 
@@ -437,12 +439,14 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 |---|---|---|
 | `NoPublishUnvalidated` | Nunca se publica una versión con un capítulo que no pasó todos los validadores | Exige cuantificar sobre todos los entrelazados de aprobación, regeneración y publicación |
 | `ResumeIsExactlyOnce` | Reanudar desde checkpoint no duplica ni pierde capítulos | El fallo vive en el instante exacto entre escribir y marcar |
-| `PreviousVersionPreserved` | Tras regenerar, la versión anterior sigue siendo recuperable entera | Depende de la secuencia completa de regeneraciones previas |
 | `RetriesBounded` | Los reintentos por capítulo nunca superan el límite | Interacción entre el bucle de reparación y la reanudación |
+| `CorpusSelladoNoSeToca` | Sellado el corpus, ningún nodo vuelve a escribir en `mundo_*` | El atajo que lo rompería es un camino del grafo, no una línea de código |
+
+**`PreviousVersionPreserved` se comprueba como propiedad temporal** —la secuencia de versiones es *append-only* y ningún elemento publicado cambia— y no como invariante de estado: «la anterior sigue siendo recuperable» no se mira en una foto del sistema, sino entre un estado y el siguiente.
 
 **Liveness.** En batch, la propiedad directa: toda generación termina publicando una versión o deteniéndose con error. En interactivo, el humano se modela como proceso de entorno no determinista y la propiedad se enuncia **bajo hipótesis de equidad débil sobre su respuesta**: *si el Autor acaba respondiendo, toda generación termina*. No es una escapatoria: sin esa hipótesis la propiedad es falsa y no hay diseño que la salve.
 
-**Configuración.** Modelo pequeño —5 capítulos, 2 reintentos— en `spec/harness.cfg`, ejecutado en CI. TLC no ejecuta el código: explora el modelo. **Cada contraejemplo hallado durante el desarrollo se documenta junto al cambio de diseño que provocó**; esa lista es la evidencia más honesta de que la especificación sirvió para algo, y no un adorno escrito a posteriori.
+**Configuración.** Modelo pequeño —5 capítulos, 2 reintentos— en `formal/tla/harness.cfg`, ejecutado en CI. TLC no ejecuta el código: explora el modelo. **Cada contraejemplo hallado durante el desarrollo se documenta junto al cambio de diseño que provocó**; esa lista es la evidencia más honesta de que la especificación sirvió para algo, y no un adorno escrito a posteriori.
 
 ---
 
@@ -514,6 +518,7 @@ Lectura transversal: los siete modos de fallo que más importan y con qué se at
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-23 | Se propaga la reescritura de §11d: el mapa maestro y §4.10 pasan a **TLA+ directo** con las rutas de `formal/tla/`, entra `CorpusSelladoNoSeToca` en la tabla de invariantes y `PreviousVersionPreserved` pasa a declararse **propiedad temporal**. §3.2 añade la regla del cliente único del frontend, que bloquea porque sostiene G5 | La arquitectura resolvió su contradicción y este plan medía contra la versión vieja: un plan de verificación que comprueba cuatro invariantes donde hay cinco da por verde lo que nadie ha mirado |
 | 2026-09-23 | Versión inicial | Fijar los Quality Gates y la clasificación T/A/I/D/U antes de escribir código, para que cada decisión de arquitectura nazca con su método de verificación asociado |
 | 2026-09-23 | El frontend pasa a Feature-Sliced Design v2.1 y **Steiger** entra en §3.2 como análisis estático de clase **A** bajo G1, informando sin bloquear; los vectores pasan a tablas `vec0` de `sqlite-vec`, lo que añade la regla Semgrep `indice-solo-por-embeddings` y el riesgo U-15 | Una convención de carpetas propia no la comprueba nadie; FSD trae un linter oficial y convierte la estructura en una propiedad verificable. La extensión nativa, en cambio, añade la única dependencia de la pila que puede fallar por cómo esté construido el intérprete |
 | 2026-09-23 | Investigation gana un validador semántico, `respaldo_fuente`, de clase **I** y cubierto por G4: el verificador lee la cita guardada y dicta si sostiene el hecho. Se añaden U-13 (fiabilidad del verificador) y U-14 (cita fabricada), y se reescribe la mitigación de U-8 | El corpus era lo único que ningún control miraba antes de que la novela se construyera encima. No bloquea ninguna arista, así que su garantía es la inspección del Autor en el gate, no una prueba |

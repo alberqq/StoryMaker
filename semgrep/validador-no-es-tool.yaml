@@ -1,0 +1,35 @@
+# spec: §7.1 n.o 7 · arq: §1 "la decision de la que cuelga todo"
+# Una prueba comprobaria que hoy los validadores corren; estas reglas impiden que manana
+# alguien los convierta en algo que un modelo pueda olvidarse de llamar. Son dos porque
+# cada una vigila un sitio distinto: la concesion de herramientas y el propio Core Domain.
+rules:
+  - id: validador-no-es-tool-concedido
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      Un validador aparece en allowed_tools. Los validadores son nodos del grafo, no
+      herramientas: si un modelo pudiera elegir no llamarlos, un capitulo aprobado sin
+      comprobar seria indistinguible de uno comprobado y correcto (arq. §1).
+    paths:
+      include:
+        - "backend/src/**"
+    pattern-regex: >-
+      allowed_tools\s*=\s*\[[^\]]*(schema_guard|nombres_exactos|longitud_capitulo|guardrail_prohibidas|anacronismo_fechado|anclaje_valido|cobertura_\w+|arco_\w+|render_visual)
+
+  - id: validador-no-es-tool-decorado
+    languages: [python]
+    severity: ERROR
+    message: >-
+      Un simbolo del Core Domain esta decorado como herramienta de agente. El Core Domain
+      recibe datos y devuelve incidencias; quien decide cuando corre es el grafo (arq. §1, §15).
+    paths:
+      include:
+        - "backend/src/storymaker/commons/validation/**"
+    patterns:
+      - pattern: |
+          @$DECORADOR
+          def $F(...):
+              ...
+      - metavariable-regex:
+          metavariable: $DECORADOR
+          regex: '^(tool|function_tool|sdk_tool)$'

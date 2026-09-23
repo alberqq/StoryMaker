@@ -14,8 +14,12 @@ Se trabaja **siempre sobre `zero`**. Los commits van directos a esa rama: no se 
 | [`docs/verification.md`](docs/verification.md) | Plan de verificación y **Quality Gates** (G0–G6), clasificación T/A/I/D/U, riesgos aceptados | Toda capacidad nueva declara aquí su clase y su gate |
 | [`docs/definitions.md`](docs/definitions.md) | Glosario de la ontología del dominio | Vocabulario obligatorio: se usan estos términos, no sinónimos |
 | [`docs/domain-knowledge.md`](docs/domain-knowledge.md) | Cómo se relacionan los conceptos del dominio | — |
-| `specs/<nombre>/spec.md` | Qué hace exactamente una pieza: contratos, entradas, salidas, casos de error | Deriva de la arquitectura, no la sustituye |
+| `specs/<nombre>/spec.md` | Qué hace exactamente una pieza: contratos, entradas, salidas, casos de error, y **sus requisitos enumerados** (`REQ-BE-nn`, `REQ-FE-nn`) derivados de su propio contenido | Deriva de la arquitectura, no la sustituye |
 | `specs/<nombre>/plan.md` | **Solo la forma técnica exacta**: ficheros, funciones, orden de trabajo | Si contradice la arquitectura, para y pregunta |
+| `specs/<nombre>/trace-matrix.md` y [`trace-matrix.md`](trace-matrix.md) | Correspondencia requisito↔ítem de plan, por mitad y consolidada en la raíz | Se mueve con el documento que cambia, en la misma operación. Una matriz desactualizada afirma en verde lo que ya no ha comprobado |
+| [`docs/iteraciones.md`](docs/iteraciones.md) | Registro de iteraciones: qué se cambió al implementar, por qué y con qué efecto, incluidos los contraejemplos de TLC | Toda desviación respecto de la especificación deja aquí su entrada |
+| [`docs/requirements-audit.md`](docs/requirements-audit.md) | Auditoría de `REQUIREMENTS.md` contra el repositorio, requisito a requisito | Se marca lo que se ha comprobado, no lo que se cree cierto |
+| [`docs/red-team.md`](docs/red-team.md), [`docs/skills.md`](docs/skills.md), [`docs/diagramas.md`](docs/diagramas.md), [`docs/explainers/`](docs/explainers) | Material de apoyo: sesiones adversarias, skills del harness, diagramas y explicaciones | Derivan de los anteriores; no fijan decisiones |
 
 ## Spec-driven development
 

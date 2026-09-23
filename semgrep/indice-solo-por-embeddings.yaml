@@ -1,0 +1,19 @@
+# spec: §3.5 · arq: §16.2
+# El indice se escribe en la misma transaccion que la fila, y lo hace commons/embeddings,
+# no cada feature por su cuenta: si no, el canon vivo y su indice divergen en cuanto el
+# Autor edita una ficha en un gate.
+rules:
+  - id: indice-solo-por-embeddings
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      Escritura en una tabla vec_* desde fuera de commons/embeddings. Quien inserta un
+      hecho, una ficha de canon o un resumen lo indexa en el mismo commit, y lo hace el
+      modulo de embeddings (arq. §16.2).
+    paths:
+      include:
+        - "backend/src/**"
+      exclude:
+        - "backend/src/storymaker/commons/embeddings/**"
+        - "**/esquema/vec.sql"
+    pattern-regex: '(?i)\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+vec_\w+'

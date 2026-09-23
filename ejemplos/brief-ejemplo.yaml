@@ -1,0 +1,79 @@
+# Brief de ejemplo — el que genera ejemplos/novela-ejemplo.pdf
+#
+# Un brief tiene tres bloques y el reparto no es cosmético: el primero describe a quién
+# se regala la novela, el segundo el mundo en el que va a vivir, y el tercero las reglas
+# con las que se escribe. Nada de lo que el arquitecto puede inventar entra aquí: la
+# Premisa, el Tema, la trama, los conflictos, los arcos y la escaleta son obra suya.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva --brief ../ejemplos/brief-ejemplo.yaml
+#   uv run storymaker correr --novela ramon-iriarte
+
+homenajeado:
+  # Tal como debe aparecer escrito. El validador `nombres_exactos` lo comprueba
+  # carácter a carácter contra el canon en cada capítulo.
+  nombre_homenajeado: Ramón Iriarte Sologaray
+  fecha_nacimiento: 1958-03-14
+
+  # Su oficio o posición en el período, no en su vida real: es lo que el arquitecto
+  # usa para fijar su estatus y su voz dentro de la estructura social del corpus.
+  rol_epoca: armador de navío mercante
+  ocasion: jubilación tras cuarenta años en el puerto
+
+  # Los marcados obligatorios tienen que aparecer en al menos un capítulo, y se
+  # comprueba tres veces: al anclar la escaleta, al escribir el capítulo y al cerrar
+  # Writing. Anclar no es escribir.
+  elementos_personalizacion:
+    - texto: aprendió a navegar con su abuelo en una txalupa
+      obligatorio: true
+    - texto: le perdió el miedo al mar a los once años
+      obligatorio: true
+    - texto: colecciona cartas náuticas antiguas
+      obligatorio: false
+
+mundo:
+  periodo:
+    inicio: 1803
+    fin: 1806
+    denominacion: Guerras Napoleónicas
+  lugar: Cádiz
+
+  # Opcional y orientativo. Si viene, se contrasta con la fecha de nacimiento del
+  # homenajeado y el arquitecto debe anclarlo en la escaleta; si no, el arquitecto
+  # elige sus anclajes contra el corpus, que es lo que hace de todos modos.
+  evento_ancla: la batalla de Trafalgar
+
+  personajes_historicos:
+    aparecen:
+      - Federico Gravina
+    se_evitan:
+      - Napoleón Bonaparte
+
+obra:
+  genero:
+    principal: histórica
+    subgenero: marítima
+  tono: elegíaco con final luminoso
+  punto_de_vista: tercera persona con focalización en el homenajeado
+
+  # Los tres diales de la frontera historia-ficción. No los lee ningún validador por
+  # sí solos, y aun así son obligatorios: son la política contra la que el juez puntúa
+  # la autenticidad de época y contra la que se decide si comprimir el tiempo es una
+  # Licencia legítima o un error.
+  grado_licencia: moderado
+  arcaismo: moderado
+  contenido_admisible: sin violencia explícita
+
+  # Dos niveles. `novela` se aplica a todo el texto; `destinatario` recoge lo que el
+  # comprador no quiere que lea esta persona en concreto. La comprobación normaliza
+  # mayúsculas, acentos, plurales y variantes simples.
+  palabras_prohibidas:
+    novela:
+      - pirata
+      - tesoro
+    destinatario:
+      - naufragio
+
+  n_capitulos: 10
+  palabras_por_capitulo: 1200

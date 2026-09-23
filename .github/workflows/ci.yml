@@ -1,0 +1,66 @@
+# spec: §7.1 · verif. §6 — Puerta G1: no se integra nada que no pase esto.
+name: G1
+
+on:
+  push:
+    branches: [zero]
+  pull_request:
+
+jobs:
+  estatica:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Entorno reproducible
+        run: cd backend && uv sync --frozen --group dev
+      - name: ruff y bandit
+        run: cd backend && uv run ruff check .
+      - name: mypy --strict
+        run: cd backend && uv run mypy
+
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: cd backend && uv sync --frozen --group dev
+      - name: pytest
+        run: cd backend && uv run pytest -q
+
+  seguridad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v3
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Reglas Semgrep del arnes
+        run: cd backend && uv run --group ci semgrep scan --config ../semgrep --error ..
+      - name: pip-audit sobre uv.lock
+        run: cd backend && uv run --group ci pip-audit --strict
+
+  formal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java para TLC
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: tla2tools
+        run: curl -sSLo tla2tools.jar https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar
+      - name: TLC sobre el modelo pequeno
+        # No ejecuta el codigo: explora exhaustivamente los estados alcanzables del modelo
+        # y, si encuentra una violacion, devuelve el contraejemplo. Corre en desarrollo, no
+        # en cada generacion.
+        run: java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -config formal/tla/harness.cfg formal/tla/harness.tla

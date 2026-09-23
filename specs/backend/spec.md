@@ -49,9 +49,11 @@ Un único objeto `Settings` de `pydantic-settings`, leído del entorno y de un `
 | Grupo | Claves | Nota |
 |---|---|---|
 | Rutas | `directorio_proyectos` (por defecto `proyectos/`) | El directorio es el registro de novelas (§16.4 arq.) |
+| Frontend | `frontend_dist` (por defecto `frontend/dist`), `frontend_base_url` | Lo que FastAPI sirve y la URL con la que Playwright abre la lectura para imprimir y para `render_visual` |
 | Modelos | `modelo_por_rol` (mapa rol→id de modelo), `sdk_version` | Por defecto los nueve roles en Haiku 4.5 |
 | Gates | `gates_enabled`, `timeout_gate_horas` | `false` en modo batch |
 | Telegram | `telegram_bot_token`, `telegram_chat_id`, `telegram_secret_token` | El último protege el webhook |
+| Modelo | — | **No hay credencial de Anthropic.** El Agent SDK lanza Claude Code como subproceso y hereda su sesión: el arnés fija modelo, herramientas y turnos, pero no autentica |
 | Langfuse | `langfuse_public_key`, `langfuse_secret_key`, `langfuse_host`, `otlp_enabled` | OTLP desactivado por defecto |
 | Límites | `reintentos_por_capitulo` (2), `huecos_por_plotting` (5), `k_vecinos` (8), `techo_webfetch_tokens` (10.000) | Los valores de §19 de la arquitectura |
 | Embeddings | `modelo_embeddings`, `dimension_embeddings` (384) | Viajan al `manifiesto` |
@@ -77,7 +79,7 @@ Al abrir una novela, y antes de nada más:
 
 **Esquema.** El de §7 de la arquitectura, con tablas `STRICT` y `CHECK` sobre todos los enumerados: `mundo_hecho.estado`, `mundo_hecho.origen`, `mundo_hecho.respaldo`, `canon_prohibida.nivel`, `incidencia.severidad`, `fase_run.estado`, `gate.decision`. Un valor fuera del enumerado **aborta la transacción**; no se normaliza ni se corrige.
 
-**Inmutabilidad, con dos cerrojos.** El principio «nada se sobrescribe» se protege arriba con la regla Semgrep `no-update-inmutables`, que impide escribir el código, y abajo con ***triggers* `BEFORE UPDATE` y `BEFORE DELETE`** sobre `capitulo_version`, `fase_run`, `version_novela`, `version_capitulo` y `mundo_hecho` tras el sello, que impiden que se ejecute. El *trigger* lanza `RAISE(ABORT, ...)` con el nombre de la tabla. Un principio con un solo cerrojo es una convención; con los dos, es una propiedad.
+**Inmutabilidad, con dos cerrojos.** El principio «nada se sobrescribe» se protege arriba con la regla Semgrep `no-update-inmutables`, que impide escribir el código, y abajo con ***triggers* `BEFORE UPDATE` y `BEFORE DELETE`** sobre `capitulo_version`, `fase_run`, `version_novela`, `version_capitulo` y `mundo_hecho` tras el sello, que impiden que se ejecute. El *trigger* lanza `RAISE(ABORT, ...)` con el nombre de la tabla. **Lo que protege es el contenido**: `capitulo_version` admite el cambio de `estado` que hace `ApproveChapter` y `fase_run` admite su cierre con el consumo, pero el texto, el intento y la identidad de la ejecución no se tocan, y `version_novela` y `version_capitulo` no admiten escritura alguna. En `mundo_hecho` la condición es la existencia del sello, de modo que el verificador puede degradar antes y nadie puede escribir después. Un principio con un solo cerrojo es una convención; con los dos, es una propiedad.
 
 **Transacciones.** La regla que sostiene el §7 entero: **el checkpoint de LangGraph y la escritura de dominio ocurren en la misma transacción.** El nodo no hace `commit` por su cuenta; lo hace el envoltorio de invocación al cerrar el paso. De ahí que no pueda existir un instante en que el grafo crea que el capítulo 6 está hecho y la biblia no lo tenga.
 
@@ -97,7 +99,7 @@ Al abrir una novela, y antes de nada más:
 
 **El estado es un `TypedDict` total y explícito.** Nada de `dict[str, Any]` en este módulo: mypy `--strict` lo comprueba, y es lo que permite que el contador de huecos de Plotting o el de reintentos de Writing tengan un dueño declarado en lugar de acabar definidos dentro de la fase que primero los necesitó.
 
-**Los nodos se llaman igual que las acciones de PlusCal.** No es una convención estética: es lo que hace que un contraejemplo de TLC se lea como una secuencia de nodos reales. La tabla de correspondencia de §9 de la arquitectura es una lista de identidades, y una prueba la comprueba: **el conjunto de nombres de nodo del grafo y el conjunto de nombres de acción de `spec/harness.tla` deben ser iguales.** Si alguien añade un nodo sin añadir su acción, la prueba cae.
+**Los nodos se llaman igual que las acciones de la especificación TLA+.** No es una convención estética: es lo que hace que un contraejemplo de TLC se lea como una secuencia de nodos reales. La tabla de correspondencia de §9 de la arquitectura es una lista de identidades, y una prueba la comprueba: **el conjunto de nombres de nodo del grafo y el conjunto de nombres de acción de `formal/tla/harness.tla` deben ser iguales.** Si alguien añade un nodo sin añadir su acción, la prueba cae.
 
 **La invocación.**
 
@@ -129,7 +131,7 @@ Avanza de nodo en nodo hasta encontrar un `interrupt()` o hasta terminar, y devu
 
 | Guarda | Mecanismo | Qué impide |
 |---|---|---|
-| **Presupuesto** | Se cuenta el prompt ensamblado antes de emitir; si excede el techo del rol, **la llamada no se emite** | Que una sesión reviente el límite de 100.000 tokens concurrentes |
+| **Presupuesto** | Se **estima** el prompt ensamblado antes de emitir y, si excede el techo del rol, **la llamada no se emite**. El SDK no expone su tokenizador, así que se cuenta por lo alto con un margen declarado: sobreestimar rechaza una llamada que habría cabido y se nota en el acto; subestimar revienta la ventana, que es lo que esta guarda existe para impedir | Que una sesión reviente el límite de 100.000 tokens concurrentes |
 | **Cuota de herramientas** | Hook `PreToolUse` que devuelve `permissionDecision: "deny"` al agotarse la cuota | Que el investigador emita una cuarta `WebSearch` |
 | **Truncado de la respuesta** | Hook `PostToolUse` que reescribe el resultado con `updatedToolOutput` antes de que entre en contexto | Que una página de 40.000 tokens entre entera |
 
@@ -303,6 +305,8 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 **El PDF se imprime desde la misma ruta que lee el navegador**, con `page.pdf()` de Playwright. Si se maquetara aparte, web y PDF divergirían, y la divergencia aparecería el día de la demo.
 
+**El navegador ve la versión candidata porque se le sirve.** Con la transacción abierta, ningún otro proceso puede leer ese manifiesto, así que `publication.publish` conduce el navegador **interceptando sus peticiones de datos** y respondiéndolas desde el manifiesto candidato que tiene en memoria. La ruta que abre es la de impresión del frontend, servida por el propio FastAPI desde `frontend_dist`. De esto depende una exigencia sobre el frontend, y está escrita en su spec: **ningún módulo fuera de `shared/api` emite red**, porque lo que no se puede interceptar no se puede juzgar.
+
 **El render se comprueba antes de publicar.** Se arma el manifiesto de la versión candidata, se renderiza la lectura contra él y `render_visual` lo juzga **con la transacción todavía abierta**: si algo no renderiza, se deshace y no hay versión publicada. G5 no admite excepción, y un índice roto detectado después sería una versión ya publicada sin arista de vuelta. No hace falta nodo nuevo: la comprobación cabe dentro de `publication.publish`.
 
 **Sin gate humano**, porque el manuscrito ya se aprobó al cerrar Writing y lo que queda es automático.
@@ -345,11 +349,14 @@ Tres superficies con perfiles de riesgo distintos, y conviene no mezclarlas.
 | `POST /webhook/telegram` | Telegram | Callback del botón inline. **Comprueba el `secret_token` de la cabecera `X-Telegram-Bot-Api-Secret-Token`**; escribe la decisión en `gate`, responde en seguida y lanza la invocación **como tarea de fondo** | `401` sin secreto válido; `409` si la novela está ocupada; `200` y decisión ignorada si el gate ya estaba decidido |
 | `GET /novelas` | Frontend | Lista el directorio `proyectos/` y abre cada fichero para leer título, fase en curso y número de versiones | — |
 | `GET /novelas/{id}` | Frontend | Ficha de la novela: fase, gate abierto si lo hay, versiones publicadas | `404` |
-| `GET /novelas/{id}/versiones/{n}` | Frontend | Manifiesto de la versión y sus capítulos en orden | `404` |
+| `GET /novelas/{id}/versiones/{n}` | Frontend | Manifiesto de la versión y sus capítulos en orden, más el **bloque de paratexto** con el que se arma la portada: título, homenajeado tal como debe escribirse, dedicatoria con su ocasión y las Licencias declaradas de la nota del autor | `404` |
 | `GET /novelas/{id}/versiones/{n}/capitulos/{k}` | Frontend | Texto del capítulo tal como esa versión lo fija | `404` |
-| `GET /novelas/{id}/personajes` | Frontend | Fichas de personajes y lugares con sus capítulos | `404` |
+| `GET /novelas/{id}/versiones/{n}/personajes` | Frontend | Fichas de personajes y lugares con los capítulos **de esa versión** en los que aparecen | `404` |
 | `GET /novelas/{id}/versiones/{a}/diff/{b}` | Frontend | Diff de dos manifiestos: qué capítulos cambian | `404` |
 | `POST /novelas/{id}/cambios` | Frontend | Petición de cambio del lector. **No toca nada**: abre la Fase 6, que se detiene en su gate | `409` si la novela está ocupada |
+| `GET /` y el resto de rutas de la aplicación | Navegador | **Sirve el frontend construido** desde `frontend/dist`, de modo que lectura, PDF y `render_visual` compartan origen (§16.4 arq.) | `404` solo fuera de las rutas declaradas |
+
+**La ficha de personajes cuelga de una versión y no de la novela.** El canon es vivo, pero «los capítulos en los que aparece este personaje» solo tiene respuesta dentro de un manifiesto: sin versión en la ruta, la ficha enlazaría a capítulos de una versión que el lector no está leyendo. Es la misma razón por la que ninguna ruta de lectura del frontend carece de número de versión.
 
 **El endpoint de decisión es el único que reanuda una ejecución**, y por eso es el único protegido. El resto es lectura, más una petición de cambio que no altera nada hasta que el Autor la aprueba. Que la lectura quede abierta es una decisión declarada, no un olvido: está en U-17.
 
@@ -381,13 +388,13 @@ Son dos familias con dos propósitos distintos, y mezclarlas es la fuente habitu
 
 ### 7.1 Validadores de programación — mientras se escribe el código
 
-Corren en el portátil y en CI, sobre el repositorio. **Ninguno de ellos ve una novela**: ven código, tipos, esquemas y modelos. Su gate es G0, G1 o G2. Los números 18, 20, 21 y 22 son la familia de correspondencia de §11e de la arquitectura: los únicos que comparan el código contra estos documentos en vez de contra sí mismo.
+Corren en el portátil y en CI, sobre el repositorio. **Ninguno de ellos ve una novela**: ven código, tipos, esquemas y modelos. Su gate es G0, G1 o G2. Los números 18, 20, 21, 22, 22-b y 22-c son la familia de correspondencia de §11e de la arquitectura: los únicos que comparan el código contra estos documentos, o estos documentos entre sí, en vez de contra sí mismo.
 
 | # | Validador | Qué comprueba | Clase | Gate | Bloquea |
 |---|---|---|---|---|---|
 | 1 | **mypy `--strict`** | Que ningún valor se use de forma incompatible; que el estado del grafo no tenga `dict[str, Any]` | A | G0, G1 | Sí |
 | 2 | **ruff + bandit (conjunto `S`)** | Inyección SQL por interpolación, `subprocess` con `shell=True`, `pickle`, aserciones en producción | A | G0, G1 | Sí |
-| 3 | **gitleaks** | Que no se commitee el token de Telegram, las claves de Langfuse ni la de Anthropic | A | G0, G1 | Sí |
+| 3 | **gitleaks** | Que no se commitee el token de Telegram ni las claves de Langfuse. No hay clave de Anthropic: los modelos corren por Claude Code, que el SDK lanza como subproceso con la sesión ya autenticada del Autor | A | G0, G1 | Sí |
 | 4 | **pip-audit** | Vulnerabilidades conocidas en el *lockfile* | A | G1 | Sí |
 | 5 | **Semgrep `no-update-inmutables`** | Ningún `UPDATE` ni `DELETE` sobre `capitulo_version`, `fase_run`, `version_*` o `mundo_hecho` tras el sello | A | G1 | Sí |
 | 6 | **Semgrep `core-domain-puro`** | Que `commons/validation/` no importe el SDK, LangGraph, httpx ni Langfuse | A | G1 | Sí |
@@ -398,7 +405,7 @@ Corren en el portátil y en CI, sobre el repositorio. **Ninguno de ellos ve una 
 | 11 | **pytest unitarias** | Un caso positivo y uno negativo por validador de ejecución; los siete bloques del ensamblador; la consulta de invalidación; el diff de manifiestos | T | G1 | Sí |
 | 12 | **Hypothesis** | Las propiedades generales que reflejan los invariantes de TLA+ sobre el código real | T/A | G1 | Sí |
 | 13 | **Pruebas de contrato** | Seis contratos, entre ellos **el mismo capítulo por el nodo y por el hook de `.claude/`, exigiendo el mismo veredicto incidencia por incidencia** | A/T | G1 | Sí |
-| 14 | **TLC sobre `spec/harness.cfg`** | Los cuatro invariantes de seguridad sobre todos los estados alcanzables del modelo (5 capítulos, 2 reintentos) | A | G1 | Sí |
+| 14 | **TLC sobre `formal/tla/harness.cfg`** | Los **cinco invariantes de estado** —`TypeOK`, `NoPublishUnvalidated`, `ResumeIsExactlyOnce`, `RetriesBounded` y `CorpusSelladoNoSeToca`— y las dos propiedades temporales, `PreviousVersionPreserved` y `Termina`, sobre todos los estados alcanzables del modelo (5 capítulos, 2 reintentos) | A | G1 | Sí |
 | 15 | **`lake build` de *fixture*** | Que el proyecto Lean compila y que el generador produce el fichero de referencia | A | G1 | Sí |
 | 16 | **Integración con agente falso** | El grafo completo sobre SQLite temporal: recorrido en batch, atomicidad del checkpoint, reanudación, Fase 6, ramificación, reintentos agotados | T | G1 | Sí |
 | 17 | **Suite adversaria determinista** | Inyección por texto pegado, página hostil, herramienta prohibida, exfiltración de PII, evasión del guardrail | T | G1 | Sí |
@@ -407,6 +414,8 @@ Corren en el portátil y en CI, sobre el repositorio. **Ninguno de ellos ve una 
 | 20 | **`registro_de_validadores`** | Que el registro de validadores deterministas, la tabla de §11a de la arquitectura y la de §7.2 de este documento coinciden por pares: mismo conjunto, mismo punto de ejecución, misma condición de bloqueo | A/T | G1 | Sí |
 | 21 | **`inventario_del_plan`** | Sobre todo `specs/*/plan.md`: que cada ruta y cada símbolo de la columna «Ficheros y símbolos» existe en el árbol, y que todo módulo de `backend/src/storymaker/**` —salvo los `__init__.py`— está declarado en algún ítem | T | G1 | **No, informa en dos cubos** |
 | 22 | **`anclas_de_procedencia`** | Que toda ancla de un docstring de módulo —primera línea, formato `spec: §3.6 · arq: §11a`— apunta a un apartado que existe, y que **todo apartado de §3 y §4 de este documento tiene al menos un módulo que lo cite** | T | G1 | **No, informa** |
+| 22-b | **`matrices_de_trazabilidad`** | Que las tres matrices —la de la raíz y las dos de `specs/`— están bien formadas, no repiten identificador, no citan ítems que ningún plan declara, declaran resolución para cada huérfano y **no encogen**. El recuento de filas en `GAP` se informa | A | G1 | **Sí, salvo el recuento de huecos, que informa** |
+| 22-c | **`requisitos_declarados`** | Sobre la tabla de §10 de este documento y la de §12 de la spec del frontend: que todo ítem citado en la columna «Ítems» exista en el plan correspondiente, que ningún apartado de §3 y §4 se quede sin ningún requisito que lo cite y que ningún identificador se repita ni se reutilice | T | G1 | **No, informa** |
 | 23 | **CrossHair** | Las cinco funciones puras críticas: `normalizar`, `hay_solape_temporal`, `es_anacronico`, `truncar_por_prioridad`, `capitulos_afectados` | A | G2 | No |
 | 24 | **mutmut ≥ 80 %** | Que la suite detecte de verdad un validador silenciosamente roto | T | G2 | No |
 | 25 | **Evals sobre cinco briefs** | Conducta del sistema con modelo real: cero incidencias críticas, 5/5 completan, ≥ 70 % de capítulos al primer intento | T/I | G2 | No |
@@ -534,6 +543,8 @@ Resumen de lo que este documento compromete, como exige `AGENTS.md`. Cada pieza 
 | Observabilidad y *scores* | D/T | G6 |
 | Las seis fases, de extremo a extremo | T/D | G1, G2 |
 | API de FastAPI | A/T | G1 |
+| Serialidad de las micro-sesiones del arquitecto (P-134) | A/T | G1 |
+| Acta de grilling y de revisión por documento (P-135) | **I** | G4 |
 | CLI | T | G1 |
 | Correspondencia documento↔código (§7.1 nº 18, 20, 21, 22) | A/T | G1 |
 | Fiabilidad de los validadores semánticos | **I** | G4 |
@@ -543,7 +554,168 @@ Resumen de lo que este documento compromete, como exige `AGENTS.md`. Cada pieza 
 
 ---
 
-## 10. Lo que este documento deja fuera a propósito
+## 10. Requisitos
+
+Los apartados anteriores son el contrato, y están escritos en prosa porque un contrato necesita decir también **por qué**. Esta tabla es ese mismo contrato en su forma comprobable: **cada fila enuncia una sola cosa y se puede responder con un sí o un no**. No añade ninguna decisión; si una fila y su apartado discrepan, manda el apartado y la fila está mal escrita.
+
+**Cómo se lee cada columna.** El identificador `REQ-BE-nn` es estable y **no se reutiliza jamás**: un requisito retirado deja su fila con la nota, nunca cede su número. El apartado es de dónde se extrae el enunciado, y es también **de dónde hereda su clase de confianza y su gate**, que allí están declarados; un requisito que se compruebe de otra manera lo dice en su propia fila. Los ítems son los de [`plan.md`](plan.md) que lo materializan, con el prefijo `FE:` cuando quien lo realiza es el plan del frontend. Un guion en esa columna significa que **ningún ítem lo realiza todavía**, que es justamente lo que `requisitos_declarados` informa.
+
+**Lo que esta tabla no cubre a propósito** son los validadores de §7.1 y §7.2. Sus tablas ya son listas con identificador propio —el nombre del validador—, comparadas por pares contra §11a de la arquitectura y contra el registro, de modo que duplicarlas aquí añadiría cincuenta y siete filas sin añadir ninguna comprobación. Lo que sí se enuncia es lo que §7 afirma **alrededor** de ellas: que ninguno sea una herramienta, en qué orden corren las dos pasadas y cuáles no bloquean.
+
+### 10.1 Puesta en marcha y configuración
+
+| # | Requisito | Apartado | Ítems |
+|---|---|---|---|
+| REQ-BE-01 | La CLI y la API invocan ambas la misma función de invocación del grafo; la API no tiene un camino propio hacia él | §2.1 | P-113, P-138, P-57 |
+| REQ-BE-02 | Existe un único objeto `Settings`, cargado una vez al arrancar e inyectado a quien lo necesita; ningún módulo consulta el entorno en caliente | §2.2 | P-02 |
+| REQ-BE-03 | Los valores por defecto de §19 de la arquitectura son constantes con nombre, no números sueltos repartidos por el código | §2.2 | P-03 |
+| REQ-BE-04 | Ningún secreto se escribe en el repositorio, y `gitleaks` lo comprueba en G0 y en G1 | §2.2 | P-04, P-05 |
+| REQ-BE-05 | El sistema no guarda credencial de Anthropic: el Agent SDK lanza Claude Code como subproceso y hereda su sesión | §2.2 | P-27 |
+| REQ-BE-06 | Al abrir una novela se carga `sqlite-vec`, y si falla el arranque se detiene; **nunca se degrada en silencio** a un sistema sin búsqueda semántica | §2.3 | P-19 |
+| REQ-BE-07 | Al abrir se aplican las migraciones pendientes y se rechaza un fichero con versión de esquema posterior a la que el código conoce | §2.3 | P-18 |
+| REQ-BE-08 | Al abrir se activan `journal_mode=WAL`, `foreign_keys=ON` y `synchronous=NORMAL` | §2.3 | P-19 |
+| REQ-BE-09 | Toda operación que vaya a invocar el grafo toma antes el cerrojo de la novela | §2.3 | P-59 |
+
+### 10.2 Contratos de `commons/`
+
+| # | Requisito | Apartado | Ítems |
+|---|---|---|---|
+| REQ-BE-10 | Nadie fuera de `commons/db` construye SQL a mano contra las tablas del arnés | §3.1 | P-20 |
+| REQ-BE-11 | Todas las tablas son `STRICT` y llevan `CHECK` sobre sus enumerados; un valor fuera de rango **aborta la transacción** y no se normaliza | §3.1 | P-16 |
+| REQ-BE-12 | La regla Semgrep `no-update-inmutables` impide **escribir** un `UPDATE` o un `DELETE` sobre las tablas inmutables | §3.1 | P-06 |
+| REQ-BE-13 | Los *triggers* `BEFORE UPDATE` y `BEFORE DELETE` impiden **ejecutarlo**, protegiendo el contenido pero admitiendo el cambio de estado de `capitulo_version` y el cierre de `fase_run` con su consumo | §3.1 | P-17 |
+| REQ-BE-14 | En `mundo_hecho` la inmutabilidad se condiciona a la existencia del sello: el verificador puede degradar antes, nadie puede escribir después | §3.1 | P-17, P-79 |
+| REQ-BE-15 | El checkpoint de LangGraph y la escritura de dominio ocurren en la misma transacción, cerrada por el envoltorio de invocación y nunca por el nodo | §3.1 | P-21 |
+| REQ-BE-16 | Una novela inexistente produce `NovelaNoEncontrada`, que la CLI traduce a mensaje y la API a `404` | §3.1 | P-128 |
+| REQ-BE-17 | El estado del grafo es un `TypedDict` total y explícito, sin `dict[str, Any]`, comprobado por mypy `--strict` | §3.2 | P-54 |
+| REQ-BE-18 | Los nodos se llaman igual que las acciones de `harness.tla`, y una prueba exige que sean iguales tanto el conjunto de nombres como el de aristas | §3.2 | P-55, P-62 |
+| REQ-BE-19 | `invocar` avanza hasta un `interrupt()` o hasta el final y devuelve nodo de parada, gate abierto y consumo; entre una invocación y la siguiente no queda nada vivo | §3.2 | P-57 |
+| REQ-BE-20 | El cerrojo es un fichero por novela, cubre a la CLI y a la API por igual, y **quien llega segundo es rechazado con `NovelaOcupada`, no encolado** | §3.2 | P-59 |
+| REQ-BE-21 | Una excepción dentro de un nodo se registra en `fase_run`, suelta el cerrojo y deja intacto el último checkpoint | §3.2 | P-60, P-128 |
+| REQ-BE-22 | Agotar los reintentos lleva a `Fail`, que es un estado declarado del grafo y no una excepción | §3.2 | P-60 |
+| REQ-BE-23 | Todas las llamadas a un modelo pasan por una única función de invocación; ningún módulo llama al Agent SDK por su cuenta | §3.3 | P-27 |
+| REQ-BE-24 | Cada invocación fija el modelo, `allowed_tools`, `max_turns` y el techo de tokens del rol | §3.3 | P-27, P-32 |
+| REQ-BE-25 | El prompt ensamblado se **estima** antes de emitir, por lo alto y con margen declarado, y la llamada **no se emite** si excede el techo del rol | §3.3 | P-28 |
+| REQ-BE-26 | Un hook `PreToolUse` deniega la llamada en cuanto se agota la cuota de herramientas del rol | §3.3 | P-29 |
+| REQ-BE-27 | Un hook `PostToolUse` reescribe el resultado de la herramienta antes de que entre en el contexto del agente | §3.3 | P-30 |
+| REQ-BE-28 | `schema_guard` valida la salida contra el esquema del rol **antes de escribir en SQLite**, reintenta con el error de validación inyectado y abre incidencia al agotarse | §3.3 | P-31 |
+| REQ-BE-29 | El ensamblador monta los siete bloques en orden con sus techos declarados y 12.000 tokens en total | §3.4 | P-33, P-34, P-35, P-36, P-37 |
+| REQ-BE-30 | El paquete **nunca excede** el techo total | §3.4 | P-38 |
+| REQ-BE-31 | El recorte va por la cola de la lista ya ordenada por relevancia, y el bloque de continuidad es el último que se toca | §3.4 | P-38 |
+| REQ-BE-32 | Los anclajes explícitos de la escaleta entran siempre, antes que cualquier vecino semántico | §3.4 | P-38 |
+| REQ-BE-33 | La recuperación la hace el ensamblador con una consulta derivada de las escenas del capítulo, y con las mismas entradas devuelve los mismos vecinos | §3.4 | P-35 |
+| REQ-BE-34 | El paquete se persiste entero y se enlaza desde su span de Langfuse | §3.4 | P-39 |
+| REQ-BE-35 | Un bloque vacío no es un error; la escaleta ausente del capítulo pedido **aborta la invocación** en lugar de generar a ciegas | §3.4 | P-33 |
+| REQ-BE-36 | `commons/embeddings` es el único módulo autorizado a escribir en las tablas `vec_*`, y una regla Semgrep lo impone | §3.5 | P-24, P-06 |
+| REQ-BE-37 | El índice se escribe en la misma transacción que la fila que indexa | §3.5 | P-24 |
+| REQ-BE-38 | Una fila de `edicion_humana` dispara el reembedding de lo que el Autor tocó | §3.5 | P-26 |
+| REQ-BE-39 | `vec_resumen.vigente` pasa a 1 al aprobar una versión y a 0 en la que sustituye, y el bloque de memoria filtra por él | §3.5 | P-25 |
+| REQ-BE-40 | No se usan claves de partición; lo que en otro sistema serían particiones aquí son columnas de metadato | §3.5 | P-15, P-23 |
+| REQ-BE-41 | El Core Domain es Python puro: no importa el Agent SDK, LangGraph, `httpx` ni Langfuse, y una regla Semgrep lo impone | §3.6 | P-40, P-06 |
+| REQ-BE-42 | Un validador recibe datos y devuelve incidencias tipadas: nunca escribe en la base, nunca llama a un modelo, nunca sale a la red | §3.6 | P-40 |
+| REQ-BE-43 | El grafo y el hook de `.claude/` se sirven de **una sola implementación**, y una prueba de contrato ejecuta el mismo capítulo por ambos caminos exigiendo el mismo veredicto incidencia por incidencia | §3.6 | P-46, P-116 |
+| REQ-BE-44 | `REGISTRO` declara por validador el nombre, el punto de ejecución, si bloquea y **la ruta de su implementación como cadena**, nunca como `import` | §3.6 | P-131 |
+| REQ-BE-45 | Un validador que no está en el registro no corre por ningún camino | §3.6 | P-131 |
+| REQ-BE-46 | El registro, la tabla de §11a de la arquitectura y la de §7.2 de este documento se comparan **por pares** en CI | §3.6 | P-132 |
+| REQ-BE-47 | El generador produce el fichero Lean desde `cronologia_*` y las fechas vitales del canon y del corpus, invoca `lake build` por subproceso y devuelve veredicto e invariante violado con sus eventos | §3.7 | P-47, P-48 |
+| REQ-BE-48 | Los cuatro invariantes se verifican **por decisión**, de modo que la demostración es automática y no puede atascarse | §3.7 | P-49 |
+| REQ-BE-49 | Lean corre en tres puntos: el gate de Plotting, la pasada del extractor de cada capítulo y antes de publicar | §3.7 | P-80, P-84, P-91 |
+| REQ-BE-50 | `lake` ausente o un subproceso roto es **error de entorno** y se distingue del veredicto negativo: detiene, no aprueba | §3.7 | P-48 |
+| REQ-BE-51 | Langfuse recibe **una sesión por novela**, que incluye la entrevista y todas las regeneraciones, y **un span por invocación** nombrado por capítulo, rol e intento | §3.8 | P-50 |
+| REQ-BE-52 | Todos los *scores* de validadores y todas las decisiones de gate viajan a la traza: la intervención del Autor queda trazada igual que la de un agente | §3.8 | P-51 |
+| REQ-BE-53 | Los prompts de rol viven en Langfuse como fuente de verdad, se inyectan como `system_prompt` y su id de versión viaja en el span | §3.8 | P-52 |
+| REQ-BE-54 | `total_cost_usd` se etiqueta **siempre** como estimación en cliente, nunca como facturación | §3.8 | P-51 |
+
+### 10.3 Las seis fases
+
+| # | Requisito | Apartado | Ítems |
+|---|---|---|---|
+| REQ-BE-55 | El texto pegado entra en `intake_texto_crudo` y solo avanza convertido en filas tipadas con `origen = 'texto_libre_no_confiable'` | §4.1 | P-66 |
+| REQ-BE-56 | Una extracción previa rellena lo que puede y el entrevistador **solo pregunta por lo que sigue vacío o ambiguo** | §4.1 | P-68 |
+| REQ-BE-57 | La verdad son las filas de `intake_dato`; el `Brief` serializado es la fotografía auditable y no decide nada | §4.1 | P-64 |
+| REQ-BE-58 | Las contradicciones del brief las detecta un `@model_validator` de Pydantic, no un modelo | §4.1 | P-65 |
+| REQ-BE-59 | Ninguna cadena del texto en bruto aparece jamás en el prompt del escritor, y una aserción lo comprueba sobre cargas de inyección | §4.1 | P-67 |
+| REQ-BE-60 | Un brief incompleto tras agotar las preguntas no bloquea: el gate se abre con el informe de lo que falta | §4.1 | P-127 |
+| REQ-BE-61 | El prompt del investigador se construye solo con período y lugar; los campos personales del `Brief` no salen a la red, y lo imponen una regla Semgrep y una aserción | §4.2 | P-74, P-06 |
+| REQ-BE-62 | El investigador dispone de **3 `WebSearch` y 3 `WebFetch` en una sesión**, y el tope lo impone el arnés con sus hooks, no una instrucción del prompt | §4.2 | P-69, P-29 |
+| REQ-BE-63 | Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y una cita de 300 caracteres como mucho | §4.2 | P-70 |
+| REQ-BE-64 | El verificador es un agente distinto, **sin herramientas y sin red**, que lee los pares enunciado–cita por lotes de veinte | §4.2 | P-72 |
+| REQ-BE-65 | Un veredicto `no_respaldado` **degrada el hecho a `inferido` y lo marca**: no lo borra y no detiene la fase | §4.2 | P-72 |
+| REQ-BE-66 | Rehacer no contamina: solo cuentan los hechos del `fase_run` vigente, y los anteriores quedan como historia consultable | §4.2 | P-71 |
+| REQ-BE-67 | Cero hechos en una dimensión no bloquea: es una fila del informe del gate, con el recuento por dimensión delante del Autor | §4.2 | P-73 |
+| REQ-BE-68 | El arquitecto inventa la Premisa y el Tema, y construye el canon completo y la escaleta jerárquica con sus anclajes | §4.3 | P-75 |
+| REQ-BE-69 | `grado_licencia`, `arcaismo` y `contenido_admisible` se copian a `canon_obra.estilo_json`, que es como llegan al bloque de reglas del paquete | §4.3 | P-76 |
+| REQ-BE-70 | El arquitecto **no recibe el corpus entero**: los hechos le llegan por búsqueda semántica con la consulta derivada de lo que planifica | §4.3 | P-125 |
+| REQ-BE-71 | Cada hueco dispara **una única micro-llamada** al investigador con una sola `WebSearch`, con un tope de cinco huecos por ejecución | §4.3 | P-77 |
+| REQ-BE-72 | Un veredicto `no_encontrado` **autoriza la invención**, que entra como fila `inferido` con `origen = 'invencion_autorizada'`, sin fuente y con `respaldo = 'no_aplica'` | §4.3 | P-77 |
+| REQ-BE-73 | La invención **no se topa, se cuenta**, y aparece por dimensión en el informe del gate | §4.3 | P-78 |
+| REQ-BE-74 | Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes y el corpus pasa a ser de solo lectura | §4.3 | P-79 |
+| REQ-BE-75 | El escritor **redacta el capítulo entero de una vez**: la escena es unidad de planificación y de traza, no de redacción | §4.4 | P-81 |
+| REQ-BE-76 | `Validate` corre en dos pasadas, ambas dentro del bucle de reparación: primero la determinista, después la del extractor | §4.4 | P-82, P-83 |
+| REQ-BE-77 | La pasada del extractor es **una sola llamada y solo si la determinista no dejó incidencias** | §4.4 | P-83 |
+| REQ-BE-78 | Sobre la salida del extractor corren `cobertura_capitulo`, `ejecucion_escaleta`, `arco_ejecutado` y los cuatro invariantes de Lean sobre la cronología acumulada | §4.4 | P-84 |
+| REQ-BE-79 | El extractor es un rol independiente del escritor: quien produjo el capítulo no declara qué hechos usó ni qué beats ejecutó | §4.4 | P-83 |
+| REQ-BE-80 | Las filas del extractor cuelgan del `capitulo_version_id` del intento que las produjo, de modo que las de un intento descartado no hace falta borrarlas | §4.4 | P-85 |
+| REQ-BE-81 | Un capítulo admite **2 reintentos**; agotados, el grafo transita a `Fail` | §4.4 | P-86, P-60 |
+| REQ-BE-82 | `ApproveChapter` y el checkpoint ocurren en la misma transacción | §4.4 | P-87 |
+| REQ-BE-83 | Los dos extractores son roles con techo declarado: 12.000 el de capítulo y 6.000 el de intake | §4.4 | P-32 |
+| REQ-BE-84 | Los avisos de ejecución viajan al bloque de encargo del paquete del capítulo siguiente, donde el escritor lee qué quedó pendiente | §4.4 | P-88 |
+| REQ-BE-85 | El juez devuelve un esquema de puntuaciones y **no tiene permiso de escritura sobre el texto** | §4.5 | P-90 |
+| REQ-BE-86 | El manifiesto registra los hashes, los prompts, los modelos, los embeddings y la versión del SDK | §4.5 | P-93 |
+| REQ-BE-87 | El PDF se imprime con `page.pdf()` **desde la misma ruta que lee el navegador**, sin una segunda maquetación | §4.5 | P-94, FE:IMP-30 |
+| REQ-BE-88 | `render_visual` juzga la **versión candidata** con la transacción todavía abierta, y `publication.publish` conduce el navegador **interceptando sus peticiones de datos** | §4.5 | P-92 |
+| REQ-BE-89 | Si el render falla, la transacción se deshace y no hay versión publicada | §4.5 | P-92 |
+| REQ-BE-90 | Publication no tiene gate humano: el manuscrito ya se aprobó al cerrar Writing | §4.5 | — |
+| REQ-BE-91 | Un fallo de Lean antes de publicar impide la publicación **sin anulación posible** | §4.5 | P-91 |
+| REQ-BE-92 | La petición del lector y la edición humana directa entran por la misma puerta y disparan la misma maquinaria | §4.6 | P-95, P-101 |
+| REQ-BE-93 | La petición se resuelve por búsqueda semántica contra canon y corpus, y **el Autor confirma los candidatos en el gate** | §4.6 | P-95 |
+| REQ-BE-94 | Se modifica la fila del hecho, **nunca el texto**, y el cambio queda en `audit_log` | §4.6 | P-96 |
+| REQ-BE-95 | `uso_hecho` determina qué capítulos se regeneran | §4.6 | P-97 |
+| REQ-BE-96 | Los capítulos posteriores pasan a `Invalidado` y se les corren **solo los validadores de coste cero**; si ninguno falla, se quedan como están | §4.6 | P-97 |
+| REQ-BE-97 | El manifiesto nuevo reutiliza los capítulos no tocados, y la versión anterior sobrevive entera | §4.6 | P-98 |
+| REQ-BE-98 | El diff sale de comparar dos manifiestos con un `JOIN` | §4.6 | P-99 |
+| REQ-BE-99 | El gate de Regeneration enseña el recuento de capítulos afectados **antes de pagarlo** y permite abortar | §4.6 | P-100 |
+| REQ-BE-100 | El nodo de gate llama a `interrupt()`, el checkpointer persiste y la invocación termina | §4.7 | P-103 |
+| REQ-BE-101 | El gate ofrece cuatro decisiones: aprobar, rehacer con comentario, editar y abortar | §4.7 | P-104 |
+| REQ-BE-102 | El comentario de «rehacer» se inyecta como bloque extra del prompt y **cuenta contra el límite de reintentos** | §4.7 | P-104 |
+| REQ-BE-103 | La notificación va detrás de la interfaz `Notifier`, con Telegram como única implementación | §4.7 | P-105 |
+| REQ-BE-104 | Sin respuesta, el *timeout* **aparca** la ejecución con estado propio; **no hay auto-aprobación** | §4.7 | P-107 |
+| REQ-BE-105 | `gates_enabled = false` desactiva los cinco gates y el hecho queda registrado en el manifiesto | §4.7 | P-108, P-93 |
+
+### 10.4 API, CLI, validadores y errores
+
+| # | Requisito | Apartado | Ítems |
+|---|---|---|---|
+| REQ-BE-106 | El webhook comprueba el `secret_token` de la cabecera y responde `401` sin él | §5 | P-109 |
+| REQ-BE-107 | El webhook escribe la decisión, responde en seguida y lanza la invocación **como tarea de fondo** | §5 | P-109 |
+| REQ-BE-108 | Una decisión sobre un gate ya decidido se ignora con `200` | §5 | P-109 |
+| REQ-BE-109 | `GET /novelas` lista el directorio `proyectos/` y abre cada fichero: no hay registro global de novelas | §5 | P-111 |
+| REQ-BE-110 | El endpoint de versión devuelve el manifiesto, sus capítulos en orden y el **bloque de paratexto** con el que se arma la portada | §5 | P-110 |
+| REQ-BE-111 | La ficha de personajes cuelga de una **versión**, no de la novela | §5 | P-110 |
+| REQ-BE-112 | `POST /novelas/{id}/cambios` no toca nada: abre la Fase 6, que se detiene en su gate | §5 | P-110, P-95 |
+| REQ-BE-113 | FastAPI sirve el frontend construido desde `frontend_dist`, de modo que lectura, PDF y `render_visual` compartan origen | §5 | P-136 |
+| REQ-BE-114 | El endpoint de decisión es el único protegido y el único que reanuda una ejecución | §5 | P-109 |
+| REQ-BE-115 | El contrato OpenAPI y Schemathesis garantizan que **una decisión malformada no reanuda el grafo** | §5 | P-112 |
+| REQ-BE-116 | La CLI expone los siete comandos declarados | §6 | P-113 |
+| REQ-BE-117 | `ramificar` **copia el fichero** y escribe la fila de `procedencia`; no hay columna de rama en las consultas | §6 | P-102 |
+| REQ-BE-118 | `evaluar` corre los cinco briefs en modo batch con `gates_enabled = false` | §6 | P-120, P-108 |
+| REQ-BE-119 | Todos los validadores de ejecución son nodos o aristas condicionales; **ninguno es una herramienta que un agente decida llamar** | §7.2 | P-06, P-56 |
+| REQ-BE-120 | Las aristas condicionales leen booleanos calculados en Python, nunca la salida de un modelo | §7.2 | P-56 |
+| REQ-BE-121 | Tres validadores semánticos no bloquean: `respaldo_fuente` degrada, y `ejecucion_escaleta` y `arco_ejecutado` abren aviso | §7.2b | P-72, P-84 |
+| REQ-BE-122 | El linter de auto-similitud abre incidencia de aviso y **no es uno de los once validadores de §11a** | §7.2a | P-126 |
+| REQ-BE-123 | La cobertura se comprueba en tres puntos de coste creciente: escaleta, capítulo y cierre de Writing | §7.2a | P-42, P-43, P-44 |
+| REQ-BE-124 | `juez_rubrica` y `revision_humana` usan el mismo fichero de rúbrica, que es lo que hace comparables los dos juicios | §7.2b | P-122 |
+| REQ-BE-125 | Las guardas estructurales no emiten veredicto: hacen imposible el estado malo | §7.2d | P-28, P-29, P-30 |
+| REQ-BE-126 | Las propiedades de G6 se afirman **consultando la traza real** por la API de Langfuse, no sobre un modelo | §7.2e | P-123 |
+| REQ-BE-127 | Una incidencia es un defecto del contenido y tiene camino de vuelta; un error es una avería y detiene la invocación | §8 | P-128 |
+| REQ-BE-128 | Un error de entorno nunca se traduce en un capítulo aprobado | §8 | P-48 |
+| REQ-BE-129 | Las micro-sesiones del arquitecto corren **en serie**, afirmado por construcción | §9 | P-134 |
+| REQ-BE-130 | Cada documento de `docs/` y de `specs/` deja acta de su grilling y de su revisión. *Clase **I**, gate G4* | §9 | P-135 |
+| REQ-BE-131 | Los identificadores de este apartado no se repiten ni se reutilizan, y todo ítem citado existe en el plan | §10 | P-139 |
+
+---
+
+## 11. Lo que este documento deja fuera a propósito
 
 - **La forma técnica exacta** —qué fichero, qué función, en qué orden se construye— va en [`plan.md`](plan.md).
 - **El frontend**, que tiene su metodología propia en §16.3 de la arquitectura.
@@ -552,12 +724,17 @@ Resumen de lo que este documento compromete, como exige `AGENTS.md`. Cada pieza 
 
 ---
 
-## 11. Registro de cambios
+## 12. Registro de cambios
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-23 | Al cablear los nodos y recorrer el sistema entero por primera vez: el estado del grafo gana seis punteros —`premisa`, `texto_pegado`, `capitulo_version_id`, `huecos_pendientes`, `a_regenerar` y `a_invalidar`—; **los cuatro gates dejan de ser terminales** y resuelven por «aprobar» en modo batch; `Plan` **planifica una sola vez** y no rehace la escaleta al volver de `FillGap`; y la Fase 6 resuelve la petición del lector con búsqueda semántica más la forma opcional `campo=valor`, sin que ningún modelo intervenga | Los nodos estaban cableados pero no llamaban a las funciones que hacen el trabajo, y al conectarlos apareció lo que faltaba. Los punteros son eso, punteros: el estado sigue sin llevar contenido. Los gates sin arista de salida hacían que el modo batch —el único en el que los cinco briefs de evaluación pueden correr— terminara en el primer gate. Y replanificar en cada hueco costaba cinco llamadas de arquitecto para duplicar personajes y capítulos |
+| 2026-09-23 | §7.1 gana el validador **`matrices_de_trazabilidad`** (22-b), que bloquea sobre la forma de las tres matrices y **el suelo de su inventario**, e informa del recuento de huecos | Las matrices afirmaban en verde y no las miraba nadie: se comprobaban a mano con `grep`, y un parche que se comió un separador dejó tres filas contándose sin poder leerse. Lo que sostiene una afirmación tiene que ser comprobable por la suite, no por quien la escribió |
+| 2026-09-23 | Se propaga la reescritura de §11d —**TLA+ directo**, cinco invariantes de estado y las rutas de `formal/tla/`— y entran las cuatro cosas que el frontend necesitaba: el **bloque de paratexto** en el endpoint de versión, la **ficha de personajes versionada**, **FastAPI sirviendo `frontend_dist`** con su URL base en `Settings`, y la **interceptación** con la que `render_visual` ve la versión candidata. §9 recoge además las clases de P-134 y P-135 | Escribir la spec del frontend destapó que la superficie que el backend le ofrecía no daba para dibujar la portada ni para enlazar una ficha a su capítulo, y que el validador que sostiene G5 no tenía forma de ver lo que juzga. Y la contradicción de §11d hacía que este documento midiera contra cuatro invariantes donde hay cinco |
 | 2026-09-23 | Versión inicial | Fijar el contrato del backend completo —módulos transversales, seis fases, API y CLI— y, sobre todo, separar las dos familias de validadores: los que comprueban que el código está bien escrito y los que comprueban que una novela está bien hecha |
+| 2026-09-23 | Al implementar H1 y H2: §3.1 precisa qué protege cada *trigger* —contenido sí, estado no— y §3.3 declara que la guarda de presupuesto **estima** por lo alto en lugar de medir | Dos hechos del terreno. La inmutabilidad literal de la fila entera hacía imposible `ApproveChapter` y el cierre de `fase_run`. Y el Agent SDK no expone el tokenizador de Anthropic, así que prometer un recuento exacto habría sido falso: lo que sí es exacto es el tope de herramientas y el truncado, que son estructurales |
 | 2026-09-23 | Tras la pasada de congruencia con el plan: §4.3 declara que el corpus llega al arquitecto **por búsqueda semántica** y no entero, y §7.2 recoge el **linter de auto-similitud** entre capítulos, diciendo expresamente que no es uno de los once validadores de §11a | Son los usos 3 y 4 de los embeddings de §16.2 de la arquitectura. Estaban en el plan y no en la spec, que es la manera de que el código acabe haciendo algo que su contrato no dice |
 | 2026-09-23 | Tras el recorrido de trazabilidad contra la arquitectura: **Lean baja de la pasada determinista a la pasada del extractor** y gana su tercer punto de ejecución, el gate de Plotting (§3.7, §4.4, §7.2c); `arco_anclado` pasa a exigirse **por apariciones en ≥3 escenas** con el arco plano admitido y el homenajeado como única excepción (§7.2a) | Tres desviaciones de la arquitectura, que manda. Lean en la pasada determinista habría verificado una cronología que llega hasta N−1, porque las filas narrativas del capítulo N las escribe el extractor; el punto de Plotting, el más barato de los tres, faltaba entero; y «personaje principal» es justamente el concepto que la arquitectura descarta porque el modelo de datos no sabe responderlo |
 | 2026-09-23 | Tras el grilling: los dos extractores quedan declarados como roles con techo (12.000 y 6.000) y §1 de la arquitectura sube a nueve; `render_visual` pasa a correr dentro de `PublishVersion` sobre la versión candidata antes del `commit`; `cobertura_anclada` y `arco_anclado` quedan bajo G4 y `cobertura_personalizacion` bajo G5 | Tres hilos que el grilling destapó y que el Autor resolvió: un presupuesto que sumaba siete techos de nueve agentes, un validador de render que se declaraba posterior a la publicación que debía impedir, y dos validadores del gate de Plotting sin puerta asignada |
 | 2026-09-23 | §7.1 gana tres validadores de programación —`registro_de_validadores` (bloquea), `inventario_del_plan` y `anclas_de_procedencia` (informan)— y el nº 18 pasa a comparar también **aristas**; §3.6 declara que `REGISTRO` es el cableado del que se sirven el grafo y el hook | Nada comprobaba que el código implementara lo que estos documentos especifican: ni que un apartado declarado llegara a escribirse, ni que un validador siguiera bloqueando después de un refactor. Con el registro como cableado la comprobación es clase A, porque un validador ausente de él sencillamente no corre |
+| 2026-09-23 | Entra **§10, los 131 requisitos** `REQ-BE-nn` derivados de los propios apartados de este documento, cada uno con el apartado del que nace —de donde hereda clase y gate— y los ítems de plan que lo realizan; §7.1 gana el validador **`requisitos_declarados`** (22-c) y los apartados finales se renumeran | Este documento se podía leer, pero no comprobar: un apartado afirma muchas cosas a la vez y se puede implementar a medias sin que se note. Las tablas de validadores quedan fuera a propósito, porque el nombre del validador ya es su identificador y duplicarlas añadiría cincuenta y siete filas sin añadir ninguna comprobación |

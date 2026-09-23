@@ -1,0 +1,26 @@
+# spec: §7.1 · verif. §6 — Puerta G0, la del portatil. Rapida por definicion: lo que
+# tarda (mypy --strict completo, semgrep, pip-audit) vive en G1, no aqui.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: mypy-rapido
+        name: mypy sobre lo que cambia
+        entry: bash -c 'cd backend && uv run mypy'
+        language: system
+        types: [python]
+        files: ^backend/src/
+        pass_filenames: false
