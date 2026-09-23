@@ -30,6 +30,16 @@ embeddings = [
 # Playwright imprime el PDF y valida el render. Entra en H6, con `publication`.
 render = ["playwright>=1.48"]
 
+[tool.uv]
+# Smart App Control, en Windows 11, bloquea las extensiones nativas sin reputacion, y las
+# ultimas ruedas de estas dos lo estan: `uuid-utils` 0.17 tumba LangGraph al importar y
+# `hypothesis` 6.168 deja sin cargar las pruebas de propiedades. Las anteriores pasan. Solo
+# en Windows, para que Linux y la CI sigan en lo ultimo.
+constraint-dependencies = [
+    "uuid-utils<0.17; sys_platform == 'win32'",
+    "hypothesis<6.166; sys_platform == 'win32'",
+]
+
 [project.scripts]
 storymaker = "storymaker.cli.comandos:app"
 
