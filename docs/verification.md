@@ -123,7 +123,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 
 | Función | Contrato que se explora |
 |---|---|
-| `normalizar(termino)` | Idempotente, y nunca colapsa dos términos prohibidos distintos en el mismo normalizado |
+| `normalizar(termino)` | Idempotente, y nunca colapsa dos términos prohibidos distintos en el mismo normalizado. **La idempotencia se cumple por construcción**: `_singular` recorta el plural hasta punto fijo, de modo que un término y su forma ya normalizada acaban en la misma cadena. La segunda cláusula se cumple solo en parte, y a sabiendas: recortar hasta punto fijo puede juntar dos palabras que no deberían juntarse, y en una lista de términos vetados un falso positivo es una incidencia que el Autor lee en el informe, mientras que un falso negativo es una palabra prohibida impresa en el regalo |
 | `hay_solape_temporal(a, b)` | Simétrica, y correcta en los bordes con rangos abiertos (`fecha_fin = None`) |
 | `es_anacronico(entidad, fecha)` | Falsa si y solo si `fecha_inicio ≤ fecha_narrativa ≤ fecha_fin`, con nulos bien tratados |
 | `truncar_por_prioridad(bloques, techo)` | Nunca excede el techo, nunca vacía el bloque 3 y respeta el orden de recorte declarado |
@@ -518,6 +518,7 @@ Lectura transversal: los siete modos de fallo que más importan y con qué se at
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-23 | La fila de `normalizar` en §3.3 explica **por qué el contrato se cumple ahora** y en qué medida | Al declarar los contratos para CrossHair apareció que `normalizar` no era idempotente: un sustantivo singular terminado en -s («autobús», «país», «análisis») se recortaba una vez y su plural dos, así que el guardrail cazaba el singular y dejaba pasar el plural. Se arregló recortando hasta punto fijo, a costa de algún falso positivo. En la misma pasada CrossHair encontró que `anio_de` reventaba con dígitos Unicode que `isdigit()` acepta e `int()` rechaza; quedó arreglado y el contraejemplo es un caso de `tests/unit/test_core_domain.py` |
 | 2026-09-23 | Se propaga la reescritura de §11d: el mapa maestro y §4.10 pasan a **TLA+ directo** con las rutas de `formal/tla/`, entra `CorpusSelladoNoSeToca` en la tabla de invariantes y `PreviousVersionPreserved` pasa a declararse **propiedad temporal**. §3.2 añade la regla del cliente único del frontend, que bloquea porque sostiene G5 | La arquitectura resolvió su contradicción y este plan medía contra la versión vieja: un plan de verificación que comprueba cuatro invariantes donde hay cinco da por verde lo que nadie ha mirado |
 | 2026-09-23 | Versión inicial | Fijar los Quality Gates y la clasificación T/A/I/D/U antes de escribir código, para que cada decisión de arquitectura nazca con su método de verificación asociado |
 | 2026-09-23 | El frontend pasa a Feature-Sliced Design v2.1 y **Steiger** entra en §3.2 como análisis estático de clase **A** bajo G1, informando sin bloquear; los vectores pasan a tablas `vec0` de `sqlite-vec`, lo que añade la regla Semgrep `indice-solo-por-embeddings` y el riesgo U-15 | Una convención de carpetas propia no la comprueba nadie; FSD trae un linter oficial y convierte la estructura en una propiedad verificable. La extensión nativa, en cambio, añade la única dependencia de la pila que puede fallar por cómo esté construido el intérprete |

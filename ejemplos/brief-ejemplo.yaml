@@ -7,8 +7,10 @@
 #
 # Reproducir:
 #   cd backend
-#   uv run storymaker nueva --brief ../ejemplos/brief-ejemplo.yaml
-#   uv run storymaker correr --novela ramon-iriarte
+#   uv sync --extra agentes --extra embeddings --extra render
+#   uv run storymaker nueva ../ejemplos/brief-ejemplo.yaml --nombre ejemplo --batch
+#   uv run storymaker estado ejemplo
+#   uv run storymaker continuar ejemplo     # tras un fallo o tras un gate
 
 homenajeado:
   # Tal como debe aparecer escrito. El validador `nombres_exactos` lo comprueba

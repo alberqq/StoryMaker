@@ -14,7 +14,7 @@ Lee primero [`AGENTS.md`](../../AGENTS.md) de la raíz: fija la rama de trabajo,
 | Nodos del grafo resueltos | **24 de 24**; `nodos_pendientes()` devuelve `[]` |
 | Suite | **661 pasan, 1 se salta** |
 | `ruff` y `mypy --strict` | limpios sobre 111 ficheros |
-| `inventario_del_plan` | 0 declarados-y-ausentes · 0 presentes-y-no-declarados *(ver §2, se rompió al añadir `encargo.py`)* |
+| `inventario_del_plan` | 0 declarados-y-ausentes · 0 presentes-y-no-declarados |
 | Matriz de trazabilidad de la raíz | 0 huecos |
 | Requisitos | 131 `REQ-BE-nn` + 51 `REQ-FE-nn`, sin fantasmas ni repetidos |
 | Frontend | **0 de 31 ítems**; `frontend/` está vacío |
@@ -32,11 +32,13 @@ uv run python -c "from storymaker.commons.graph.construccion import nodos_pendie
 uv run python -c "import sys; sys.path.insert(0,'tests'); from correspondencia.test_inventario import cubos; print(cubos())"
 ```
 
-> `remaining.md` de la raíz **está desfasado**: describe H6 y H7 como «sin empezar» y habla de 503 pruebas. Es de antes de la implementación. No lo uses como estado; o se reescribe o se borra.
+> `remaining.md` de la raíz se reescribió contra este estado al cerrar el paso A.
 
 ---
 
 ## 2. Paso A — cerrar la propagación documental
+
+> **Hecho.** El plan declara `encargo.py`, la nocturna y `[tool.mutmut]`; `verification.md` §3.3 explica el contrato de `normalizar`; el brief de ejemplo cita los comandos reales; `remaining.md` está reescrito. Los cuatro informes de correspondencia salen en cero. Se conserva abajo lo que se hizo, como constancia.
 
 Trabajo mecánico, media hora, sin decisiones. Es lo primero porque **deja el repositorio consistente consigo mismo**, y los validadores de correspondencia lo comprueban.
 
@@ -79,6 +81,8 @@ Los cuatro informes tienen que salir en cero, y los dos cubos del inventario vac
 - **Python ≥ 3.12** y [`uv`](https://docs.astral.sh/uv/) instalados.
 - **El CLI `claude` en el `PATH`, con sesión iniciada.** Esto no es opcional y no se sustituye con una clave: la única puerta al modelo es el Claude Agent SDK, que **lanza Claude Code como subproceso y hereda la sesión ya autenticada**. En este repositorio no hay ninguna credencial de Anthropic y no debe haberla — así lo declara [`.env.example`](../../.env.example) y lo comprueba `gitleaks` en G0 y G1.
 - Conexión a internet: el investigador es el único rol con `WebSearch` y `WebFetch`.
+
+- **En Windows 11, Smart App Control apagado** o, en su lugar, WSL. Con Smart App Control activo, Windows bloquea las extensiones nativas sin firma del `.venv` («An Application Control policy has blocked this file»): `uuid_utils`, de la que depende LangGraph, el núcleo nativo de `hypothesis` y `mypy`, que está compilado con mypyc. El síntoma en la suite son ocho fallos de integración y dos módulos de propiedades que no cargan; el código no tiene nada que ver. Para correr lo que sí carga: `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 uv run pytest -q -p asyncio -p anyio --ignore=tests/propiedades` (633 pasan).
 
 Comprueba la sesión antes de gastar nada:
 
