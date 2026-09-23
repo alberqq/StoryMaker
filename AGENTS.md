@@ -1,35 +1,68 @@
 # AGENTS.md — StoryMaker
 
-## Estructura del repositorio
-
-StoryMaker es un monorepo. El frontend está en Three.js y React; el backend, en Python con FastAPI. El backend se organiza por feature (una carpeta por feature, más `commons/` solo para infraestructura técnica transversal); el frontend sigue Feature-Sliced Design (FSD) v2.1, guiado por la skill `feature-sliced-design` (`.claude/skills/feature-sliced-design/`, copia sin modificar de la skill oficial). Detalle en [`docs/architecture.md`](docs/architecture.md), sección 11.
-
-## Presupuesto de contexto
-
-La ventana de contexto total del sistema —la suma de tokens de todos los agentes abiertos a la vez, orquestador incluido— tiene un techo de 100k tokens que no se puede superar en ningún momento. Al diseñar o activar agentes (subagentes, agent teams, lo que sea), cuenta este límite antes de asumir que corren varios a la vez. El detalle y su consecuencia sobre el paralelismo están en [`docs/architecture.md`](docs/architecture.md), sección 0 y sección 8.
+Instrucciones para cualquier agente que trabaje en este repositorio.
 
 ## Rama de trabajo
 
-Todo el desarrollo de StoryMaker ocurre en la rama `zero`. Los commits se hacen directamente sobre ella, sin crear ramas de trabajo intermedias.
+Se trabaja **siempre sobre `zero`**. Los commits van directos a esa rama: no se crea una rama previa por cambio ni se ofrece fusionarla después. No se cambia de rama salvo que el Autor lo pida.
+
+## Dónde vive cada cosa
+
+| Documento | Contiene | Regla |
+|---|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | **Toda decisión fija**: quién hace qué, cómo recibe su contexto, cómo se detiene, trade-offs registrados | Es la fuente de verdad. Si algo lo contradice, gana la arquitectura |
+| [`docs/verification.md`](docs/verification.md) | Plan de verificación y **Quality Gates** (G0–G6), clasificación T/A/I/D/U, riesgos aceptados | Toda capacidad nueva declara aquí su clase y su gate |
+| [`docs/definitions.md`](docs/definitions.md) | Glosario de la ontología del dominio | Vocabulario obligatorio: se usan estos términos, no sinónimos |
+| [`docs/domain-knowledge.md`](docs/domain-knowledge.md) | Cómo se relacionan los conceptos del dominio | — |
+| `specs/<nombre>/spec.md` | Qué hace exactamente una pieza: contratos, entradas, salidas, casos de error | Deriva de la arquitectura, no la sustituye |
+| `specs/<nombre>/plan.md` | **Solo la forma técnica exacta**: ficheros, funciones, orden de trabajo | Si contradice la arquitectura, para y pregunta |
+
+## Spec-driven development
+
+Este proyecto se desarrolla **dirigido por especificación**: la especificación manda y el código es su consecuencia. De ahí se siguen tres cosas que no son negociables:
+
+- **Ningún cambio nace en el código.** Lo que haya que cambiar se cambia primero arriba —arquitectura, luego spec, luego plan— y baja. No se implementa algo para documentarlo después.
+- **La especificación es la fuente de verdad, no un reflejo.** Si el código y el documento discrepan, el que está mal es el código, salvo que el Autor decida lo contrario. La desviación se propaga al documento y se anota en su registro de cambios.
+- **Un documento sin grilling no está terminado.**
+
+No se escribe código antes de haber recorrido esta secuencia. Cada paso termina con un *grilling*, y no se avanza al siguiente hasta que no queden hilos sueltos.
+
+1. **Comprobar la arquitectura.** Leer `docs/architecture.md` y decidir si la petición ya está cubierta por una decisión fijada.
+   - Si lo está, se implementa bajo ella.
+   - Si la petición **contradice** una decisión fijada, **parar y preguntar al Autor**. No se resuelve por cuenta propia.
+   - Si **no está**, se escribe en `docs/architecture.md`: la decisión, su consecuencia principal, las opciones consideradas con su criterio en la tabla de trade-offs, y una fila en el registro de cambios.
+2. **Grilling de la arquitectura.** Invocar la skill `mattpocock-skills:grilling` sobre lo recién escrito. Busca hilos sueltos e incompatibilidades con las decisiones ya fijadas. Lo que aparezca se resuelve en el documento antes de seguir.
+3. **Escribir la spec** en `specs/<nombre>/spec.md`.
+4. **Grilling de la spec.** Misma skill, mismo criterio: contradicciones con la arquitectura, casos no cubiertos, contratos ambiguos.
+5. **Escribir el plan de implementación** en `specs/<nombre>/plan.md`.
+6. **Grilling del plan.** Orden de trabajo, dependencias, qué se rompe mientras tanto.
+7. **Implementar**, y solo entonces.
+
+El motivo del grilling en los tres puntos es el mismo: este sistema tiene decisiones muy acopladas —validadores como nodos, inmutabilidad, sello del corpus, presupuesto de contexto— y una incompatibilidad detectada en el documento cuesta un párrafo; detectada en el código, cuesta una refactorización.
+
+## Verificación
+
+Toda pieza nueva declara, en su spec, **su clase de confianza y el gate que la cubre**, con el marco de `docs/verification.md`:
+
+- **T** test · **A** análisis estático o formal · **I** inspección humana · **D** demostración en escenario realista · **U** riesgo aceptado.
+- `U` solo es admisible si queda escrito en §5 de `verification.md` con su mitigación y su condición de revisión. Un riesgo sin fila es un riesgo olvidado, no aceptado.
+- **A vence a T** cuando ambas son posibles: lo que se puede garantizar por construcción no se deja a una prueba.
+- **G3 y G5 no admiten excepción.** Ninguna propuesta puede introducir un camino que publique una versión sin validar.
 
 ## Documentación
 
-La arquitectura, las definiciones y el conocimiento de dominio de StoryMaker no están en este archivo: están en `docs/`. Antes de razonar sobre el sistema, consulta el documento que corresponda en vez de reconstruir el criterio desde cero:
+- **Todo cambio de implementación que se desvíe de la especificación se propaga a los documentos**, y el cambio se anota en el registro de cambios del documento afectado. El código no es la documentación.
+- **Los documentos se reescriben, no se parchean.** Cuando un documento acumula remiendos y deja de leerse bien, se vuelve a redactar entero.
+- **Alcance literal.** Si el Autor pide eliminar o cambiar algo en un documento, se aplica a todas sus apariciones, incluidas las del registro histórico.
+- Castellano, con los términos técnicos en inglés. Prosa, no telegrama.
 
-- [`docs/architecture.md`](docs/architecture.md) — arquitectura del sistema multiagente: quién gestiona qué, cómo recibe su contexto cada agente y cómo se controla el sistema sin humano en el bucle.
-- [`docs/definitions.md`](docs/definitions.md) — glosario de la ontología del dominio (registro histórico, contrato de fidelidad, anacronismo y el resto de entidades). Cada término se define aquí una sola vez.
-- [`docs/domain-knowledge.md`](docs/domain-knowledge.md) — las vistas del dominio y qué decisión encierra cada una, con lo que falla cuando esa decisión no se toma.
-- [`docs/verificators.md`](docs/verificators.md) — catálogo de métodos de verificación disponibles (de código y de proceso) y el marco de clasificación Trust Spec (T/A/I/D/U), como vocabulario común para decidir qué puerta usar en cada punto del sistema.
+## Criterio de producto
 
-**Estos documentos son la fuente de verdad, no un archivo aparte.** Cuando un cambio en el código o en el diseño del arnés se desvíe de lo que alguno de ellos describe, el documento correspondiente se actualiza en el mismo cambio, no después. Un documento que no refleja el sistema deja de servir para consultarlo.
+StoryMaker es un **ejercicio académico sin impacto real**. Ante la duda entre que corra de principio a fin y que sea correcto en todos sus bordes, gana que corra. Ante una puerta que puede bloquear —una verificación extra, un invariante estricto—, la respuesta por defecto es ablandarla, no reforzarla. Los hallazgos se cuentan al Autor; no se convierten en paradas.
 
-## Flujo de edición
+Esto no exime del flujo de arriba: el rigor va en los documentos, la ligereza en la ejecución.
 
-Todo cambio en StoryMaker recorre un ciclo de cuatro pasos, siempre en este orden y siempre circular: terminar el cuarto es volver al primero del siguiente cambio, no un final. Cada paso tiene una puerta de entrada explícita — no se avanza al siguiente porque el anterior "parece" terminado.
+## Operación
 
-1. **Edición de specs** (`specs/<cambio>/spec.md`), el contexto específico del cambio. Es el punto de entrada del ciclo: antes de tocar la spec, el agente usa la skill `grill-me` para preguntarle al usuario por qué pide ese cambio y qué decisión hay detrás, en vez de darlo por sabido o inferirlo. Responder las preguntas de aclaración no basta: la spec no queda **aprobada** hasta que el usuario lo confirma explícitamente sobre lo escrito.
-2. **Plan de implementación** (`specs/<cambio>/plan.md`), en la misma carpeta que la spec. No se puede crear un plan de implementación si la spec correspondiente no está aprobada — el plan traduce a pasos concretos una decisión que todavía no existe si la spec sigue abierta. Igual que la spec, el plan necesita aprobación explícita del usuario antes de pasar al siguiente paso; que el agente lo dé por bueno no cuenta.
-3. **Edición de código** (frontend en Three.js/React, backend en Python/FastAPI), que implementa lo que el plan ya aprobado describe. No se escribe código si no hay un plan de implementación aprobado — el código nunca va por delante del plan que lo justifica, igual que antes no iba por delante de la spec. En el núcleo y el backend (`storymaker`/`nh`, FastAPI) el código se escribe con TDD: el test se escribe antes que la implementación, porque ahí un fallo corrompe estado o aprueba mal una escena. El frontend no lo exige — sigue el criterio de las skills `react`/`threejs`: que el flujo funcione de principio a fin antes que esté perfecto.
-4. **Edición de spec y docs**, al terminar el código. Se actualiza la spec si la implementación reveló algo que no había previsto, y `docs/` (arquitectura, definiciones, dominio, verificadores) para que quede alineado con lo ya implementado. Arranca al terminar la edición de código, nunca antes.
-
-De ahí se vuelve a empezar por specs en el siguiente cambio.
+- **No se reinicia el servidor de la interfaz con Ejecuciones vivas.** Comprobar antes con `curl -s http://127.0.0.1:8765/api/procesos` y no reiniciar si hay alguna en `en_curso` o `esperando_al_autor`. Editar ficheros es inofensivo: los cambios entran en el siguiente arranque, que elige el Autor.
+- **Lo que el Autor borra, borrado se queda.** No se rescata del historial de git para reutilizarlo como entrada de diseño.

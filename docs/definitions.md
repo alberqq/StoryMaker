@@ -1,262 +1,167 @@
-# Definiciones — Ontología de Generación de Novela Histórica
+# Definiciones — Ontología de generación de novelas históricas
 
-Glosario que acompaña a los diagramas Mermaid. Cada término empleado en cualquiera de los dos documentos se define aquí una sola vez.
+Este documento es el glosario de la ontología. Define cada concepto del dominio, sus atributos principales y el módulo al que pertenece. Los diagramas y la explicación de cómo se relacionan los conceptos están en `domain-knowledge.md`.
 
----
+La ontología se organiza en cinco módulos:
 
-## 0. Las tres estructuras que gobiernan el dominio
+| Módulo | Propósito |
+|---|---|
+| **1. Mundo histórico** | La realidad documentada de la que se parte. |
+| **2. Anatomía narrativa** | La obra que se construye. |
+| **3. Frontera historia–ficción** | El punto donde historia y ficción se unen y se declaran. |
+| **4. Calidad** | Los criterios con los que se juzga el resultado. |
+| **5. Proceso de generación** | Cómo produce la novela la solución. |
 
-1. **El registro histórico** — una capa de verdad externa que puede contradecir al manuscrito. Los hechos llevan fuente y grado de certeza, no solo valor.
-2. **El contrato de fidelidad** — la licencia declarada que fija dónde se puede inventar. Sin ella nadie distingue un error de una decisión.
-3. **El anacronismo** — tres ejes de fallo (material, lingüístico, conceptual), cada uno con sus reglas, su registro y su pasada editorial.
-
----
-
-## 1. Entidades centrales
-
-### 1.1 Marco
-
-**Obra** — La novela como registro de primer nivel: título, subgénero, extensión objetivo, punto de vista por defecto, posición en la serie.
-
-**Contrato de Fidelidad** — La licencia declarada para desviarse del registro: documental, convencional, especulativa, contrafactual o fantasía histórica. Se fija antes de esbozar nada; convierte cada juicio posterior sobre exactitud en una comprobación de regla.
-
-**Aparato** — Nota del autor, dramatis personae, mapa, glosario, cronología y bibliografía. Se genera desde los libros de registro, no se redacta desde cero.
-
-### 1.2 El registro histórico
-
-**Fuente** — Documento u obra en que se apoya el proyecto, con tipo, fecha, procedencia, sesgo conocido y fiabilidad.
-
-**Afirmación (Hecho)** — Aserción atómica sobre el pasado, vinculada a las fuentes que la sostienen. Es la unidad del libro de hechos.
-
-**Grado de Evidencia** — Muy atestiguado, atestiguado, disputado, inferido o vacío. Dispara la regla de invención, así que se almacena en cada afirmación.
-
-**Postura Historiográfica** — La interpretación de la historia disputada que adopta la novela. Decide qué fuente prevalece cuando dos se contradicen.
-
-**Vacío documental** — Una ausencia documentada. Es el solar creativo del género: conviene localizarlo a propósito, no tropezarse con él al redactar.
-
-### 1.3 Ambientación
-
-**Época** — Tramo acotado con sus propios subperiodos. «Ámsterdam, 1636-1637», no «el siglo XVII»: las ventanas de disponibilidad se miden en décadas.
-
-**Lugar / Entidad política** — La geografía más la unidad política que la gobierna: leyes, soberano, lengua, moneda, régimen religioso.
-
-**Medio social** — El mundo concreto donde vive la novela, como una casa de mercaderes veneciana. Es el nivel donde de verdad hace falta investigar.
-
-**Orden Social** ⚖ — Las reglas explícitas de lo posible: ley, clase, gremio, género, religión, honor, herencia, etiqueta, castigo. Si se deja poco especificado, la redacción sustituye en silencio por normas modernas. Máximo apalancamiento de la ontología.
-
-**Mentalidad** — La visión del mundo de la época: Dios, el destino, el cuerpo, la medicina, la infancia, el extranjero. Restricción interna frente al orden social, que es externa; origen de los anacronismos más invisibles.
-
-**Cultura Material** — Objetos, ropa, comida, herramientas, transporte y tecnología, cada uno con su ventana de disponibilidad por fecha y lugar.
-
-**Sensorio** — Olores, ruido, oscuridad, texturas, frío. El principal recurso de inmersión, y el que más se sustituye por descripción puramente visual.
-
-**Economía y Medidas** — Moneda y poder adquisitivo, salarios, precios, unidades, velocidades y costes de viaje.
-
-**Calendario y Cronología** — Juliano frente a gregoriano, años de reinado y litúrgicos, festividades, ritmo agrícola, horas de luz. Los errores aquí se propagan a todas las escenas.
-
-**Lengua y Registro** — Léxico de época, tratamiento, onomástica, dialecto, más la convención de traducción y el presupuesto de arcaísmo.
-
-**Latencia de la Información** — A qué velocidad viajan noticias, cartas y rumor. Determina qué puede saber cada personaje y cuándo.
-
-### 1.4 Personas
-
-**Figura Histórica** — Persona real con biografía e itinerario atestiguados, evidencia documental de su voz y un nivel de sensibilidad ética. El itinerario restringe el reparto de escenas.
-
-**Personaje Ficticio** — Persona inventada, libre en arco e interioridad pero plenamente sujeta al orden social, la mentalidad y su rol.
-
-**Personaje Compuesto** — Condensa a varias personas reales, o reasigna el papel de una. Exige divulgación en el aparato.
-
-**Institución / Facción** — Organización real con procedimientos e intereses documentados. Actúa como agente y como fuente de reglas para sus miembros.
-
-**Rol / Estatus** — La posición del personaje en el orden social. Determina qué puede hacer, saber y adónde puede ir; se comprueba escena a escena.
-
-**Arco de Personaje** — Estado inicial, giros anclados a la columna y estado final, más una **forma de arco** declarada (conversión, caída en desgracia, reparación del honor, vocación, ruina), porque la forma disponible depende de la época. En una figura real, el registro fija los dos extremos.
-
-**Estado de Personaje** — Lo que es cierto del personaje en un punto de la columna: qué sabe y cree, lealtades, estatus, heridas, posesiones, dónde está. La escena lo lee filtrado y lo actualiza al cerrar.
-
-**Relación** — El vínculo entre dos personajes con estado propio: tipo, asimetría de poder, deuda pendiente y cambios fechados. Sin ella, los virajes de lealtad se improvisan en la prosa.
-
-### 1.5 Cronología y trama
-
-**Evento Atestiguado** — Ocurrió, con fecha y lugar reales. Fijo. Forma la columna.
-
-**Evento Ficticio** — Inventado y móvil. Encaja en la columna sin desplazar ni contradecir lo atestiguado.
-
-**Columna Cronológica** — La línea maestra: eventos atestiguados, ficticios e itinerarios del reparto. Los tiempos de viaje deben cuadrar; caza más errores por unidad de esfuerzo que ningún otro artefacto.
-
-**Punto de Anclaje** — La escena donde la ficción toca el registro. Máximo valor narrativo y máximo riesgo factual.
-
-**Hilo Argumental** — Línea de causa y efecto con estado en cada punto del manuscrito. Cuando la historia fija el desenlace, el oficio consiste en que lo sabido parezca inevitable.
-
-**Tema / Motivo** — La idea abstracta que se explora y la imagen concreta que la encarna. Elegir tema es también elegir postura.
-
-**Escena** — Un punto de vista, un lugar, un tramo continuo de tiempo, un reparto, un conflicto y un desenlace. Añade fecha in-mundo y carga de investigación.
-
-**Capítulo / Parte / Acto** — Agrupaciones de escenas. Aquí suelen implicar saltos de meses o países, así que cada una guarda su rango de fechas y sus localizaciones.
-
-**Beat** — La unidad mínima de cambio narrativo: una revelación, un giro, una decisión.
-
-### 1.6 Oficio, control y proceso
-
-**Guía de Estilo / Perfil de Voz** — Restricciones de prosa más horquilla léxica, presupuesto de arcaísmo, convención de diálogo y formato de documentos y extranjerismos.
-
-**Regla de Anacronismo** — Término, objeto o concepto con fecha mínima de validez, ámbito y severidad. Es la forma ejecutable de la cultura material, la lengua y la mentalidad.
-
-**Restricción** — Público, extensión, política de contenido, exposición legal y continuidad de serie.
-
-**Registro de Invención** — Entrada solo-anexado por cada desviación deliberada: qué, por qué, bajo qué cláusula y si se divulga. Alimenta la nota del autor.
-
-**Control de Calidad / Rúbrica** — Un criterio con nombre, cómo se puntúa y en qué etapa se aplica.
-
-**Etapa del Pipeline / Agente** — Qué paso produjo o es dueño de cada entidad, para que la procedencia sea trazable.
+**Principio rector:** todo elemento narrativo debe poder rastrearse hasta una de tres cosas: un hecho documentado, una inferencia plausible o una licencia declarada.
 
 ---
 
-## 2. Relaciones entre entidades
+## 1. Mundo histórico
 
-- `Fuente` **ATESTIGUA** `Afirmación`; `Afirmación` **LLEVA** `Grado de Evidencia`
-- `Grado de Evidencia` **AUTORIZA** `Evento Ficticio` cuando es *vacío* o *disputado*
-- `Contrato de Fidelidad` **GOBIERNA** `Registro de Invención`, que **SE_DIVULGA_EN** `Aparato`
-- `Postura Historiográfica` **RESUELVE** conflictos entre `Fuente` y `Fuente`
-- `Época` + `Lugar` **DEFINEN** `Orden Social`, `Mentalidad`, `Cultura Material`, `Economía y Medidas`
-- `Orden Social` **ASIGNA** `Rol/Estatus` y **ACOTA** los tipos de `Relación`
-- `Mentalidad` **ACOTA** la interioridad y **DETERMINA** las formas de `Arco de Personaje`
-- `Cultura Material` / `Lengua` / `Mentalidad` **COMPILAN_A** `Regla de Anacronismo`
-- `Regla de Anacronismo` **SE_CONTRASTA_CON** la `Escena`, dadas su fecha y lugar
-- `Evento Atestiguado` **FIJA** el itinerario de la `Figura Histórica` y los extremos de su `Arco`
-- `Evento Atestiguado` + `Evento Ficticio` **COMPONEN** la `Columna Cronológica`
-- `Latencia de la Información` **LIMITA** lo que sabe el `Estado de Personaje`
-- `Escena` **DESPLAZA** el `Arco`, **ACTUALIZA** el `Estado de Personaje` y **ALTERA** la `Relación`
-- `Hilo Argumental` **ATRAVIESA** `Punto de Anclaje`, que **TOCA** `Evento Atestiguado`
-- `Personaje Compuesto` **SUSTITUYE_A** una o varias `Figura Histórica`
-- `Escena` **PERTENECE_A** `Capítulo` **PERTENECE_A** `Acto` **PERTENECE_A** `Obra`
-- `Control de Calidad` **SE_APLICA_A** la salida de una `Etapa del Pipeline`
-
----
-
-## 3. Capas de la anatomía
-
-**Cimentación** (se construye una vez, antes de esbozar nada):
-
-1. **Gancho histórico** — por qué esta época, este rincón y este momento.
-2. **Premisa** — protagonista, objetivo, obstáculo y la presión histórica que los genera.
-3. **Dosier de investigación** — fuentes graduadas y reducidas a un libro de hechos.
-4. **Contrato de fidelidad** — la licencia, declarada.
-5. **Biblia de ambientación** — orden social, mentalidad, material, sensorio, medidas, calendario, lengua, latencia.
-6. **Columna cronológica** — eventos atestiguados más itinerarios del reparto.
-
-**Capas narrativas** (el zoom propiamente dicho):
-
-7. **Escaleta global** — actos y giros clavados a la columna; el final lo acota la historia.
-8. **Hilos argumentales** — trama y subtramas, con los anclajes marcados.
-9. **Escaleta de capítulo** — punto de vista, fecha in-mundo, objetivo, qué cambia.
-10. **Escaleta de escena** — objetivo, conflicto, giro, gancho, reparto, carga de investigación.
-11. **Beats** — los desplazamientos momento a momento.
-12. **Prosa** — narración, diálogo, interioridad, descripción.
-13. **Microoficio** — ritmo, dicción, puntuación, párrafo.
-
-**Capas transversales** (afectan a todas las anteriores):
-
-- **Voz** — la del narrador y la de cada personaje, dentro de las reglas de registro.
-- **Ritmo** — macro y micro, más el riesgo de que la investigación frene el avance.
-- **Lógica de época** — una regla fijada en la biblia restringe todo lo que venga después.
-- **Anclaje probatorio** — cada detalle rastreable hasta una fuente, una ventana o una invención registrada.
-- **Textura sensorial** — repartida de forma pareja, no volcada en los párrafos de establecimiento.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Período** | Intervalo temporal acotado que rige la validez de todo lo demás. | inicio, fin, granularidad (siglo, década, año, día), denominación historiográfica |
+| **Lugar** | Espacio geográfico tal como era en el período. No equivale al lugar actual. | toponimia de época, toponimia actual, fronteras, urbanismo, clima, paisaje |
+| **Evento histórico** | Hecho documentado con consecuencias. Puede ser puntual (una batalla) o un proceso (una epidemia). | fecha o rango, lugar, participantes, causas, consecuencias, tipo |
+| **Personaje histórico** | Persona real documentada. Combina hechos biográficos verificables con zonas de silencio documental donde la ficción puede operar. | nombre, fechas vitales, cargos, relaciones documentadas, rasgos atestiguados, lagunas |
+| **Estructura social** | Instituciones, jerarquías y normas que condicionan lo que un personaje puede hacer. | instituciones, leyes, economía, religión, roles de género, roles de clase |
+| **Cultura material** | Todo lo tangible disponible en el período. | objetos, vestimenta, alimentación, tecnología, moneda, armas, transporte, fecha de aparición |
+| **Mentalidad** | Cosmovisión de la época: lo que se creía, se temía, se valoraba y se sabía del mundo. | creencias, valores, tabúes, conocimiento científico, supersticiones |
+| **Lenguaje de época** | Léxico, registros y usos propios del período y del grupo social. | léxico, fórmulas de tratamiento, registros, expresiones, fecha de primera documentación |
+| **Dimensión del período** | Cada uno de los seis ángulos desde los que se documenta un período: cronología y eventos, lugar y toponimia, cultura material, lenguaje de época, mentalidad y estructura social. Son las seis entradas de esta tabla que un corpus debe dejar pobladas. | nombre, hechos recogidos |
+| **Fuente** | Documento que respalda un hecho. | tipo (primaria o secundaria), autor, fecha, fiabilidad, referencia |
+| **Fuente primaria** | Documento contemporáneo a los hechos, como una crónica, una carta o un registro. | — |
+| **Fuente secundaria** | Elaboración posterior sobre los hechos, como la historiografía o los estudios académicos. | — |
+| **Hecho** | Afirmación sobre el mundo acompañada de su estado epistémico. | enunciado, estado, fuentes, cita, entidades implicadas |
+| **Cita** | Fragmento textual de la Fuente, copiado tal cual, en el que se apoya un Hecho concreto. Es lo que hace comprobable el Hecho sin volver a la Fuente. | texto, fuente de la que procede |
+| **Respaldo** | Propiedad de la Cita, no del Hecho: si el fragmento guardado sostiene o no lo que el Hecho enuncia. No debe confundirse con el estado epistémico, que es una propiedad del Hecho en la historiografía. | respaldado, no respaldado, no aplica |
+| **Hecho verificado** | Hecho respaldado por fuentes fiables y concordantes. | — |
+| **Hecho debatido** | Hecho sobre el que las fuentes o los historiadores discrepan. | — |
+| **Hecho inferido** | Hecho no documentado, pero razonablemente deducible del contexto. | — |
+| **Hecho desconocido** | Laguna documental. Es un espacio legítimo para la ficción. | — |
 
 ---
 
-## 4. Niveles de gestión del contexto
+## 2. Anatomía narrativa
 
-**Corpus de investigación** — Las fuentes troceadas e indexadas. Nunca en contexto; solo objeto de recuperación.
+### 2.1 Obra y concepto
 
-**Libro de hechos** — Afirmaciones graduadas con cita. Sustituye al supuesto de que el modelo ya sabe historia.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Obra** | La novela completa. | título, género, subgénero, extensión, público objetivo, período, lugar principal |
+| **Premisa** | Planteamiento central en una o dos frases: quién quiere qué, en qué contexto histórico y qué se lo impide. | protagonista, deseo, obstáculo, contexto |
+| **Tema** | Idea o pregunta de fondo que la obra explora y que da unidad al conjunto. | enunciado, pregunta temática |
+| **Género / Subgénero** | Convenciones que el lector espera encontrar. | bélica, intriga, romántica, biográfica, aventuras, costumbrista… |
 
-**Canon** — Biblia de ambientación, fichas de reparto y guía de estilo. Se edita rara vez y se recupera selectivamente.
+### 2.2 Trama y estructura
 
-**Columna cronológica** — Se consulta por ventana de fechas y por itinerario del reparto.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Trama** | Secuencia causal de acontecimientos. | tipo (principal o subtrama), personajes implicados, eventos históricos entrelazados |
+| **Trama principal** | Línea argumental que sostiene la obra. | — |
+| **Subtrama** | Línea secundaria que complementa, refleja o contrasta con la principal. | — |
+| **Conflicto** | Oposición que genera tensión. | tipo, partes, apuesta, resolución |
+| **Conflicto interno** | El personaje contra sí mismo. | — |
+| **Conflicto interpersonal** | El personaje contra otros personajes. | — |
+| **Conflicto social-histórico** | El personaje contra su época: sus normas, su poder o sus acontecimientos. | — |
+| **Estructura** | Organización macro de la trama. | modelo (tres actos, viaje del héroe, coral…), puntos de giro |
+| **Acto** | Gran bloque estructural con una función dramática: planteamiento, nudo o desenlace. | función, puntos de giro |
+| **Capítulo** | Unidad de lectura que agrupa escenas y suele cerrar con un gancho o un cambio de estado. | número, título, escenas, gancho final |
+| **Escena** | Unidad dramática mínima. Es la pieza clave para generar y evaluar. | escenario, tiempo histórico, personajes presentes, punto de vista, objetivo, conflicto, resultado, anclajes |
+| **Beat** | Micro-acción o cambio emocional dentro de una escena. | acción, cambio de valor |
 
-**Estructural** — Escaletas y estado de los hilos. Siempre en contexto para el capítulo en curso.
+### 2.3 Personajes
 
-**Estado narrativo rodante** — Sinopsis comprimida más el borrador vivo del capítulo.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Personaje** | Entidad que actúa en la historia. | nombre, tipo, rasgos, objetivo, necesidad, miedo, secretos, voz, estatus social |
+| **Personaje ficticio** | Personaje inventado, pero coherente con la Estructura social y la Mentalidad de su época. | — |
+| **Personaje histórico ficcionalizado** | Personaje que representa a un Personaje histórico con pensamientos, diálogos o actos inventados. | referencia al Personaje histórico |
+| **Personaje histórico de fondo** | Figura real que aparece o se menciona sin protagonismo. | — |
+| **Arco de personaje** | Transformación del personaje a lo largo de la obra. | tipo (positivo, negativo, plano), estado inicial, estado final, hitos |
+| **Relación** | Vínculo entre dos personajes que evoluciona con la trama. | tipo (familiar, afectiva, jerárquica, rival…), intensidad, evolución |
 
-**Libro de continuidad** — Hechos que el propio texto estableció. Solo-anexado. Distinto del libro de hechos, que guarda la verdad externa.
+### 2.4 Discurso
 
-**Reglas de anacronismo** — La lista comprobable de términos, objetos y conceptos fechados. Se aplica como barrido, no como contexto.
-
-**Libro de invenciones** — Desviaciones deliberadas y su justificación. Fuente de la nota del autor.
-
-**Estado de personaje y latencia** — Qué sabe y cree cada personaje ahora, más estatus, lealtades, heridas y posesiones. El nivel que más sistemas se saltan.
-
-**Estado de relaciones** — El vínculo vigente entre cada par con trato en escena, con su historial fechado.
-
-**Posición en el arco** — Dónde está cada personaje del reparto y qué giro le toca. Se consulta en escaleta.
-
-**Paquete de contexto de escena** — Todo lo anterior ya filtrado y ensamblado para esta escena, construido por adelantado.
-
-**Libro de plantaciones** — Elementos sembrados y su estado de pago. Se comprueba en escaleta.
-
----
-
-## 5. Dimensiones de calidad
-
-### 5.1 Narrativa
-
-- **Continuidad** — sin contradicciones contra el libro de continuidad.
-- **Consistencia de personaje** — voz, motivación y conocimiento cuadran con la ficha.
-- **Integridad del arco** — ningún cambio sin una escena que lo produzca.
-- **Lógica de trama** — los desenlaces fijados por la historia se sienten ganados, no impuestos.
-- **Ritmo** — la investigación no frena la narración.
-- **Oficio de prosa** — variedad, imagen, equilibrio entre mostrar y contar.
-- **Diálogo** — voces diferenciadas, subtexto, nada expositivo.
-- **Función estructural** — cada escena avanza trama, personaje o tema; idealmente dos.
-- **Experiencia de lectura** — claridad, arco emocional, gancho al cerrar capítulo.
-
-### 5.2 Histórica
-
-- **Exactitud factual** — nada contradice un hecho muy atestiguado sin permiso del contrato.
-- **Anclaje probatorio** — cada concreción tiene fuente, ventana o invención registrada. El antídoto contra la fabulación confiada.
-- **Integridad cronológica** — fechas, calendarios, viajes, estaciones y luz cuadran sobre la columna.
-- **Anacronismo material** — nada fuera de su ventana de disponibilidad.
-- **Anacronismo lingüístico** — ninguna palabra, modismo ni metáfora posterior a la época.
-- **Anacronismo conceptual (presentismo)** — ninguna psicología, política ni moral moderna en mentes de época. El más difícil de detectar.
-- **Verosimilitud social** — la transgresión es posible, pero cuesta lo que costaba.
-- **Forma del arco** — la manera de cambiar también pertenece a la época: el arco terapéutico de autodescubrimiento es una forma del siglo XX.
-- **Autenticidad sensorial** — la época se habita, no se describe.
-- **Fidelidad al contrato** — las desviaciones son del tipo y la magnitud declarados.
-
-### 5.3 Ética y legal
-
-- **Tratamiento de personas reales** — los motivos inventados para los muertos se marcan; los vulnerables no son atrezo.
-- **Representación** — las voces marginadas se construyen desde la evidencia, no desde el supuesto moderno.
-- **Transparencia** — la nota del autor coincide con lo que se hizo.
-- **Difamación e intimidad** — se evalúa la exposición en historia reciente.
-
-### 5.4 Modos de fallo característicos
-
-- **Voz de enciclopedia** — la narración se detiene a explicarle la época al lector.
-- **Teleserie de época** — atrezo correcto, mentes modernas.
-- **Lenguaje terapéutico en jubón** — trauma procesado con vocabulario del siglo XXI.
-- **Arco terapéutico** — autodescubrimiento y sanación en una época que no cambiaba así.
-- **Detalle de folleto turístico** — solo lo célebre; falta lo ordinario.
-- **Fabulación confiada** — concreciones verosímiles afirmadas como hechos y nunca registradas.
-- **Cronología aplanada** — todo lo notable de cincuenta años cae en el año de la trama.
-- **Historia de consenso** — se reproduce el relato divulgativo, ignorando la postura elegida.
-- **Moral anacrónica** — los personajes simpáticos piensan como hoy y desaparece la dificultad moral.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Narrador / Punto de vista** | Quién cuenta y desde dónde. Determina qué información está disponible en cada escena. | persona, focalización, fiabilidad |
+| **Tiempo narrativo** | Orden y ritmo del relato. Es distinto del tiempo histórico. | orden (cronológico, analepsis, prolepsis), elipsis, duración |
+| **Escenario** | Instancia concreta de un Lugar en un momento dado, tal como se describe en la escena. | lugar, fecha, hora, clima, detalles sensoriales |
+| **Diálogo** | Habla de los personajes. Equilibra la verosimilitud de época con la legibilidad actual. | hablantes, registro, subtexto |
+| **Voz y estilo** | Rasgos de la prosa. | tono, sintaxis, densidad descriptiva, registro, arcaísmo permitido |
+| **Motivo / Símbolo** | Elemento recurrente cargado de significado que refuerza el tema. | elemento, significado, apariciones |
 
 ---
 
-## 6. Pasadas editoriales
+## 3. Frontera historia–ficción
 
-- **Edición de desarrollo** — estructura, trama y arcos, sobre la escaleta y antes de la prosa.
-- **Auditoría cronológica** — la columna de punta a punta. Mecánica y muy rentable: la primera que conviene automatizar.
-- **Verificación factual** — cada concreción histórica contrastada con el libro de hechos y sus citas.
-- **Auditoría de arco** — todas las escenas de un personaje leídas seguidas. Lo único que caza arcos planos, cambios sin escena que los produzca y formas ajenas a la época.
-- **Barrido de anacronismos** — tres subpasadas con detectores distintos: léxica, material y conceptual.
-- **Revisión ética y de sensibilidad** — personas reales, violencia, grupos marginados. Conviene mantenerla humana.
-- **Edición de línea** — prosa, voz, consistencia de registro, presupuesto de arcaísmo.
-- **Corrección de estilo** — gramática, ortografía, formato de extranjerismos y documentos.
-- **Edición de continuidad** — coherencia interna contra el libro de continuidad.
-- **Lectura experta** — un especialista sobre las escenas de anclaje. La única que caza el anacronismo conceptual.
-- **Generación del aparato** — nota del autor, dramatis personae, glosario y cronología, compilados desde los libros.
-- **Reescritura dirigida** — parche acotado para un solo problema marcado.
-- **Regeneración completa** — volver a redactar la escena desde su escaleta cuando su premisa es insalvable.
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Anclaje histórico** | Vínculo explícito entre un elemento narrativo (escena, personaje, conflicto) y un Hecho o Evento. | elemento narrativo, hecho o evento, tipo de vínculo |
+| **Licencia histórica** | Alteración consciente de un hecho por razones narrativas, como comprimir el tiempo, fusionar personajes o desplazar un lugar. | hecho original, alteración, justificación, declarada (sí/no) |
+| **Anacronismo** | Elemento impropio del período. | tipo, clase, ubicación |
+| **Anacronismo involuntario** | Error: algo que no podía existir, decirse o pensarse en la época. | — |
+| **Anacronismo deliberado** | Licencia consciente, por ejemplo para acercar el lenguaje al lector actual. | — |
+| **Clases de anacronismo** | Según qué elemento resulta impropio del período. | **material** (objetos), **léxico** (palabras), **conceptual** (ideas o conocimientos), **de mentalidad** (valores o juicios actuales) |
+| **Plausibilidad** | Grado en que un elemento inventado podría haber ocurrido dado el contexto. Se aplica sobre todo en las zonas de silencio documental. | nivel, justificación |
+| **Nota del autor** | Paratexto que declara qué es histórico, qué es ficción y qué licencias se tomaron. | licencias declaradas, fuentes principales |
+
+---
+
+## 4. Características de calidad
+
+Las características se agrupan en cuatro familias.
+
+### 4.1 Fidelidad histórica
+
+| Característica | Definición | Cómo se verifica |
+|---|---|---|
+| **Rigor histórico** | Los hechos anclados coinciden con las fuentes. | Contraste de afirmaciones con la base de conocimiento; tasa de hechos no respaldados. |
+| **Coherencia temporal** | Nada aparece antes de existir: objetos, ideas, palabras, personas vivas o muertas. | Validación de fechas por entidad; detector de anacronismos. |
+| **Autenticidad de mentalidad** | Los personajes piensan como en su época y evitan el *presentismo* (proyectar valores actuales). | Revisión de motivaciones y juicios morales frente a la Mentalidad del período. |
+| **Autenticidad lingüística** | Registro y léxico adecuados sin sacrificar la legibilidad. | Listas de términos anacrónicos; análisis de fórmulas de tratamiento. |
+
+### 4.2 Calidad narrativa
+
+| Característica | Definición | Cómo se verifica |
+|---|---|---|
+| **Calidad de trama** | Causalidad, tensión creciente, giros motivados y desenlace satisfactorio. | Comprobación de que cada escena cambia un estado; curva de tensión. |
+| **Calidad de personaje** | Motivación clara, agencia, contradicciones y arco completo. | Seguimiento de objetivos y cambios por personaje. |
+| **Ritmo** | Alternancia adecuada entre acción, reflexión, diálogo y descripción. | Proporciones por capítulo; longitud de escenas. |
+| **Inmersión** | El lector "está" en la época gracias a detalle sensorial y cultura material integrada, no expositiva. | Densidad y distribución del detalle de época; ausencia de "infodumps". |
+
+### 4.3 Calidad textual
+
+| Característica | Definición | Cómo se verifica |
+|---|---|---|
+| **Calidad de prosa** | Voz consistente, variedad sintáctica y ausencia de clichés o repeticiones. | Métricas de repetición y clichés; consistencia de estilo. |
+| **Coherencia interna (continuidad)** | Nombres, edades, heridas, relaciones, conocimiento y geografía se mantienen consistentes. | Comparación con el Estado de continuidad y la Biblia de la obra. |
+| **Originalidad** | La obra no reproduce tramas ni textos existentes y aporta una mirada propia. | Detección de similitud; revisión de la premisa. |
+
+### 4.4 Responsabilidad
+
+| Característica | Definición | Cómo se verifica |
+|---|---|---|
+| **Sensibilidad y ética** | Representación responsable de grupos y conflictos, sin estereotipos gratuitos y con tratamiento cuidadoso de la violencia. | Revisión de sensibilidad por grupo representado. |
+| **Transparencia** | Las licencias y ficcionalizaciones de personas reales quedan declaradas. | Registro de licencias completo; existencia de la Nota del autor. |
+
+---
+
+## 5. Proceso de generación
+
+| Concepto | Definición | Atributos principales |
+|---|---|---|
+| **Especificación (brief)** | Petición de entrada que define la obra deseada. | período, lugar, género, extensión, tono, público, restricciones |
+| **Restricción** | Regla que la generación debe respetar. | tipo (contenido, estilo, histórica), severidad |
+| **Base de conocimiento histórico** | Repositorio estructurado de Hechos, Entidades y Fuentes del módulo 1. Es la "verdad" contra la que se valida. | hechos, entidades, fuentes, cobertura |
+| **Biblia de la obra** | Documento vivo que actúa como canon de la novela. | personajes, relaciones, escenarios, reglas de estilo, glosario de época, licencias |
+| **Plan (outline)** | Estructura jerárquica prevista de la obra. | actos, capítulos, escenas, anclajes previstos |
+| **Estado de continuidad** | Memoria dinámica del mundo narrativo en cada punto de la obra. | ubicación de personajes, conocimiento de cada personaje, objetos, heridas, relaciones, fecha narrativa |
+| **Borrador** | Texto generado de una unidad (escena o capítulo) en una versión concreta. | unidad, versión, texto, estado |
+| **Evaluación** | Aplicación de las características de calidad a un borrador. | borrador, características evaluadas, puntuaciones |
+| **Incidencia** | Defecto detectado en un borrador. | tipo, severidad, ubicación, característica afectada, propuesta de corrección |
+| **Revisión** | Nueva versión de un borrador que resuelve incidencias. | incidencias resueltas, versión resultante |
+| **Verificación de respaldo** | Comprobación de que la Cita guardada junto a cada Hecho sostiene su enunciado. La ejecuta un agente distinto del que reunió los Hechos, y un Hecho sin respaldo no se borra: pasa a Hecho inferido. | hechos revisados, veredicto por hecho |
+| **Invención autorizada** | Dato que la obra necesita, que la investigación no encuentra y que se inventa con permiso explícito. Entra en la Base de conocimiento como Hecho inferido y sin Fuente, para que la Trazabilidad siga siendo completa. | enunciado, hueco que lo motivó |
+| **Trazabilidad** | Enlace de cada afirmación histórica del texto con su Fuente o con su Licencia. | fragmento de texto, hecho, fuente o licencia |
