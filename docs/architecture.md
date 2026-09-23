@@ -221,6 +221,8 @@ El **juez** lee la novela terminada y aplica la rúbrica de siete criterios. No 
 
 Publication no lleva gate humano porque el manuscrito ya se aprobó al cerrar Writing, y lo único que queda entre medias es automático.
 
+**En modo batch el umbral del juez informa y no detiene.** Sin gates nadie puede decidir qué capítulo rehacer, y volver a juzgar el mismo texto solo llevaría a `Fail` al segundo rechazo. La nota se registra igual y la novela se publica. **El PDF se imprime después de publicar y su fallo es un aviso**, porque se deriva de una versión ya validada y un navegador ausente no dice nada sobre el texto.
+
 ### Fase 6 · Regeneration
 
 El lector pide un cambio: *«el perro se llama Nala, no Toby»*. Por CLI al principio, desde la propia página cuando exista la web.
@@ -1102,6 +1104,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | Fase 5: en modo batch **el umbral del juez informa y no detiene**, y el PDF se imprime tras publicar con su fallo como aviso | La auditoría previa a la primera ejecución real vio que, en batch, un juez por debajo de 6 volvía a juzgar el mismo texto y acababa en `Fail`, y que ningún camino llamaba a `imprimir_pdf`. Es ablandar una puerta que en batch no tiene a nadie detrás, como pide el criterio de producto |
 | 2026-09-24 | §5 fija que **el contrato de salida viaja con la llamada**: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, que cuenta contra su techo. Entra la fila correspondiente en §17 | La primera ejecución real cayó en `Configure`: el entrevistador solo recibía su prompt de rol, no sabía qué campos llevaba un `Brief` e improvisó los suyos. La arquitectura no decía cómo llega la forma al rol, y el código no la mandaba |
 | 2026-09-23 | Versión inicial | Cierre de la orquestación, el paso de contexto, la validación formal y los gates antes de escribir código |
 | 2026-09-23 | Se extrae el plan de verificación a `verification.md` y se enlaza desde §11 | La arquitectura fija qué se valida; el plan de verificación fija cómo se demuestra, con qué gate y con qué clase de confianza (T/A/I/D/U) |

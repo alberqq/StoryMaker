@@ -313,7 +313,9 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 **Sin gate humano**, porque el manuscrito ya se aprobó al cerrar Writing y lo que queda es automático.
 
-**Errores.** Lean falla → **la versión no se publica, sin anulación posible**. Umbral del juez no superado → vuelta al gate de Writing.
+**El juez recibe la rúbrica** —las siete preguntas de `rubrica.yaml`, el mismo fichero de la revisión humana— antepuesta a la novela. **El PDF** se imprime tras `publish`, junto al fichero de la novela como `<novela>.v<n>.pdf`, y si falla queda como aviso: la versión ya está publicada y validada.
+
+**Errores.** Lean falla → **la versión no se publica, sin anulación posible**. Umbral del juez no superado → vuelta al gate de Writing **con gates**; **en modo batch se registra la nota y se publica**, porque no hay nadie que decida qué rehacer.
 
 ### 4.6 `regeneration/` — Fase 6
 
@@ -414,7 +416,7 @@ Corren en el portátil y en CI, sobre el repositorio. **Ninguno de ellos ve una 
 | 18 | **Identidad nodo↔acción** | Que los nombres de nodo del grafo sean iguales a las acciones de `harness.tla` **y que su conjunto de aristas sea igual a la definición `Aristas`** que gobierna el `Next` | A | G1 | Sí |
 | 19 | **Steiger** | Las dos reglas de FSD sobre `frontend/src` | A | G1 | **No, informa** |
 | 20 | **`registro_de_validadores`** | Que el registro de validadores deterministas, la tabla de §11a de la arquitectura y la de §7.2 de este documento coinciden por pares: mismo conjunto, mismo punto de ejecución, misma condición de bloqueo | A/T | G1 | Sí |
-| 21 | **`inventario_del_plan`** | Sobre todo `specs/*/plan.md`: que cada ruta y cada símbolo de la columna «Ficheros y símbolos» existe en el árbol, y que todo módulo de `backend/src/storymaker/**` —salvo los `__init__.py`— está declarado en algún ítem | T | G1 | **No, informa en dos cubos** |
+| 21 | **`inventario_del_plan`** | Sobre todo `specs/*/plan.md`, con sus filas `P-nn` y sus filas `IMP-nn`: que cada ruta y cada símbolo de la columna «Ficheros y símbolos» existe en el árbol, y que todo módulo de `backend/src/storymaker/**` —salvo los `__init__.py`— y todo módulo `.ts` o `.tsx` de `frontend/src/**` está declarado en algún ítem | T | G1 | **No, informa en dos cubos** |
 | 22 | **`anclas_de_procedencia`** | Que toda ancla de un docstring de módulo —primera línea, formato `spec: §3.6 · arq: §11a`— apunta a un apartado que existe, y que **todo apartado de §3 y §4 de este documento tiene al menos un módulo que lo cite** | T | G1 | **No, informa** |
 | 22-b | **`matrices_de_trazabilidad`** | Que las tres matrices —la de la raíz y las dos de `specs/`— están bien formadas, no repiten identificador, no citan ítems que ningún plan declara, declaran resolución para cada huérfano y **no encogen**. El recuento de filas en `GAP` se informa | A | G1 | **Sí, salvo el recuento de huecos, que informa** |
 | 22-c | **`requisitos_declarados`** | Sobre la tabla de §10 de este documento y la de §12 de la spec del frontend: que todo ítem citado en la columna «Ítems» exista en el plan correspondiente, que ningún apartado de §3 y §4 se quede sin ningún requisito que lo cite y que ningún identificador se repita ni se reutilice | T | G1 | **No, informa** |
@@ -696,7 +698,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-110 | El endpoint de versión devuelve el manifiesto, sus capítulos en orden y el **bloque de paratexto** con el que se arma la portada | §5 | P-110 |
 | REQ-BE-111 | La ficha de personajes cuelga de una **versión**, no de la novela | §5 | P-110 |
 | REQ-BE-112 | `POST /novelas/{id}/cambios` no toca nada: abre la Fase 6, que se detiene en su gate | §5 | P-110, P-95 |
-| REQ-BE-113 | FastAPI sirve el frontend construido desde `frontend_dist`, de modo que lectura, PDF y `render_visual` compartan origen | §5 | P-136 |
+| REQ-BE-113 | FastAPI sirve el frontend construido desde `frontend_dist` y declara su URL base en `frontend_base_url`, de modo que lectura, PDF y `render_visual` compartan origen | §5 | P-136 |
 | REQ-BE-114 | El endpoint de decisión es el único protegido y el único que reanuda una ejecución | §5 | P-109 |
 | REQ-BE-115 | El contrato OpenAPI y Schemathesis garantizan que **una decisión malformada no reanuda el grafo** | §5 | P-112 |
 | REQ-BE-116 | La CLI expone los siete comandos declarados | §6 | P-113 |
@@ -731,6 +733,8 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §4.5: el juez recibe la rúbrica, el PDF se imprime tras publicar con su fallo como aviso, y en batch el umbral del juez no detiene | Se propaga la decisión de la arquitectura en Fase 5, a raíz de la auditoría previa a la primera ejecución real |
+| 2026-09-24 | §7.1 nº 21: `inventario_del_plan` lee también las filas `IMP-nn` del plan del frontend y, en la dirección inversa, recorre `frontend/src/**`; REQ-BE-113 nombra la **URL base** en `frontend_base_url`, que la tabla de configuración de §2 ya declaraba | La arquitectura pide cotejar «el plan contra el árbol y a la inversa» sin limitarlo a una mitad, y el validador solo miraba el backend: las rutas del plan del frontend no las comprobaba nadie. La URL base la exige §16.4 y el requisito solo nombraba el directorio |
 | 2026-09-24 | §3.3 fija **el contrato de salida**: la función de invocación adjunta al prompt el JSON Schema del esquema del rol, que cuenta contra su techo. Entra **REQ-BE-132** | Se propaga la decisión nueva de §5 de la arquitectura. La primera ejecución real cayó en `Configure` porque el entrevistador validaba contra un `Brief` que nunca le habían enseñado |
 | 2026-09-23 | Al cablear los nodos y recorrer el sistema entero por primera vez: el estado del grafo gana seis punteros —`premisa`, `texto_pegado`, `capitulo_version_id`, `huecos_pendientes`, `a_regenerar` y `a_invalidar`—; **los cuatro gates dejan de ser terminales** y resuelven por «aprobar» en modo batch; `Plan` **planifica una sola vez** y no rehace la escaleta al volver de `FillGap`; y la Fase 6 resuelve la petición del lector con búsqueda semántica más la forma opcional `campo=valor`, sin que ningún modelo intervenga | Los nodos estaban cableados pero no llamaban a las funciones que hacen el trabajo, y al conectarlos apareció lo que faltaba. Los punteros son eso, punteros: el estado sigue sin llevar contenido. Los gates sin arista de salida hacían que el modo batch —el único en el que los cinco briefs de evaluación pueden correr— terminara en el primer gate. Y replanificar en cada hueco costaba cinco llamadas de arquitecto para duplicar personajes y capítulos |
 | 2026-09-23 | §7.1 gana el validador **`matrices_de_trazabilidad`** (22-b), que bloquea sobre la forma de las tres matrices y **el suelo de su inventario**, e informa del recuento de huecos | Las matrices afirmaban en verde y no las miraba nadie: se comprobaban a mano con `grep`, y un parche que se comió un separador dejó tres filas contándose sin poder leerse. Lo que sostiene una afirmación tiene que ser comprobable por la suite, no por quien la escribió |

@@ -16,7 +16,12 @@ propio nodo mientras la transacción sigue abierta.
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
+from functools import cache
+from pathlib import Path
+
+import yaml
 
 from storymaker.commons.agents.invocacion import invocar_rol
 from storymaker.commons.agents.techos import Perfil
@@ -61,7 +66,7 @@ async def juzgar(*, capitulos: list[str]) -> SalidaJuez:
     novela = "\n\n".join(f"Capitulo {i}\n{t}" for i, t in enumerate(capitulos, start=1))
     resultado = await invocar_rol(
         Perfil.JUEZ,
-        novela,
+        _rubrica() + "\n\n# La novela\n\n" + novela,
         SalidaJuez,
         transporte=deps.transporte,
         settings=deps.settings,
@@ -75,6 +80,23 @@ async def juzgar(*, capitulos: list[str]) -> SalidaJuez:
         )
     )
     return resultado.valor
+
+
+@cache
+def _rubrica() -> str:
+    """Las siete preguntas de `rubrica.yaml`, el mismo fichero que usa la revisión humana.
+
+    Sin ellas el juez puntuaba siete criterios de los que solo conocía el nombre.
+    """
+    ruta = Path(__file__).with_name("rubrica.yaml")
+    datos = yaml.safe_load(ruta.read_text(encoding="utf-8"))
+    preguntas = "\n".join(
+        f"- **{c['nombre']}**: {c['pregunta']}" for c in datos.get("criterios", [])
+    )
+    return (
+        "Puntua esta novela del 1 al 10 en cada uno de los siete criterios de la rubrica, "
+        "con una justificacion por criterio.\n\n# Rubrica\n\n" + preguntas
+    )
 
 
 async def cronologia_completa() -> NovelaLean:
@@ -202,6 +224,10 @@ async def judge(estado: EstadoNovela) -> EstadoNovela:
         detalle=notas.por_criterio(),
     )
     supera = supera_el_umbral(notas)
+    if not supera and not estado["gates_enabled"]:
+        # En batch nadie puede decidir qué rehacer, y volver a juzgar el mismo texto solo
+        # lleva a `Fail` al segundo rechazo. La nota queda registrada; la novela se publica.
+        supera = True
     return {
         **estado,
         "pc": "Judge",
@@ -219,8 +245,25 @@ async def publish(estado: EstadoNovela) -> EstadoNovela:
         fila = await cursor.fetchone()
     numero = int(fila["siguiente"]) if fila is not None else 1
 
-    await publicar(numero=numero, gate_id=estado["gate_id"])
+    publicada = await publicar(numero=numero, gate_id=estado["gate_id"])
+    await _imprimir(publicada.version_id, Path(estado["novela"]).with_suffix(f".v{numero}.pdf"))
     return {**estado, "pc": "Idle"}
+
+
+async def _imprimir(version_id: int, destino: Path) -> None:
+    """El PDF de la versión ya publicada, junto al fichero de la novela.
+
+    Va **después** de publicar y su fallo es un aviso: la versión ya está validada y el PDF
+    se deriva de ella, así que un navegador ausente no puede deshacer una publicación.
+    """
+    deps = actuales()
+    try:
+        lectura = await render.construir_lectura(deps.db, version_id)
+        await render.imprimir_pdf(lectura.como_html(), str(destino))
+    except Exception as fallo:
+        print(f"Aviso: version publicada, pero el PDF no se genero: {fallo}", file=sys.stderr)
+        return
+    print(f"PDF: {destino}", file=sys.stderr)
 
 
 def supera_el_umbral(salida: SalidaJuez, umbral: float = UMBRAL_DE_PUBLICACION) -> bool:
