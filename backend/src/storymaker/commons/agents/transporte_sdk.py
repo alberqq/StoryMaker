@@ -92,6 +92,10 @@ class TransporteAgentSDK:
         opciones = ClaudeAgentOptions(
             model=modelo,
             system_prompt=sistema or None,
+            # `allowed_tools` solo aprueba sin preguntar; `tools` es lo que el rol **ve**.
+            # Sin él, un rol sin herramientas intentaba usar las de Claude Code, el hook se
+            # las denegaba y el único turno se gastaba sin respuesta.
+            tools=list(herramientas),
             allowed_tools=list(herramientas),
             max_turns=max_turns,
             hooks=self._hooks(cuota),
@@ -102,20 +106,42 @@ class TransporteAgentSDK:
         )
 
         partes: list[str] = []
+        final = ""
         consumo = Consumo()
-        async for mensaje in query(prompt=prompt, options=opciones):
-            texto = getattr(mensaje, "text", None)
-            if isinstance(texto, str):
-                partes.append(texto)
-            for bloque in getattr(mensaje, "content", []) or []:
-                if isinstance(getattr(bloque, "text", None), str):
-                    partes.append(bloque.text)
-            uso = getattr(mensaje, "usage", None)
-            if uso is not None:
-                consumo = Consumo(
-                    tokens_in=int(getattr(uso, "input_tokens", 0) or 0),
-                    tokens_out=int(getattr(uso, "output_tokens", 0) or 0),
-                    coste_usd=float(getattr(mensaje, "total_cost_usd", 0.0) or 0.0),
-                )
+        try:
+            async for mensaje in query(prompt=prompt, options=opciones):
+                for bloque in getattr(mensaje, "content", []) or []:
+                    if isinstance(getattr(bloque, "text", None), str):
+                        partes.append(bloque.text)
+                if type(mensaje).__name__ == "ResultMessage":
+                    # La respuesta final del rol. El texto intermedio de un rol con
+                    # herramientas («voy a buscar…») no es salida y no se valida.
+                    if isinstance(getattr(mensaje, "result", None), str):
+                        final = mensaje.result
+                    consumo = _consumo_de(mensaje)
+        except Exception as fallo:
+            # Agotar los turnos no es una avería del sistema: lo que el rol llegó a decir
+            # pasa a `schema_guard`, que decide y reintenta con el error inyectado.
+            if "maximum number of turns" not in str(fallo):
+                raise
 
-        return RespuestaBruta("\n".join(partes), consumo)
+        return RespuestaBruta(final or "\n".join(partes), consumo)
+
+
+def _consumo_de(mensaje: object) -> Consumo:
+    """Tokens y coste del `ResultMessage`, cuyo `usage` el SDK entrega como `dict`.
+
+    Leerlo con `getattr` daba cero siempre, y `storymaker estado` enseñaba una novela
+    gratis. `total_cost_usd` sigue siendo una estimación en cliente, no facturación (U-7).
+    """
+    uso = getattr(mensaje, "usage", None) or {}
+    leer = uso.get if isinstance(uso, dict) else (lambda k, d=0: getattr(uso, k, d))
+    entrada = sum(
+        int(leer(k, 0) or 0)
+        for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
+    )
+    return Consumo(
+        tokens_in=entrada,
+        tokens_out=int(leer("output_tokens", 0) or 0),
+        coste_usd=float(getattr(mensaje, "total_cost_usd", 0.0) or 0.0),
+    )
