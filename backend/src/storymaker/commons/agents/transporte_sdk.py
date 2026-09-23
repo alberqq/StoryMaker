@@ -95,6 +95,10 @@ class TransporteAgentSDK:
             allowed_tools=list(herramientas),
             max_turns=max_turns,
             hooks=self._hooks(cuota),
+            # Claude Code difiere `WebSearch` y `WebFetch` tras `ToolSearch`, y cargarlas
+            # cuesta un turno que la micro-sesión de dos (arq. §4) no tiene. Con esto
+            # llegan cargadas desde el primer turno.
+            env={"ENABLE_TOOL_SEARCH": "false"},
         )
 
         partes: list[str] = []

@@ -20,6 +20,7 @@ from storymaker.commons.agents.invocacion import invocar_rol
 from storymaker.commons.agents.techos import Perfil
 from storymaker.commons.config import Defaults
 from storymaker.commons.db.repos import mundo
+from storymaker.commons.errores import PresupuestoExcedido
 from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.obs.prompts import RepositorioDePrompts
@@ -109,16 +110,27 @@ async def verificar_respaldo(fase_run_id: int) -> tuple[int, int]:
 
 
 async def resolver_hueco(pregunta: str, periodo: str, lugar: str) -> HuecoResuelto:
-    """La micro-sesión que Plotting dispara. Una llamada, una búsqueda, dos finales posibles."""
+    """La micro-sesión que Plotting dispara. Una llamada, una búsqueda, dos finales posibles.
+
+    **Un hueco no detiene la escaleta** (arq. §4). Si la micro-sesión se queda sin turnos o
+    su salida no valida, el hueco se da por `no_encontrado` y el arquitecto inventa, que es
+    el segundo final que la arquitectura ya declara válido. El presupuesto excedido sí
+    sigue siendo un error: esa guarda existe para no emitir.
+    """
     deps = actuales()
-    resultado = await invocar_rol(
-        Perfil.INVESTIGADOR_MICRO,
-        prompts.prompt_de_hueco(pregunta, periodo, lugar),
-        HuecoResuelto,
-        transporte=deps.transporte,
-        settings=deps.settings,
-        sistema=RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_MICRO).texto,
-    )
+    try:
+        resultado = await invocar_rol(
+            Perfil.INVESTIGADOR_MICRO,
+            prompts.prompt_de_hueco(pregunta, periodo, lugar),
+            HuecoResuelto,
+            transporte=deps.transporte,
+            settings=deps.settings,
+            sistema=RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_MICRO).texto,
+        )
+    except PresupuestoExcedido:
+        raise
+    except Exception as fallo:
+        return HuecoResuelto(encontrado=False, motivo=f"micro-sesion sin respuesta: {fallo}")
     deps.observador.registrar_span(
         Span(
             nombre=nombre_de_span(capitulo=None, rol="investigador_micro"),
