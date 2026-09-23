@@ -27,7 +27,7 @@ Esa decisión de dominio gobierna todo lo demás: justifica una fase de investig
 | Estado | Un único fichero SQLite por novela | Checkpoint del grafo y datos de dominio en la misma transacción. Imposible que se desincronicen. |
 | Versiones | Capítulos inmutables + manifiesto | Conservar la versión anterior es una propiedad de la estructura, no una disciplina. |
 | Ejecuciones de fase | Grafo de `fase_run` inmutables | Rehacer, reanudar, ramificar y regenerar son **la misma operación** con distinto punto de entrada. |
-| Intervención humana | Cinco gates bloqueantes con notificación por Telegram | La máquina duerme en disco mientras espera. Desactivables en modo batch. |
+| Intervención humana | Cinco gates bloqueantes; **Telegram solo avisa y el Autor decide en su PC**, con la CLI | La máquina duerme en disco mientras espera. No hay superficie pública que reanude una ejecución. Desactivables en modo batch. |
 | Validación formal | Lean 4 (la historia) + TLA+ (el arnés) | Lean verifica la cronología concreta; TLC verifica el comportamiento del sistema. |
 | Observabilidad | Langfuse con spans manuales autorizados + OTLP nativo opcional | La semántica que importa (sesión = novela, span = capítulo/rol/intento) la pone el orquestador. |
 | Presupuesto de contexto | 100.000 tokens concurrentes, garantizados por construcción | No se puede medir en vivo, así que se acota *a priori*. Ver §12. |
@@ -60,7 +60,8 @@ Si el editor decidiera cuándo validar, un modelo que se olvida de invocar una h
 ```mermaid
 graph TD
     H["Humano<br/>comprador / autor"] -->|brief, gates| ORQ
-    TG["Bot de Telegram"] <-->|notificación y decisión| ORQ
+    ORQ -->|solo notificación| TG["Bot de Telegram"]
+    CLI["CLI en el PC del Autor"] -->|decisión de gate| ORQ
     ORQ["Orquestador LangGraph<br/>estado explícito"] --> DB[("SQLite<br/>una novela = un fichero")]
     ORQ --> PK["Ensamblador de paquetes<br/>código, no agente"]
     ORQ --> VAL["Validadores<br/>Core Domain en Python puro"]
@@ -581,7 +582,7 @@ Cinco gates bloqueantes: **Intake, Investigation, Plotting, Writing y Regenerati
 
 ### Mecánica
 
-El nodo del gate llama a `interrupt()` de LangGraph; el checkpointer persiste el estado en el mismo SQLite de la novela y **el proceso termina**. Cuando el autor decide, el callback de Telegram entra por un endpoint FastAPI que reanuda el grafo con `Command(resume=...)`.
+El nodo del gate llama a `interrupt()` de LangGraph; el checkpointer persiste el estado en el mismo SQLite de la novela y **el proceso termina**. Cuando el autor decide, lo hace **en su PC**: `storymaker decidir` escribe la decisión en `gate` y reanuda el grafo con `Command(resume=...)`.
 
 Tres consecuencias encadenadas: no hay un proceso vivo doce horas, reiniciar el servidor no mata nada porque el estado está en disco y no en memoria, y **la reanudación por gate usa exactamente el mismo mecanismo que la reanudación por fallo** — un solo camino de código.
 
@@ -598,7 +599,7 @@ Tres consecuencias encadenadas: no hay un proceso vivo doce horas, reiniciar el 
 
 ### Canal
 
-**Telegram**, detrás de una interfaz `Notifier`. No es preferencia estética: WhatsApp exige Meta Business, número verificado y aprobación previa de plantillas de mensaje. Telegram es un token en el `.env`, y sobre todo soporta **botones inline**: el mensaje llega con *Aprobar · Rehacer · Abortar* y se decide sin abrir nada. La interfaz `Notifier` deja WhatsApp Business como un adaptador futuro.
+**Telegram, y solo para avisar**, detrás de una interfaz `Notifier`. WhatsApp exige Meta Business, número verificado y aprobación previa de plantillas de mensaje; Telegram es un token en el `.env`. El mensaje de un gate dice qué fase espera, resume su informe y trae **el comando exacto** para decidir, pero no lleva botones: **la decisión se toma en el PC**, donde el informe se lee entero y no en una pantalla de móvil. Esto tiene además una consecuencia de superficie: sin decisiones por Telegram no hace falta webhook, ni URL pública, ni túnel, ni secreto compartido, y **nada fuera de la máquina del Autor puede reanudar una ejecución**. Si el envío falla, se avisa en la salida del proceso y el gate sigue bloqueando igual: se pierde el aviso, no la puerta. La interfaz `Notifier` deja WhatsApp Business como un adaptador futuro.
 
 Aparte de los gates, y desactivadas por defecto, hay **notificaciones informativas** que no bloquean: «capítulo 6 de 10 aprobado, 0,41 $ acumulados».
 
@@ -844,14 +845,14 @@ Una sola lógica, dos puntos de ejecución. Si divergieran, el producto y el edi
 | Capa | Elección |
 |---|---|
 | Lenguaje del backend | Python 3.12 |
-| API y webhooks | **FastAPI** — reanudación de gates, webhook de Telegram, API de lectura |
+| API | **FastAPI** — API de lectura y petición de cambio del lector |
 | Orquestación | **LangGraph** con `SqliteSaver` |
 | Agentes | **`claude-agent-sdk`**, todos los roles en Haiku 4.5 |
 | Esquemas | **Pydantic v2** |
 | Datos | **SQLite** (`aiosqlite`) con la extensión **`sqlite-vec`**, un fichero por novela |
 | Embeddings | **FastEmbed** local (ONNX), `paraphrase-multilingual-MiniLM-L12-v2`, 384 dimensiones |
 | Observabilidad | **`langfuse`** |
-| Notificación | **`httpx`** contra la Bot API de Telegram + webhook FastAPI |
+| Notificación | **`httpx`** contra la Bot API de Telegram, solo saliente |
 | CLI | **Typer** |
 | Frontend | **React** + Vite, organizado en **Feature-Sliced Design v2.1**, consumiendo la API |
 | PDF | **Playwright** `page.pdf()` sobre la propia ruta de lectura de React |
@@ -912,7 +913,7 @@ storyMaker/
 │  ├─ writing/                   escritor, editor, bucle de capítulo
 │  ├─ publication/               juez, manifiesto de versión, render
 │  ├─ regeneration/              petición de cambio, invalidación, propagación
-│  ├─ gates/                     interrupt, Notifier, bot de Telegram
+│  ├─ gates/                     interrupt, decisiones, Notifier de Telegram (solo aviso)
 │  └─ commons/
 │     ├─ graph/                  `StateGraph`, estado compartido, cableado de nodos
 │     ├─ db/                     esquema, migraciones, consultas
@@ -973,20 +974,20 @@ De ahí que haya **dos puntos de entrada y un solo camino de código**:
 
 | Punto de entrada | Quién lo usa | Qué hace |
 |---|---|---|
-| **CLI (Typer)** | El Autor y las ejecuciones de evaluación | Crea la novela, lanza la invocación, la reanuda tras un fallo, ramifica y corre los cinco briefs en modo batch |
-| **API (FastAPI)** | El bot de Telegram y el frontend | Reanuda tras una decisión de gate, sirve la lectura y recibe la petición de cambio del lector |
+| **CLI (Typer)** | El Autor y las ejecuciones de evaluación | Crea la novela, lanza la invocación, **decide los gates y reanuda**, la reanuda tras un fallo, ramifica y corre los cinco briefs en modo batch |
+| **API (FastAPI)** | El frontend | Sirve la lectura y recibe la petición de cambio del lector |
 
 Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de la novela, construye el `StateGraph` con su checkpointer y lo invoca. Un tercer punto de entrada —una cola de trabajos con su worker— añadiría un segundo lugar donde el estado puede vivir, que es justo lo que el §7 evita al meter checkpoint y dominio en la misma transacción.
 
-**La invocación que reanuda un gate se atiende en segundo plano.** El callback de Telegram tiene que responder en segundos y la invocación que desencadena puede tardar minutos: Investigation entera, o los diez capítulos de Writing. Así que el endpoint escribe la decisión en `gate`, responde, y lanza la invocación como tarea de fondo del propio proceso. Si el servidor cae a mitad no se pierde nada que no se pierda con un fallo cualquiera —el último checkpoint está en disco y reanudar es el camino de siempre—, y por eso esta es la única concesión a la asincronía que el backend se permite.
+**La invocación que reanuda un gate corre en el proceso de la CLI.** `storymaker decidir` escribe la decisión en `gate` y, en el mismo proceso, reanuda la invocación hasta el siguiente gate o el final. Si el proceso cae a mitad no se pierde nada que no se pierda con un fallo cualquiera: la decisión ya está escrita, el último checkpoint está en disco y `continuar` retoma por el camino de siempre. El backend no tiene ninguna tarea de fondo.
 
-**Una invocación por novela a la vez, y el fichero es el cerrojo.** Dos invocaciones simultáneas sobre la misma novela —el Autor que pulsa *Aprobar* dos veces, o el CLI lanzado mientras el servidor atiende un gate— escribirían sobre el mismo checkpoint y podrían duplicar un capítulo, que es exactamente lo que `ResumeIsExactlyOnce` prohíbe en §11d. Un cerrojo en memoria no basta, porque el CLI y la API son procesos distintos, así que el cerrojo es un fichero `.lock` junto al de la novela, tomado en exclusiva al empezar la invocación y soltado al acabar. **Quien llega segundo es rechazado, no encolado**: una cola sería ese segundo lugar donde vive el estado que este apartado acaba de descartar, y el rechazo no pierde nada porque la decisión del gate ya está escrita y reanudar es el camino de siempre. Un cerrojo huérfano —el que deja un proceso muerto— se rompe a mano desde el CLI, que es la operación de mantenimiento que el Autor hará una vez cada muchas.
+**Una invocación por novela a la vez, y el fichero es el cerrojo.** Dos invocaciones simultáneas sobre la misma novela —el Autor que decide dos veces desde dos terminales, o un `continuar` lanzado mientras otro proceso reanuda— escribirían sobre el mismo checkpoint y podrían duplicar un capítulo, que es exactamente lo que `ResumeIsExactlyOnce` prohíbe en §11d. Un cerrojo en memoria no basta, porque el CLI y la API son procesos distintos, así que el cerrojo es un fichero `.lock` junto al de la novela, tomado en exclusiva al empezar la invocación y soltado al acabar. **Quien llega segundo es rechazado, no encolado**: una cola sería ese segundo lugar donde vive el estado que este apartado acaba de descartar, y el rechazo no pierde nada porque la decisión del gate ya está escrita y reanudar es el camino de siempre. Un cerrojo huérfano —el que deja un proceso muerto— se rompe a mano desde el CLI, que es la operación de mantenimiento que el Autor hará una vez cada muchas.
 
 **FastAPI sirve el frontend construido, y por eso hay un solo origen.** Fuera del desarrollo —donde Vite recarga en caliente y habla con la API por su proxy— la aplicación de React se construye a estáticos y **los sirve el propio FastAPI**, con la URL base declarada en la configuración. La alternativa, dejar el servidor de Vite levantado al lado, ataría la publicación a un segundo proceso vivo y obligaría al navegador que conduce `render_visual` a conocer dos orígenes, justo cuando este apartado acaba de argumentar que de una novela no debe vivir nada en dos sitios. Con un solo origen, la URL que abre el validador, la que imprime el PDF y la que teclea el lector son la misma, y esa identidad es lo que hace que el PDF sea literalmente lo que se ve.
 
 **Una novela es un fichero, y el directorio es el registro.** Los ficheros viven en `proyectos/`, uno por novela, y ramificar deja el nuevo al lado del original tal como describe el §8. **No hay una base de datos global de novelas, y no la va a haber**: si el registro viviera fuera del fichero, copiarlo dejaría de ser ramificar y descargar una novela dejaría de ser copiarla, que son las dos propiedades de las que cuelga aquella decisión. Listar las novelas es listar el directorio, y los datos que la lista enseña —título, fase en curso, número de versiones— se leen abriendo cada fichero. El precio es que listar cuesta tantas aperturas como novelas haya; con las decenas que este sistema contempla es instantáneo, y no aspira a miles.
 
-**La superficie pública se protege con un secreto, no con usuarios.** El webhook de Telegram es el único endpoint que reanuda una ejecución, así que comprueba el `secret_token` que Telegram envía en la cabecera `X-Telegram-Bot-Api-Secret-Token` y rechaza la petición que no lo traiga. El resto de la API —lectura y petición de cambio— no lleva autenticación: es un ejercicio académico que corre en local, y montar usuarios y sesiones costaría más que el riesgo que cubre. Queda anotado como riesgo aceptado U-17 en [`verification.md`](verification.md).
+**No hay superficie pública que reanude nada.** Ningún endpoint decide un gate ni reanuda una ejecución: eso solo lo hace la CLI, en la máquina del Autor. La API —lectura y petición de cambio, que no toca nada hasta el gate de Regeneration— no lleva autenticación: es un ejercicio académico que corre en local, y montar usuarios y sesiones costaría más que el riesgo que cubre. Queda anotado como riesgo aceptado U-17 en [`verification.md`](verification.md).
 
 
 ---
@@ -1011,7 +1012,8 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Verificación del corpus | No verificar · agente que relee la URL · agente que lee la cita guardada | Comprobar el respaldo sin abrir una segunda puerta a internet ni pagar los fetches dos veces | Agente sobre la cita guardada |
 | Efecto de un hecho sin respaldo | Borrarlo · bloquear el gate · degradar su estado epistémico | No detener una novela de regalo por una cita floja, sin perder la señal | Degradar a `inferido` e informar al Autor |
 | Hueco que el investigador no encuentra | Reintentar · bloquear la escaleta · autorizar la invención | Que Plotting no se atasque por un detalle de cultura material | Invención autorizada, registrada como hecho `inferido` |
-| Canal de notificación | Telegram · WhatsApp · ambos | Coste de puesta en marcha y botones inline | Telegram tras interfaz `Notifier` |
+| Canal de notificación | Telegram · WhatsApp · ambos | Coste de puesta en marcha | Telegram tras interfaz `Notifier` |
+| Dónde se decide un gate | Botones inline en Telegram con webhook · CLI en el PC · pantalla del frontend | Leer el informe entero antes de decidir, y no abrir una superficie pública que reanude ejecuciones | CLI en el PC; Telegram solo avisa |
 | Sin respuesta en un gate | Auto-aprobar · aparcar · esperar indefinidamente | No convertir un gate de calidad en un temporizador | Aparcar, y gates desactivables en batch |
 | Alcance de Lean | 2 invariantes · 4 · teoremas generales | Maximizar detección sin atascarse en demostraciones | 4 sobre cronología concreta |
 | Alcance de TLA+ | Solo el bucle · las seis fases · grafo completo con ramas | Que los invariantes interesantes queden dentro sin que TLC explote | Seis fases, rama como reanudación |
@@ -1022,9 +1024,9 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Alcance de los embeddings | Solo resolución de peticiones y linters · también la gestión de contexto del escritor | Escalar a novelas largas sin recortar por antigüedad, sin perder determinismo | Gestión de contexto, recuperando el ensamblador y no el agente |
 | Organización del backend | Por capa técnica · *package by feature* con `commons` | Que rehacer una fase sea tocar una carpeta | Por feature |
 | Organización del frontend | *package by feature* con `commons` · Feature-Sliced Design v2.1 · por capa técnica | Reglas de importación comprobables por un linter, en vez de una convención que hay que recordar | FSD v2.1, con el juego mínimo `app/ pages/ shared/` |
-| Ejecución del grafo | Dentro del proceso que lo invoca · worker con cola de trabajos · un demonio por novela | Que no haya un segundo lugar donde el estado pueda vivir | Dentro del proceso, en tarea de fondo cuando lo reanuda un gate |
+| Ejecución del grafo | Dentro del proceso que lo invoca · worker con cola de trabajos · un demonio por novela | Que no haya un segundo lugar donde el estado pueda vivir | Dentro del proceso que lo invoca, también al decidir un gate |
 | Registro de novelas | El directorio es el registro · base de datos global de novelas | Que copiar el fichero siga siendo ramificar y descargarlo siga siendo descargar la novela | El directorio |
-| Protección de la API | Sin protección · secreto en el webhook · usuarios y sesiones | Superficie real de un proyecto local frente al coste de la alternativa | Secreto en el webhook, lectura abierta |
+| Protección de la API | Sin protección · secreto en el webhook · usuarios y sesiones | Superficie real de un proyecto local frente al coste de la alternativa | Sin protección: la API solo lee y registra peticiones, y ningún endpoint reanuda |
 | Invocaciones simultáneas sobre una novela | Cerrojo de fichero que rechaza al segundo · cola de trabajos · cerrojo en memoria | Proteger `ResumeIsExactlyOnce` sin crear un segundo lugar donde viva el estado | Cerrojo de fichero, y el segundo se rechaza |
 | Modelo | Haiku para todos · mixto | Coste, con la varianza del juez medida en vez de supuesta | Haiku, revisable por evidencia |
 | Momento del extractor | Tras aprobar el capítulo · dentro de `Validate`, antes de aprobar | Que su veredicto pueda disparar una reparación en vez de llegar cuando ya no hay arista de vuelta | Dentro de `Validate`, a costa de invocarlo una vez por intento |
@@ -1104,6 +1106,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | **Telegram solo avisa y los gates se deciden en el PC**, con `storymaker decidir`. Se retira el webhook con su secreto; §1, §3, §10, §16.1, §16.3, §16.4 y §17 se reescriben en consecuencia | Decisión del Autor: el informe de un gate se lee entero antes de decidir, y en el móvil no se lee. Retirar el webhook elimina la única superficie pública que reanudaba ejecuciones, junto con la URL pública y el túnel que exigía en un portátil |
 | 2026-09-24 | Fase 5: en modo batch **el umbral del juez informa y no detiene**, y el PDF se imprime tras publicar con su fallo como aviso | La auditoría previa a la primera ejecución real vio que, en batch, un juez por debajo de 6 volvía a juzgar el mismo texto y acababa en `Fail`, y que ningún camino llamaba a `imprimir_pdf`. Es ablandar una puerta que en batch no tiene a nadie detrás, como pide el criterio de producto |
 | 2026-09-24 | §5 fija que **el contrato de salida viaja con la llamada**: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, que cuenta contra su techo. Entra la fila correspondiente en §17 | La primera ejecución real cayó en `Configure`: el entrevistador solo recibía su prompt de rol, no sabía qué campos llevaba un `Brief` e improvisó los suyos. La arquitectura no decía cómo llega la forma al rol, y el código no la mandaba |
 | 2026-09-23 | Versión inicial | Cierre de la orquestación, el paso de contexto, la validación formal y los gates antes de escribir código |

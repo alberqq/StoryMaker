@@ -2,9 +2,11 @@
 
 La CLI de Typer: **el punto de entrada del Autor y de las ejecuciones de evaluación**.
 
-Los siete comandos llaman a la misma función de invocación que la API. Un tercer punto de
-entrada —una cola de trabajos con su worker— añadiría un segundo lugar donde el estado puede
-vivir, que es justo lo que §7 evita al meter checkpoint y dominio en la misma transacción.
+Los ocho comandos llaman a la misma función de invocación. **`decidir` es la única entrada
+de una decisión de gate**: Telegram solo avisa (arq. §10), y el Autor decide en su PC. Un
+tercer punto de entrada —una cola de trabajos con su worker— añadiría un segundo lugar
+donde el estado puede vivir, que es justo lo que §7 evita al meter checkpoint y dominio
+en la misma transacción.
 
 `ramificar` es literalmente copiar el fichero, y `desbloquear` rompe un cerrojo huérfano: es
 la operación de mantenimiento que el Autor hará una vez cada muchas, y vive aquí y no en un
@@ -108,7 +110,53 @@ def continuar(nombre: str) -> None:
     Es el mismo camino de código en los dos casos, que es exactamente lo que §10 promete.
     """
     settings = _ajustes()
-    resultado = _ejecutar(reanudar(_ruta(nombre, settings), settings=settings))
+    ruta = _ruta(nombre, settings)
+
+    async def gate_que_espera() -> int | None:
+        from storymaker.commons.db.repos import arnes
+
+        async with abrir_novela(ruta) as db:
+            pendiente = await arnes.gate_pendiente(db)
+        return int(pendiente["id"]) if pendiente is not None else None
+
+    # Reanudar un gate pendiente sin decisión lo aprobaría en silencio: se decide aparte.
+    if (gate := _ejecutar(gate_que_espera())) is not None:
+        salida.error(f"La novela espera tu decision en el gate #{gate}.")
+        salida.aviso(f"Decide con: storymaker decidir {nombre} aprobar|rehacer|editar|abortar")
+        raise typer.Exit(code=1)
+    resultado = _ejecutar(reanudar(ruta, settings=settings))
+    salida.resultado(resultado)
+
+
+@app.command()
+def decidir(
+    nombre: str,
+    decision: str = typer.Argument(..., help="aprobar, rehacer, editar o abortar"),
+    comentario: str = typer.Option("", help="lo que hay que cambiar, para «rehacer»"),
+) -> None:
+    """Decide el gate que espera y reanuda **en este mismo proceso**.
+
+    La decisión se escribe antes de reanudar, así que si el proceso cae a mitad no se pierde:
+    `continuar` retoma por el camino de siempre. Un gate ya decidido no está pendiente, y
+    decidir dos veces no reanuda dos veces.
+    """
+    settings = _ajustes()
+    ruta = _ruta(nombre, settings)
+
+    async def escribir() -> str:
+        from storymaker.commons.obs.trazas import construir as construir_observador
+        from storymaker.gates.decisiones import aplicar
+
+        async with abrir_novela(ruta) as db:
+            tomada = await aplicar(db, construir_observador(settings), decision, comentario)
+            await db.commit()
+        return tomada.decision.value
+
+    valor = _ejecutar(escribir())
+    salida.aviso(f"Decision registrada: {valor}. Reanudando...")
+    resultado = _ejecutar(
+        reanudar(ruta, settings=settings, decision=valor, comentario=comentario or None)
+    )
     salida.resultado(resultado)
 
 

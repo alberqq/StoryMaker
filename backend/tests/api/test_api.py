@@ -3,9 +3,8 @@
 Pruebas de la API.
 
 Lo que importa comprobar aquí no son los cuerpos JSON sino **la separación de superficies**:
-que el webhook —el único que reanuda una ejecución— rechaza sin secreto, que la lectura no
-lo pide, y que una decisión malformada **no reanuda el grafo**. Esa última es la que
-Schemathesis amplía después con entradas generadas; aquí se fija a mano el caso que importa.
+que **ningún endpoint reanuda una ejecución** —los gates se deciden con la CLI— y que la
+lectura queda abierta por decisión declarada (U-17).
 
 La otra mitad es la traducción de errores: que `NovelaOcupada` sea `409` en todas las rutas
 y no `500` en unas y `409` en otras, porque si cada endpoint decidiera su código la API
@@ -23,7 +22,6 @@ from fastapi.testclient import TestClient
 from storymaker.api.app import crear_app
 from storymaker.api.manejadores import codigo_de
 from storymaker.api.novelas import ruta_de
-from storymaker.api.webhook import secreto_valido
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import crear_novela
 from storymaker.commons.errores import (
@@ -41,7 +39,6 @@ def ajustes(tmp_path: Path) -> Settings:
     return Settings(
         _env_file=None,
         directorio_proyectos=directorio,
-        telegram_secret_token="secreto-de-prueba",  # noqa: S106
     )
 
 
@@ -58,29 +55,11 @@ class TestSuperficies:
         """Es una decision declarada, no un olvido: queda como U-17."""
         assert cliente.get("/novelas").status_code == 200
 
-    def test_el_webhook_rechaza_sin_secreto(self, cliente: Any) -> None:
-        respuesta = cliente.post("/webhook/telegram", json={})
-        assert respuesta.status_code == 401
-
-    def test_el_webhook_rechaza_con_secreto_equivocado(self, cliente: Any) -> None:
-        respuesta = cliente.post(
-            "/webhook/telegram",
-            json={},
-            headers={"X-Telegram-Bot-Api-Secret-Token": "otro"},
-        )
-        assert respuesta.status_code == 401
-
-
-class TestSecreto:
-    def test_sin_secreto_configurado_no_se_acepta_nada(self) -> None:
-        """Un despliegue sin secreto no es abierto: es un despliegue mal configurado."""
-        sin_secreto = Settings(_env_file=None)
-        assert secreto_valido(None, sin_secreto) is False
-        assert secreto_valido("lo-que-sea", sin_secreto) is False
-
-    def test_con_secreto_solo_pasa_el_correcto(self, ajustes: Settings) -> None:
-        assert secreto_valido("secreto-de-prueba", ajustes) is True
-        assert secreto_valido("secreto-de-pruebaX", ajustes) is False
+    def test_ningun_endpoint_reanuda_una_ejecucion(self, cliente: Any) -> None:
+        """Telegram solo avisa: el webhook que reanudaba se retiro con su secreto."""
+        assert cliente.post("/webhook/telegram", json={}).status_code == 404
+        rutas = {getattr(r, "path", "") for r in cliente.app.routes}
+        assert not any("webhook" in r or "gate" in r for r in rutas)
 
 
 class TestListado:

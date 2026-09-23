@@ -21,7 +21,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -42,6 +42,13 @@ class Dependencias:
     transporte: Transporte
     vectorizador: Vectorizador
     observador: Observador
+    #: Marca de un solo uso: la invocación reanuda un gate ya decidido. LangGraph vuelve a
+    #: ejecutar el nodo del gate desde el principio al reanudar, y sin esta marca abriría
+    #: un gate nuevo y volvería a avisar. La consume el primer gate que corre.
+    reanudando_gate: list[bool] = field(default_factory=list)
+
+    def consumir_reanudacion(self) -> bool:
+        return bool(self.reanudando_gate) and self.reanudando_gate.pop()
 
 
 _ACTUAL: ContextVar[Dependencias | None] = ContextVar("dependencias", default=None)

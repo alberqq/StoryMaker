@@ -120,7 +120,6 @@ class Settings(BaseSettings):
     # Telegram
     telegram_bot_token: str | None = None
     telegram_chat_id: str | None = None
-    telegram_secret_token: str | None = None
 
     # Langfuse
     langfuse_public_key: str | None = None

@@ -78,6 +78,35 @@ class TestInvocacion:
                 fila = await cursor.fetchone()
         assert fila is not None, "la ejecucion de fase queda registrada"
 
+    async def test_el_gate_se_abre_se_decide_y_no_se_reabre_al_reanudar(
+        self, novela: Path, ajustes: Settings, dobles: dict[str, Any]
+    ) -> None:
+        """El gate queda **pendiente** en la base, y decidirlo no abre otro igual.
+
+        LangGraph vuelve a ejecutar el nodo del gate al reanudar. Sin la marca de
+        reanudación, cada decisión abría un gate nuevo y volvía a avisar al Autor.
+        """
+        from storymaker.commons.graph.run import reanudar
+        from storymaker.commons.obs.trazas import ObservadorNulo
+        from storymaker.gates.decisiones import aplicar
+
+        primero = await invocar(novela, Arranque(n_capitulos=3), settings=ajustes, **dobles)
+        assert primero.gate_abierto is not None, "el primer gate queda pendiente en la base"
+
+        async with abrir_novela(novela) as db:
+            await aplicar(db, ObservadorNulo(), "aprobar")
+            await db.commit()
+        # Lo que venga después del gate no importa aquí: el doble de esta prueba no guioniza
+        # la investigación. Lo que se mira es que reanudar no reabra el gate decidido.
+        await reanudar(novela, settings=ajustes, decision="aprobar", **dobles)
+
+        async with abrir_novela(novela) as db:
+            async with db.execute("SELECT id, estado FROM gate ORDER BY id") as cursor:
+                gates = [(int(f["id"]), str(f["estado"])) for f in await cursor.fetchall()]
+        assert gates[0] == (primero.gate_abierto, "decidido")
+        assert [e for _, e in gates].count("pendiente") <= 1, gates
+        assert len(gates) <= 2, "reanudar no reabre el gate decidido"
+
     async def test_ningun_nodo_queda_sin_implementar(self) -> None:
         """El plan esta completo: los veinticuatro nodos resuelven a codigo real."""
         from storymaker.commons.graph.construccion import nodos_pendientes

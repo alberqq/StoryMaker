@@ -37,6 +37,7 @@ def resultado(invocacion: Any) -> None:
     gate = getattr(invocacion, "gate_abierto", None)
     if gate is not None:
         aviso(f"La invocacion termino en un gate (#{gate}) y espera tu decision.")
+        aviso("Decide con: storymaker decidir <novela> aprobar|rehacer|editar|abortar")
         aviso("Nada queda corriendo: el estado esta en disco y el proceso ha terminado.")
     else:
         aviso(f"La invocacion termino en {getattr(invocacion, 'nodo_final', '?')}.")

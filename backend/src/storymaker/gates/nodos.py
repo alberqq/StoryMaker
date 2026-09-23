@@ -19,6 +19,7 @@ aprobaciones la tabla de resultados no se terminaría nunca.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from storymaker.commons.db.repos import arnes
@@ -41,6 +42,7 @@ async def abrir(estado: EstadoNovela, *, titulo: str, informe: str) -> int:
             cuerpo=informe,
             gate_id=gate_id,
             decisiones=tuple(d.value for d in DECISIONES),
+            novela=Path(estado["novela"]).stem,
         )
     )
     return gate_id
@@ -79,6 +81,11 @@ async def await_approval(estado: EstadoNovela, gate: str = "") -> EstadoNovela:
     from langgraph.types import interrupt
 
     gate_id = estado.get("gate_id")
+    if not actuales().consumir_reanudacion():
+        # Primera pasada por este gate: se escribe pendiente y se avisa. Al reanudar, el
+        # nodo vuelve a correr desde aquí y la marca evita abrirlo y avisar dos veces.
+        titulo = f"StoryMaker · {Path(estado['novela']).stem} · gate de {GATES.get(gate, gate)}"
+        gate_id = await abrir(estado, titulo=titulo, informe=await _resumen(gate))
     decision: Any = interrupt(
         {
             "gate": gate,
@@ -93,6 +100,47 @@ async def await_approval(estado: EstadoNovela, gate: str = "") -> EstadoNovela:
         "hay_bloqueantes": elegida != "aprobar",
         "pc": tras_gate(estado, gate=gate, decision=elegida),
     }
+
+
+#: Qué se cuenta en el aviso de cada gate. Es un resumen para el móvil; el informe entero
+#: se lee en el PC, que es donde se decide.
+_RESUMENES: dict[str, tuple[tuple[str, str], ...]] = {
+    "AwaitApproval": (
+        ("datos del encargo", "SELECT COUNT(*) FROM intake_dato"),
+        ("avisos del brief", "SELECT COUNT(*) FROM incidencia WHERE capitulo_version_id IS NULL"),
+    ),
+    "AwaitApproval2": (
+        ("hechos en el corpus", "SELECT COUNT(*) FROM mundo_hecho"),
+        ("fuentes", "SELECT COUNT(*) FROM mundo_fuente"),
+    ),
+    "AwaitApproval3": (
+        ("capitulos en la escaleta", "SELECT COUNT(*) FROM plan_capitulo"),
+        ("escenas", "SELECT COUNT(*) FROM plan_escena"),
+        ("personajes", "SELECT COUNT(*) FROM canon_personaje"),
+    ),
+    "AwaitApproval4": (
+        (
+            "capitulos aprobados",
+            "SELECT COUNT(*) FROM capitulo_version WHERE estado = 'aprobado'",
+        ),
+        (
+            "incidencias abiertas",
+            "SELECT COUNT(*) FROM incidencia WHERE capitulo_version_id IS NOT NULL",
+        ),
+    ),
+}
+
+
+async def _resumen(gate: str) -> str:
+    deps = actuales()
+    lineas = []
+    for etiqueta, consulta in _RESUMENES.get(gate, ()):
+        async with deps.db.execute(consulta) as cursor:
+            fila = await cursor.fetchone()
+        lineas.append(f"- {etiqueta}: {fila[0] if fila is not None else 0}")
+    lineas.append("")
+    lineas.append("La invocacion se ha detenido y espera tu decision.")
+    return "\n".join(lineas)
 
 
 async def aparcar(estado: EstadoNovela, gate_id: int) -> EstadoNovela:

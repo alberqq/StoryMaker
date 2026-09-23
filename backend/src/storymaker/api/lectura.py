@@ -3,7 +3,7 @@
 Los endpoints de lectura: la superficie que el frontend consume.
 
 Todos son `GET`, ninguno escribe y ninguno lleva autenticación. **Es una decisión declarada
-y no un olvido**: el webhook —el único que reanuda una ejecución— sí comprueba su secreto,
+y no un olvido**: ningún endpoint reanuda una ejecución —los gates se deciden con la CLI—,
 de modo que lo que queda abierto es leer, y leer una novela que corre en la máquina del
 Autor no justifica montar usuarios y sesiones. Queda como riesgo aceptado U-17.
 

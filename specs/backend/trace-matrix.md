@@ -131,7 +131,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 |---|---|---|---|
 | A-68 | `interrupt()`, el estado en disco y la invocación que termina | P-103 | Cubierto |
 | A-69 | Las cuatro decisiones: aprobar, rehacer con comentario, editar, abortar | P-104 | Cubierto |
-| A-70 | `Notifier` con Telegram y botones inline | P-105 | Cubierto |
+| A-70 | `Notifier` con Telegram, solo para avisar; la decisión se toma en el PC | P-105, P-109 | Cubierto |
 | A-71 | Notificaciones informativas, desactivadas por defecto | P-106 | Cubierto |
 | A-72 | El *timeout* aparca; nunca se auto-aprueba | P-107 | Cubierto |
 | A-73 | `gates.enabled = false` desactiva los cinco para el modo batch | P-02, P-108, P-120 | Cubierto |
@@ -200,10 +200,10 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-101 | La organización del backend *package by feature*, con el grafo en `commons/graph/` | P-01, P-55 | Cubierto |
 | A-102 | El frontend en FSD v2.1 con Steiger informando sin bloquear | `specs/frontend/plan.md`: IMP-02, IMP-03, IMP-04 | Cubierto en el plan del frontend |
 | A-103 | Dos puntos de entrada sobre un solo camino de código | P-57, P-109, P-113, P-138 | Cubierto |
-| A-104 | La invocación que reanuda un gate se atiende en tarea de fondo | P-109 | Cubierto |
+| A-104 | La invocación que reanuda un gate corre en el proceso de la CLI que decide | P-109 | Cubierto |
 | A-105 | Cerrojo de fichero por novela; quien llega segundo es rechazado, no encolado | P-59, P-113, P-128 | Cubierto |
 | A-106 | El directorio `proyectos/` es el registro; no hay base de datos global de novelas | P-111 | Cubierto |
-| A-107 | El webhook protegido con secreto, y el resto de la API abierto por decisión declarada (U-17) | P-109, P-110, P-136 | Cubierto |
+| A-107 | Ningún endpoint reanuda una ejecución, y la API queda abierta por decisión declarada (U-17) | P-109, P-110, P-136, P-138 | Cubierto |
 
 ### §18 y §19 · Riesgos y valores por defecto
 
@@ -265,7 +265,7 @@ Cada ítem del plan, con el requisito del que nace. **Ninguna fila está vacía*
 | P-42 | A-74 | P-106 | A-71 |
 | P-43 | A-74, A-75 | P-107 | A-72 |
 | P-44 | A-74 | P-108 | A-73 |
-| P-45 | A-110 | P-109 | A-103, A-104, A-107 |
+| P-45 | A-110 | P-109 | A-70, A-103, A-104, A-107 |
 | P-46 | A-22 | P-110 | A-107 |
 | P-47 | A-10, A-76 | P-111 | A-106 |
 | P-48 | A-10 | P-112 | A-110 |
@@ -330,6 +330,7 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | A-70, A-104 y A-107 se reescriben: Telegram solo avisa, la reanudación de un gate corre en la CLI y ningún endpoint reanuda. P-109 cubre además A-70 | Se propaga la decisión del Autor en §10 y §16.4 de la arquitectura |
 | 2026-09-24 | Entra `A-118` —el contrato de salida viaja con la llamada— con su ítem `P-27`, y la dirección inversa recoge el par | La arquitectura fijó en §5 cómo llega al rol la forma de su salida después de que la primera ejecución real cayera por no mandarla. Una matriz que no lo recogiera afirmaría en verde una cobertura que no comprueba entera |
 | 2026-09-23 | Se propaga la reescritura de §11d —A-10, A-65 y A-78 dejan de hablar de PlusCal y A-78 recoge los cinco invariantes—, `A-83` y `A-102` dejan de estar fuera de alcance con `P-134` y el plan del frontend, y entran `P-134`, `P-135` y `P-136` en el recorrido inverso | La arquitectura resolvió su contradicción y aparecieron dos planes donde había uno. Una matriz que no se mueve con ellos afirma en verde una cobertura que ya no ha comprobado |
 | 2026-09-23 | Se incorpora la familia **§11e** llegada a los tres documentos: entran A-111 a A-115 con sus ítems P-129 a P-133, A-65 pasa a comprobarse sobre nombres **y aristas**, y A-116 queda en §3 como requisito cuya mitigación es inspección y no código | La matriz se escribió antes de que §11e existiera, y una matriz desactualizada es peor que no tenerla: afirma en verde una cobertura que ya no ha comprobado |

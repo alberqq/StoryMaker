@@ -107,7 +107,6 @@ class TestSettings:
     def test_los_secretos_son_opcionales_y_nacen_vacios(self) -> None:
         s = Settings(_env_file=None)
         assert s.telegram_bot_token is None
-        assert s.telegram_secret_token is None
         assert s.langfuse_public_key is None
 
     def test_el_entorno_manda_sobre_el_defecto(self, monkeypatch: pytest.MonkeyPatch) -> None:

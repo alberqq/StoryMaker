@@ -22,7 +22,7 @@ Tres afirmaciones gobiernan todo lo demás, y conviene tenerlas delante al leer 
 backend/src/storymaker/
 ├─ intake/ investigation/ plotting/ writing/ publication/ regeneration/   las seis fases
 ├─ gates/                                                                 interrupt, Notifier, bot
-├─ api/                                                                   FastAPI: webhook, lectura, cambio
+├─ api/                                                                   FastAPI: lectura, cambio
 ├─ cli/                                                                   Typer
 └─ commons/  graph · db · agents · context · validation · embeddings · formal · obs
 ```
@@ -38,7 +38,7 @@ Cada feature contiene sus nodos de LangGraph, su agente, sus esquemas Pydantic y
 | Entrada | Proceso | Responsabilidad |
 |---|---|---|
 | **CLI (Typer)** | Efímero, uno por comando | Crear la novela, lanzar y reanudar la invocación, ramificar, romper un cerrojo huérfano, correr los cinco briefs en modo batch |
-| **API (FastAPI)** | Servidor de larga vida | Recibir la decisión del gate por webhook, servir la lectura, recibir la petición de cambio del lector |
+| **API (FastAPI)** | Servidor de larga vida | Servir la lectura y recibir la petición de cambio del lector. **No reanuda ninguna ejecución** |
 
 Los dos llaman a `commons/graph/run.py::invocar(novela, entrada)`. La API no tiene un camino propio hacia el grafo, y esto es deliberado: si lo tuviera, habría dos implementaciones de la reanudación y solo una de ellas estaría cubierta por las pruebas de integración.
 
@@ -52,7 +52,7 @@ Un único objeto `Settings` de `pydantic-settings`, leído del entorno y de un `
 | Frontend | `frontend_dist` (por defecto `frontend/dist`), `frontend_base_url` | Lo que FastAPI sirve y la URL con la que Playwright abre la lectura para imprimir y para `render_visual` |
 | Modelos | `modelo_por_rol` (mapa rol→id de modelo), `sdk_version` | Por defecto los nueve roles en Haiku 4.5 |
 | Gates | `gates_enabled`, `timeout_gate_horas` | `false` en modo batch |
-| Telegram | `telegram_bot_token`, `telegram_chat_id`, `telegram_secret_token` | El último protege el webhook |
+| Telegram | `telegram_bot_token`, `telegram_chat_id` | Solo aviso saliente; sin ellos el sistema corre igual y el gate bloquea igual |
 | Modelo | — | **No hay credencial de Anthropic.** El Agent SDK lanza Claude Code como subproceso y hereda su sesión: el arnés fija modelo, herramientas y turnos, pero no autentica |
 | Langfuse | `langfuse_public_key`, `langfuse_secret_key`, `langfuse_host`, `otlp_enabled` | OTLP desactivado por defecto |
 | Límites | `reintentos_por_capitulo` (2), `huecos_por_plotting` (5), `k_vecinos` (8), `techo_webfetch_tokens` (10.000) | Los valores de §19 de la arquitectura |
@@ -332,11 +332,11 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 ### 4.7 `gates/` — los cinco gates y la notificación
 
-**Contrato.** El nodo llama a `interrupt()`; el checkpointer persiste; la invocación termina. La decisión llega y reanuda con `Command(resume=...)`.
+**Contrato.** El nodo **abre el gate** —fila `pendiente` en `gate`— y avisa; después llama a `interrupt()`, el checkpointer persiste y la invocación termina. **La decisión se toma en el PC del Autor** con `storymaker decidir`, que la escribe sobre el gate pendiente y reanuda con `Command(resume=...)` en el mismo proceso. Como LangGraph vuelve a ejecutar el nodo al reanudar, la invocación lleva una **marca de reanudación de un solo uso** que impide abrir el gate otra vez y volver a avisar. `continuar` **se niega** a reanudar una novela con un gate pendiente: sin decisión, lo aprobaría en silencio.
 
 Cuatro decisiones: **aprobar**, **rehacer con comentario** —el texto libre se inyecta como bloque extra en el prompt y cuenta contra el límite de reintentos—, **editar** y **abortar**.
 
-**Notificación tras la interfaz `Notifier`**, con Telegram como única implementación hoy. Es un token en el `.env` y soporta botones inline; WhatsApp exige Meta Business, número verificado y plantillas aprobadas, y queda como adaptador futuro.
+**Notificación tras la interfaz `Notifier`, y solo para avisar**, con Telegram como única implementación hoy. El aviso de un gate lleva el título, un resumen de lo que hay que revisar y **los comandos exactos** para decidir, en texto plano y **sin botones**. Si Telegram rechaza el envío o no hay red, se avisa en la salida del proceso y el gate bloquea igual. WhatsApp exige Meta Business, número verificado y plantillas aprobadas, y queda como adaptador futuro.
 
 **Sin respuesta**: el *timeout* **aparca** la ejecución con estado propio. **No hay auto-aprobación**, porque eso convertiría un gate de calidad en un temporizador.
 
@@ -346,11 +346,10 @@ Cuatro decisiones: **aprobar**, **rehacer con comentario** —el texto libre se 
 
 ## 5. La API de FastAPI
 
-Tres superficies con perfiles de riesgo distintos, y conviene no mezclarlas.
+Lectura, más una petición de cambio que no toca nada hasta su gate. **Ningún endpoint reanuda una ejecución**: los gates se deciden con la CLI.
 
 | Método y ruta | Quién llama | Contrato | Errores |
 |---|---|---|---|
-| `POST /webhook/telegram` | Telegram | Callback del botón inline. **Comprueba el `secret_token` de la cabecera `X-Telegram-Bot-Api-Secret-Token`**; escribe la decisión en `gate`, responde en seguida y lanza la invocación **como tarea de fondo** | `401` sin secreto válido; `409` si la novela está ocupada; `200` y decisión ignorada si el gate ya estaba decidido |
 | `GET /novelas` | Frontend | Lista el directorio `proyectos/` y abre cada fichero para leer título, fase en curso y número de versiones | — |
 | `GET /novelas/{id}` | Frontend | Ficha de la novela: fase, gate abierto si lo hay, versiones publicadas | `404` |
 | `GET /novelas/{id}/versiones/{n}` | Frontend | Manifiesto de la versión y sus capítulos en orden, más el **bloque de paratexto** con el que se arma la portada: título, homenajeado tal como debe escribirse, dedicatoria con su ocasión y las Licencias declaradas de la nota del autor | `404` |
@@ -362,9 +361,9 @@ Tres superficies con perfiles de riesgo distintos, y conviene no mezclarlas.
 
 **La ficha de personajes cuelga de una versión y no de la novela.** El canon es vivo, pero «los capítulos en los que aparece este personaje» solo tiene respuesta dentro de un manifiesto: sin versión en la ruta, la ficha enlazaría a capítulos de una versión que el lector no está leyendo. Es la misma razón por la que ninguna ruta de lectura del frontend carece de número de versión.
 
-**El endpoint de decisión es el único que reanuda una ejecución**, y por eso es el único protegido. El resto es lectura, más una petición de cambio que no altera nada hasta que el Autor la aprueba. Que la lectura quede abierta es una decisión declarada, no un olvido: está en U-17.
+**Ningún endpoint reanuda una ejecución**, y por eso ninguno va protegido. Todo es lectura, más una petición de cambio que no altera nada hasta que el Autor la aprueba en su gate. Que la API quede abierta es una decisión declarada, no un olvido: está en U-17.
 
-**OpenAPI y Schemathesis** cubren el endpoint de decisión: **una decisión malformada no reanuda el grafo.**
+**OpenAPI y Schemathesis** cubren la petición de cambio: **una petición malformada no abre la Fase 6.** Una prueba fija además que no existe ninguna ruta que reanude.
 
 *Clase: **A/T** (contrato OpenAPI y Schemathesis). Gate: G1.*
 
@@ -375,7 +374,8 @@ Tres superficies con perfiles de riesgo distintos, y conviene no mezclarlas.
 | Comando | Qué hace |
 |---|---|
 | `storymaker nueva <brief.json>` | Crea el fichero de la novela en `proyectos/` y arranca la invocación |
-| `storymaker continuar <novela>` | Reanuda desde el último checkpoint, sea tras un fallo o tras un gate |
+| `storymaker continuar <novela>` | Reanuda desde el último checkpoint tras un fallo. **Se niega** si hay un gate pendiente |
+| `storymaker decidir <novela> <aprobar\|rehacer\|editar\|abortar> [--comentario]` | **La única entrada de una decisión de gate.** La escribe sobre el gate pendiente y reanuda en el mismo proceso; sin gate pendiente o con una decisión desconocida, se rechaza sin tocar nada |
 | `storymaker estado <novela>` | Fase, gate abierto, capítulos aprobados, consumo acumulado |
 | `storymaker ramificar <novela> <destino>` | **Copia el fichero** y escribe la fila de `procedencia` |
 | `storymaker cambiar <novela> "<peticion>"` | Entra en la Fase 6 por la puerta del Autor |
@@ -526,7 +526,7 @@ Qué distingue un error de una incidencia: **una incidencia es un defecto del co
 | `sqlite-vec` que no carga | Error de arranque | Se detiene con mensaje explícito |
 | Segunda invocación sobre la misma novela | Rechazo | `NovelaOcupada` / `409` |
 | Decisión de gate malformada | Rechazo | El grafo no se reanuda |
-| Secreto del webhook ausente o incorrecto | Rechazo | `401` |
+| `decidir` sin gate pendiente, o `continuar` con uno | Rechazo | La novela no se reanuda |
 | Autor que no contesta un gate | Aparcamiento | Estado propio; **nunca auto-aprobación** |
 
 ---
@@ -683,7 +683,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-100 | El nodo de gate llama a `interrupt()`, el checkpointer persiste y la invocación termina | §4.7 | P-103 |
 | REQ-BE-101 | El gate ofrece cuatro decisiones: aprobar, rehacer con comentario, editar y abortar | §4.7 | P-104 |
 | REQ-BE-102 | El comentario de «rehacer» se inyecta como bloque extra del prompt y **cuenta contra el límite de reintentos** | §4.7 | P-104 |
-| REQ-BE-103 | La notificación va detrás de la interfaz `Notifier`, con Telegram como única implementación | §4.7 | P-105 |
+| REQ-BE-103 | La notificación va detrás de la interfaz `Notifier`, con Telegram como única implementación, **solo avisa** y trae los comandos para decidir | §4.7 | P-105 |
 | REQ-BE-104 | Sin respuesta, el *timeout* **aparca** la ejecución con estado propio; **no hay auto-aprobación** | §4.7 | P-107 |
 | REQ-BE-105 | `gates_enabled = false` desactiva los cinco gates y el hecho queda registrado en el manifiesto | §4.7 | P-108, P-93 |
 
@@ -691,17 +691,17 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | # | Requisito | Apartado | Ítems |
 |---|---|---|---|
-| REQ-BE-106 | El webhook comprueba el `secret_token` de la cabecera y responde `401` sin él | §5 | P-109 |
-| REQ-BE-107 | El webhook escribe la decisión, responde en seguida y lanza la invocación **como tarea de fondo** | §5 | P-109 |
-| REQ-BE-108 | Una decisión sobre un gate ya decidido se ignora con `200` | §5 | P-109 |
+| REQ-BE-106 | `storymaker decidir` escribe la decisión sobre el gate pendiente y reanuda en el mismo proceso | §6 | P-109 |
+| REQ-BE-107 | Al reanudar, el gate decidido no se reabre ni se vuelve a avisar; `continuar` no reanuda un gate pendiente | §4.7 | P-109 |
+| REQ-BE-108 | Una decisión sin gate pendiente, o fuera de las cuatro, se rechaza sin tocar nada | §6 | P-109 |
 | REQ-BE-109 | `GET /novelas` lista el directorio `proyectos/` y abre cada fichero: no hay registro global de novelas | §5 | P-111 |
 | REQ-BE-110 | El endpoint de versión devuelve el manifiesto, sus capítulos en orden y el **bloque de paratexto** con el que se arma la portada | §5 | P-110 |
 | REQ-BE-111 | La ficha de personajes cuelga de una **versión**, no de la novela | §5 | P-110 |
 | REQ-BE-112 | `POST /novelas/{id}/cambios` no toca nada: abre la Fase 6, que se detiene en su gate | §5 | P-110, P-95 |
 | REQ-BE-113 | FastAPI sirve el frontend construido desde `frontend_dist` y declara su URL base en `frontend_base_url`, de modo que lectura, PDF y `render_visual` compartan origen | §5 | P-136 |
-| REQ-BE-114 | El endpoint de decisión es el único protegido y el único que reanuda una ejecución | §5 | P-109 |
-| REQ-BE-115 | El contrato OpenAPI y Schemathesis garantizan que **una decisión malformada no reanuda el grafo** | §5 | P-112 |
-| REQ-BE-116 | La CLI expone los siete comandos declarados | §6 | P-113 |
+| REQ-BE-114 | Ningún endpoint de la API reanuda una ejecución | §5 | P-109, P-138 |
+| REQ-BE-115 | El contrato OpenAPI y Schemathesis garantizan que **una petición de cambio malformada no abre la Fase 6** | §5 | P-112 |
+| REQ-BE-116 | La CLI expone los ocho comandos declarados | §6 | P-113 |
 | REQ-BE-117 | `ramificar` **copia el fichero** y escribe la fila de `procedencia`; no hay columna de rama en las consultas | §6 | P-102 |
 | REQ-BE-118 | `evaluar` corre los cinco briefs en modo batch con `gates_enabled = false` | §6 | P-120, P-108 |
 | REQ-BE-119 | Todos los validadores de ejecución son nodos o aristas condicionales; **ninguno es una herramienta que un agente decida llamar** | §7.2 | P-06, P-56 |
@@ -733,6 +733,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | **Telegram solo avisa y los gates se deciden con `storymaker decidir`**: se retira `POST /webhook/telegram` con su secreto, §4.7 fija que el nodo abre el gate antes de `interrupt()` y no lo reabre al reanudar, `continuar` se niega ante un gate pendiente, y la CLI pasa a ocho comandos. REQ-BE-106, 107, 108, 114, 115 y 116 se reescriben | Decisión del Autor, propagada desde la arquitectura. Al probarla con gates apareció además que el nodo nunca abría el gate: no quedaba fila, no se avisaba y nada podía decidirse |
 | 2026-09-24 | §4.5: el juez recibe la rúbrica, el PDF se imprime tras publicar con su fallo como aviso, y en batch el umbral del juez no detiene | Se propaga la decisión de la arquitectura en Fase 5, a raíz de la auditoría previa a la primera ejecución real |
 | 2026-09-24 | §7.1 nº 21: `inventario_del_plan` lee también las filas `IMP-nn` del plan del frontend y, en la dirección inversa, recorre `frontend/src/**`; REQ-BE-113 nombra la **URL base** en `frontend_base_url`, que la tabla de configuración de §2 ya declaraba | La arquitectura pide cotejar «el plan contra el árbol y a la inversa» sin limitarlo a una mitad, y el validador solo miraba el backend: las rutas del plan del frontend no las comprobaba nadie. La URL base la exige §16.4 y el requisito solo nombraba el directorio |
 | 2026-09-24 | §3.3 fija **el contrato de salida**: la función de invocación adjunta al prompt el JSON Schema del esquema del rol, que cuenta contra su techo. Entra **REQ-BE-132** | Se propaga la decisión nueva de §5 de la arquitectura. La primera ejecución real cayó en `Configure` porque el entrevistador validaba contra un `Brief` que nunca le habían enseñado |

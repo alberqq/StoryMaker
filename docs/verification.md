@@ -52,7 +52,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 | 10 | Evals | **T/I** | Cinco briefs de evaluación, *datasets* de Langfuse, rúbrica compartida | G2 | Adoptada |
 | 11 | Sandboxed execution | **D/A** | `allowed_tools` por rol, contenedor, un fichero por novela | G4, G6 | Adoptada |
 | 12 | Guardrails | **A/T** | Validadores como nodos, cuarentena de texto libre, `canon_prohibida`, guarda de contexto | G3 | Adoptada, bloqueante |
-| 13 | Human-in-the-loop | **I** | Cinco gates por Telegram, `edicion_humana`, revisión con rúbrica | G4 | Adoptada, bloqueante |
+| 13 | Human-in-the-loop | **I** | Cinco gates avisados por Telegram y decididos en el PC, `edicion_humana`, revisión con rúbrica | G4 | Adoptada, bloqueante |
 | 14 | Multi-agent verification | **I/T** | Juez separado del editor; auto-consistencia como medida | G5 | Adoptada parcialmente (§4.6) |
 | 15 | CI/CD integration | **T/A** | GitHub Actions; misma tubería para código humano y generado | G1, G2 | Adoptada |
 | 16 | Progressive rollout | **D** | Versiones de prompt en Langfuse, ramas por fichero, *feature flags* | G2 | Reinterpretada (§4.8) |
@@ -232,7 +232,7 @@ Con Hypothesis, y estrategias que sintetizan novelas: corpus, canon, escaleta y 
 |---|---|---|
 | **Orquestador ↔ rol** | Nodo del grafo / prompt en Langfuse | El modelo Pydantic es el contrato. Un corpus de salidas reales grabadas se revalida contra el esquema en CI: si alguien cambia un campo, la prueba cae aunque el prompt siga funcionando |
 | **Prompt ↔ esquema** | Versión de prompt / versión del modelo de salida | El id de versión del prompt viaja en el span; una prueba comprueba que la versión publicada en Langfuse es compatible con el esquema del repositorio |
-| **Telegram ↔ FastAPI** | Callback del bot / endpoint `HumanDecide` | Esquema OpenAPI y Schemathesis sobre el endpoint: una decisión malformada no reanuda el grafo |
+| **CLI ↔ grafo** | `storymaker decidir` / acción `HumanDecide` | Una decisión desconocida o sin gate pendiente no reanuda el grafo, y reanudar no reabre el gate decidido |
 | **Código ↔ esquema SQLite** | Migraciones / consultas | Prueba de migración sobre una base de la versión anterior, más comprobación de que toda columna leída existe |
 | **Generador ↔ Lean** | `formal/` / proyecto `lake` | Un fichero Lean de referencia se regenera y se compara; si el generador cambia de forma, la diferencia se ve |
 | **Nodo ↔ hook de `.claude/`** | Grafo en producción / Claude Code en edición manual | **El contrato más valioso del proyecto** |
@@ -347,7 +347,7 @@ Cinco guardrails, ordenados por el momento en que actúan:
 
 **Qué garantiza.** Que ninguna decisión consecuente se toma sin una persona, y que esa decisión queda registrada como dato.
 
-**Los cinco gates.** Intake, Investigation, Plotting, Writing y Regeneration. El nodo llama a `interrupt()`, el estado se persiste y el proceso termina; la decisión llega por Telegram con botones *Aprobar · Rehacer · Abortar* y reanuda el grafo. No hay auto-aprobación por *timeout*: eso convertiría un gate de calidad en un temporizador. En modo batch los cinco se desactivan enteros, porque los briefs de evaluación tienen que correr desatendidos.
+**Los cinco gates.** Intake, Investigation, Plotting, Writing y Regeneration. El nodo llama a `interrupt()`, el estado se persiste y el proceso termina; Telegram avisa, y la decisión se toma en el PC con `storymaker decidir`, que la escribe y reanuda el grafo. No hay auto-aprobación por *timeout*: eso convertiría un gate de calidad en un temporizador. En modo batch los cinco se desactivan enteros, porque los briefs de evaluación tienen que correr desatendidos.
 
 **Lo que se registra.** Toda decisión va a `gate`; toda edición directa del corpus, del canon o de la escaleta va a `edicion_humana` y a `audit_log` con actor, momento y estados antes y después; todo comentario de «rehacer» se inyecta como bloque en el prompt y se versiona. **La intervención del Autor queda trazada igual que la de un agente.**
 
@@ -518,6 +518,7 @@ Lectura transversal: los siete modos de fallo que más importan y con qué se at
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | La matriz de contratos cambia `Telegram ↔ FastAPI` por `CLI ↔ grafo`, y la fila de human-in-the-loop y §4 dicen que los gates se avisan por Telegram y se deciden en el PC | Decisión del Autor en §10 de la arquitectura: Telegram solo avisa y se retira el webhook |
 | 2026-09-23 | La fila de `normalizar` en §3.3 explica **por qué el contrato se cumple ahora** y en qué medida | Al declarar los contratos para CrossHair apareció que `normalizar` no era idempotente: un sustantivo singular terminado en -s («autobús», «país», «análisis») se recortaba una vez y su plural dos, así que el guardrail cazaba el singular y dejaba pasar el plural. Se arregló recortando hasta punto fijo, a costa de algún falso positivo. En la misma pasada CrossHair encontró que `anio_de` reventaba con dígitos Unicode que `isdigit()` acepta e `int()` rechaza; quedó arreglado y el contraejemplo es un caso de `tests/unit/test_core_domain.py` |
 | 2026-09-23 | Se propaga la reescritura de §11d: el mapa maestro y §4.10 pasan a **TLA+ directo** con las rutas de `formal/tla/`, entra `CorpusSelladoNoSeToca` en la tabla de invariantes y `PreviousVersionPreserved` pasa a declararse **propiedad temporal**. §3.2 añade la regla del cliente único del frontend, que bloquea porque sostiene G5 | La arquitectura resolvió su contradicción y este plan medía contra la versión vieja: un plan de verificación que comprueba cuatro invariantes donde hay cinco da por verde lo que nadie ha mirado |
 | 2026-09-23 | Versión inicial | Fijar los Quality Gates y la clasificación T/A/I/D/U antes de escribir código, para que cada decisión de arquitectura nazca con su método de verificación asociado |

@@ -161,6 +161,9 @@ async def invocar(
                 transporte=piezas[0],
                 vectorizador=piezas[1],
                 observador=piezas[2],
+                reanudando_gate=(
+                    [True] if isinstance(entrada, Reanudacion) and entrada.decision else []
+                ),
             )
 
             if isinstance(entrada, Arranque):

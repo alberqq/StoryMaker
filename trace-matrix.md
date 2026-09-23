@@ -94,7 +94,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-67 | §9 · `ResumeFromCheckpoint` como arista de entrada a cualquier nodo | BE:P-58 | CUBIERTO | — |
 | ARQ-68 | §10 · `interrupt()`, el estado en disco y la invocación que termina | BE:P-103 | CUBIERTO | — |
 | ARQ-69 | §10 · Las cuatro decisiones: aprobar, rehacer con comentario, editar, abortar | BE:P-104 | CUBIERTO | — |
-| ARQ-70 | §10 · `Notifier` con Telegram y botones inline | BE:P-105 | CUBIERTO | — |
+| ARQ-70 | §10 · `Notifier` con Telegram, solo para avisar; la decisión se toma en el PC | BE:P-105, BE:P-109 | CUBIERTO | — |
 | ARQ-71 | §10 · Notificaciones informativas, desactivadas por defecto | BE:P-106 | CUBIERTO | — |
 | ARQ-72 | §10 · El *timeout* aparca; nunca se auto-aprueba | BE:P-107 | CUBIERTO | — |
 | ARQ-73 | §10 · `gates.enabled = false` desactiva los cinco para el modo batch | BE:P-02, BE:P-108, BE:P-120 | CUBIERTO | — |
@@ -133,10 +133,10 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-101 | §16 · La organización del backend *package by feature*, con el grafo en `commons/graph/` | BE:P-01, BE:P-55 | CUBIERTO | — |
 | ARQ-102 | §16 · El frontend en FSD v2.1 con Steiger informando sin bloquear | FE:IMP-02, FE:IMP-03, FE:IMP-04 | CUBIERTO | Dejó de estar fuera de alcance al escribirse `specs/frontend/plan.md`, y la matriz del backend ya no lo lista como excluido |
 | ARQ-103 | §16 · Dos puntos de entrada sobre un solo camino de código | BE:P-57, BE:P-109, BE:P-113, BE:P-138 | CUBIERTO | — |
-| ARQ-104 | §16 · La invocación que reanuda un gate se atiende en tarea de fondo | BE:P-109 | CUBIERTO | — |
+| ARQ-104 | §16 · La invocación que reanuda un gate corre en el proceso de la CLI que decide | BE:P-109 | CUBIERTO | — |
 | ARQ-105 | §16 · Cerrojo de fichero por novela; quien llega segundo es rechazado, no encolado | BE:P-59, BE:P-113, BE:P-128, FE:IMP-21 | CUBIERTO | Del lado del frontend significa no encolar ni reintentar solo ante un `409` |
 | ARQ-106 | §16 · El directorio `proyectos/` es el registro; no hay base de datos global de novelas | BE:P-111, FE:IMP-13 | CUBIERTO | — |
-| ARQ-107 | §16 · El webhook protegido con secreto, y el resto de la API abierto por decisión declarada (U-17) | BE:P-109, BE:P-110, BE:P-136, FE:IMP-09 | CUBIERTO | El frontend no guarda credenciales; U-17 con fila en `verification.md` §5 |
+| ARQ-107 | §16 · Ningún endpoint reanuda una ejecución, y la API queda abierta por decisión declarada (U-17) | BE:P-109, BE:P-110, BE:P-136, FE:IMP-08, FE:IMP-09 | CUBIERTO | El frontend no envía ni guarda credenciales, y ninguna de sus dos variables es un secreto; U-17 con fila en `verification.md` §5 |
 | ARQ-108 | §16 · Las mitigaciones de §18 que son código: recuento por dimensión, tope de fetch, recuento de afectados, carga comprobada, varianza medida | BE:P-19, BE:P-30, BE:P-73, BE:P-100, BE:P-121 | CUBIERTO | — |
 | ARQ-109 | §16 · Los valores por defecto de §19, parametrizables y con nombre | BE:P-02, BE:P-03, FE:IMP-29, FE:IMP-31 | CUBIERTO | — |
 | ARQ-116 | §18 · Los documentos pueden ser coherentes y estar equivocados: la familia de §11e comprueba que código y especificación dicen lo mismo, no que lo que dicen sea correcto | BE:P-135 | CUBIERTO | Su mitigación no es código sino **inspección**. P-135 la convierte en entregable: sin acta de grilling y de revisión no hay constancia de que ocurriera |
@@ -198,6 +198,7 @@ Seis cosas que este recorrido dejó por escrito.
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | ARQ-70, ARQ-104 y ARQ-107 se reescriben: Telegram solo avisa y los gates se deciden en el PC | Decisión del Autor en §10 de la arquitectura |
 | 2026-09-24 | Entra `ARQ-138`: el contrato de salida viaja con la llamada, realizado por `BE:P-27` | La primera ejecución real cayó porque ningún rol recibía la forma de su salida, y la arquitectura lo fijó en §5. El inventario sube de 137 a 138 filas |
 | 2026-09-23 | `ARQ-111` recoge **`BE:P-137`**, el validador que comprueba estas matrices | Esta matriz afirmaba cobertura de todo el repositorio y era el único artefacto de §11e que nadie miraba. Ahora la mira la suite, y se verificó rompiéndola a propósito |
 | 2026-09-23 | Entran `ARQ-133` a `ARQ-136`: las dos pantallas declaradas, el **cliente único** como condición de G5, **FastAPI sirviendo el `dist/`** y la **interceptación** de la versión candidata | Son las cuatro cosas que la arquitectura fijó al resolver las costuras del frontend. Estaban en los planes y no en el inventario, que es el fallo simétrico del hueco y el que menos se nota |

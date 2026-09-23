@@ -20,6 +20,7 @@ from enum import StrEnum
 import aiosqlite
 
 from storymaker.commons.db.repos import arnes
+from storymaker.commons.errores import ErrorDeStoryMaker
 from storymaker.commons.obs.scores import registrar_decision_de_gate
 from storymaker.commons.obs.trazas import Observador
 
@@ -31,8 +32,12 @@ class Decision(StrEnum):
     ABORTAR = "abortar"
 
 
-#: Las cuatro, en el orden en que aparecen en los botones inline.
+#: Las cuatro, en el orden en que las enseñan el aviso y la CLI.
 DECISIONES = (Decision.APROBAR, Decision.REHACER, Decision.EDITAR, Decision.ABORTAR)
+
+
+class DecisionInvalida(ErrorDeStoryMaker):
+    """Una decisión que no se puede aplicar. No reanuda nada."""
 
 
 @dataclass(frozen=True)
@@ -89,14 +94,27 @@ async def registrar(
     )
 
 
-def desde_callback(dato: str) -> DecisionTomada | None:
-    """Traduce el `callback_data` de un botón de Telegram: `<gate_id>:<decision>`.
+async def aplicar(
+    db: aiosqlite.Connection,
+    observador: Observador,
+    decision: str,
+    comentario: str | None = None,
+) -> DecisionTomada:
+    """La decisión del Autor sobre **el gate pendiente** de la novela, tomada en su PC.
 
-    Devuelve `None` en lugar de lanzar si el dato no encaja, porque esto lo alimenta una
-    petición de fuera: un callback malformado es una petición que se rechaza, no una avería
-    del arnés.
+    Es lo que ejecuta `storymaker decidir` antes de reanudar. Telegram solo avisa (arq. §10),
+    así que esta es la única entrada de una decisión, y rechaza sin tocar nada lo que no
+    se puede aplicar: una decisión fuera de las cuatro o una novela sin gate pendiente. Un
+    gate ya decidido no está pendiente, de modo que decidir dos veces no reanuda dos veces.
     """
-    gate, _, decision = dato.partition(":")
-    if not gate.isdigit() or decision not in {d.value for d in Decision}:
-        return None
-    return DecisionTomada(gate_id=int(gate), decision=Decision(decision))
+    if decision not in {d.value for d in Decision}:
+        validas = ", ".join(d.value for d in DECISIONES)
+        raise DecisionInvalida(f"«{decision}» no es una decision. Las validas son: {validas}.")
+    pendiente = await arnes.gate_pendiente(db)
+    if pendiente is None:
+        raise DecisionInvalida("La novela no tiene ningun gate esperando decision.")
+    tomada = DecisionTomada(
+        gate_id=int(pendiente["id"]), decision=Decision(decision), comentario=comentario or None
+    )
+    await registrar(db, observador, tomada)
+    return tomada
