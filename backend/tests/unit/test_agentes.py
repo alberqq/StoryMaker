@@ -113,6 +113,18 @@ class TestCuotaDeHerramientas:
         assert cuota.decidir("WebSearch")["permissionDecision"] == "allow"
         assert cuota.decidir("WebSearch")["permissionDecision"] == "deny"
 
+    def test_toolsearch_carga_las_herramientas_diferidas_sin_gastar_cuota(self) -> None:
+        """Sin ella el investigador no podia cargar `WebSearch` y sellaba un corpus vacio."""
+        cuota = CuotaDeHerramientas.para(Perfil.INVESTIGADOR_MICRO)
+        assert cuota.decidir("ToolSearch")["permissionDecision"] == "allow"
+        assert cuota.decidir("ToolSearch")["permissionDecision"] == "allow"
+        assert cuota.decidir("WebSearch")["permissionDecision"] == "allow"
+        assert cuota.decidir("WebSearch")["permissionDecision"] == "deny"
+
+    def test_un_rol_sin_red_tampoco_carga_herramientas(self) -> None:
+        cuota = CuotaDeHerramientas.para(Perfil.ESCRITOR)
+        assert cuota.decidir("ToolSearch")["permissionDecision"] == "deny"
+
     def test_un_rol_sin_cuota_no_puede_salir_a_la_red(self) -> None:
         cuota = CuotaDeHerramientas.para(Perfil.ESCRITOR)
         assert cuota.decidir("WebFetch")["permissionDecision"] == "deny"

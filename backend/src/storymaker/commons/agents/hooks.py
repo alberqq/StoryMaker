@@ -27,6 +27,12 @@ from storymaker.commons.agents.presupuesto import estimar_tokens
 from storymaker.commons.agents.techos import TECHOS, Perfil
 from storymaker.commons.config import Defaults
 
+#: Herramientas que no salen a la red ni devuelven material: solo cargan la definición de
+#: otra. Claude Code difiere `WebSearch` y `WebFetch` y el modelo tiene que pedirlas con
+#: `ToolSearch` antes de usarlas; denegarla dejaba al investigador sin búsquedas y la
+#: primera ejecución real selló un corpus vacío.
+HERRAMIENTAS_DE_CARGA: frozenset[str] = frozenset({"ToolSearch"})
+
 
 @dataclass
 class CuotaDeHerramientas:
@@ -48,7 +54,12 @@ class CuotaDeHerramientas:
         Deniega tanto la herramienta agotada como la que nunca estuvo concedida: un rol sin
         cuota declarada para `WebFetch` no tiene «cero usos disponibles», tiene prohibido
         salir a la red, y las dos cosas se resuelven igual aquí.
+
+        La excepción son las herramientas de carga, que pasan sin contar **solo si el rol
+        tiene alguna cuota**: a quien no puede salir a la red no le sirve cargar nada.
         """
+        if herramienta in HERRAMIENTAS_DE_CARGA and self.limites:
+            return {"permissionDecision": "allow"}
         if self.restantes(herramienta) <= 0:
             return {
                 "permissionDecision": "deny",
