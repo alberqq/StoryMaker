@@ -139,10 +139,21 @@ async def configure(estado: EstadoNovela) -> EstadoNovela:
     falta, y decide el Autor. Es el criterio de producto aplicado a la primera fase — que
     corra de principio a fin antes que ser correcto en todos sus bordes.
     """
-    if estado["texto_pegado"]:
+    deps = actuales()
+    if estado["texto_pegado"] and not await repo.hay_texto_crudo(deps.db):
+        # En la segunda vuelta de la entrevista la cuarentena ya lo tiene.
         await extraer_texto_libre(estado["texto_pegado"])
 
-    respuesta = await entrevistar(estado["premisa"])
+    respuesta = await entrevistar(estado["premisa"], await respuestas_del_autor())
+    await arnes.retirar_incidencias_sin_capitulo(deps.db, VALIDADOR_DE_PREGUNTAS)
+    for pregunta in respuesta.preguntas:
+        await arnes.registrar_incidencia(
+            deps.db,
+            validador=VALIDADOR_DE_PREGUNTAS,
+            severidad="aviso",
+            mensaje=pregunta.pregunta,
+            ubicacion=pregunta.campo,
+        )
     if respuesta.brief is not None:
         problemas = contradicciones.revisar(respuesta.brief)
         await cerrar_brief(respuesta.brief, estado["fase_run_id"])
@@ -157,6 +168,17 @@ async def configure(estado: EstadoNovela) -> EstadoNovela:
                 )
 
     return {**estado, "pc": "AwaitApproval"}
+
+
+#: Las preguntas del entrevistador se guardan como incidencias de aviso de este validador,
+#: y el aviso del gate de Intake las enseña. Se contestan con «rehacer» y su comentario.
+VALIDADOR_DE_PREGUNTAS = "pregunta_del_entrevistador"
+
+
+async def respuestas_del_autor() -> str:
+    """Todo lo que el Autor ha contestado en los gates de Intake, en el orden en que lo dijo."""
+    comentarios = await arnes.comentarios_de_rehacer(actuales().db, "intake")
+    return "\n".join(f"- {c}" for c in comentarios)
 
 
 async def revisar_contradicciones(brief: Brief) -> list[str]:

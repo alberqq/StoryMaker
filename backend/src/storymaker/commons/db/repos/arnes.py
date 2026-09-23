@@ -183,3 +183,41 @@ async def registrar_audit(
             json.dumps(despues) if despues is not None else None,
         ),
     )
+
+
+async def comentarios_de_rehacer(db: aiosqlite.Connection, fase: str) -> list[str]:
+    """Los comentarios de todos los gates de una fase decididos como «rehacer», en orden.
+
+    En Intake son las respuestas del Autor a la entrevista: `Configure` las recibe todas
+    en cada vuelta, porque el entrevistador no guarda memoria entre una y otra.
+    """
+    async with db.execute(
+        """
+        SELECT g.comentario FROM gate AS g JOIN fase_run AS f ON f.id = g.fase_run_id
+        WHERE f.fase = ? AND g.decision = 'rehacer' AND g.comentario IS NOT NULL
+        ORDER BY g.id
+        """,
+        (fase,),
+    ) as cursor:
+        return [str(fila["comentario"]) for fila in await cursor.fetchall()]
+
+
+async def retirar_incidencias_sin_capitulo(db: aiosqlite.Connection, validador: str) -> None:
+    """Retira las incidencias de un validador que no cuelgan de ningún capítulo.
+
+    Sirve a las preguntas del entrevistador: una vuelta nueva de la entrevista sustituye
+    las preguntas de la anterior, que ya están contestadas o reformuladas.
+    """
+    await db.execute(
+        "DELETE FROM incidencia WHERE validador = ? AND capitulo_version_id IS NULL",
+        (validador,),
+    )
+
+
+async def incidencias_sin_capitulo(db: aiosqlite.Connection, validador: str) -> list[str]:
+    async with db.execute(
+        "SELECT mensaje FROM incidencia WHERE validador = ? AND capitulo_version_id IS NULL "
+        "ORDER BY id",
+        (validador,),
+    ) as cursor:
+        return [str(fila["mensaje"]) for fila in await cursor.fetchall()]

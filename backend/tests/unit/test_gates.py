@@ -62,3 +62,35 @@ class TestAplicar:
         with pytest.raises(DecisionInvalida, match="no es una decision"):
             await aplicar(db, ObservadorNulo(), "publicar")
         assert await arnes.gate_pendiente(db) is not None
+
+
+class TestEntrevistaPorElGate:
+    """La entrevista pasa por el gate de Intake: se contesta con «rehacer» y su comentario."""
+
+    async def test_las_respuestas_son_los_comentarios_de_rehacer_en_orden(
+        self, db: aiosqlite.Connection, fase_run: int
+    ) -> None:
+        intake = await arnes.abrir_fase_run(db, "intake")
+        for comentario in ("nacio en 1792", "prefiere un final abierto"):
+            await arnes.abrir_gate(db, intake)
+            await aplicar(db, ObservadorNulo(), "rehacer", comentario)
+        # Un «rehacer» de otra fase no es una respuesta a la entrevista.
+        await arnes.abrir_gate(db, fase_run)
+        await aplicar(db, ObservadorNulo(), "rehacer", "mas detalle de epoca")
+        await arnes.abrir_gate(db, intake)
+        await aplicar(db, ObservadorNulo(), "aprobar")
+        assert await arnes.comentarios_de_rehacer(db, "intake") == [
+            "nacio en 1792",
+            "prefiere un final abierto",
+        ]
+
+    async def test_repetir_la_entrevista_no_duplica_los_datos_dictados(
+        self, db: aiosqlite.Connection
+    ) -> None:
+        from storymaker.intake.cuarentena import volcar_dictados
+        from storymaker.intake.esquemas import ElementoPersonalizacion, TipoDeDato
+
+        elementos = [ElementoPersonalizacion(tipo=TipoDeDato.OBJETO, valor="una txalupa")]
+        primera = await volcar_dictados(db, elementos)
+        segunda = await volcar_dictados(db, elementos)
+        assert len(primera) == 1 and segunda == []

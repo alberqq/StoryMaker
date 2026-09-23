@@ -246,7 +246,13 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **Contrato de seguridad.** Una cadena del texto en bruto **no puede aparecer jamás en el prompt del escritor**, y hay una aserción que lo comprueba sobre cargas de inyección. La defensa es estructural: una inyección tiene que sobrevivir a convertirse en una fila tipada para hacer daño.
 
-**Errores.** Brief incompleto tras agotar las preguntas → el gate se abre igualmente con el informe de lo que falta; decide el Autor.
+**La entrevista, a través del gate.** Las preguntas del entrevistador se guardan como incidencias de aviso del validador `pregunta_del_entrevistador`, sin capítulo, y el aviso del gate de Intake las enumera. El Autor contesta con `storymaker decidir <novela> rehacer --comentario "<respuestas>"`. La arista «rehacer» devuelve a `Configure`, que vuelve a entrevistar con la premisa y **los comentarios de todos los gates de Intake decididos como «rehacer»**, en orden. Sobre esa segunda pasada:
+- las preguntas anteriores se retiran y solo quedan las nuevas;
+- el texto pegado **no se vuelve a extraer**, porque la cuarentena ya lo tiene;
+- un dato dictado que ya existe con el mismo tipo, valor y origen **no se vuelve a escribir**;
+- `intake_brief` guarda una fila por pasada, y todo lector toma la última.
+
+**Errores.** Brief incompleto tras agotar las preguntas → el gate se abre igualmente con el informe de lo que falta; decide el Autor. Aprobar con preguntas pendientes sigue con el brief que haya.
 
 ### 4.2 `investigation/` — Fase 2
 
@@ -641,6 +647,8 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-58 | Las contradicciones del brief las detecta un `@model_validator` de Pydantic, no un modelo | §4.1 | P-65 |
 | REQ-BE-59 | Ninguna cadena del texto en bruto aparece jamás en el prompt del escritor, y una aserción lo comprueba sobre cargas de inyección | §4.1 | P-67 |
 | REQ-BE-60 | Un brief incompleto tras agotar las preguntas no bloquea: el gate se abre con el informe de lo que falta | §4.1 | P-127 |
+| REQ-BE-133 | Las preguntas del entrevistador se guardan y el aviso del gate de Intake las enseña; el Autor las contesta con «rehacer» y su comentario, y `Configure` vuelve a entrevistar con todas las respuestas dadas | §4.1 | P-68 |
+| REQ-BE-134 | Repetir `Configure` no duplica nada: el texto pegado se extrae una vez y un dato dictado que ya existe no se reescribe | §4.1 | P-68, P-66 |
 | REQ-BE-61 | El prompt del investigador se construye solo con período y lugar; los campos personales del `Brief` no salen a la red, y lo imponen una regla Semgrep y una aserción | §4.2 | P-74, P-06 |
 | REQ-BE-62 | El investigador dispone de **3 `WebSearch` y 3 `WebFetch` en una sesión**, y el tope lo impone el arnés con sus hooks, no una instrucción del prompt | §4.2 | P-69, P-29 |
 | REQ-BE-63 | Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y una cita de 300 caracteres como mucho | §4.2 | P-70 |
@@ -733,6 +741,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §4.1: **la entrevista pasa por el gate de Intake**. Entran REQ-BE-133 y REQ-BE-134 | Se propaga la decisión de la arquitectura en la Fase 1. El entrevistador se llamaba una vez y sus preguntas no las veía nadie |
 | 2026-09-24 | **Telegram solo avisa y los gates se deciden con `storymaker decidir`**: se retira `POST /webhook/telegram` con su secreto, §4.7 fija que el nodo abre el gate antes de `interrupt()` y no lo reabre al reanudar, `continuar` se niega ante un gate pendiente, y la CLI pasa a ocho comandos. REQ-BE-106, 107, 108, 114, 115 y 116 se reescriben | Decisión del Autor, propagada desde la arquitectura. Al probarla con gates apareció además que el nodo nunca abría el gate: no quedaba fila, no se avisaba y nada podía decidirse |
 | 2026-09-24 | §4.5: el juez recibe la rúbrica, el PDF se imprime tras publicar con su fallo como aviso, y en batch el umbral del juez no detiene | Se propaga la decisión de la arquitectura en Fase 5, a raíz de la auditoría previa a la primera ejecución real |
 | 2026-09-24 | §7.1 nº 21: `inventario_del_plan` lee también las filas `IMP-nn` del plan del frontend y, en la dirección inversa, recorre `frontend/src/**`; REQ-BE-113 nombra la **URL base** en `frontend_base_url`, que la tabla de configuración de §2 ya declaraba | La arquitectura pide cotejar «el plan contra el árbol y a la inversa» sin limitarlo a una mitad, y el validador solo miraba el backend: las rutas del plan del frontend no las comprobaba nadie. La URL base la exige §16.4 y el requisito solo nombraba el directorio |

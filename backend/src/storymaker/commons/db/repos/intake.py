@@ -33,6 +33,22 @@ async def guardar_texto_crudo(db: aiosqlite.Connection, texto: str) -> int:
     return id_insertado(cursor)
 
 
+async def existe_dato(
+    db: aiosqlite.Connection, *, tipo: str, valor_json: str, origen: str
+) -> bool:
+    """Si el encargo ya tiene ese dato. Repetir la entrevista no lo escribe dos veces."""
+    async with db.execute(
+        "SELECT 1 FROM intake_dato WHERE tipo = ? AND valor_json = ? AND origen = ? LIMIT 1",
+        (tipo, valor_json, origen),
+    ) as cursor:
+        return await cursor.fetchone() is not None
+
+
+async def hay_texto_crudo(db: aiosqlite.Connection) -> bool:
+    async with db.execute("SELECT 1 FROM intake_texto_crudo LIMIT 1") as cursor:
+        return await cursor.fetchone() is not None
+
+
 async def insertar_dato(
     db: aiosqlite.Connection,
     *,

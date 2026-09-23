@@ -19,6 +19,7 @@ aprobaciones la tabla de resultados no se terminaría nunca.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,8 @@ async def abrir(estado: EstadoNovela, *, titulo: str, informe: str) -> int:
     """Escribe el gate pendiente y notifica. Devuelve su identificador."""
     deps = actuales()
     gate_id = await arnes.abrir_gate(deps.db, estado["fase_run_id"])
+    # El mismo aviso sale por la salida del proceso: se decide en el PC, y ahí se lee entero.
+    print(f"\n{titulo}\n{informe}\n", file=sys.stderr)
     notifier = construir(deps.settings)
     await notifier.enviar(
         Aviso(
@@ -138,6 +141,12 @@ async def _resumen(gate: str) -> str:
         async with deps.db.execute(consulta) as cursor:
             fila = await cursor.fetchone()
         lineas.append(f"- {etiqueta}: {fila[0] if fila is not None else 0}")
+    if gate == "AwaitApproval":
+        preguntas = await arnes.incidencias_sin_capitulo(deps.db, "pregunta_del_entrevistador")
+        if preguntas:
+            lineas += ["", "El entrevistador pregunta:"]
+            lineas += [f"  {i}. {p}" for i, p in enumerate(preguntas, start=1)]
+            lineas += ["", 'Contesta con: rehacer --comentario "tus respuestas"']
     lineas.append("")
     lineas.append("La invocacion se ha detenido y espera tu decision.")
     return "\n".join(lineas)

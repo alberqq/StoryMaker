@@ -60,11 +60,17 @@ async def volcar_dictados(
     """
     identificadores = []
     for elemento in elementos:
+        valor_json = json.dumps({"valor": elemento.valor}, ensure_ascii=False)
+        if await repo.existe_dato(
+            db, tipo=elemento.tipo.value, valor_json=valor_json, origen=ORIGEN_ENTREVISTA
+        ):
+            # Una vuelta más de la entrevista repite los datos ya dictados: no se duplican.
+            continue
         identificadores.append(
             await repo.insertar_dato(
                 db,
                 tipo=elemento.tipo.value,
-                valor_json=json.dumps({"valor": elemento.valor}, ensure_ascii=False),
+                valor_json=valor_json,
                 origen=ORIGEN_ENTREVISTA,
                 obligatorio=elemento.obligatorio,
             )
