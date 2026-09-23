@@ -8,6 +8,24 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ---
 
+## 2026-09-24 · La primera ejecución contra el modelo
+
+### It-13 · Los hooks del transporte tenían una forma que el SDK no acepta
+
+**Causa.** La primera novela real, `nueva ../ejemplos/brief-ejemplo.yaml --batch`, cayó en `Configure` **antes de la primera llamada al modelo**: `TypeError: 'function' object is not iterable` dentro del SDK. `TransporteAgentSDK._hooks` entregaba por evento la función suelta, y `ClaudeAgentOptions.hooks` exige una lista de `HookMatcher`. La suite no podía verlo porque recorre el grafo con `TransporteFalso` y el transporte real no se ejercita en ella; es exactamente la clase de fallo que su docstring deja para la ejecución de verdad.
+
+**Qué se hizo.** Cada evento lleva ahora `[HookMatcher(...)]`, y `PostToolUse` va acotado a `WebFetch`, que es la única salida con techo: sin acotar habría reescrito la salida de cualquier herramienta con una forma que no es la suya. Dos pruebas en `tests/unit/test_agentes.py` fijan la forma, y se saltan si el extra `agentes` no está instalado.
+
+**Efecto.** 663 pruebas pasan. La ejecución fallida no consumió nada: el checkpoint quedó intacto en `Configure`.
+
+### It-12 · Smart App Control bloqueaba dos ruedas nativas
+
+**Causa.** En el portátil del Autor, con Windows 11 y Smart App Control activo, la suite daba ocho fallos de integración y dos módulos de propiedades sin cargar: `uuid-utils` 0.17.1, de la que depende LangGraph, y el núcleo nativo de `hypothesis` 6.168 estaban bloqueados por falta de reputación.
+
+**Qué se hizo.** `[tool.uv] constraint-dependencies` fija `uuid-utils<0.17` e `hypothesis<6.166`, solo en `win32`.
+
+**Efecto.** La suite vuelve a 661, sin cambiar una línea de código. `mypy` sigue sin cargar en esa máquina, porque depende de `librt`, que es nativa en todas sus versiones; G1 lo ejecuta en la CI.
+
 ## 2026-09-23 · Auditoría contra `REQUIREMENTS.md` y cierre de los huecos baratos
 
 ### It-11 · TLC corrigió la arquitectura: la liveness necesita equidad **fuerte**

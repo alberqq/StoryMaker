@@ -200,3 +200,27 @@ class TestInvocacion:
                 transporte=transporte, settings=settings,
             )
         assert transporte.llamadas == [], "la llamada no se emitio"
+
+
+class TestHooksDelTransporte:
+    """La forma que el SDK exige a los hooks, que la suite no veía y la primera ejecución real sí.
+
+    Con la función suelta en lugar de una lista de `HookMatcher`, el SDK revienta al convertir
+    las opciones, antes de lanzar el subproceso. Solo corre con el extra `agentes` instalado.
+    """
+
+    def test_cada_evento_lleva_una_lista_de_matchers(self) -> None:
+        sdk = pytest.importorskip("claude_agent_sdk")
+        from storymaker.commons.agents.transporte_sdk import TransporteAgentSDK
+
+        hooks = TransporteAgentSDK()._hooks(CuotaDeHerramientas.para(Perfil.INVESTIGADOR_INICIAL))
+        assert set(hooks) == {"PreToolUse", "PostToolUse"}
+        for matchers in hooks.values():
+            assert all(isinstance(m, sdk.HookMatcher) and m.hooks for m in matchers)
+
+    def test_el_truncado_solo_toca_webfetch(self) -> None:
+        pytest.importorskip("claude_agent_sdk")
+        from storymaker.commons.agents.transporte_sdk import TransporteAgentSDK
+
+        hooks = TransporteAgentSDK()._hooks(CuotaDeHerramientas.para(Perfil.INVESTIGADOR_INICIAL))
+        assert [m.matcher for m in hooks["PostToolUse"]] == ["WebFetch"]

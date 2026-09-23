@@ -46,7 +46,14 @@ class TransporteAgentSDK:
         llega a emitirse. `PostToolUse` reescribe el resultado antes de que entre en el
         contexto, de modo que una página de cuarenta mil tokens no entra entera. Ninguno de
         los dos es declarativo: no hay opción que los haga, se programan.
+
+        El SDK espera, por evento, **una lista de `HookMatcher`**, no la función suelta: con
+        la función a pelo revienta al convertir las opciones, antes de lanzar el subproceso,
+        y así cayó la primera ejecución real. `PostToolUse` va acotado a `WebFetch`, que es
+        la única salida con techo; sin acotar, reescribiría también la de cualquier otra
+        herramienta con una forma que no es la suya.
         """
+        from claude_agent_sdk import HookMatcher
 
         async def pre_tool_use(entrada: dict[str, Any], *_: object) -> dict[str, Any]:
             herramienta = str(entrada.get("tool_name", ""))
@@ -62,7 +69,10 @@ class TransporteAgentSDK:
                 }
             }
 
-        return {"PreToolUse": pre_tool_use, "PostToolUse": post_tool_use}
+        return {
+            "PreToolUse": [HookMatcher(hooks=[pre_tool_use])],
+            "PostToolUse": [HookMatcher(matcher="WebFetch", hooks=[post_tool_use])],
+        }
 
     async def pedir(
         self,
