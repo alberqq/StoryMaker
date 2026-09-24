@@ -16,6 +16,10 @@
 .barra-enlaces a { padding: var(--e2) var(--e3); border-radius: var(--radio-s); color: var(--texto-suave); font-weight: 500; }
 .barra-enlaces a:hover { background: var(--superficie-2); color: var(--texto); text-decoration: none; }
 .barra-enlaces a.activo { color: var(--texto); background: var(--superficie-2); box-shadow: inset 0 -2px 0 var(--marca); }
+.selector-tema { display: flex; gap: 2px; margin-left: auto; padding: 2px; border: 1px solid var(--borde); border-radius: 999px; background: var(--superficie-2); }
+.selector-tema button { width: 28px; height: 28px; border: none; border-radius: 50%; background: transparent; color: var(--texto-suave); cursor: pointer; font-size: 0.95rem; line-height: 1; }
+.selector-tema button:hover { color: var(--texto); }
+.selector-tema button.elegido { background: var(--superficie); color: var(--acento-enlace); box-shadow: var(--sombra-1); }
 
 /* Tarjeta y sección */
 .tarjeta, .seccion {

@@ -20,6 +20,7 @@ ramificación.
 from __future__ import annotations
 
 import os
+import sys
 import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -238,10 +239,11 @@ async def invocar(
                 cierre = "completada" if resultado.nodo_final == "Idle" else "fallida"
                 await arnes.cerrar_abierta(db, cierre)
             await db.commit()
+            if resultado.nodo_final == "Idle":
+                await _imprimir_pdf(novela, settings)
             nodo = f"{ultimo}, capitulo {final.get('capitulo', '?')}"
             await _avisar(db, aviso, novela, resultado, nodo=nodo)
             return resultado
-
 
 
 async def reintentar(
@@ -298,6 +300,7 @@ async def reintentar(
         notifier=notifier,
     )
 
+
 def _ultimo_nodo(fallo: BaseException) -> str:
     """El nodo del grafo en el que reventó la invocación, leído de la traza.
 
@@ -310,6 +313,23 @@ def _ultimo_nodo(fallo: BaseException) -> str:
         if marco.filename.replace("\\", "/").endswith("/nodos.py"):
             nodo = marco.name
     return nodo
+
+
+async def _imprimir_pdf(novela: Path, settings: Settings) -> None:
+    """El PDF de las versiones que aún no lo tengan, **ya confirmado todo** (spec §4.5).
+
+    Va aquí y no dentro de `publish` porque, dentro del paso, la versión nueva no es visible
+    para otra conexión, y la ruta de impresión la lee por la API. Va antes de `_avisar` para
+    que el aviso de terminada llegue con el PDF hecho. Y un fallo es un aviso: no cambia el
+    resultado de la invocación ni su consumo, porque la versión ya está publicada y validada.
+    """
+    from storymaker.publication.render import imprimir_pendientes
+
+    try:
+        for destino in await imprimir_pendientes(novela, settings):
+            print(f"PDF: {destino}", file=sys.stderr)
+    except Exception as fallo:
+        print(f"Aviso: version publicada, pero el PDF no se genero: {fallo}", file=sys.stderr)
 
 
 async def _avisar(

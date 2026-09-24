@@ -1,7 +1,36 @@
 /* Los tokens de diseño, y el único fichero con colores literales (spec §8).
-   El modo oscuro es una redefinición de tokens, no un segundo juego de estilos. */
+   El modo oscuro es una redefinición de tokens, no un segundo juego de estilos.
+
+   Hay dos temas que se eligen por separado (spec §4.6 y §8): el de la aplicación, que
+   `shared/lib/preferencias.ts` pone como `data-tema` en <html>, y el del libro, que el lector
+   puede fijar con `data-tema-libro` en su `.libro`. Cada juego de colores vale para los dos
+   sitios, así que un libro claro dentro de una aplicación oscura redefine los tokens solo
+   dentro de él. La media query cubre el instante antes de que cargue el script. */
 
 :root {
+  /* Forma */
+  --radio-s: 6px;
+  --radio: 10px;
+  --radio-l: 16px;
+
+  /* Tipografía */
+  --fuente-panel: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fuente-libro: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --fuente-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  /* Espacio */
+  --e1: 4px;
+  --e2: 8px;
+  --e3: 12px;
+  --e4: 16px;
+  --e5: 24px;
+  --e6: 32px;
+  --e7: 48px;
+}
+
+/* Claro: el de por defecto, y el del libro fijado en claro */
+:root,
+[data-tema-libro='claro'] {
   /* Panel, con la marca: naranja #ff7932 y blanco roto #f5f5f5 */
   --fondo: #f5f5f5;
   --superficie: #ffffff;
@@ -39,35 +68,60 @@
   --linea-libro: #e4dccd;
   --acento-libro: #8a3b2e;
   --papel-impresion: #ffffff;
-
-  /* Forma */
-  --radio-s: 6px;
-  --radio: 10px;
-  --radio-l: 16px;
   --sombra-1: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
   --sombra-2: 0 10px 30px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.08);
   --sombra-arrastre: 0 18px 40px rgba(16, 24, 40, 0.22);
   --velo: rgba(15, 17, 21, 0.45);
 
-  /* Tipografía */
-  --fuente-panel: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --fuente-libro: 'EB Garamond', Georgia, 'Times New Roman', serif;
-  --fuente-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
-
-  /* Espacio */
-  --e1: 4px;
-  --e2: 8px;
-  --e3: 12px;
-  --e4: 16px;
-  --e5: 24px;
-  --e6: 32px;
-  --e7: 48px;
-
   color-scheme: light;
 }
 
+/* Oscuro: la aplicación en oscuro, y el libro fijado en oscuro */
+:root[data-tema='oscuro'],
+[data-tema-libro='oscuro'] {
+  --fondo: #121110;
+  --superficie: #1b1a18;
+  --superficie-2: #24221f;
+  --borde: #302d2a;
+  --borde-fuerte: #45413c;
+  --texto: #f5f5f5;
+  --texto-suave: #b5afa8;
+  --texto-tenue: #827c75;
+  --marca: #ff7932;
+  --acento: #ff7932;
+  --acento-hover: #ff9152;
+  --acento-suave: #3a2213;
+  --acento-texto: #ffffff;
+  --acento-enlace: #ff9a5c;
+
+  --azul: #60a5fa;
+  --azul-suave: #14234a;
+  --ambar: #facc15;
+  --ambar-suave: #352c07;
+  --rojo: #f87171;
+  --rojo-suave: #3a1515;
+  --verde: #4ade80;
+  --verde-suave: #0f2e1b;
+  --gris: #a39d96;
+  --gris-suave: #2a2724;
+
+  --papel: #1a1815;
+  --papel-claro: #201d19;
+  --tinta: #e9e3d8;
+  --tinta-suave: #b3aa9c;
+  --linea-libro: #3a352e;
+  --acento-libro: #e5a08a;
+
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sombra-2: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --sombra-arrastre: 0 18px 40px rgba(0, 0, 0, 0.6);
+  --velo: rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema]) {
     --fondo: #121110;
     --superficie: #1b1a18;
     --superficie-2: #24221f;

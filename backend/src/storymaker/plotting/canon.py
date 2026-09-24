@@ -31,8 +31,14 @@ async def volcar_canon(
     vectorizador: Vectorizador,
     salida: SalidaArquitecto,
     brief: Brief,
+    *,
+    fase_run_id: int | None = None,
 ) -> dict[str, int]:
-    """Escribe personajes, arcos, escenarios y glosario. Devuelve nombre → identificador."""
+    """Escribe personajes, arcos, escenarios y glosario. Devuelve nombre → identificador.
+
+    `fase_run_id` es la ejecución que escribe la trama, y queda en `canon_obra`: es lo que
+    permite a `Plan` distinguir una vuelta de un hueco de un «rehacer» del Autor.
+    """
     por_nombre: dict[str, int] = {}
 
     for personaje in salida.personajes:
@@ -103,8 +109,8 @@ async def volcar_canon(
         """
         INSERT INTO canon_obra
             (titulo, premisa, tema, genero, n_capitulos, palabras_por_capitulo, voz,
-             estilo_json, homenajeado_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             estilo_json, homenajeado_id, fase_run_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             salida.titulo or None,
@@ -116,6 +122,7 @@ async def volcar_canon(
             salida.voz or None,
             json.dumps(brief.diales, ensure_ascii=False),
             por_nombre.get(homenajeado.nombre) if homenajeado else None,
+            fase_run_id,
         ),
     )
 

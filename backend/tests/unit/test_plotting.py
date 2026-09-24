@@ -182,12 +182,12 @@ class TestCorpusParaElArquitecto:
         assert "Cadiz" in consulta
         assert "armador" in consulta
 
-    async def test_el_estado_epistemico_va_delante(
+    async def test_la_firmeza_va_delante(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba
     ) -> None:
-        """Sobre un verificado se ancla una escena; sobre un desconocido, no se apoya la trama."""
+        """Sobre un documentado se ancla una escena; sobre un desconocido, no se apoya la trama."""
         texto = contexto.como_texto(await mundo.hechos_vigentes(db, novela.fase_run))
-        assert texto.startswith("[verificado")
+        assert texto.startswith("[documentado")
 
 
 class TestInforme:

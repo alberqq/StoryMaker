@@ -143,13 +143,24 @@ class TestBloques:
         assert "roble americano llegaba a Cadiz" in bloque.texto()
         assert bloque.fijos >= 1
 
-    async def test_el_anclaje_viaja_con_su_estado_epistemico(
+    async def test_el_anclaje_viaja_con_su_firmeza(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba,
         vectorizador: VectorizadorFalso, ajustes: Settings,
     ) -> None:
-        """El escritor tiene que saber si lo que usa es verificado o inferido."""
+        """El escritor tiene que saber si lo que usa es documentado o inferido (arq. §7)."""
         bloque = (await ensamblar(db, vectorizador, 2, settings=ajustes)).bloque(5)
-        assert "[verificado]" in bloque.texto()
+        assert "[documentado]" in bloque.texto()
+        assert "[verificado]" not in bloque.texto(), "el estado declarado no llega al escritor"
+
+    async def test_las_reglas_dicen_que_hacer_con_cada_firmeza(
+        self, db: aiosqlite.Connection, novela: NovelaDePrueba,
+        vectorizador: VectorizadorFalso, ajustes: Settings,
+    ) -> None:
+        """Sin esto la firmeza llegaba al escritor y no cambiaba nada (arq. §6)."""
+        texto_bloque = (await ensamblar(db, vectorizador, 2, settings=ajustes)).bloque(6).texto()
+        for firmeza in ("documentado", "debatido", "inferido", "desconocido", "inventado"):
+            assert f"{firmeza}:" in texto_bloque
+        assert "no lo dice la cita" in texto_bloque
 
     async def test_las_reglas_llevan_los_diales_de_la_frontera(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba,

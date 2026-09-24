@@ -100,20 +100,20 @@ async def pendientes_de_verificar(
     return [filas[i : i + tamano_lote] for i in range(0, len(filas), tamano_lote)]
 
 
-async def anotar_respaldo(db: aiosqlite.Connection, hecho_id: int, respaldo: str) -> None:
-    """Escribe el veredicto del verificador y **degrada el hecho si no está respaldado**.
+async def anotar_respaldo(
+    db: aiosqlite.Connection, hecho_id: int, respaldo: str, sin_respaldo: str | None = None
+) -> None:
+    """Escribe el veredicto del verificador, **y nada más**.
 
-    No lo borra y no detiene la fase: baja de categoría y aparece destacado en el informe
-    del gate, donde el Autor decide. La degradación tiene consecuencia real más adelante,
-    porque el bloque 5 del paquete lleva el estado epistémico hasta el escritor.
+    `estado` se queda como lo declaró quien creó la fila: cada columna tiene un solo dueño
+    (arq. §7). Un hecho no respaldado no se borra ni se reescribe; lo que baja es su
+    firmeza, que `puras.firmeza` calcula al leer y que el bloque 5 lleva hasta el escritor.
+    `sin_respaldo` es el añadido del veredicto parcial, o nada.
     """
-    if respaldo == "no_respaldado":
-        await db.execute(
-            "UPDATE mundo_hecho SET respaldo = ?, estado = 'inferido' WHERE id = ?",
-            (respaldo, hecho_id),
-        )
-    else:
-        await db.execute("UPDATE mundo_hecho SET respaldo = ? WHERE id = ?", (respaldo, hecho_id))
+    await db.execute(
+        "UPDATE mundo_hecho SET respaldo = ?, sin_respaldo = ? WHERE id = ?",
+        (respaldo, sin_respaldo or None, hecho_id),
+    )
 
 
 async def hay_sello(db: aiosqlite.Connection) -> bool:
@@ -126,12 +126,15 @@ async def calcular_hash_corpus(db: aiosqlite.Connection, fase_run_id: int) -> st
 
     Ordenado porque si dependiera del orden de inserción, dos corpus idénticos darían
     hashes distintos y el manifiesto dejaría de poder responder si dos versiones partieron
-    del mismo material.
+    del mismo material. Lleva el `respaldo` y `sin_respaldo` porque la firmeza y lo que no
+    dice la cita, que verá el escritor, dependen de ellos: dos corpus con el mismo texto y
+    distinto veredicto no son el mismo material.
     """
     resumen = hashlib.sha256()
     async with db.execute(
         """
-        SELECT enunciado, estado, dimension, origen, COALESCE(cita, '') AS cita
+        SELECT enunciado, estado, dimension, origen, COALESCE(cita, '') AS cita, respaldo,
+               COALESCE(sin_respaldo, '') AS sin_respaldo
           FROM mundo_hecho
          WHERE fase_run_id = ?
          ORDER BY enunciado, dimension, origen
@@ -186,8 +189,21 @@ async def inventados_por_dimension(db: aiosqlite.Connection, fase_run_id: int) -
         return {str(f["dimension"]): int(f["n"]) for f in await cursor.fetchall()}
 
 
+async def micro_sin_respaldo(db: aiosqlite.Connection, fase_run_id: int) -> int:
+    """Cuántos hechos de la micro-sesión de Plotting no respaldó el verificador."""
+    async with db.execute(
+        """
+        SELECT COUNT(*) AS n FROM mundo_hecho
+         WHERE fase_run_id = ? AND origen = 'micro_arquitecto' AND respaldo = 'no_respaldado'
+        """,
+        (fase_run_id,),
+    ) as cursor:
+        fila = await cursor.fetchone()
+    return int(fila["n"]) if fila is not None else 0
+
+
 async def sin_respaldo(db: aiosqlite.Connection, fase_run_id: int) -> list[aiosqlite.Row]:
-    """Los hechos degradados, que el informe del gate destaca."""
+    """Los hechos que el verificador no respaldó, que el informe del gate destaca."""
     async with db.execute(
         """
         SELECT * FROM mundo_hecho
@@ -197,3 +213,33 @@ async def sin_respaldo(db: aiosqlite.Connection, fase_run_id: int) -> list[aiosq
         (fase_run_id,),
     ) as cursor:
         return list(await cursor.fetchall())
+
+
+#: Lo que ya se apoya en un hecho. Si alguna tiene filas, descartarlo dejaría a la trama o
+#: al texto apuntando a nada.
+_USOS_DE_UN_HECHO = ("canon_licencia", "plan_anclaje", "uso_hecho")
+
+
+async def descartar_hecho(db: aiosqlite.Connection, hecho_id: int) -> aiosqlite.Row | None:
+    """Borra un hecho del corpus, con sus fuentes y su vector, y lo devuelve como era.
+
+    Es el «lo borra a mano» de arq. §4, Fase 2: el Autor quita en el gate de Investigation un
+    hecho que no quiere en la novela. Solo cabe antes del sello —los disparadores de
+    inmutabilidad lo impiden después— y solo si nada lo usa todavía. `None` si no existe;
+    `ValueError` si algo lo usa.
+    """
+    async with db.execute("SELECT * FROM mundo_hecho WHERE id = ?", (hecho_id,)) as cursor:
+        fila = await cursor.fetchone()
+    if fila is None:
+        return None
+    for tabla in _USOS_DE_UN_HECHO:
+        async with db.execute(
+            f"SELECT 1 FROM {tabla} WHERE hecho_id = ? LIMIT 1",  # noqa: S608 — lista cerrada
+            (hecho_id,),
+        ) as cursor:
+            if await cursor.fetchone() is not None:
+                raise ValueError(f"El hecho {hecho_id} ya lo usa {tabla}.")
+    await db.execute("DELETE FROM mundo_hecho_fuente WHERE hecho_id = ?", (hecho_id,))
+    await db.execute("DELETE FROM vec_hecho WHERE hecho_id = ?", (hecho_id,))
+    await db.execute("DELETE FROM mundo_hecho WHERE id = ?", (hecho_id,))
+    return fila

@@ -10,6 +10,7 @@ donde no hay ni `.env` ni credenciales.
 
 from __future__ import annotations
 
+import os
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -20,6 +21,12 @@ from dobles.agente_falso import AgenteFalso
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela
 from storymaker.commons.db.repos.arnes import abrir_fase_run
+
+# Una novela que llega a `Idle` imprime su PDF desde la ruta de impresión del frontend, con
+# Chromium. En la suite eso sería lento y dependería de un `dist/` construido, así que las
+# pruebas ven un frontend ausente y caen al HTML mínimo, como antes. La prueba que ejercita
+# la impresión de verdad pasa su `frontend_dist` explícito.
+os.environ.setdefault("STORYMAKER_FRONTEND_DIST", str(Path(__file__).parent / "sin-frontend"))
 
 
 @pytest.fixture
@@ -43,6 +50,7 @@ def settings(directorio_proyectos: Path) -> Settings:
 @pytest.fixture
 def agente_falso() -> AgenteFalso:
     return AgenteFalso()
+
 
 @pytest.fixture
 async def db(tmp_path: Path) -> AsyncIterator[aiosqlite.Connection]:

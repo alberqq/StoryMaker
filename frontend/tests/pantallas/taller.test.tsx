@@ -1,4 +1,5 @@
-// El taller como tablero (IMP-39, spec §4.1): columnas, tarjetas, arrastre y confirmación.
+// El taller como tablero (IMP-39, IMP-55, spec §4.1): columnas, tarjetas, arrastre,
+// confirmación y el listado de las publicadas.
 
 import { createEvent, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -21,13 +22,27 @@ function arrastrar(origen: HTMLElement, destino: HTMLElement) {
 }
 
 describe('el tablero', () => {
-  it('pone cada novela en la columna de su fase, y las publicadas en la última', async () => {
+  it('pone cada novela en curso en la columna de su fase, en cinco columnas', async () => {
     montar('/')
-    await screen.findByRole('list', { name: 'Tablero por fases' })
-    expect(within(columna('Publicadas')).getByText('La mar de Cádiz')).toBeInTheDocument()
+    const tablero = await screen.findByRole('list', { name: 'Tablero por fases' })
+    expect(within(tablero).getAllByRole('listitem').map((c) => c.getAttribute('aria-label'))).toEqual([
+      'Encargo',
+      'Investigación',
+      'Trama',
+      'Escritura',
+      'Publicación',
+    ])
     expect(within(columna('Trama')).getByText('El río de Sevilla')).toBeInTheDocument()
     expect(within(columna('Encargo')).getByText('lago')).toBeInTheDocument()
     expect(within(columna('Encargo')).getByText('nueva')).toBeInTheDocument()
+  })
+
+  it('las publicadas van en un listado bajo el tablero, no como tarjetas', async () => {
+    montar('/')
+    const listado = await screen.findByRole('region', { name: 'Publicadas' })
+    expect(within(listado).getByRole('link', { name: 'La mar de Cádiz' })).toHaveAttribute('href', '/novelas/mar')
+    expect(within(listado).getByRole('link', { name: /Leer v/ })).toHaveAttribute('href', expect.stringMatching(/^\/novelas\/mar\/v\/\d+$/))
+    expect(screen.queryByRole('article', { name: 'La mar de Cádiz' })).toBeNull()
   })
 
   it('cada tarjeta dice su estado con texto, su homenajeado y su gate', async () => {
@@ -42,7 +57,8 @@ describe('el tablero', () => {
     montar('/')
     await screen.findByRole('list', { name: 'Tablero por fases' })
     expect(tarjeta('El río de Sevilla')).toHaveAttribute('draggable', 'true')
-    expect(tarjeta('La mar de Cádiz')).toHaveAttribute('draggable', 'false')
+    expect(tarjeta('lago')).toHaveAttribute('draggable', 'true')
+    expect(tarjeta('nueva')).toHaveAttribute('draggable', 'false')
   })
 
   it('arrastrar a la columna siguiente propone aprobar, y nada se decide sin confirmar', async () => {
@@ -74,7 +90,7 @@ describe('el tablero', () => {
   it('soltar en cualquier otra columna no hace nada', async () => {
     montar('/')
     await screen.findByRole('list', { name: 'Tablero por fases' })
-    const sobre = arrastrar(tarjeta('El río de Sevilla'), columna('Publicadas'))
+    const sobre = arrastrar(tarjeta('El río de Sevilla'), columna('Encargo'))
     expect(sobre.defaultPrevented).toBe(false)
     expect(screen.queryByRole('dialog')).toBeNull()
   })

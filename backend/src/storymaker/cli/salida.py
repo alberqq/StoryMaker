@@ -75,4 +75,7 @@ def candidatos(propuestas: list[Any]) -> None:
             f"  [{candidato.objeto.value} #{candidato.fila_id}] {candidato.descripcion} "
             f"(distancia {candidato.distancia:.3f})"
         )
-    aviso("\nNada se ha cambiado. La eleccion y el coste se ven en el gate de Regeneration.")
+    aviso(
+        "\nNada se ha cambiado. En el gate de Regeneration se aprueba con la fila elegida y "
+        "su valor nuevo:\n  --comentario \"personaje:1 nombre=Nuevo nombre\""
+    )

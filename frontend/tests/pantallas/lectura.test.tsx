@@ -2,8 +2,10 @@
 // casos de error de §9 de la spec.
 
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { cambiarPreferencias, POR_DEFECTO } from '@/shared/lib'
 import { montar } from '../montar'
 import { API, recibidas, servidor } from '../servidor'
 
@@ -140,5 +142,66 @@ describe('rutas desconocidas', () => {
   it('caen en «no existe», nunca en blanco', async () => {
     montar('/esto/no/es/nada')
     expect(await screen.findByRole('heading', { level: 2, name: 'No existe' })).toBeInTheDocument()
+  })
+})
+
+describe('reading · ajustes de lectura', () => {
+  const libro = () => document.querySelector<HTMLElement>('article.libro')!
+  beforeEach(() => cambiarPreferencias(POR_DEFECTO))
+
+  it('la pestaña «Aa» cambia el tamaño y la fuente en vivo', async () => {
+    montar('/novelas/mar/v/2/capitulos/2')
+    await screen.findByText(/Texto del capitulo 2/)
+    expect(libro().style.getPropertyValue('--lectura-tamano')).toBe('1.2rem')
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustes de lectura' }))
+    const panel = screen.getByRole('dialog', { name: 'Ajustes de lectura' })
+    await userEvent.click(within(panel).getByRole('button', { name: 'Letra más grande' }))
+    expect(libro().style.getPropertyValue('--lectura-tamano')).toBe('1.35rem')
+    await userEvent.click(within(panel).getByRole('radio', { name: /Inter/ }))
+    expect(libro().style.getPropertyValue('--lectura-fuente')).toMatch(/^Inter/)
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Ajustes de lectura' })).toBeNull()
+  })
+
+  it('el interlineado y la negrita cambian el texto en vivo', async () => {
+    montar('/novelas/mar/v/2/capitulos/2')
+    await screen.findByText(/Texto del capitulo 2/)
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustes de lectura' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Amplio' }))
+    expect(libro().style.getPropertyValue('--lectura-interlineado')).toBe('1.95')
+    await userEvent.click(screen.getByRole('switch'))
+    expect(libro().style.getPropertyValue('--lectura-peso')).toBe('600')
+  })
+
+  it('la aplicación en oscuro puede leer el libro en claro', async () => {
+    montar('/novelas/mar/v/2/capitulos/2')
+    await screen.findByText(/Texto del capitulo 2/)
+    await userEvent.click(screen.getByRole('radio', { name: 'Tema oscuro' }))
+    expect(document.documentElement.dataset.tema).toBe('oscuro')
+    expect(libro()).not.toHaveAttribute('data-tema-libro')
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustes de lectura' }))
+    await userEvent.click(screen.getByRole('radio', { name: /Claro/ }))
+    expect(libro()).toHaveAttribute('data-tema-libro', 'claro')
+    expect(document.documentElement.dataset.tema).toBe('oscuro')
+    await userEvent.click(screen.getByRole('radio', { name: 'Tema claro' }))
+    expect(document.documentElement.dataset.tema).toBe('claro')
+  })
+
+  it('los ajustes se recuerdan al volver a abrir el lector', async () => {
+    const { router } = montar('/novelas/mar/v/2/capitulos/2')
+    await screen.findByText(/Texto del capitulo 2/)
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustes de lectura' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Letra más pequeña' }))
+    await router.navigate('/novelas/mar/v/2')
+    await screen.findByRole('navigation', { name: 'Índice de capítulos' })
+    expect(libro().style.getPropertyValue('--lectura-tamano')).toBe('1.05rem')
+    expect(JSON.parse(window.localStorage.getItem('storymaker.preferencias')!)).toMatchObject({ tamano: 1 })
+  })
+
+  it('el lector no ofrece imprimir', async () => {
+    montar('/novelas/mar/v/2')
+    await screen.findByRole('navigation', { name: 'Índice de capítulos' })
+    expect(screen.queryByRole('link', { name: 'Imprimir' })).toBeNull()
+    expect(document.querySelector('a[href$="/imprimir"]')).toBeNull()
   })
 })

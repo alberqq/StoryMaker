@@ -65,7 +65,7 @@ Un único objeto `Settings` de `pydantic-settings`, leído del entorno y de un `
 Al abrir una novela, y antes de nada más:
 
 1. **Se carga `sqlite-vec`** con `enable_load_extension`. Si falla, el arranque se detiene con un mensaje explícito. **Nunca se degrada en silencio** a un sistema sin búsqueda semántica: un ensamblador que no puede buscar produciría paquetes de contexto empobrecidos sin que nadie se enterase (U-15).
-2. **Se aplican las migraciones pendientes** y se comprueba que la versión de esquema del fichero es la que el código espera.
+2. **Se aplican las migraciones pendientes** y se comprueba que la versión de esquema del fichero es la que el código espera. Una columna **aditiva y que admite nulos**, añadida después de crear la tabla —hoy, `mundo_hecho.sin_respaldo`—, entra con `ALTER TABLE` en cada apertura si el fichero no la tiene, sin tocar sus filas y **sin subir la versión**, de modo que el código anterior siga abriendo el fichero.
 3. **Se activan los `PRAGMA`**: `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 4. **Se toma el cerrojo** si la operación va a invocar el grafo (§3.2).
 
@@ -159,7 +159,7 @@ Monta los siete bloques de §6 de la arquitectura en orden, con sus techos: enca
 
 **El bloque 3 lleva lo que ya ha pasado.** Tras el estado de continuidad al cierre de N−1, que es fijo, van los eventos de `cronologia_evento` con `origen = 'narrativo'` de las versiones **aprobadas** de los capítulos 1 a N−2, como `Capitulo k: descripcion`, con la descripción recortada a 160 caracteres y del capítulo más reciente al más antiguo. Así el recorte, que va por la cola, suelta primero lo más lejano.
 
-**El bloque 6 lleva reglas de escritura y lo que la novela ya ha gastado.** Van fijas cuatro reglas: narrar en pretérito; entregar solo prosa, sin títulos ni encabezados; que ningún personaje, histórico incluido, sepa ni cuente lo que aún no ha ocurrido en la fecha narrativa de su escena, y no contradecir lo que el bloque 3 dice que ya pasó. Después, calculadas en Python sobre el texto de los capítulos aprobados 1 a N−1, dos listas: **las ocho palabras y las cuatro expresiones de dos palabras más frecuentes**, fuera de las palabras vacías y de los nombres del canon, con su recuento, y **la última frase de cada capítulo anterior**. Las dos se recortan antes que las reglas.
+**El bloque 6 lleva reglas de escritura, qué hacer con cada firmeza y lo que la novela ya ha gastado.** Van fijas cuatro reglas: narrar en pretérito; entregar solo prosa, sin títulos ni encabezados; que ningún personaje, histórico incluido, sepa ni cuente lo que aún no ha ocurrido en la fecha narrativa de su escena, y no contradecir lo que el bloque 3 dice que ya pasó. Tras ellas va, también fijo, **el uso de cada firmeza**: `documentado` se cuenta como hecho, con sus fechas y cifras; `debatido`, sin tomar partido, mejor por boca de un personaje; `inferido`, como ambiente, sin cifras exactas y sin que la trama gire sobre ello; `desconocido` es espacio libre para la ficción mientras no contradiga lo documentado; `inventado`, dentro del grado de licencia, y lo que la cita no dice no se cuenta como hecho. Después, calculadas en Python sobre el texto de los capítulos aprobados 1 a N−1, dos listas: **las ocho palabras y las cuatro expresiones de dos palabras más frecuentes**, fuera de las palabras vacías y de los nombres del canon, con su recuento, y **la última frase de cada capítulo anterior**. Las dos se recortan antes que las reglas.
 
 **Tres propiedades que el ensamblador debe cumplir siempre**, y que son las que se verifican con Hypothesis y con CrossHair:
 
@@ -168,6 +168,8 @@ Monta los siete bloques de §6 de la arquitectura en orden, con sus techos: enca
 3. Los **anclajes explícitos de la escaleta entran siempre**, antes que cualquier vecino semántico.
 
 **La recuperación la hace él, no el agente.** La consulta se deriva mecánicamente del texto de las escenas del capítulo N, se vectoriza con FastEmbed y se resuelve con KNN de `sqlite-vec` sobre los tres índices. Con las mismas entradas salen los mismos vecinos, siempre.
+
+**El bloque 5 lleva la firmeza de cada hecho, no su estado declarado.** Cada anclaje y cada vecino va precedido de `[firmeza]`, calculada con `firmeza()` de §3.6 sobre el `estado`, el `respaldo` y el `origen` de la fila. Es lo que le dice al escritor cuánto puede apoyarse en el dato: `documentado`, `debatido`, `inferido`, `desconocido` o `inventado`. Si el veredicto fue parcial, detrás va `(no lo dice la cita: «…»)` con lo que el enunciado añade, **mientras ese añadido siga en el enunciado**: `anadido_vigente(enunciado, sin_respaldo)`, pura y de §3.6, lo comprueba normalizando los dos textos.
 
 **El paquete se persiste entero y se enlaza desde su span de Langfuse.** Poder abrir literalmente lo que el modelo vio al escribir el capítulo 7 es la definición operativa de interpretabilidad en este sistema, y cuesta casi nada.
 
@@ -203,6 +205,8 @@ Si divergieran, el producto y el editor humano dejarían de estar de acuerdo sob
 **Los dos consumidores se sirven de él**: el grafo compone cada pasada filtrando el registro por `punto`, y el hook de `.claude/` enumera desde ahí los que puede ejecutar sobre un capítulo editado a mano. Un validador que no esté en el registro no corre por ningún camino, de modo que no puede existir un validador vivo fuera de él — que es lo que convierte la comprobación de §7.1 nº 20 en clase **A** y no en un cotejo de dos listas mantenidas a mano.
 
 La lista de validadores está en §7.2, y esa tabla, la de §11a de la arquitectura y el registro se comparan por pares en CI.
+
+**La firmeza de un hecho también vive aquí**, como función pura de `puras.py`: `firmeza(estado, respaldo, origen) -> str`. Devuelve `inventado` si `origen = 'invencion_autorizada'`; si no, el mínimo, en el orden `documentado > debatido > inferido > desconocido`, entre lo que `estado` declara (`verificado` cuenta como `documentado`) y el techo que permite el respaldo: sin techo si es `respaldado`, `inferido` en cualquier otro caso. Es **total**: un estado que no reconoce cuenta como `desconocido`, de modo que ningún valor inesperado sube a nadie de categoría. Quien lee un hecho para enseñarlo a un modelo o al Autor la llama; nadie la guarda. Su dominio es finito —cuatro estados, cuatro respaldos, tres orígenes—, así que se comprueba **por enumeración exhaustiva de las cuarenta y ocho combinaciones**, que es una demostración y no una muestra. A su lado vive `anadido_vigente(enunciado, sin_respaldo) -> str | None`: devuelve el añadido del veredicto parcial si sigue en el enunciado —literal, o con todas sus **palabras significativas** presentes, porque el verificador a veces lo copia con otras palabras—, y `None` si no hay añadido o el Autor lo quitó al corregir. Son significativas las palabras normalizadas de más de tres letras y los números; si el añadido no tiene ninguna, cuentan todas.
 
 *Clase: **A** (pureza, por Semgrep; registro como cableado) **/T** (mutación ≥ 80 %, que es lo que demuestra que la red tiene malla). Gate: G1, G2.*
 
@@ -248,6 +252,8 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **El evento ancla es un elemento más.** Si el `Brief` trae `evento_ancla`, se guarda en `intake_dato` como elemento obligatorio, junto a los del comprador, y desde ahí lo recorren la escaleta y las tres comprobaciones de cobertura.
 
+**Los capítulos del brief cerrado mandan.** Cuando el entrevistador cierra el `Brief`, `Configure` escribe su `n_capitulos` en el estado del grafo, que hasta entonces llevaba el del lanzamiento. Es el número con el que el arquitecto planifica, y así la escaleta y el bucle de Writing cuentan los mismos capítulos.
+
 **Contradicciones.** Las detecta un `@model_validator` de Pydantic, no un modelo: edad del homenajeado contra el período, fecha de nacimiento contra el `evento_ancla` si viene relleno, tono festivo contra un período de duelo, dato aportado que coincide con una palabra prohibida. El agente captura el `ValueError`, lo traduce a pregunta y obliga a resolverlo.
 
 **Contrato de seguridad.** Una cadena del texto en bruto **no puede aparecer jamás en el prompt del escritor**, y hay una aserción que lo comprueba sobre cargas de inyección. La defensa es estructural: una inyección tiene que sobrevivir a convertirse en una fila tipada para hacer daño.
@@ -266,7 +272,7 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **Entrada.** Período y lugar del `Brief` y, en el modo exhaustivo, sus personajes históricos, su evento ancla y su rol de época. **Nunca sus campos personales** —nombre del homenajeado, fecha de nacimiento, elementos de personalización—: el investigador es el único rol con red. La regla Semgrep `pii-fuera-del-investigador` impide construir el prompt con ellos, y `pii_en_prompt_de_investigacion` mira cada prompt ya ensamblado —sesión única, dirigidas y micro-sesiones— antes de emitirlo; si encuentra uno, esa sesión no sale y queda un aviso.
 
-**Paso 1 · una sesión, tres búsquedas.** El investigador reparte **3 `WebSearch` y 3 `WebFetch`** entre las seis dimensiones del período y las deja todas pobladas. El tope lo impone el arnés con los hooks de §3.3, no una instrucción del prompt: la cuarta llamada no se emite. Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y su **cita de 300 caracteres como mucho**.
+**Paso 1 · una sesión, tres búsquedas.** El investigador reparte **3 `WebSearch` y 3 `WebFetch`** entre las seis dimensiones del período y las deja todas pobladas. El tope lo impone el arnés con los hooks de §3.3, no una instrucción del prompt: la cuarta llamada no se emite. Cada hecho se guarda con su enunciado, el estado epistémico que declara el investigador **sobre lo que dice su fuente** —`verificado` si la fuente lo afirma, `debatido` si recoge versiones o dudas, `inferido` si lo deduce él de lo que la fuente dice, `desconocido` si la fuente dice que no se sabe o no encontró nada—, sus fuentes, el `fase_run_id` que lo escribió y su **cita de 300 caracteres como mucho**. El prompt —de la sesión única, de las dirigidas y de la micro-sesión— da la **definición de los cuatro estados** del glosario, no solo sus nombres.
 
 **Paso 1 en modo exhaustivo · ocho sesiones dirigidas.** Si el estado de la novela dice `investigacion = "exhaustiva"`, en lugar de la sesión única corren en serie, con el perfil `investigador_dirigido` —**1 `WebSearch` y 1 `WebFetch`** cada una, techo de 15.000 tokens—:
 
@@ -278,9 +284,9 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 Los hechos de las dos últimas llevan una de las seis dimensiones de siempre. Cada sesión deja una incidencia de severidad `aviso` y validador `investigacion_dirigida`, sin capítulo, con su encargo y sus hechos o el motivo por el que se saltó: es la línea que el informe del gate enseña. Una salida inválida tras los reintentos de esquema **salta esa sesión** y las demás siguen; `PresupuestoExcedido` y los errores de entorno suben. Los comentarios de «rehacer» del gate de Investigation se añaden a todas las sesiones, y también a la única en el modo estándar. El modo se fija al crear la novela —`storymaker nueva --investigacion estandar|exhaustiva`, la API o `Settings.investigacion`— y no cambia después.
 
-**Paso 2 · el verificador.** Un agente distinto, **sin herramientas y sin red**, lee los pares enunciado–cita **por lotes de veinte** y responde una sola pregunta por hecho: ¿el fragmento dice lo que el hecho afirma? Un `no_respaldado` **degrada el hecho a `inferido` y lo marca; no lo borra y no detiene la fase.**
+**Paso 2 · el verificador.** Un agente distinto, **sin herramientas y sin red**, lee los pares enunciado–cita **por lotes de veinte** y responde una sola pregunta por hecho: ¿el fragmento dice lo que el hecho afirma? Cada veredicto lleva `respaldado` —si la cita sostiene el **dato central**, que es lo que el hecho dice que existió u ocurrió; una fecha, un lugar o un detalle que la cita no trae no lo tumba, es un añadido— y `sin_respaldo`, con lo que el enunciado añade y la cita no dice, vacío si no añade nada. Un veredicto respaldado con añadido es el **parcial**: se guarda `respaldo = 'respaldado'` y el añadido en `mundo_hecho.sin_respaldo`, y la firmeza no cambia. El verificador **escribe solo `respaldo` y `sin_respaldo`**: `estado` se queda como lo declaró el investigador, y ningún camino del arnés lo reescribe después. Un `no_respaldado` **limita la firmeza del hecho a `inferido` y lo marca; no lo borra y no detiene la fase.** **Las lagunas no pasan por él**: un hecho `desconocido` nace con `respaldo = 'no_aplica'`, y ni los lotes ni `verificar_hecho` miran lo que no esté `pendiente`.
 
-**Salida.** `mundo_hecho`, `mundo_fuente`, `mundo_hecho_fuente`, `mundo_entidad`, con `respaldo` escrito.
+**Salida.** `mundo_hecho`, `mundo_fuente`, `mundo_hecho_fuente`, `mundo_entidad`, con `respaldo` escrito y `estado` intacto.
 
 **Rehacer no contamina.** Los hechos de la ejecución anterior no se borran ni se mezclan: solo cuentan los del `fase_run` vigente, y los antiguos quedan como historia consultable.
 
@@ -296,13 +302,17 @@ Los hechos de las dos últimas llevan una de las seis dimensiones de siempre. Ca
 
 **El arquitecto no recibe el corpus entero.** Los hechos le llegan por la misma búsqueda semántica de §3.5, con la consulta derivada de lo que está planificando. Es el tercero de los cuatro usos que §16.2 de la arquitectura da a los embeddings, y es lo que evita volcarle en la ventana un corpus de varios cientos de hechos.
 
-**El hueco.** Para cada hueco que la escaleta destapa dispara **una única micro-llamada** al investigador, con una sola `WebSearch`. Si lo encuentra, entra como `origen = 'micro_arquitecto'`; si no, el veredicto `no_encontrado` **autoriza la invención**, que entra igualmente como fila con `estado = 'inferido'`, `origen = 'invencion_autorizada'`, sin fuente y con `respaldo = 'no_aplica'`. **Los huecos se topan en cinco por ejecución; la invención no se topa, se cuenta** y aparece por dimensión en el informe del gate.
+**El hueco.** El arquitecto declara cada hueco con **su escena, su dimensión y la afirmación que usaría si no se encuentra**, y el hueco queda en `plan_hueco`; el estado del grafo lleva solo su identificador. Para cada uno, `FillGap` dispara **una única micro-llamada** al investigador, con una sola `WebSearch`. La micro-sesión recibe el mismo bloque de instrucciones por hecho que las demás sesiones del investigador, **con la cita incluida**, porque sin ella el verificador no tendría nada que leer. Si lo encuentra, entra como `origen = 'micro_arquitecto'` y **pasa en el acto por el verificador**: una llamada con ese único par enunciado–cita, sin herramientas ni red. Si la salida del verificador no valida tras sus reintentos, el hecho se queda con `respaldo = 'pendiente'`, su firmeza no pasa de `inferido` y la escaleta sigue; `PresupuestoExcedido` y los errores de entorno suben, como en Investigation. Si no lo encuentra, el veredicto `no_encontrado` **autoriza la invención**: la afirmación propuesta entra como fila con `estado = 'inferido'`, `origen = 'invencion_autorizada'`, sin fuente y con `respaldo = 'no_aplica'`: su firmeza es `inventado`. **En los dos casos el hecho se ancla a la escena del hueco.** **Los huecos se topan en cinco por ejecución; la invención no se topa, se cuenta** y aparece por dimensión en el informe del gate, que dice también cuántos hechos de la micro-sesión quedaron sin respaldo.
 
-**El sello.** Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes y se escribe `mundo_sello`. **A partir de ahí el corpus es de solo lectura**: durante Writing solo se puede anclar a lo existente o declarar una Licencia.
+**El sello.** Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes —con el `respaldo` de cada hecho, del que depende su firmeza— y se escribe `mundo_sello`. **A partir de ahí el corpus es de solo lectura**: durante Writing solo se puede anclar a lo existente o declarar una Licencia.
+
+**La firmeza en la escaleta.** El prompt del arquitecto dice qué hacer con cada firmeza: el evento ancla y los giros, sobre `documentado`; `debatido`, si la duda forma parte de la escena; `inferido`, como ambiente; `desconocido`, hueco libre para inventar; `inventado`, ya es licencia. El informe del gate de Plotting **avisa de cada escena cuyos anclajes a hechos son todos `inferido` o `desconocido`**, con su capítulo y su orden; una escena sin anclajes a hechos no cuenta. Es aviso, no bloqueo.
 
 **La forma de la escaleta.** El prompt del arquitecto enuncia el número de capítulos del brief, **de 2 a 4 escenas por capítulo** y la extensión por capítulo (arq. §19), junto a los elementos del encargo que tiene que anclar. El gate de Plotting abre una **incidencia de aviso** por cada capítulo fuera del rango de escenas. No bloquea, por el criterio de producto, pero el Autor lo ve en el informe antes de aprobar, y puede rehacer.
 
-**Errores.** Tope de huecos alcanzado no bloquea: queda la invención autorizada, que no cuesta nada y produce exactamente la misma fila. Un capítulo fuera del rango de escenas es aviso en el gate.
+**La revisión y el rehacer.** Al terminar `Plan` corre la revisión de la escaleta —cobertura, arcos, rango de escenas, anclajes sin resolver y cronología, esta en Python cuando no hay `lake`—, se guarda como incidencias sin capítulo y **no cierra el gate**; un elemento obligatorio sin anclar se ancla solo a la escena más parecida. Tras «rehacer» o «editar» en el gate, `Plan` sustituye la trama y el arquitecto recibe la anterior, los comentarios y los avisos. El detalle está en [`specs/trama-rehacible/spec.md`](../trama-rehacible/spec.md).
+
+**Errores.** Tope de huecos alcanzado no bloquea: queda la invención autorizada, que no cuesta nada y produce exactamente la misma fila. Un capítulo fuera del rango de escenas es aviso en el gate. Borrar la trama con un capítulo escrito aborta por clave foránea.
 
 ### 4.4 `writing/` — Fase 4
 
@@ -341,7 +351,7 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 **Sin gate humano**, porque el manuscrito ya se aprobó al cerrar Writing y lo que queda es automático.
 
-**El juez recibe la rúbrica** —las siete preguntas de `rubrica.yaml`, el mismo fichero de la revisión humana— antepuesta a la novela. **Antes de puntuar enumera las contradicciones**: lo que un capítulo afirma y otro desmiente, y lo que un personaje sabe o cuenta antes de que ocurra en la fecha narrativa. `SalidaJuez.contradicciones` las recoge, y la nota de continuidad **se topa en Python** a `10 − 2·n`, con mínimo 1; el juez las cuenta, pero no decide cuánto pesan. Las contradicciones se guardan en el detalle del *score*. **El PDF** se imprime tras `publish`, junto al fichero de la novela como `<novela>.v<n>.pdf`, y si falla queda como aviso: la versión ya está publicada y validada.
+**El juez recibe la rúbrica** —las siete preguntas de `rubrica.yaml`, el mismo fichero de la revisión humana— antepuesta a la novela. **Antes de puntuar enumera las contradicciones**: lo que un capítulo afirma y otro desmiente, y lo que un personaje sabe o cuenta antes de que ocurra en la fecha narrativa. `SalidaJuez.contradicciones` las recoge, y la nota de continuidad **se topa en Python** a `10 − 2·n`, con mínimo 1; el juez las cuenta, pero no decide cuánto pesan. Las contradicciones se guardan en el detalle del *score*. **El PDF** se imprime **desde la ruta de impresión del frontend** (arq. §16.1), junto al fichero de la novela como `<novela>.v<n>.pdf`, y si falla queda como aviso: la versión ya está publicada y validada. Se imprime **cuando la invocación que publicó ya ha confirmado**, al salir del grafo y antes de avisar de que ha terminado, porque dentro del paso de `publish` la versión todavía no es visible para otra conexión. No hace falta un servidor levantado: Playwright abre `/novelas/<n>/v/<k>/imprimir` y el propio proceso le responde, con los estáticos de `frontend_dist` y la API con la aplicación de FastAPI en memoria. Se imprime toda versión que aún no tenga su PDF, de modo que una impresión fallida se repite en la siguiente invocación que termine. Sin `dist/` se cae al HTML mínimo de `render.py`, con un aviso.
 
 **Errores.** Lean falla → **la versión no se publica, sin anulación posible**. Umbral del juez no superado → vuelta al gate de Writing **con gates**; **en modo batch se registra la nota y se publica**, porque no hay nadie que decida qué rehacer.
 
@@ -349,9 +359,9 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 **Entrada.** La petición del lector en lenguaje natural, o una edición humana directa del corpus, del canon o de la escaleta. **Las dos entran por la misma puerta y disparan la misma maquinaria.**
 
-1. La petición se resuelve por búsqueda semántica contra canon y corpus; los candidatos se muestran y **el Autor confirma en el gate**. Sin esto, la fase exigiría que el lector conociera los identificadores internos.
+1. La petición se resuelve por búsqueda semántica contra canon y corpus; los candidatos se muestran y **el Autor confirma en el gate**. Sin esto, la fase exigiría que el lector conociera los identificadores internos. Confirmar es elegir: la aprobación lleva en su comentario la fila elegida y su valor nuevo, `<objeto>:<fila_id> <campo>=<valor>` —por ejemplo `personaje:1 nombre=Manuel`—, y `RequestChange` aplica exactamente eso **sin volver a buscar**. Una aprobación sin fila ni valor no cambia nada y la fase pasa de largo: ningún modelo interpreta la petición, así que escribir la frase del lector como valor sería escribir una instrucción en el canon. Se mantiene la forma `campo=valor` sin fila, que resuelve la fila por búsqueda sobre el valor.
 2. **Se modifica la fila del hecho, no el texto.** El canon manda sobre el texto: un buscar-y-reemplazar sobre la prosa deja mintiendo a la biblia.
-3. `uso_hecho` dice qué capítulos lo usan; **esos se regeneran**.
+3. `uso_hecho` dice qué capítulos usan un hecho; **esos se regeneran**. Para un personaje, los que lo usan son los que lo nombran según `continuidad` de sus versiones aprobadas, los que la escaleta le asigna en `plan_escena_personaje` y los de sus hitos en `uso_hito`.
 4. Los posteriores pasan a `Invalidado` y se les corren **solo los validadores de coste cero** —Python y Lean—. Si ninguno falla, se quedan como están y no cuestan un token.
 5. Se publica un manifiesto nuevo que **reutiliza los capítulos no tocados**; la versión anterior sobrevive entera.
 6. El diff sale de comparar dos manifiestos con un `JOIN`.
@@ -364,7 +374,7 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 Cuatro decisiones: **aprobar**, **rehacer con comentario** —el texto libre se inyecta como bloque extra en el prompt y cuenta contra el límite de reintentos—, **editar** y **abortar**.
 
-**Notificación tras la interfaz `Notifier`, y solo para avisar**, con Telegram como única implementación hoy. El aviso de un gate lleva el título, un resumen de lo que hay que revisar y **los comandos exactos** para decidir, en texto plano y **sin botones**. Si Telegram rechaza el envío o no hay red, se avisa en la salida del proceso y el gate bloquea igual. WhatsApp exige Meta Business, número verificado y plantillas aprobadas, y queda como adaptador futuro.
+**Notificación tras la interfaz `Notifier`, y solo para avisar**, con Telegram como única implementación hoy. El aviso de un gate lleva el título, un resumen de lo que hay que revisar y termina con **«Decide en el PC»**, en texto plano, **sin comandos y sin botones**. Si Telegram rechaza el envío o no hay red, se avisa en la salida del proceso y el gate bloquea igual. WhatsApp exige Meta Business, número verificado y plantillas aprobadas, y queda como adaptador futuro.
 
 **Sin respuesta**: el *timeout* **aparca** la ejecución con estado propio. **No hay auto-aprobación**, porque eso convertiría un gate de calidad en un temporizador.
 
@@ -398,7 +408,7 @@ Tres superficies: **lectura**, **seguimiento** y **operación**. Las dos primera
 |---|---|---|
 | `GET /novelas` | Una fila por carpeta de `proyectos/` con su `<nombre>.db`: título, homenajeado, fase actual, **estado de la novela**, gate pendiente con su fase, capítulos aprobados y total, coste acumulado y versiones publicadas | — |
 | `GET /novelas/{id}/panel` | Todo lo que el panel enseña: el estado; **las seis fases** con su estado, sus ejecuciones, tokens, coste, inicio y fin, y si dejaron salida; el gate pendiente; los capítulos con su estado e intentos; la **actividad** reciente; el consumo total; si el proceso vive; y los registros de proceso disponibles | `404` |
-| `GET /novelas/{id}/gate` | El gate pendiente: su fase, desde cuándo, **los recuentos del aviso**, las preguntas del entrevistador en Intake, la petición y los candidatos en Regeneración, y **las filas editables** de hechos, personajes, escenarios y glosario, con los hechos marcados como no editables si el corpus está sellado. En Intake, además, **la conversación**: la descripción del encargo, las respuestas de cada ronda anterior —los comentarios de los gates de Intake decididos como «rehacer»— y el brief si el entrevistador ya lo cerró | `404` si no hay gate pendiente |
+| `GET /novelas/{id}/gate` | El gate pendiente: su fase, desde cuándo, **los recuentos del aviso**, las preguntas del entrevistador en Intake, la petición y los candidatos en Regeneración —cada candidato con su objeto, su fila, el campo que tocaría por defecto y el valor que ese campo tiene hoy, que es lo que la pantalla necesita para componer la elección de §4.6—, y **las filas editables** de hechos, personajes, escenarios y glosario, con los hechos marcados como no editables si el corpus está sellado. En Intake, además, **la conversación**: la descripción del encargo, las respuestas de cada ronda anterior —los comentarios de los gates de Intake decididos como «rehacer»— y el brief si el entrevistador ya lo cerró | `404` si no hay gate pendiente |
 | `GET /novelas/{id}/fases/{fase}` | La salida de una fase y sus ejecuciones con las decisiones de sus gates. Encargo: brief, datos y cuarentena. Investigación: hechos con dimensión, estado, respaldo, cita y fuentes, entidades y sello. Trama: obra, personajes con arcos e hitos, relaciones, escenarios, Licencias, glosario y escaleta con anclajes. Escritura: capítulos con sus intentos y las incidencias de cada uno. Publicación: versiones con la rúbrica por criterio y el manifiesto. Regeneración: peticiones y ediciones humanas | `404` |
 | `GET /novelas/{id}/intentos/{capitulo_version}` | El texto de un intento de capítulo, con sus incidencias | `404` |
 | `GET /novelas/{id}/registros/{nombre}` | El final del registro de un proceso lanzado desde la interfaz | `404` |
@@ -541,7 +551,7 @@ Corren dentro del grafo, sobre el contenido. Su gate es G3, G4, G5 o G6. **Todos
 
 | Validador | Comprueba | Punto | Clase | Gate | Bloquea |
 |---|---|---|---|---|---|
-| `respaldo_fuente` | Que la cita guardada sostenga el enunciado del hecho | Cierre de Investigation | I | G4 | **No**: degrada a `inferido` |
+| `respaldo_fuente` | Que la cita guardada sostenga el enunciado del hecho | Cierre de Investigation; en `FillGap`, cada hecho de la micro-sesión | I | G4 | **No**: limita la firmeza a `inferido` |
 | `ejecucion_escaleta` | Que los beats planificados para este capítulo hayan ocurrido | Post `Extract` | I | G4 | **No**: aviso |
 | `arco_ejecutado` | Que los hitos de arco anclados a este capítulo hayan ocurrido | Post `Extract` | I | G4 | **No**: aviso |
 | `juez_rubrica` | Siete criterios 1-10 con justificación, y la lista de contradicciones con la que se topa la continuidad | `Judge` | T/I | G5 | Sí, por umbral |
@@ -602,7 +612,7 @@ Qué distingue un error de una incidencia: **una incidencia es un defecto del co
 | Palabra prohibida en el capítulo | Incidencia bloqueante | Vuelve al editor; agotados los reintentos, `Fail` |
 | Personaje fuera de sus fechas vitales | Incidencia bloqueante | Vuelve al editor con el invariante de Lean violado |
 | Beat planificado que no ocurre | Incidencia `aviso` | Informe del gate y bloque 1 del capítulo siguiente |
-| Hecho sin respaldo en su cita | Marca | Degrada a `inferido`, destacado en el informe del gate |
+| Hecho sin respaldo en su cita | Marca | Su firmeza no pasa de `inferido`; destacado en el informe del gate |
 | Salida del modelo que no valida | Incidencia | Reintento con el error en el prompt; después, bloqueante |
 | Prompt por encima del techo del rol | Error | La llamada no se emite |
 | `lake` ausente o subproceso roto | Error de entorno | **Se distingue del veredicto negativo**; detiene, no aprueba |
@@ -671,7 +681,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-11 | Todas las tablas son `STRICT` y llevan `CHECK` sobre sus enumerados; un valor fuera de rango **aborta la transacción** y no se normaliza | §3.1 | P-16 |
 | REQ-BE-12 | La regla Semgrep `no-update-inmutables` impide **escribir** un `UPDATE` o un `DELETE` sobre las tablas inmutables | §3.1 | P-06 |
 | REQ-BE-13 | Los *triggers* `BEFORE UPDATE` y `BEFORE DELETE` impiden **ejecutarlo**, protegiendo el contenido pero admitiendo el cambio de estado de `capitulo_version` y el cierre de `fase_run` con su consumo | §3.1 | P-17 |
-| REQ-BE-14 | En `mundo_hecho` la inmutabilidad se condiciona a la existencia del sello: el verificador puede degradar antes, nadie puede escribir después | §3.1 | P-17, P-79 |
+| REQ-BE-14 | En `mundo_hecho` la inmutabilidad se condiciona a la existencia del sello: el verificador puede anotar el respaldo antes, nadie puede escribir después | §3.1 | P-17, P-79 |
 | REQ-BE-15 | El checkpoint de LangGraph y la escritura de dominio ocurren en la misma transacción, cerrada por el envoltorio de invocación y nunca por el nodo | §3.1 | P-21 |
 | REQ-BE-16 | Una novela inexistente produce `NovelaNoEncontrada`, que la CLI traduce a mensaje y la API a `404` | §3.1 | P-128 |
 | REQ-BE-17 | El estado del grafo es un `TypedDict` total y explícito, sin `dict[str, Any]`, comprobado por mypy `--strict` | §3.2 | P-54 |
@@ -713,6 +723,11 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-52 | Todos los *scores* de validadores y todas las decisiones de gate viajan a la traza: la intervención del Autor queda trazada igual que la de un agente | §3.8 | P-51 |
 | REQ-BE-53 | Los prompts de rol viven en Langfuse como fuente de verdad, se inyectan como `system_prompt` y su id de versión viaja en el span | §3.8 | P-52 |
 | REQ-BE-54 | `total_cost_usd` se etiqueta **siempre** como estimación en cliente, nunca como facturación | §3.8 | P-51 |
+| REQ-BE-204 | `firmeza(estado, respaldo, origen)` es pura y total: `inventado` si es invención; si no, el mínimo entre lo declarado y `inferido` cuando el respaldo no es `respaldado` | §3.6 | P-72 |
+| REQ-BE-205 | El bloque 5 del paquete y el contexto del arquitecto llevan cada hecho con su firmeza, no con su estado declarado | §3.4 | P-35, P-125 |
+| REQ-BE-209 | El bloque 5 y el contexto del arquitecto añaden «no lo dice la cita» con el añadido del parcial solo mientras siga en el enunciado | §3.4 | P-35, P-125 |
+| REQ-BE-210 | El bloque 6 lleva, entre sus reglas fijas, qué hacer con cada firmeza | §3.4 | P-151 |
+| REQ-BE-211 | Abrir una novela sin `mundo_hecho.sin_respaldo` la añade sin tocar sus filas y sin subir la versión del esquema | §2.3 | P-18 |
 
 ### 10.3 Las seis fases
 
@@ -731,16 +746,31 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-62 | El investigador dispone de **3 `WebSearch` y 3 `WebFetch` en una sesión**, y el tope lo impone el arnés con sus hooks, no una instrucción del prompt | §4.2 | P-69, P-29 |
 | REQ-BE-63 | Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y una cita de 300 caracteres como mucho | §4.2 | P-70 |
 | REQ-BE-64 | El verificador es un agente distinto, **sin herramientas y sin red**, que lee los pares enunciado–cita por lotes de veinte | §4.2 | P-72 |
-| REQ-BE-65 | Un veredicto `no_respaldado` **degrada el hecho a `inferido` y lo marca**: no lo borra y no detiene la fase | §4.2 | P-72 |
+| REQ-BE-65 | Un veredicto `no_respaldado` **limita la firmeza del hecho a `inferido` y lo marca**: no lo borra, no reescribe su estado y no detiene la fase | §4.2 | P-72 |
+| REQ-BE-199 | El verificador escribe solo `respaldo`; ningún camino del arnés reescribe `estado` después de crear la fila | §4.2 | P-72 |
+| REQ-BE-200 | El prompt del investigador define los cuatro estados epistémicos **respecto a lo que dice su fuente**, en la sesión única, en las dirigidas y en la micro-sesión | §4.2 | P-69, P-153 |
+| REQ-BE-207 | Un hecho `desconocido` nace con `respaldo = 'no_aplica'` y no pasa por el verificador, tampoco en la micro-sesión | §4.2 | P-70, P-72 |
+| REQ-BE-208 | El verificador devuelve por hecho si la cita sostiene el dato central y qué añade el enunciado; el parcial se guarda como `respaldado` con el añadido en `sin_respaldo` | §4.2 | P-72 |
+| REQ-BE-214 | El prompt del verificador define el dato central como lo que el hecho dice que existió u ocurrió, y trata la fecha o el lugar que la cita no trae como añadido | §4.2 | P-72 |
+| REQ-BE-215 | `anadido_vigente` reconoce el añadido por sus palabras significativas, no solo por la copia literal | §3.6 | P-35, P-125 |
+| REQ-BE-206 | El prompt de la micro-sesión pide la cita textual del hecho que encuentre | §4.3 | P-77 |
 | REQ-BE-66 | Rehacer no contamina: solo cuentan los hechos del `fase_run` vigente, y los anteriores quedan como historia consultable | §4.2 | P-71 |
 | REQ-BE-67 | Cero hechos en una dimensión no bloquea: es una fila del informe del gate, con el recuento por dimensión delante del Autor | §4.2 | P-73 |
 | REQ-BE-68 | El arquitecto inventa la Premisa y el Tema, y construye el canon completo y la escaleta jerárquica con sus anclajes | §4.3 | P-75 |
 | REQ-BE-69 | `grado_licencia`, `arcaismo` y `contenido_admisible` se copian a `canon_obra.estilo_json`, que es como llegan al bloque de reglas del paquete | §4.3 | P-76 |
 | REQ-BE-70 | El arquitecto **no recibe el corpus entero**: los hechos le llegan por búsqueda semántica con la consulta derivada de lo que planifica | §4.3 | P-125 |
 | REQ-BE-71 | Cada hueco dispara **una única micro-llamada** al investigador con una sola `WebSearch`, con un tope de cinco huecos por ejecución | §4.3 | P-77 |
+| REQ-BE-201 | Cada hecho que encuentra la micro-sesión pasa por el verificador en `FillGap`; si su salida no valida, se queda `pendiente` y la escaleta sigue | §4.3 | P-77 |
+| REQ-BE-202 | El informe del gate de Plotting cuenta los hechos de la micro-sesión que quedaron sin respaldo | §4.3 | P-78 |
+| REQ-BE-203 | El hash del sello incluye el `respaldo` y el `sin_respaldo` de cada hecho | §4.3 | P-79 |
+| REQ-BE-212 | El prompt del arquitecto dice qué hacer con cada firmeza | §4.3 | P-75 |
+| REQ-BE-213 | El informe de Plotting avisa de cada escena cuyos anclajes a hechos son todos `inferido` o `desconocido` | §4.3 | P-78 |
 | REQ-BE-72 | Un veredicto `no_encontrado` **autoriza la invención**, que entra como fila `inferido` con `origen = 'invencion_autorizada'`, sin fuente y con `respaldo = 'no_aplica'` | §4.3 | P-77 |
 | REQ-BE-73 | La invención **no se topa, se cuenta**, y aparece por dimensión en el informe del gate | §4.3 | P-78 |
 | REQ-BE-74 | Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes y el corpus pasa a ser de solo lectura | §4.3 | P-79 |
+| REQ-BE-217 | Cada hueco lleva escena, dimensión y afirmación propuesta, y el hecho que lo cubre se ancla a su escena | §4.3 | P-77 |
+| REQ-BE-218 | Tras «rehacer» o «editar» en el gate de Plotting, `Plan` sustituye la trama con la anterior, los comentarios y los avisos delante del arquitecto; volver de un hueco no replanifica | §4.3 | P-75 |
+| REQ-BE-219 | La revisión de la escaleta se guarda, no cierra el gate y ancla sola el elemento obligatorio suelto | §4.3 | P-80 |
 | REQ-BE-135 | El prompt del arquitecto enuncia los capítulos, de 2 a 4 escenas por capítulo y la extensión, y el gate de Plotting avisa de cada capítulo fuera del rango de escenas | §4.3 | P-75, P-80 |
 | REQ-BE-75 | El escritor **redacta el capítulo entero de una vez**: la escena es unidad de planificación y de traza, no de redacción | §4.4 | P-81 |
 | REQ-BE-76 | `Validate` corre en dos pasadas, ambas dentro del bucle de reparación: primero la determinista, después la del extractor | §4.4 | P-82, P-83 |
@@ -770,7 +800,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-100 | El nodo de gate llama a `interrupt()`, el checkpointer persiste y la invocación termina | §4.7 | P-103 |
 | REQ-BE-101 | El gate ofrece cuatro decisiones: aprobar, rehacer con comentario, editar y abortar | §4.7 | P-104 |
 | REQ-BE-102 | El comentario de «rehacer» se inyecta como bloque extra del prompt y **cuenta contra el límite de reintentos** | §4.7 | P-104 |
-| REQ-BE-103 | La notificación va detrás de la interfaz `Notifier`, con Telegram como única implementación, **solo avisa** y trae los comandos para decidir | §4.7 | P-105 |
+| REQ-BE-103 | La notificación va detrás de la interfaz `Notifier`, con Telegram como única implementación, **solo avisa** y termina con «Decide en el PC», sin comandos | §4.7 | P-105 |
 | REQ-BE-104 | Sin respuesta, el *timeout* **aparca** la ejecución con estado propio; **no hay auto-aprobación** | §4.7 | P-107 |
 | REQ-BE-105 | `gates_enabled = false` desactiva los cinco gates y el hecho queda registrado en el manifiesto | §4.7 | P-108, P-93 |
 
@@ -797,6 +827,10 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-193 | El informe del gate de Investigation enseña una línea por sesión dirigida, con sus hechos o el motivo por el que se saltó | §4.2 | P-73 |
 | REQ-BE-194 | La denegación de una llamada por cuota le pide al rol que entregue ya su respuesta, y la sesión única del investigador tiene veinte turnos | §4.2 | P-29, P-69 |
 | REQ-BE-195 | Una sesión única del investigador sin respuesta válida deja un aviso en el gate y no detiene la fase | §4.2 | P-69 |
+| REQ-BE-196 | La aprobación del gate de Regeneration con `<objeto>:<fila_id> <campo>=<valor>` aplica ese cambio a esa fila sin volver a buscar; una fila o un campo que no existen no se aplican | §4.6 | P-95 |
+| REQ-BE-197 | Una aprobación sin fila ni `campo=valor` no modifica ninguna fila | §4.6 | P-95 |
+| REQ-BE-198 | Los capítulos afectados por un cambio de personaje salen de `continuidad`, `plan_escena_personaje` y `uso_hito` | §4.6 | P-97 |
+| REQ-BE-216 | Al cerrar el `Brief`, el `n_capitulos` del estado pasa a ser el del brief | §4.1 | P-68 |
 | REQ-BE-139 | `nombres_exactos` acepta el nombre canónico con la primera letra en mayúscula y sigue bloqueando cualquier otra diferencia de grafía | §7.2 | P-41 |
 | REQ-BE-138 | `storymaker reintentar` reabre el capítulo de una novela terminada en `Fail` sin tocar lo aprobado, y se niega sin tocar nada fuera de ese caso | §6 | P-144 |
 | REQ-BE-136 | Cada novela vive en `proyectos/<nombre>/<nombre>.db`, con sus derivados —cerrojo, PDF, capítulos exportados— en la misma carpeta; ramificar crea la carpeta del destino | §2.2 | P-111, P-102 |
@@ -828,13 +862,15 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-183 | Cada escenario se sirve con un nombre corto: el del lugar del corpus o el arranque de su descripción, de seis palabras como mucho, el mismo en la ficha, la escaleta y la impresión | §5.1 | P-183 |
 | REQ-BE-184 | El PDF de una versión se descarga por la API; si no se generó, la respuesta es `404` y no un error del servidor | §5.1 | P-184 |
 | REQ-BE-185 | Un proceso lanzado desde la interfaz no abre ninguna ventana, ni él ni los que él lance | §5.3 | P-162 |
+| REQ-BE-186 | El PDF de una versión se imprime desde la ruta de impresión del frontend, tras confirmar la invocación y antes del aviso de terminada, sin servidor levantado; sin `dist/` cae al HTML mínimo con un aviso, y un fallo no cambia el resultado de la invocación | §4.5 | P-185 |
+| REQ-BE-187 | Cada candidato de Regeneración del endpoint del gate lleva su objeto, su fila, su campo por defecto y el valor actual de ese campo; un candidato registrado sin fila los lleva vacíos | §5.2 | P-186 |
 | REQ-BE-166 | `decidir` rechaza `abortar` fuera del gate de Intake sin tocar nada | §5.3 | P-165 |
 | REQ-BE-116 | La CLI expone los nueve comandos declarados | §6 | P-113, P-144 |
 | REQ-BE-117 | `ramificar` **copia el fichero** y escribe la fila de `procedencia`; no hay columna de rama en las consultas | §6 | P-102 |
 | REQ-BE-118 | `evaluar` corre los cinco briefs en modo batch con `gates_enabled = false` | §6 | P-120, P-108 |
 | REQ-BE-119 | Todos los validadores de ejecución son nodos o aristas condicionales; **ninguno es una herramienta que un agente decida llamar** | §7.2 | P-06, P-56 |
 | REQ-BE-120 | Las aristas condicionales leen booleanos calculados en Python, nunca la salida de un modelo | §7.2 | P-56 |
-| REQ-BE-121 | Tres validadores semánticos no bloquean: `respaldo_fuente` degrada, y `ejecucion_escaleta` y `arco_ejecutado` abren aviso | §7.2b | P-72, P-84 |
+| REQ-BE-121 | Tres validadores semánticos no bloquean: `respaldo_fuente` limita la firmeza, y `ejecucion_escaleta` y `arco_ejecutado` abren aviso | §7.2b | P-72, P-84 |
 | REQ-BE-122 | El linter de auto-similitud abre incidencia de aviso y **no es uno de los once validadores de §11a** | §7.2a | P-126 |
 | REQ-BE-123 | La cobertura se comprueba en tres puntos de coste creciente: escaleta, capítulo y cierre de Writing | §7.2a | P-42, P-43, P-44 |
 | REQ-BE-124 | `juez_rubrica` y `revision_humana` usan el mismo fichero de rúbrica, que es lo que hace comparables los dos juicios | §7.2b | P-122 |
@@ -861,6 +897,15 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §4.3: los huecos con escena, dimensión y afirmación propuesta; la revisión que se guarda y repara; rehacer la Trama. Entran REQ-BE-217 a REQ-BE-219 | Se propaga §4 (Fase 3) de la arquitectura; el detalle baja a `specs/trama-rehacible/` |
+| 2026-09-24 | §4.1: el `n_capitulos` del brief cerrado pasa al estado del grafo; entra REQ-BE-216 | Se propaga §4 de la arquitectura: en el encargo por conversación el estado arrancaba con diez capítulos y la escaleta tenía los que el comprador hubiera pedido |
+| 2026-09-24 | §4.2: el dato central es lo que existió u ocurrió, y la fecha o el lugar ausentes de la cita son añadido. §3.6: `anadido_vigente` tolera que el añadido se copie con otras palabras. Entran REQ-BE-214 y REQ-BE-215 | Se propaga §4 de la arquitectura: el verificador era demasiado estricto con fragmentos que no repiten el contexto de su página |
+| 2026-09-24 | **La firmeza se usa, y el respaldo admite el parcial.** §2.3: `sin_respaldo` se añade al abrir, sin subir la versión del esquema. §3.4: el bloque 5 enseña lo que no dice la cita mientras siga en el enunciado y el bloque 6 dice qué hacer con cada firmeza. §3.6: `anadido_vigente`. §4.2: los estados se definen respecto a la fuente, las lagunas no se verifican y el verificador da el parcial. §4.3: el arquitecto recibe el uso de cada firmeza y el informe de Plotting avisa de las escenas apoyadas solo en lo inferido o desconocido. REQ-BE-200 y REQ-BE-203 se reescriben; entran REQ-BE-207 a REQ-BE-213 | Se propagan §4, §6, §7 y §17 de la arquitectura |
+| 2026-09-24 | **La firmeza de un hecho se calcula al leer.** §3.6 gana `firmeza(estado, respaldo, origen)`; §3.4 lleva la firmeza al bloque 5; §4.2 fija que el verificador escribe solo `respaldo` y que el prompt define los cuatro estados; §4.3 pasa los hechos de la micro-sesión por el verificador, da firmeza `inventado` a las invenciones, cuenta en el gate de Plotting los hechos micro sin respaldo y mete el `respaldo` en el hash del sello. REQ-BE-65 se reescribe y entran REQ-BE-199 a REQ-BE-206; REQ-BE-206 y la cita de la micro-sesión en §4.3 salieron al implementar (It-31) | Se propagan §4, §6 y §7 de la arquitectura. `inferido` mezclaba deducción, cita fallida e invención, la degradación subía de categoría a los `desconocido` y los hechos de la micro-sesión no los miraba nadie |
+| 2026-09-24 | §4.7: el aviso de un gate termina con «Decide en el PC» y deja de traer los comandos de `storymaker decidir`; REQ-BE-103 se reescribe | Se propaga §10 de la arquitectura, por petición del Autor |
+| 2026-09-24 | §4.6: confirmar en el gate es elegir la fila y su valor, con el formato `<objeto>:<fila_id> <campo>=<valor>`; una aprobación sin ellos no cambia nada; el alcance de un personaje sale de `continuidad`, la escaleta y `uso_hito`. Entran REQ-BE-196 a REQ-BE-198 | Se propaga §4 de la arquitectura. La spec pedía a la vez «lenguaje natural» y «ningún modelo», y el código lo resolvía escribiendo la frase del lector como valor en la fila que devolviera una segunda búsqueda |
+| 2026-09-24 | §5.2: los candidatos de Regeneración del gate llevan **objeto, fila, campo por defecto y valor actual**. Entra REQ-BE-187 | La pantalla del gate compone con ellos la elección que §4.6 define |
+| 2026-09-24 | §4.5: **el PDF se imprime desde la ruta de impresión del frontend**, tras confirmar la invocación, con la aplicación en memoria y sin servidor. Entra REQ-BE-186 | El PDF salía del HTML mínimo de `render.py`, sin maqueta, y el Autor lo encontró horrible. Era la deuda anotada en It-21: la arquitectura pedía imprimir la ruta de lectura desde el principio |
 | 2026-09-24 | §5.1: `GET /novelas/{id}/versiones/{n}/pdf` sirve **el PDF de la versión**. §5.3: el proceso lanzado lleva **una consola oculta** que heredan los suyos. Entran REQ-BE-184 y REQ-BE-185 | El Autor no tenía forma de llegar al PDF desde la interfaz, y cada lanzamiento abría ventanas de consola: el proceso se creaba sin consola y Windows se la daba, visible, a cada proceso que abría |
 | 2026-09-24 | §4.2: la denegación por cuota pide entregar ya, la sesión única tiene veinte turnos y su falta de resultado es un aviso y no un error. Entran REQ-BE-194 y REQ-BE-195 | Se propaga §4 de la arquitectura: una novela se detuvo en Research porque el investigador agotó los turnos intentando búsquedas denegadas |
 | 2026-09-24 | §5.1: cada escenario lleva **un nombre corto**, derivado del lugar o del arranque de la descripción. Entra REQ-BE-183 | Petición del Autor: los lugares salían titulados con su descripción entera |

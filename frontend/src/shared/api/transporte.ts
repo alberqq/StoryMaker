@@ -339,6 +339,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/novelas/{nombre}/hechos/{hecho_id}/descartar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Descartar
+         * @description Quita un hecho del corpus antes del sello, con el cerrojo tomado y trazado.
+         *
+         *     Queda en `edicion_humana` —el enunciado como `antes`, nada como `despues`— y en
+         *     `audit_log`, igual que cualquier otra intervención del Autor.
+         */
+        post: operations["descartar_api_novelas__nombre__hechos__hecho_id__descartar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/novelas/{nombre}/ediciones": {
         parameters: {
             query?: never;
@@ -456,6 +479,17 @@ export interface components {
             /** Hitos */
             hitos: components["schemas"]["Hito"][];
         };
+        /** AvisoDeLaTrama */
+        AvisoDeLaTrama: {
+            /** Validador */
+            validador: string;
+            /** Grave */
+            grave: boolean;
+            /** Mensaje */
+            mensaje: string;
+            /** Ubicacion */
+            ubicacion?: string | null;
+        };
         /** Beat */
         Beat: {
             /** Orden */
@@ -465,8 +499,23 @@ export interface components {
             /** Cambio De Valor */
             cambio_de_valor?: string | null;
         };
-        /** Candidato */
+        /**
+         * Candidato
+         * @description Una fila que la búsqueda propuso. Aprobar el gate eligiéndola envía
+         *     `<objeto>:<fila_id> <campo>=<valor>` (spec §4.6).
+         *
+         *     `objeto` y `fila_id` faltan solo en peticiones registradas antes de guardarlos: esas no
+         *     se pueden elegir.
+         */
         Candidato: {
+            /** Objeto */
+            objeto?: ("hecho" | "personaje" | "escenario" | "glosario") | null;
+            /** Fila Id */
+            fila_id?: number | null;
+            /** Campo */
+            campo?: string | null;
+            /** Valor */
+            valor: string;
             /** Descripcion */
             descripcion: string;
             /** Capitulos A Regenerar */
@@ -610,6 +659,14 @@ export interface components {
              * @default
              */
             comentario: string;
+        };
+        /** CuerpoDeDescarte */
+        CuerpoDeDescarte: {
+            /**
+             * Motivo
+             * @default
+             */
+            motivo: string;
         };
         /** CuerpoDeEdicion */
         CuerpoDeEdicion: {
@@ -936,6 +993,7 @@ export interface components {
             corpus_sellado: boolean;
             /** Decisiones */
             decisiones: string[];
+            trama?: components["schemas"]["RevisionDeLaTrama"] | null;
         };
         /** GatePendiente */
         GatePendiente: {
@@ -972,8 +1030,14 @@ export interface components {
             origen: string;
             /** Respaldo */
             respaldo: string;
+            /** Firmeza */
+            firmeza: string;
+            /** No Lo Dice La Cita */
+            no_lo_dice_la_cita?: string | null;
             /** Cita */
             cita?: string | null;
+            /** Motivo Respaldo */
+            motivo_respaldo?: string | null;
             /** Fuentes */
             fuentes: components["schemas"]["Fuente"][];
         };
@@ -983,6 +1047,21 @@ export interface components {
             orden: number;
             /** Descripcion */
             descripcion: string;
+        };
+        /** HuecoDeLaTrama */
+        HuecoDeLaTrama: {
+            /** Pregunta */
+            pregunta: string;
+            /** Dimension */
+            dimension: string;
+            /** Resultado */
+            resultado?: string | null;
+            /** Enunciado */
+            enunciado?: string | null;
+            /** Capitulo */
+            capitulo?: number | null;
+            /** Escena */
+            escena?: number | null;
         };
         /** Incidencia */
         Incidencia: {
@@ -1225,6 +1304,20 @@ export interface components {
             tipo: string;
             /** Intensidad */
             intensidad?: number | null;
+        };
+        /**
+         * RevisionDeLaTrama
+         * @description Lo que encontró la revisión de la escaleta, para decidir si se rehace.
+         */
+        RevisionDeLaTrama: {
+            /** Avisos */
+            avisos: components["schemas"]["AvisoDeLaTrama"][];
+            /** Huecos */
+            huecos: components["schemas"]["HuecoDeLaTrama"][];
+            /** Inventados */
+            inventados: number;
+            /** Escenas Poco Firmes */
+            escenas_poco_firmes: string[];
         };
         /** Rubrica */
         Rubrica: {
@@ -2025,6 +2118,42 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Hecha"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    descartar_api_novelas__nombre__hechos__hecho_id__descartar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                nombre: string;
+                hecho_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CuerpoDeDescarte"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

@@ -235,7 +235,7 @@ class TestInmutabilidad:
 
 
 class TestSelloDelCorpus:
-    async def test_antes_del_sello_el_verificador_puede_degradar(
+    async def test_antes_del_sello_el_verificador_anota_sin_reescribir_el_estado(
         self, db: aiosqlite.Connection, fase_run: int
     ) -> None:
         hecho = await mundo.insertar_hecho(
@@ -249,7 +249,7 @@ class TestSelloDelCorpus:
         await mundo.anotar_respaldo(db, hecho, "no_respaldado")
         filas = await mundo.hechos_vigentes(db, fase_run)
         assert filas[0]["respaldo"] == "no_respaldado"
-        assert filas[0]["estado"] == "inferido", "un hecho sin respaldo se degrada, no se borra"
+        assert filas[0]["estado"] == "verificado", "el estado lo declara quien crea la fila"
 
     async def test_tras_el_sello_el_corpus_es_de_solo_lectura(
         self, db: aiosqlite.Connection, fase_run: int
@@ -374,3 +374,31 @@ class TestTransaccion:
             await texto.aprobar_capitulo(db, version)
         fila = await texto.capitulo_aprobado(db, capitulo)
         assert fila is not None and fila["estado"] == "aprobado"
+
+
+class TestColumnasAditivas:
+    """`sin_respaldo` entra al abrir, sin subir la versión del esquema (arq. §7)."""
+
+    async def test_una_novela_sin_la_columna_la_gana_sin_subir_de_version(
+        self, tmp_path: Path
+    ) -> None:
+        from storymaker.commons.db import apertura
+
+        ruta = tmp_path / "vieja.db"
+        async with aiosqlite.connect(ruta) as db:
+            db.row_factory = aiosqlite.Row
+            await db.execute("CREATE TABLE mundo_hecho (id INTEGER PRIMARY KEY, enunciado TEXT)")
+            await db.execute("INSERT INTO mundo_hecho (enunciado) VALUES ('ya estaba')")
+            await db.commit()
+            await apertura._anadir_columnas(db)
+            async with db.execute("PRAGMA table_info(mundo_hecho)") as cursor:
+                columnas = [str(f["name"]) for f in await cursor.fetchall()]
+            async with db.execute("SELECT enunciado, sin_respaldo FROM mundo_hecho") as cursor:
+                filas = [tuple(f) for f in await cursor.fetchall()]
+        assert "sin_respaldo" in columnas
+        assert filas == [("ya estaba", None)], "las filas que ya existían no se tocan"
+        assert apertura.VERSION_ESQUEMA == 1, "una columna aditiva no sube la versión"
+
+    async def test_una_novela_nueva_la_trae_de_serie(self, db: aiosqlite.Connection) -> None:
+        async with db.execute("PRAGMA table_info(mundo_hecho)") as cursor:
+            assert "sin_respaldo" in {str(f["name"]) for f in await cursor.fetchall()}

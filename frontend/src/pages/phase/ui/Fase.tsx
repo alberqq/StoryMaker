@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router'
 import { FASES, faseDeSegmento } from '@/entities/novela'
-import { rutaBiblioteca, rutaFase, rutaPanel } from '@/shared/config'
+import { rutaBiblioteca, rutaFase, rutaGate, rutaPanel } from '@/shared/config'
 import { useCarga } from '@/shared/lib'
 import { EstadoCarga, EstadoError, NoExiste, Pestanas, Seccion } from '@/shared/ui'
 import { cargarSalida } from '../api/fase'
@@ -40,6 +40,14 @@ export function Fase() {
       {carga.estado === 'error' && <EstadoError error={carga.error} onReintentar={carga.reintentar} />}
       {carga.estado === 'listo' && (
         <>
+          {carga.datos.decisiones.some((d) => d.estado === 'pendiente') && (
+            <p className="aviso aviso-espera fila-entre" role="status">
+              <span>El gate de {fase.nombre} espera tu decisión: aprobar, rehacer o corregir lo que ves aquí.</span>
+              <Link className="boton boton-primario" to={rutaGate(id)}>
+                Decidir en el gate →
+              </Link>
+            </p>
+          )}
           <Seccion titulo="Ejecuciones y decisiones" plegable plegada={carga.datos.ejecuciones.length === 0}>
             <Ejecuciones salida={carga.datos} />
           </Seccion>

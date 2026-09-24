@@ -20,7 +20,7 @@ import aiosqlite
 from storymaker.commons.db.repos import id_insertado, mundo
 from storymaker.commons.embeddings import indice
 from storymaker.commons.embeddings.modelo import Vectorizador
-from storymaker.investigation.esquemas import FuenteCitada, HechoPropuesto
+from storymaker.investigation.esquemas import EstadoEpistemico, FuenteCitada, HechoPropuesto
 
 
 async def _guardar_fuente(db: aiosqlite.Connection, fuente: FuenteCitada) -> int:
@@ -36,6 +36,17 @@ async def _guardar_fuente(db: aiosqlite.Connection, fuente: FuenteCitada) -> int
     return id_insertado(cursor)
 
 
+def _respaldo_inicial(hecho: HechoPropuesto, origen: str) -> str:
+    """`no_aplica` para lo que no tiene cita que comprobar; `pendiente` para lo demás.
+
+    Una invención no tiene fuente, y una laguna —`desconocido`— dice que algo no se sabe:
+    en ninguna de las dos hay fragmento que el verificador pueda leer (arq. §4, Fase 2).
+    """
+    if origen == "invencion_autorizada" or hecho.estado is EstadoEpistemico.DESCONOCIDO:
+        return "no_aplica"
+    return "pendiente"
+
+
 async def escribir_hecho(
     db: aiosqlite.Connection,
     vectorizador: Vectorizador,
@@ -46,9 +57,9 @@ async def escribir_hecho(
 ) -> int:
     """Escribe el hecho, sus fuentes y su vector. Devuelve el identificador.
 
-    El `respaldo` nace en `pendiente` y lo escribe el verificador después. Nace así y no en
-    `respaldado` porque dar por bueno lo que nadie ha mirado es exactamente el fallo que el
-    paso 2 existe para impedir.
+    El `respaldo` nace en `pendiente` y lo escribe el verificador después, salvo en lo que no
+    tiene cita que comprobar. Nace así y no en `respaldado` porque dar por bueno lo que nadie
+    ha mirado es exactamente el fallo que el paso 2 existe para impedir.
     """
     hecho_id = await mundo.insertar_hecho(
         db,
@@ -58,7 +69,7 @@ async def escribir_hecho(
         dimension=hecho.dimension.value,
         origen=origen,
         cita=hecho.cita or None,
-        respaldo="no_aplica" if origen == "invencion_autorizada" else "pendiente",
+        respaldo=_respaldo_inicial(hecho, origen),
         entidades={"nombres": hecho.entidades} if hecho.entidades else None,
     )
 
@@ -94,12 +105,21 @@ async def escribir_lote(
     ]
 
 
-async def degradar_sin_respaldo(db: aiosqlite.Connection, hecho_id: int, respaldado: bool) -> None:
-    """Escribe el veredicto. Un `no_respaldado` **degrada el hecho, no lo borra**.
+async def anotar_veredicto(
+    db: aiosqlite.Connection, hecho_id: int, respaldado: bool, sin_respaldo: str = ""
+) -> None:
+    """Escribe el veredicto. Un `no_respaldado` **baja la firmeza del hecho, no lo borra**.
 
-    Nada de esto detiene la fase. Un hecho sin respaldo baja de categoría y aparece
-    destacado en el informe del gate, donde el Autor decide si lo corrige, lo borra a mano
-    o lo deja pasar sabiendo lo que es. La degradación tiene consecuencia real más adelante,
-    porque el bloque 5 del paquete lleva el estado epistémico hasta el escritor.
+    Nada de esto detiene la fase ni reescribe lo que declaró el investigador. Un hecho sin
+    respaldo aparece destacado en el informe del gate, donde el Autor decide si lo corrige,
+    lo borra a mano o lo deja pasar sabiendo lo que es. La bajada tiene consecuencia real
+    más adelante, porque el bloque 5 del paquete lleva la firmeza hasta el escritor.
     """
-    await mundo.anotar_respaldo(db, hecho_id, "respaldado" if respaldado else "no_respaldado")
+    # El añadido solo cuenta si el dato central está respaldado: es lo que hace parcial
+    # al veredicto. En un no respaldado no hay nada que separar.
+    await mundo.anotar_respaldo(
+        db,
+        hecho_id,
+        "respaldado" if respaldado else "no_respaldado",
+        sin_respaldo if respaldado else None,
+    )

@@ -26,6 +26,10 @@ CREATE TABLE IF NOT EXISTS mundo_hecho (
   cita           TEXT    CHECK (cita IS NULL OR length(cita) <= 300),
   respaldo       TEXT    NOT NULL DEFAULT 'pendiente'
                          CHECK (respaldo IN ('pendiente','respaldado','no_respaldado','no_aplica')),
+  -- El veredicto parcial: la cita sostiene el dato central y el enunciado añade esto, que
+  -- no dice. Se guarda con `respaldo = 'respaldado'`. En las novelas creadas antes entra al
+  -- abrir, como columna aditiva (`apertura.COLUMNAS_ADITIVAS`).
+  sin_respaldo   TEXT    CHECK (sin_respaldo IS NULL OR length(sin_respaldo) <= 300),
   creado_en      TEXT    NOT NULL DEFAULT (datetime('now')),
   -- Un dato que el arquitecto inventó con permiso no tiene nada que comprobar.
   CHECK (origen <> 'invencion_autorizada' OR respaldo = 'no_aplica')

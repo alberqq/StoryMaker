@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import aiosqlite
 
+from storymaker.commons.db.repos import id_insertado
+from storymaker.commons.validation.puras import firmeza
+
 
 async def capitulo_por_numero(db: aiosqlite.Connection, numero: int) -> aiosqlite.Row | None:
     async with db.execute("SELECT * FROM plan_capitulo WHERE numero = ?", (numero,)) as cursor:
@@ -81,6 +84,8 @@ async def anclajes_de(db: aiosqlite.Connection, numero: int) -> list[aiosqlite.R
         """
         SELECT a.*, e.orden AS escena_orden,
                h.enunciado AS hecho_enunciado, h.estado AS hecho_estado,
+               h.respaldo AS hecho_respaldo, h.origen AS hecho_origen,
+               h.sin_respaldo AS hecho_sin_respaldo,
                h.dimension AS hecho_dimension,
                n.nombre AS entidad_nombre, n.nombre_epoca AS entidad_nombre_epoca,
                d.valor_json AS dato_valor, d.tipo AS dato_tipo, d.obligatorio AS dato_obligatorio
@@ -167,3 +172,111 @@ async def escenas_por_capitulo(db: aiosqlite.Connection) -> list[tuple[int, int]
         """
     ) as cursor:
         return [(int(f["numero"]), int(f["escenas"])) for f in await cursor.fetchall()]
+
+
+#: Las firmezas sobre las que una escena no debería apoyarse sola (arq. §4, Fase 3).
+_POCO_FIRMES = frozenset({"inferido", "desconocido"})
+
+
+async def escenas_poco_firmes(db: aiosqlite.Connection) -> list[tuple[int, int]]:
+    """`(capitulo, orden)` de cada escena cuyos anclajes a hechos son todos poco firmes.
+
+    Una escena sin anclajes a hechos no cuenta: puede apoyarse en un elemento del encargo o
+    en una entidad de época, y eso no es asunto de la firmeza. Lo que se señala es la escena
+    que sí se apoya en la historia y solo encuentra inferencias y lagunas debajo.
+    """
+    async with db.execute(
+        """
+        SELECT c.numero AS capitulo, e.orden AS orden,
+               h.estado AS estado, h.respaldo AS respaldo, h.origen AS origen
+          FROM plan_anclaje a
+          JOIN plan_escena e ON e.id = a.escena_id
+          JOIN plan_capitulo c ON c.id = e.capitulo_id
+          JOIN mundo_hecho h ON h.id = a.hecho_id
+        """
+    ) as cursor:
+        filas = list(await cursor.fetchall())
+    firmezas: dict[tuple[int, int], set[str]] = {}
+    for f in filas:
+        clave = (int(f["capitulo"]), int(f["orden"]))
+        firmezas.setdefault(clave, set()).add(
+            firmeza(str(f["estado"]), str(f["respaldo"]), str(f["origen"]))
+        )
+    return sorted(clave for clave, vistas in firmezas.items() if vistas <= _POCO_FIRMES)
+
+
+# --- Los huecos de la escaleta ------------------------------------------------------
+
+
+async def registrar_hueco(
+    db: aiosqlite.Connection,
+    *,
+    pregunta: str,
+    dimension: str,
+    escena_id: int | None,
+    propuesta: str,
+) -> int:
+    """Un hueco que `FillGap` cubrirá. El estado del grafo solo lleva su identificador."""
+    cursor = await db.execute(
+        "INSERT INTO plan_hueco (escena_id, pregunta, dimension, propuesta) VALUES (?, ?, ?, ?)",
+        (escena_id, pregunta, dimension, propuesta or None),
+    )
+    return id_insertado(cursor)
+
+
+async def hueco(db: aiosqlite.Connection, hueco_id: int) -> aiosqlite.Row | None:
+    async with db.execute("SELECT * FROM plan_hueco WHERE id = ?", (hueco_id,)) as cursor:
+        return await cursor.fetchone()
+
+
+async def cerrar_hueco(
+    db: aiosqlite.Connection, hueco_id: int, *, hecho_id: int, resultado: str
+) -> None:
+    """Anota con qué hecho se cubrió y lo ancla a la escena que lo pedía, si la hay."""
+    await db.execute(
+        "UPDATE plan_hueco SET hecho_id = ?, resultado = ? WHERE id = ?",
+        (hecho_id, resultado, hueco_id),
+    )
+    fila = await hueco(db, hueco_id)
+    if fila is not None and fila["escena_id"] is not None:
+        await db.execute(
+            "INSERT INTO plan_anclaje (escena_id, hecho_id, tipo_vinculo) VALUES (?, ?, ?)",
+            (int(fila["escena_id"]), hecho_id, "cubre un hueco de la escaleta"),
+        )
+
+
+async def huecos_de_la_trama(db: aiosqlite.Connection) -> list[aiosqlite.Row]:
+    """Los huecos con su escena, su resultado y el enunciado con que quedaron cubiertos."""
+    async with db.execute(
+        """
+        SELECT u.id, u.pregunta, u.dimension, u.resultado, h.enunciado,
+               c.numero AS capitulo, e.orden AS escena
+          FROM plan_hueco u
+          LEFT JOIN plan_escena e ON e.id = u.escena_id
+          LEFT JOIN plan_capitulo c ON c.id = e.capitulo_id
+          LEFT JOIN mundo_hecho h ON h.id = u.hecho_id
+         ORDER BY u.id
+        """
+    ) as cursor:
+        return list(await cursor.fetchall())
+
+
+async def anclar_dato(db: aiosqlite.Connection, escena_id: int, dato_id: int) -> None:
+    await db.execute(
+        "INSERT INTO plan_anclaje (escena_id, dato_id, tipo_vinculo) VALUES (?, ?, ?)",
+        (escena_id, dato_id, "elemento del encargo, anclado por el arnes"),
+    )
+
+
+async def escenas_con_texto(db: aiosqlite.Connection) -> list[aiosqlite.Row]:
+    """Cada escena con lo que dice de sí misma, para buscar la que mejor recibe un elemento."""
+    async with db.execute(
+        """
+        SELECT e.id, c.numero AS capitulo, e.orden,
+               COALESCE(e.objetivo, '') || ' ' || COALESCE(e.conflicto, '') || ' ' ||
+               COALESCE(e.resultado, '') AS texto
+          FROM plan_escena e JOIN plan_capitulo c ON c.id = e.capitulo_id
+         ORDER BY c.numero, e.orden
+        """
+    ) as cursor:
+        return list(await cursor.fetchall())

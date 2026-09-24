@@ -166,6 +166,10 @@ async def configure(estado: EstadoNovela) -> EstadoNovela:
                     severidad="aviso",
                     mensaje=problema,
                 )
+        # El arquitecto planifica con los capítulos del brief cerrado, así que el bucle de
+        # Writing cuenta con esos mismos. Sin esto, un número dicho en la conversación
+        # dejaba la escaleta con 6 capítulos y el bucle yendo a por el 7 de 10.
+        return {**estado, "pc": "AwaitApproval", "n_capitulos": respuesta.brief.n_capitulos}
 
     return {**estado, "pc": "AwaitApproval"}
 

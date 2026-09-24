@@ -77,7 +77,7 @@ BEGIN
 END;
 
 -- El corpus es append-only hasta el sello y de solo lectura después. Antes del sello, el
--- verificador escribe `respaldo` y degrada `estado`, y el Autor edita en el gate; después,
+-- verificador escribe `respaldo` —nunca `estado`— y el Autor edita en el gate; después,
 -- durante Writing, nadie puede añadir ni tocar un hecho: solo anclar a los existentes o
 -- declarar una Licencia. La condición es la existencia del sello, de modo que un
 -- re-sellado tras una edición humana vuelve a cerrar la puerta.

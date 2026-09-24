@@ -238,9 +238,9 @@ La versión guarda además la nota del juez en `judge_score_json`.
 
 | Aviso | Cuándo | Quién lo emite | Qué dice |
 |---|---|---|---|
-| **Parada** | La invocación termina en `Fail`: un nodo revienta o un capítulo agota sus reintentos | `invocar`, al salir del grafo | El nodo donde reventó —el último marco de la traza que cae en un `nodos.py`— o el capítulo en curso, el motivo, y `storymaker estado` y `storymaker continuar` con el nombre de la novela |
+| **Parada** | La invocación termina en `Fail`: un nodo revienta o un capítulo agota sus reintentos | `invocar`, al salir del grafo | El nodo donde reventó —el último marco de la traza que cae en un `nodos.py`— o el capítulo en curso, y el motivo, sin comandos |
 | **Final** | La invocación llega a `Idle` sin gate pendiente | `invocar`, al salir del grafo | El número de la versión publicada, leído de `version_novela`, y el coste de la invocación |
-| **Aparcamiento** | Un gate agota su *timeout* | `aparcar` | Qué gate, que no se ha aprobado nada y `storymaker decidir <novela> aprobar` |
+| **Aparcamiento** | Un gate agota su *timeout* | `aparcar` | Qué gate, que no se ha aprobado nada y «Decide en el PC» |
 
 Una invocación que se detiene en un gate **no** emite aviso de parada: el gate ya avisa desde su nodo, con su informe, y parar en un gate no es un fallo.
 
@@ -341,6 +341,7 @@ Ninguna pieza introduce un camino que publique una versión sin validar. Las dos
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §9.5: los avisos dejan de traer comandos. El de aparcamiento termina con «Decide en el PC» en lugar de `storymaker decidir <novela> aprobar`, y el de parada pierde `storymaker estado` y `storymaker continuar` | Se propaga §10 de la arquitectura, por petición del Autor |
 | 2026-09-24 | §9.1 y §9.2 pasan de describir el defecto a fijar el contrato: la `fase_run` la abre un envoltorio común a los nodos, se cierra según cómo termina la invocación, el corpus se lee por `corpus_run_id` y el consumo lo cuenta el transporte; REQ-ER-25 y REQ-ER-26 se reescriben hacia P-141 y P-142 y entra REQ-ER-36 | La cuarta novela real llegó al gate de Plotting con una sola `fase_run`, la de Intake, todavía `en_curso` y con cero tokens: `storymaker estado` decía «intake» y cero dólares con el corpus ya investigado y la escaleta escrita |
 | 2026-09-24 | §7.3 fija que un evento narrativo con clave ya escrita no se duplica ni cuelga sus participantes de otro evento; entra REQ-ER-35 | La tercera novela real se detuvo dos veces, en el intento 2 de dos capítulos distintos, por una clave foránea de `cronologia_participante`: el volcado tomaba `lastrowid` como id del evento aunque el `INSERT` se hubiera ignorado |
 | 2026-09-24 | Entra §9.5, los tres avisos fuera de gate —parada, final y aparcamiento—, con REQ-ER-32 a REQ-ER-34; el alcance los nombra | Se propaga la decisión de la arquitectura §10. En batch no hay gates y Telegram no avisaba de nada: la tercera novela real se detuvo dos veces en la extracción de un capítulo y solo se supo mirando la terminal |

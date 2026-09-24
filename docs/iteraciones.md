@@ -8,6 +8,40 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ---
 
+## 2026-09-24 · La firmeza de los hechos
+
+### It-33 · Un verificador menos estricto con lo que el fragmento calla
+
+**Causa.** La primera novela en modo exhaustivo sacó 57 hechos, 44 documentados, pero 11 cayeron a `inferido` sin merecerlo. El prompt del verificador llamaba dato central a las fechas, cifras, nombres y lugares, y la cita es un fragmento que no repite lo que la página da por sabido: «tranvías e iluminación eléctricos» no dice «Barcelona 1887-1888» porque eso lo dice el título. Además, cuatro parciales no enseñaban su nota, porque el verificador copió el añadido con otras palabras. El Autor vio todo en `inferido` mirando la salida a mitad de la investigación, antes de que el verificador pasara.
+
+**Qué se hizo.** En [`architecture.md`](architecture.md) §4, el dato central pasa a ser lo que el hecho dice que existió u ocurrió; la fecha o el lugar que la cita no trae son un añadido y dan parcial. El Autor descartó darle al verificador el título de la fuente: sigue viendo solo el par enunciado–cita. `anadido_vigente` reconoce el añadido por sus palabras significativas, y la pantalla etiqueta «En proceso de verificación» lo que aún no se ha verificado. GI-31 a GI-33 del [plan](../specs/gate-investigacion/plan.md).
+
+**Efecto medido.** 923 pruebas del backend y 111 del frontend en verde. Los cuatro parciales que no enseñaban su nota la enseñan ya, con la regla nueva. El prompt nuevo no se ha medido sobre una investigación real: el corpus de la novela de prueba se verificó con el anterior.
+
+
+### It-32 · El respaldo parcial y una firmeza que se usa
+
+**Causa.** La primera novela verificada con firmeza sacó seis hechos no respaldados, y en los seis el dato central estaba literalmente en la cita: el verificador rechazaba una glosa del investigador. Los catorce hechos venían declarados `verificado`, porque se le pedía juzgar un consenso historiográfico que con una página no puede conocer. Y la firmeza llegaba al escritor y al arquitecto sin ninguna instrucción, así que no cambiaba nada de lo que se escribía. El Autor pidió además una sola etiqueta por hecho, y al leer «sin fuente» entendió que se quitaba la fuente.
+
+**Qué se hizo.** Se fijó en [`architecture.md`](architecture.md) §4, §6, §7 y §17: el veredicto parcial, guardado como `respaldado` con el añadido en la columna nueva `sin_respaldo`; los estados redefinidos respecto a lo que dice la fuente, con los nombres de siempre; las lagunas sin verificar; qué hacer con cada firmeza, para el escritor y para el arquitecto; el aviso de escenas poco firmes en Plotting, y la firmeza como única etiqueta en pantalla. El añadido se enseña como «No lo dice la cita», y la cita y las fuentes siguen donde estaban. Bajó a las specs y al [plan](../specs/gate-investigacion/plan.md), GI-18 a GI-29.
+
+**Lo que apareció en el grilling del plan.** Subir `VERSION_ESQUEMA` para la columna nueva habría hecho que el servidor de la interfaz, arrancado con el código anterior, se negara a abrir cualquier novela que el nuevo tocara, con una Ejecución viva de por medio. La columna es aditiva y admite nulos, así que se añade al abrir, sin subir la versión.
+
+**Efecto medido.** 919 pruebas del backend y 107 del frontend en verde, `tsc` limpio. No se ha medido todavía sobre una investigación real: el corpus de la novela de prueba se verificó con el veredicto binario.
+
+
+### It-31 · Un dueño por columna, y la firmeza calculada
+
+**Causa.** Al repasar con el Autor los niveles de las afirmaciones de la investigación salieron tres incoherencias. `inferido` significaba a la vez «lo deduje», «la cita no lo sostiene» e «inventado con permiso». Degradar un hecho `desconocido` sin respaldo lo pasaba a `inferido`, que es un escalón más firme. Y los hechos de la micro-sesión de Plotting se quedaban en `respaldo = 'pendiente'` para siempre, porque el verificador corre antes.
+
+**Qué se hizo.** Se fijó en [`architecture.md`](architecture.md) §7 que `estado` lo escribe quien crea la fila, `respaldo` solo el verificador, y que lo que ven el arquitecto y el escritor es la **firmeza**, calculada al leer por [`puras.firmeza`](../backend/src/storymaker/commons/validation/puras.py) como el mínimo entre lo declarado y lo que el respaldo permite. `FillGap` pasa ahora por el verificador cada hecho que encuentra la micro-sesión, y el sello incluye el respaldo. Bajó a la spec del backend, a la del gate de Investigación y a su [plan](../specs/gate-investigacion/plan.md), GI-08 a GI-17.
+
+**Lo que apareció al implementar.** El prompt de la micro-sesión **no pedía la cita**: solo el dato. Con el verificador ya conectado en `FillGap`, todo lo que la micro-sesión encontrara habría salido `no_respaldado` por falta de fragmento. Se le añadió el mismo bloque «De cada hecho guarda» que usan la sesión única y las dirigidas, que lleva la cita y ahora también las definiciones de los cuatro estados. Se propagó a §4.3 de la spec del backend y a GI-13.
+
+**Efecto medido.** Las 48 combinaciones de la regla, contra la tabla de §7 escrita a mano; 898 pruebas del backend y 102 del frontend en verde, `tsc` limpio. Los tipos del frontend se regeneraron con `scripts/generar-tipos.ts`.
+
+**Deuda.** El verificador por lotes sigue escribiendo el veredicto en el `hecho_id` que el modelo devuelva, aunque no esté en el lote. `verificar_hecho` ya lo protege para un solo hecho; el lote no se tocó porque no era parte de este cambio.
+
 ## 2026-09-24 · La interfaz opera el arnés
 
 ### It-24 · Del lector al taller
@@ -84,6 +118,22 @@ Contarlo en el transporte y no en cada nodo agente, como decía la versión ante
 **Deuda o pendiente.** `render_visual` y `imprimir_pdf` (P-92, P-94) siguen juzgando e imprimiendo el HTML que arma `publication/render.py`, no la ruta de impresión de React interceptando sus peticiones: el frontend es interceptable, pero el lado del backend no está escrito. IMP-29 e IMP-30 quedan sin cerrar porque ninguna novela tiene todavía una versión publicada; el acta de [`frontend/tests/recorrido.md`](../frontend/tests/recorrido.md) registra el ensayo.
 
 ## 2026-09-24 · La tercera novela real
+
+### It-34 · Seis capítulos en la escaleta y un séptimo en el bucle
+
+**Causa.** Revisando cómo se fija la longitud desde la interfaz apareció un desajuste latente. El encargo por conversación solo envía el nombre del homenajeado y una descripción, así que el lanzamiento no trae capítulos y el estado del grafo arrancaba con los diez por defecto. El arquitecto, en cambio, planifica con el `n_capitulos` del `Brief` que cierra el entrevistador. Si el comprador pedía seis en la conversación, la escaleta tenía seis y el bucle de Writing iba a por el séptimo, que se detenía con `EscaletaAusente`; si pedía quince, se escribían diez y cinco capítulos de la escaleta se quedaban sin escribir.
+
+**Qué se hizo.** §4 de la [arquitectura](architecture.md), §4.1 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-216 y `P-68` del plan. Al cerrar el `Brief`, `Configure` escribe su `n_capitulos` en el estado.
+
+**Efecto medido.** Una prueba nueva en `test_intake.py`: lanzada con diez y cerrada con tres, el estado acaba con tres. Pasan las 921 de la suite.
+
+### It-30 · Quitar un apellido
+
+**Causa.** El Autor seleccionó el apellido del protagonista en la novela de Cáceres ya publicada y pidió que no apareciera. La petición llegó con su fragmento y sus candidatos, el gate de Regeneration se aprobó con esa frase como comentario, y la fase terminó en `Idle` sin gastar un token ni publicar versión nueva. Había tres desviaciones de la spec: al aprobar, `RequestChange` volvía a buscar con el texto del comentario y se quedaba con el primer candidato —un personaje que no era el protagonista—, en vez de aplicar lo que el Autor había confirmado; sin `campo=valor`, la frase entera se tomaba como valor nuevo; y el alcance de un personaje solo miraba los hitos de su arco, no los capítulos donde se le nombra.
+
+**Qué se hizo.** §4 de la [arquitectura](architecture.md), §4.6 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-196 a REQ-BE-198, y `P-95` y `P-97` del plan. La aprobación lleva la fila elegida y su valor —`personaje:1 nombre=Manuel`— y `resolver_eleccion` los aplica sin buscar; una aprobación sin ellos no toca nada; el alcance de un personaje sale de `continuidad`, `plan_escena_personaje` y `uso_hito`. La pantalla del gate, que es de otra sesión, pasa a ofrecer los candidatos como opciones y un campo con el valor nuevo.
+
+**Efecto medido.** Cuatro pruebas nuevas en `test_regeneracion_eleccion.py`. Pasan las 813 de la suite. Ninguna fila de la novela de Cáceres quedó estropeada por el intento anterior: la frase no se escribió en ninguna tabla.
 
 ### It-28 · El investigador que no entregaba
 

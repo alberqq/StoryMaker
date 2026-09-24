@@ -64,17 +64,17 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-30 | Cada `WebFetch` acotado a 10.000 tokens | P-30 | Cubierto |
 | A-31 | El hecho con enunciado, estado, fuentes, `fase_run_id` y cita de 300 caracteres | P-70 | Cubierto |
 | A-32 | Rehacer no contamina el corpus | P-71 | Cubierto |
-| A-33 | Verificador de respaldo sin red, por lotes de veinte, que degrada sin borrar ni bloquear | P-72 | Cubierto |
+| A-33 | Verificador de respaldo sin red, por lotes de veinte, que escribe `respaldo` —con veredicto parcial y su añadido en `sin_respaldo`— y limita la firmeza sin borrar ni bloquear | P-72 | Cubierto |
 | A-34 | El arquitecto inventa Premisa y Tema y construye canon y escaleta jerárquica | P-75 | Cubierto |
 | A-35 | El hueco: una única llamada, tope de cinco, invención autorizada que no se topa sino que se cuenta | P-77, P-78 | Cubierto |
-| A-36 | Los hechos del arquitecto no pasan por el verificador de respaldo | P-77 | Cubierto |
+| A-36 | Los hechos que encuentra la micro-sesión pasan por el verificador en `FillGap`; los inventados no | P-77 | Cubierto |
 | A-37 | Sello del corpus al aprobar la escaleta; de solo lectura a partir de ahí | P-79 | Cubierto |
 | A-38 | El bucle por capítulo en seis pasos | P-81, P-82, P-83, P-86, P-87 | Cubierto |
 | A-39 | El escritor redacta el capítulo entero de una vez | P-81 | Cubierto |
 | A-40 | `Validate` en dos pasadas, con el extractor dentro y antes de `ApproveChapter` | P-82, P-83 | Cubierto |
 | A-41 | Las filas del extractor cuelgan del intento, no del capítulo | P-85 | Cubierto |
-| A-42 | Fase 5: juez sin escritura, `render_visual` antes del `commit`, PDF desde la ruta de lectura, sin gate humano | P-90, P-92, P-94 | Cubierto |
-| A-43 | Fase 6: resolver, modificar el hecho, regenerar afectados, invalidar barato, manifiesto nuevo y diff | P-95, P-96, P-97, P-98, P-99 | Cubierto |
+| A-42 | Fase 5: juez sin escritura, `render_visual` antes del `commit`, PDF desde la ruta de lectura, sin gate humano | P-90, P-92, P-94, P-185 | Cubierto |
+| A-43 | Fase 6: resolver, modificar el hecho, regenerar afectados, invalidar barato, manifiesto nuevo y diff | P-95, P-96, P-97, P-98, P-99, P-186 | Cubierto |
 
 ### §5 · Los nueve roles
 
@@ -100,7 +100,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
 | A-52 | `intake_*`, con las filas como verdad y el JSON del brief como fotografía | P-08, P-66 | Cubierto |
-| A-53 | `mundo_*`, con `estado` y `respaldo` separados | P-09, P-16 | Cubierto |
+| A-53 | `mundo_*`, con `estado`, `respaldo` y `sin_respaldo` separados y la firmeza calculada al leer | P-09, P-16, P-72 | Cubierto |
 | A-54 | `canon_*`, con `canon_arco`, `canon_arco_hito` y `canon_obra.homenajeado_id` | P-10, P-75 | Cubierto |
 | A-55 | `plan_*`, con `dato_id` anulable en `plan_anclaje` | P-11 | Cubierto |
 | A-56 | `texto_*`, con `uso_hecho`, `uso_hito` y `continuidad` | P-12 | Cubierto |
@@ -323,6 +323,8 @@ Cada ítem del plan, con el requisito del que nace. **Ninguna fila está vacía*
 | P-182 | A-131 |
 | P-183 | A-130 |
 | P-184 | A-130 |
+| P-185 | A-42 |
+| P-186 | A-43 |
 | P-138 | A-103, A-107 |
 | P-134 | A-83 |
 | P-135 | A-116 |
@@ -361,6 +363,10 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | A-33 y A-53 recogen el veredicto parcial y `sin_respaldo` | Se propagan §4 y §7 de la arquitectura en la misma operación que el plan |
+| 2026-09-24 | A-33, A-36 y A-53 se reescriben: el verificador escribe solo `respaldo`, los hechos de la micro-sesión pasan por él y la firmeza se calcula al leer; A-53 gana P-72 | Se propagan §4 y §7 de la arquitectura en la misma operación que el plan |
+| 2026-09-24 | `A-43` suma `P-186`: los candidatos del gate, elegibles desde la pantalla | Confirmar pasa a ser elegir una fila |
+| 2026-09-24 | `A-42` suma `P-185`, el PDF desde la ruta de impresión | La deuda de P-94 en el PDF |
 | 2026-09-24 | `A-130` suma `P-184` | El PDF por la API |
 | 2026-09-24 | `A-130` suma `P-183` | El nombre corto de los escenarios |
 | 2026-09-24 | Entra `A-122` —el modo exhaustivo de la investigación— con sus ítems `P-153` y `P-154`, y la dirección inversa recoge los dos pares | La arquitectura fijó en §4 el modo exhaustivo. Una matriz que no lo recogiera afirmaría en verde una cobertura que no comprueba entera |

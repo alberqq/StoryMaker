@@ -41,6 +41,7 @@ from storymaker.plotting.esquemas import (
     EscenaPropuesta,
     EscenarioPropuesto,
     HitoDeArco,
+    HuecoPropuesto,
     PersonajePropuesto,
     SalidaArquitecto,
     TerminoDeGlosario,
@@ -159,7 +160,9 @@ def _escena(capitulo: int, orden: int) -> EscenaPropuesta:
     )
 
 
-def arquitectura(n_capitulos: int = 2, *, huecos: tuple[str, ...] = ()) -> SalidaArquitecto:
+def arquitectura(
+    n_capitulos: int = 2, *, huecos: tuple[str | HuecoPropuesto, ...] = ()
+) -> SalidaArquitecto:
     """La escaleta completa, con sus arcos anclados a escenas que existen."""
     return SalidaArquitecto(
         titulo="El reloj de la maestra",
@@ -210,7 +213,7 @@ def arquitectura(n_capitulos: int = 2, *, huecos: tuple[str, ...] = ()) -> Salid
             )
             for n in range(1, n_capitulos + 1)
         ],
-        huecos=list(huecos),
+        huecos=[h if isinstance(h, HuecoPropuesto) else HuecoPropuesto(pregunta=h) for h in huecos],
     )
 
 

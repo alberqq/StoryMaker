@@ -6,10 +6,13 @@ import { rutaBiblioteca, rutaFase, rutaPanel } from '@/shared/config'
 import { formatearHace, useSondeo } from '@/shared/lib'
 import { EstadoCarga, EstadoError, Insignia, Metrica, Seccion } from '@/shared/ui'
 import { cargarGate, enviarDecision } from '../api/gate'
+import { comentarioDeEleccion, elegible } from '../model/eleccion'
+import { CorpusDelGate } from './CorpusDelGate'
 import { Decision } from './Decision'
 import { Editor } from './Editor'
 import { Entrevista } from './Entrevista'
 import { Regeneracion } from './Regeneracion'
+import { RevisionDeLaTrama } from './RevisionDeLaTrama'
 import './gate.css'
 
 /** El gate que espera: qué fase, su resumen, sus preguntas, el editor y la decisión (spec §4.4). */
@@ -30,14 +33,38 @@ export function Gate() {
     if (gate?.conversacion) setUltimaConversacion(gate.conversacion)
   }, [gate?.conversacion])
 
+  // El candidato elegido en Regeneración y su valor nuevo. Se precargan al abrirse el gate
+  // y no con cada sondeo, que borraría lo que el Autor está escribiendo.
+  const [elegido, setElegido] = useState<number | null>(null)
+  const [valor, setValor] = useState('')
+  const candidatos = gate?.peticion?.candidatos
+  const elegir = (indice: number | null) => {
+    setElegido(indice)
+    setValor(indice != null ? (candidatos?.[indice]?.valor ?? '') : '')
+  }
+  useEffect(() => {
+    const primero = candidatos?.findIndex(elegible) ?? -1
+    elegir(primero >= 0 ? primero : null)
+  }, [gate?.id, candidatos?.length])
+
   const alDecidir = () => navegar(rutaPanel(id))
   const aprobar = async () => {
     await enviarDecision(id, 'aprobar', '')
     alDecidir()
   }
 
-  if (sondeo.cargando) return <div className="contenido"><EstadoCarga que="el gate" /></div>
-  if (!sondeo.datos) return <div className="contenido"><EstadoError error={sondeo.error} onReintentar={sondeo.refrescar} /></div>
+  if (sondeo.cargando)
+    return (
+      <div className="contenido">
+        <EstadoCarga que="el gate" />
+      </div>
+    )
+  if (!sondeo.datos)
+    return (
+      <div className="contenido">
+        <EstadoError error={sondeo.error} onReintentar={sondeo.refrescar} />
+      </div>
+    )
 
   const cabecera = (titulo: string, subtitulo?: React.ReactNode) => (
     <header className="cabecera-pagina">
@@ -59,7 +86,14 @@ export function Gate() {
       return (
         <div className="contenido contenido-gate">
           {cabecera('Encargo', 'La conversación con el entrevistador')}
-          <Entrevista id={id} conversacion={ultimaConversacion} preguntas={[]} pensando onEnviadas={() => {}} onAprobar={aprobar} />
+          <Entrevista
+            id={id}
+            conversacion={ultimaConversacion}
+            preguntas={[]}
+            pensando
+            onEnviadas={() => {}}
+            onAprobar={aprobar}
+          />
         </div>
       )
     if (trabajando)
@@ -115,7 +149,12 @@ export function Gate() {
 
   return (
     <div className="contenido contenido-gate">
-      {cabecera(`${fase.nombre} espera tu decisión`, <>Abierto {formatearHace(gate.abierto_en)} · {enlaceSalida}</>)}
+      {cabecera(
+        `${fase.nombre} espera tu decisión`,
+        <>
+          Abierto {formatearHace(gate.abierto_en)} · {enlaceSalida}
+        </>,
+      )}
 
       {gate.recuentos.length > 0 && (
         <div className="rejilla-metricas recuentos">
@@ -125,23 +164,46 @@ export function Gate() {
         </div>
       )}
 
+      {gate.fase === 'investigation' && (
+        <Seccion titulo="El corpus">
+          <CorpusDelGate id={id} corpusSellado={gate.corpus_sellado} />
+        </Seccion>
+      )}
+
+      {gate.trama && (
+        <Seccion titulo="La revisión de la escaleta">
+          <RevisionDeLaTrama revision={gate.trama} />
+        </Seccion>
+      )}
+
       {gate.peticion && (
         <Seccion titulo="La petición del lector">
-          <Regeneracion peticion={gate.peticion} />
+          <Regeneracion peticion={gate.peticion} elegido={elegido} valor={valor} onElegir={elegir} onValor={setValor} />
         </Seccion>
       )}
 
       <Seccion titulo="Decidir">
-        <Decision id={id} decisiones={gate.decisiones} comentarioInicial={gate.peticion?.texto ?? ''} onHecho={alDecidir} />
+        <Decision
+          id={id}
+          decisiones={gate.decisiones}
+          comentarioAlAprobar={
+            gate.peticion
+              ? comentarioDeEleccion(elegido != null ? gate.peticion.candidatos[elegido] : undefined, valor)
+              : undefined
+          }
+          onHecho={alDecidir}
+        />
       </Seccion>
 
-      <Seccion titulo="Editar antes de decidir" plegable plegada>
-        <p className="nota">
-          Corrige filas del corpus, del canon o del glosario. Cada cambio se guarda al momento y queda trazado; después
-          apruebas para seguir con tus correcciones o rehaces con un comentario.
-        </p>
-        <Editor id={id} filas={gate.editables} corpusSellado={gate.corpus_sellado} />
-      </Seccion>
+      {gate.fase !== 'investigation' && (
+        <Seccion titulo="Editar antes de decidir" plegable plegada>
+          <p className="nota">
+            Corrige filas del corpus, del canon o del glosario. Cada cambio se guarda al momento y queda trazado;
+            después apruebas para seguir con tus correcciones o rehaces con un comentario.
+          </p>
+          <Editor id={id} filas={gate.editables} corpusSellado={gate.corpus_sellado} />
+        </Seccion>
+      )}
     </div>
   )
 }

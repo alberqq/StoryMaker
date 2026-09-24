@@ -37,6 +37,17 @@ DIMENSIONES_EXPLICADAS: dict[Dimension, str] = {
 }
 
 
+#: Qué dice **la fuente** del hecho, no qué opina la historiografía, que con una página no
+#: se puede saber (arq. §7). Con la definición historiográfica el investigador lo marcaba
+#: todo `verificado`. Los nombres son los guardados; lo que cambió es su definición.
+ESTADOS_EXPLICADOS = """El estado epistemico dice que dice tu fuente del hecho:
+  - verificado: la fuente lo afirma como hecho;
+  - debatido: la fuente recoge versiones distintas o dudas sobre el;
+  - inferido: la fuente no lo dice, lo deduces tu de lo que dice; la cita es el fragmento
+    en que te basas;
+  - desconocido: la fuente dice que no se sabe, o no encontraste nada; va sin cita."""
+
+
 def prompt_de_investigacion(periodo: str, lugar: str) -> str:
     """El encargo de la sesión única. **Recibe dos cadenas y nada más.**
 
@@ -69,10 +80,13 @@ De cada hecho guarda:
     {Defaults.LONGITUD_MAXIMA_CITA} caracteres como mucho. Senala el fragmento que sostiene
     ese enunciado concreto, no media pagina: otro agente va a leer ese fragmento y decidir
     si dice lo que tu afirmas.
+
+{ESTADOS_EXPLICADOS}
 """
 
 
-#: Lo que cada hecho tiene que llevar, igual en la sesión única y en las dirigidas.
+#: Lo que cada hecho tiene que llevar, igual en la sesión única, en las dirigidas y en la
+#: micro-sesión.
 _COMO_SE_GUARDA_UN_HECHO = f"""De cada hecho guarda:
   - el enunciado, concreto y comprobable;
   - su estado epistemico: verificado, debatido, inferido o desconocido;
@@ -80,6 +94,8 @@ _COMO_SE_GUARDA_UN_HECHO = f"""De cada hecho guarda:
   - **la cita textual de la fuente que lo sostiene**, copiada tal cual y de
     {Defaults.LONGITUD_MAXIMA_CITA} caracteres como mucho. Otro agente va a leer ese
     fragmento y decidir si dice lo que tu afirmas.
+
+{ESTADOS_EXPLICADOS}
 """
 
 
@@ -146,11 +162,19 @@ def prompt_de_verificacion(pares: list[tuple[int, str, str]]) -> str:
         f"[{identificador}]\nAfirma: {enunciado}\nCita guardada: {cita or '(sin cita)'}"
         for identificador, enunciado, cita in pares
     )
-    return f"""Para cada hecho, responde una sola pregunta: **¿la cita dice lo que el hecho
-afirma?**
+    return f"""Para cada hecho, responde dos cosas:
 
-No juzgues si el hecho es cierto, ni si la fuente es buena, ni si falta contexto. Solo si
-ese fragmento sostiene ese enunciado. Si no hay cita, el hecho no esta respaldado.
+1. `respaldado`: **¿la cita sostiene lo que el hecho dice que existio u ocurrio?** Ese es
+   el dato central. La cita es un fragmento corto de una pagina y a menudo no repite el
+   lugar ni la epoca, que la pagina da por sabidos: que falten no tumba el hecho. Solo
+   responde `false` si la cita no sostiene lo que ocurrio, lo contradice o no hay cita.
+2. `sin_respaldo`: lo que el enunciado **añade y la cita no trae** —una fecha, un lugar,
+   un detalle, una valoracion o una interpretacion—, copiado tal cual del enunciado. Si no
+   añade nada, dejalo vacio.
+
+Un hecho cuyo dato central esta en la cita pero que añade una fecha, un lugar o una glosa
+lleva `respaldado: true` y el añadido en `sin_respaldo`. No juzgues si el hecho es cierto
+ni si la fuente es buena: solo lo que ese fragmento sostiene.
 
 {bloques}
 """
@@ -170,4 +194,5 @@ def prompt_de_hueco(pregunta: str, periodo: str, lugar: str) -> str:
 
 Tienes **una sola busqueda**. Si no lo encuentras, responde `no_encontrado`: es una
 respuesta valida y util, y el arquitecto podra inventarlo declarandolo como tal.
-"""
+
+Si lo encuentras, devuelvelo como un hecho. {_COMO_SE_GUARDA_UN_HECHO}"""

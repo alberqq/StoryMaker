@@ -4,7 +4,7 @@ La taxonomía de errores del arnés, en un solo módulo porque la distinción qu
 es la que gobierna el comportamiento del sistema entero:
 
 **Una incidencia es un defecto del contenido y tiene camino de vuelta** — el capítulo
-regresa al editor, el hecho se degrada, el aviso viaja al capítulo siguiente. No vive
+regresa al editor, el hecho baja de firmeza, el aviso viaja al capítulo siguiente. No vive
 aquí: vive como fila en `incidencia`.
 
 **Un error es una avería y detiene la invocación.** Es lo que hay aquí. Confundirlos

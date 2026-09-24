@@ -29,6 +29,7 @@ from storymaker.api.seguimiento import (
 )
 from storymaker.commons.db.apertura import abrir_novela
 from storymaker.commons.errores import NovelaNoEncontrada
+from storymaker.commons.validation.puras import anadido_vigente, firmeza
 
 router = APIRouter(prefix="/novelas", tags=["seguimiento"])
 
@@ -93,7 +94,15 @@ class Hecho(BaseModel):
     dimension: str
     origen: str
     respaldo: str
+    #: Cuánto puede apoyarse la obra en el hecho (arq. §7). La calcula el servidor con la
+    #: función del Core Domain; el frontend la enseña tal cual y no recalcula nada.
+    firmeza: str
+    #: Lo que el enunciado añade y la cita no dice, si el veredicto fue parcial y el
+    #: añadido sigue en el enunciado. No sustituye a la cita: señala el trozo sin respaldo.
+    no_lo_dice_la_cita: str | None = None
     cita: str | None = None
+    #: Por qué el verificador lo respaldó o no, si lo dijo y quedó guardado.
+    motivo_respaldo: str | None = None
     fuentes: list[Fuente]
 
 
@@ -426,6 +435,18 @@ async def _investigacion(db: aiosqlite.Connection) -> SalidaInvestigacion:
                 fiabilidad=f["fiabilidad"],
             )
         )
+    motivos: dict[int, str] = {}
+    for a in await _filas(
+        db,
+        "SELECT objeto, despues_json FROM audit_log"
+        " WHERE actor = 'verificador' AND accion = 'respaldo' ORDER BY id",
+    ):
+        try:
+            motivo = json.loads(str(a["despues_json"])).get("motivo")
+            if motivo:
+                motivos[int(str(a["objeto"]).split(":", 1)[1])] = str(motivo)
+        except (ValueError, IndexError, AttributeError):
+            continue
     hechos = [
         Hecho(
             id=int(h["id"]),
@@ -434,7 +455,10 @@ async def _investigacion(db: aiosqlite.Connection) -> SalidaInvestigacion:
             dimension=str(h["dimension"]),
             origen=str(h["origen"]),
             respaldo=str(h["respaldo"]),
+            firmeza=firmeza(str(h["estado"]), str(h["respaldo"]), str(h["origen"])),
+            no_lo_dice_la_cita=anadido_vigente(str(h["enunciado"]), h["sin_respaldo"]),
             cita=h["cita"],
+            motivo_respaldo=motivos.get(int(h["id"])),
             fuentes=fuentes.get(int(h["id"]), []),
         )
         for h in await _filas(db, "SELECT * FROM mundo_hecho ORDER BY dimension, id")

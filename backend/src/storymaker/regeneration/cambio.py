@@ -13,6 +13,8 @@ Toda modificación queda en `audit_log` y, si viene de una persona, también en
 
 from __future__ import annotations
 
+import re
+
 import aiosqlite
 
 from storymaker.commons.db.repos import arnes, mundo
@@ -99,6 +101,50 @@ CAMPO_POR_DEFECTO = {
 }
 
 
+#: La decisión del Autor en el gate: qué fila eligió de entre los candidatos y qué valor le
+#: da. «personaje:1 nombre=Manuel». Es lo que convierte «el Autor confirma» en un dato.
+_ELECCION = re.compile(
+    r"^\s*(hecho|personaje|escenario|glosario)\s*[:#]\s*(\d+)\s+(\w+)\s*=\s*(.+?)\s*$",
+    re.DOTALL,
+)
+
+
+async def _valor_actual(
+    db: aiosqlite.Connection, objeto: ObjetoDelCambio, fila_id: int, campo: str
+) -> str | None:
+    """El valor de ese campo en esa fila, o `None` si la fila o el campo no existen."""
+    tabla = TABLA_DE[objeto]
+    async with db.execute(f"PRAGMA table_info({tabla})") as cursor:
+        columnas = {str(f["name"]) for f in await cursor.fetchall()}
+    if campo not in columnas:
+        return None
+    async with db.execute(
+        f"SELECT {campo} FROM {tabla} WHERE id = ?", (fila_id,)  # noqa: S608
+    ) as cursor:
+        fila = await cursor.fetchone()
+    return None if fila is None else str(fila[campo] or "")
+
+
+async def resolver_eleccion(db: aiosqlite.Connection, decision: str) -> CambioResuelto | None:
+    """La fila y el valor que el Autor eligió en el gate, sin buscar nada.
+
+    Es el camino de la spec (§4.6): los candidatos se enseñan y **el Autor confirma**. Volver
+    a buscar al aprobar hacía que la fila tocada dependiera del texto del comentario y no de
+    lo que el Autor había elegido, y así se llegó a apuntar a un personaje que no era.
+    """
+    encontrada = _ELECCION.match(decision)
+    if encontrada is None:
+        return None
+    objeto = ObjetoDelCambio(encontrada.group(1))
+    fila_id, campo, valor = int(encontrada.group(2)), encontrada.group(3), encontrada.group(4)
+    antes = await _valor_actual(db, objeto, fila_id, campo)
+    if antes is None:
+        return None
+    return CambioResuelto(
+        objeto=objeto, fila_id=fila_id, campo=campo, antes=antes, despues=valor, motivo=decision
+    )
+
+
 async def resolver(
     db: aiosqlite.Connection, vectorizador: Vectorizador, peticion: str
 ) -> CambioResuelto | None:
@@ -114,12 +160,17 @@ async def resolver(
     trata como alcance vacío y el gate lo enseña: es preferible una regeneración que no
     cambia nada a una que cambia la fila equivocada.
     """
+    elegido_por_el_autor = await resolver_eleccion(db, peticion)
+    if elegido_por_el_autor is not None:
+        return elegido_por_el_autor
+
     campo, separador, valor = peticion.partition("=")
-    if separador:
-        campo, valor = campo.strip(), valor.strip()
-        consulta = valor or peticion
-    else:
-        campo, valor, consulta = "", peticion.strip(), peticion
+    if not separador:
+        # Sin «campo=valor» no hay valor nuevo que escribir: tomar la frase entera como tal
+        # escribiría «quiero que no aparezca el apellido» en el canon. Mejor no tocar nada.
+        return None
+    campo, valor = campo.strip(), valor.strip()
+    consulta = valor or peticion
 
     candidatos = await buscar_candidatos(db, vectorizador, consulta, k=3)
     if not candidatos:

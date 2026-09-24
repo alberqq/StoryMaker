@@ -3,7 +3,7 @@
 El informe del gate de Investigation: **el corpus es lo único que el Autor revisa a mano**.
 
 Ese es el sentido de este informe y explica su forma. Como el veredicto del verificador no
-gobierna ninguna arista del grafo —un hecho sin respaldo se degrada, no bloquea—, lo único
+gobierna ninguna arista del grafo —un hecho sin respaldo baja de firmeza, no bloquea—, lo único
 que impide que un corpus flojo llegue a la novela es que alguien lo mire. Así que aquí se
 enseñan las dos cosas que hacen falta para mirarlo bien:
 
@@ -19,11 +19,13 @@ hecho, no que el fragmento esté realmente en la URL.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import dataclass, field
 
 import aiosqlite
 
 from storymaker.commons.db.repos import arnes, mundo
+from storymaker.commons.validation.puras import ORDEN_DE_FIRMEZA, firmeza
 from storymaker.investigation.esquemas import Dimension
 
 
@@ -41,6 +43,8 @@ class InformeDeInvestigacion:
     sin_respaldo: tuple[HechoDudoso, ...] = ()
     #: Una línea por sesión del modo exhaustivo; vacío en el estándar.
     sesiones_dirigidas: tuple[str, ...] = ()
+    #: Cuántos hechos hay de cada firmeza: lo que el escritor verá, contado.
+    por_firmeza: dict[str, int] = field(default_factory=dict)
 
     @property
     def dimensiones_vacias(self) -> tuple[str, ...]:
@@ -60,9 +64,19 @@ class InformeDeInvestigacion:
                 "Hay dimensiones sin un solo hecho. No bloquea, pero «rehacer con "
                 "comentario» permite dirigir la segunda pasada a lo que falta."
             )
+        if self.por_firmeza:
+            lineas.append(
+                "Por firmeza: "
+                + ", ".join(
+                    f"{nombre} {self.por_firmeza[nombre]}"
+                    for nombre in (*ORDEN_DE_FIRMEZA, "inventado")
+                    if self.por_firmeza.get(nombre)
+                )
+                + "."
+            )
         if self.sin_respaldo:
             lineas.append(
-                f"\n{len(self.sin_respaldo)} hecho(s) sin respaldo, degradados a inferido:"
+                f"\n{len(self.sin_respaldo)} hecho(s) sin respaldo, su firmeza no pasa de inferido:"
             )
             for hecho in self.sin_respaldo:
                 lineas.append(f"  - {hecho.enunciado}")
@@ -104,5 +118,10 @@ async def construir(db: aiosqlite.Connection, fase_run_id: int) -> InformeDeInve
         sin_respaldo=tuple(detalles),
         sesiones_dirigidas=tuple(
             await arnes.incidencias_sin_capitulo(db, "investigacion_dirigida")
+        ),
+        por_firmeza=dict(
+            Counter(
+                firmeza(str(h["estado"]), str(h["respaldo"]), str(h["origen"])) for h in hechos
+            )
         ),
     )

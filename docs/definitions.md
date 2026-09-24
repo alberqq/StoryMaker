@@ -34,7 +34,8 @@ La ontología se organiza en cinco módulos:
 | **Fuente secundaria** | Elaboración posterior sobre los hechos, como la historiografía o los estudios académicos. | — |
 | **Hecho** | Afirmación sobre el mundo acompañada de su estado epistémico. | enunciado, estado, fuentes, cita, entidades implicadas |
 | **Cita** | Fragmento textual de la Fuente, copiado tal cual, en el que se apoya un Hecho concreto. Es lo que hace comprobable el Hecho sin volver a la Fuente. | texto, fuente de la que procede |
-| **Respaldo** | Propiedad de la Cita, no del Hecho: si el fragmento guardado sostiene o no lo que el Hecho enuncia. No debe confundirse con el estado epistémico, que es una propiedad del Hecho en la historiografía. | respaldado, no respaldado, no aplica |
+| **Respaldo** | Propiedad de la Cita, no del Hecho: si el fragmento guardado sostiene o no lo que el Hecho enuncia. No debe confundirse con el estado epistémico, que es una propiedad del Hecho en la historiografía. | pendiente, respaldado, parcial (el dato central sí, un añadido no), no respaldado, no aplica |
+| **Firmeza** | Cuánto puede apoyarse la obra en un Hecho. No se declara: se calcula a partir de su estado epistémico, su Respaldo y su procedencia, como el mínimo entre lo declarado y lo que el Respaldo permite. Un Hecho sin respaldo comprobado no pasa de inferido, y una Invención autorizada es siempre inventada. En el corpus, el estado epistémico que declara el investigador se refiere a **lo que dice su fuente**, no al consenso historiográfico que no puede conocer con una página; la Firmeza es la noción que usa la obra. | documentado, debatido, inferido, desconocido, inventado |
 | **Hecho verificado** | Hecho respaldado por fuentes fiables y concordantes. | — |
 | **Hecho debatido** | Hecho sobre el que las fuentes o los historiadores discrepan. | — |
 | **Hecho inferido** | Hecho no documentado, pero razonablemente deducible del contexto. | — |
@@ -162,6 +163,6 @@ Las características se agrupan en cuatro familias.
 | **Evaluación** | Aplicación de las características de calidad a un borrador. | borrador, características evaluadas, puntuaciones |
 | **Incidencia** | Defecto detectado en un borrador. | tipo, severidad, ubicación, característica afectada, propuesta de corrección |
 | **Revisión** | Nueva versión de un borrador que resuelve incidencias. | incidencias resueltas, versión resultante |
-| **Verificación de respaldo** | Comprobación de que la Cita guardada junto a cada Hecho sostiene su enunciado. La ejecuta un agente distinto del que reunió los Hechos, y un Hecho sin respaldo no se borra: pasa a Hecho inferido. | hechos revisados, veredicto por hecho |
-| **Invención autorizada** | Dato que la obra necesita, que la investigación no encuentra y que se inventa con permiso explícito. Entra en la Base de conocimiento como Hecho inferido y sin Fuente, para que la Trazabilidad siga siendo completa. | enunciado, hueco que lo motivó |
+| **Verificación de respaldo** | Comprobación de que la Cita guardada junto a cada Hecho sostiene su enunciado. La ejecuta un agente distinto del que reunió los Hechos, y un Hecho sin respaldo no se borra ni cambia de estado epistémico: su Firmeza no pasa de inferido. | hechos revisados, veredicto por hecho |
+| **Invención autorizada** | Dato que la obra necesita, que la investigación no encuentra y que se inventa con permiso explícito. Entra en la Base de conocimiento como Hecho sin Fuente y con Firmeza inventada, para que la Trazabilidad siga siendo completa. | enunciado, hueco que lo motivó |
 | **Trazabilidad** | Enlace de cada afirmación histórica del texto con su Fuente o con su Licencia. | fragmento de texto, hecho, fuente o licencia |

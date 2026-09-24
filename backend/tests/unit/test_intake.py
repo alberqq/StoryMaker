@@ -235,3 +235,36 @@ class TestInforme:
             punto_de_vista="tercera persona",
         )
         assert informe.construir(completo, []).listo
+
+
+async def test_el_numero_de_capitulos_del_brief_cerrado_manda_sobre_el_del_lanzamiento(
+    db: aiosqlite.Connection, fase_run: int
+) -> None:
+    """En modo conversación el lanzamiento no trae capítulos y el estado arrancaba con 10.
+
+    El arquitecto planifica con los del brief, así que si el comprador pedía seis la
+    escaleta tenía seis y el bucle de Writing iba a por el séptimo.
+    """
+    from dobles import guion
+    from dobles.agente_falso import TransporteFalso
+    from dobles.vectorizador import VectorizadorFalso
+
+    from storymaker.commons.agents.techos import Perfil
+    from storymaker.commons.config import Settings
+    from storymaker.commons.graph.dependencias import Dependencias, usando
+    from storymaker.commons.graph.estado import estado_inicial
+    from storymaker.commons.obs.trazas import ObservadorNulo
+    from storymaker.intake.nodos import configure
+
+    falso = TransporteFalso().preparar(Perfil.ENTREVISTADOR, guion.entrevista(3))
+    estado = estado_inicial(
+        novela="n.db", fase_run_id=fase_run, n_capitulos=10, max_intentos=2, huecos=5,
+        gates_enabled=True, premisa="Una novela corta, de tres capitulos.",
+    )
+    with usando(Dependencias(
+        db=db, settings=Settings(_env_file=None), transporte=falso,
+        vectorizador=VectorizadorFalso(), observador=ObservadorNulo(),
+    )):
+        despues = await configure(estado)
+
+    assert despues["n_capitulos"] == 3

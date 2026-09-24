@@ -5,8 +5,11 @@ import { enviarDecision } from '../api/gate'
 interface Props {
   id: string
   decisiones: string[]
-  /** El comentario con el que empieza la casilla: la petición del lector en Regeneración. */
-  comentarioInicial?: string
+  /**
+   * Lo que se envía al aprobar en lugar de la casilla: en Regeneración, la fila elegida y su
+   * valor nuevo. La casilla queda para rehacer.
+   */
+  comentarioAlAprobar?: string
   onHecho: (mensaje: string) => void
 }
 
@@ -14,8 +17,8 @@ interface Props {
  * Aprobar o rehacer con comentario, en todos los gates; abortar, solo donde el backend lo
  * ofrece —el gate de Intake— y con confirmación. Editar no está aquí: es el editor de filas.
  */
-export function Decision({ id, decisiones, comentarioInicial = '', onHecho }: Props) {
-  const [comentario, setComentario] = useState(comentarioInicial)
+export function Decision({ id, decisiones, comentarioAlAprobar, onHecho }: Props) {
+  const [comentario, setComentario] = useState('')
   const [enviando, setEnviando] = useState<string | null>(null)
   const [confirmarAbortar, setConfirmarAbortar] = useState(false)
   const [fallo, setFallo] = useState<unknown>(null)
@@ -25,7 +28,8 @@ export function Decision({ id, decisiones, comentarioInicial = '', onHecho }: Pr
     setEnviando(decision)
     setFallo(null)
     try {
-      await enviarDecision(id, decision, comentario.trim())
+      const texto = decision === 'aprobar' && comentarioAlAprobar !== undefined ? comentarioAlAprobar : comentario.trim()
+      await enviarDecision(id, decision, texto)
       onHecho(
         decision === 'aprobar'
           ? 'Gate aprobado. La novela se reanuda.'

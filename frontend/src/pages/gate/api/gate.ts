@@ -1,10 +1,12 @@
 import {
   type CuerpoDeEdicion,
   decidir,
+  descartarHecho,
   editarFila,
   type GateDeNovela,
   leerGate,
   leerPanel,
+  leerSalida,
   NoEncontrado,
   type Panel,
 } from '@/shared/api'
@@ -37,3 +39,9 @@ export const enviarDecision = (id: string, decision: 'aprobar' | 'rehacer' | 'ab
 
 /** La edición humana directa de una fila: se escribe en el acto, sin lanzar nada. */
 export const guardarEdicion = (id: string, edicion: CuerpoDeEdicion) => editarFila(id, edicion)
+
+/** El corpus que el gate de Investigation enseña, con el motivo del verificador. */
+export const cargarCorpus = async (id: string) => (await leerSalida(id, 'investigacion')).investigacion?.hechos ?? []
+
+/** Quita un hecho del corpus: solo antes del sello, y trazado como edición humana. */
+export const descartar = (id: string, hecho: number, motivo: string) => descartarHecho(id, hecho, motivo)

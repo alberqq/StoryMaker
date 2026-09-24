@@ -5,8 +5,9 @@ import { rutaEncargo } from '@/shared/config'
 import { useSondeo } from '@/shared/lib'
 import { EstadoCarga, EstadoError, EstadoVacio } from '@/shared/ui'
 import { cargarTaller } from '../api/listar'
-import { COLUMNAS, columnaDe, decisionAlSoltar, type Decision } from '../model/columnas'
+import { COLUMNAS, columnaDe, decisionAlSoltar, type Decision, enListado } from '../model/columnas'
 import { ConfirmarGate } from './ConfirmarGate'
+import { Publicadas } from './Publicadas'
 import { TarjetaNovela } from './TarjetaNovela'
 import './tablero.css'
 
@@ -16,7 +17,8 @@ interface Propuesta {
 }
 
 /**
- * El taller: un tablero por fases, al estilo de Jira (spec §4.1). Se refresca solo; mientras
+ * El taller: un tablero por fases, al estilo de Jira, y debajo el listado de las publicadas
+ * (spec §4.1). Se refresca solo; mientras
  * se arrastra o se confirma, el refresco espera, para no mover nada bajo el ratón.
  */
 export function Tablero() {
@@ -27,6 +29,8 @@ export function Tablero() {
   const taller = useSondeo(cargarTaller, [], { pausado: arrastrando !== null || propuesta !== null })
 
   const novelas = taller.datos ?? []
+  const enCurso = novelas.filter((n) => !enListado(n))
+  const publicadas = novelas.filter(enListado)
   const enMovimiento = novelas.find((n) => n.nombre === arrastrando)
   const esperan = novelas.filter((n) => n.estado === 'esperando_autor').length
   const trabajan = novelas.filter((n) => n.estado === 'en_marcha' || n.estado === 'arrancando').length
@@ -85,7 +89,7 @@ export function Tablero() {
       {novelas.length > 0 && (
         <div className="tablero" role="list" aria-label="Tablero por fases">
           {COLUMNAS.map((columna) => {
-            const suyas = novelas.filter((n) => columnaDe(n) === columna.clave)
+            const suyas = enCurso.filter((n) => columnaDe(n) === columna.clave)
             const acepta = enMovimiento ? decisionAlSoltar(enMovimiento, columna.clave) : null
             return (
               <section
@@ -121,6 +125,8 @@ export function Tablero() {
           })}
         </div>
       )}
+
+      {publicadas.length > 0 && <Publicadas novelas={publicadas} />}
 
       {propuesta && (
         <ConfirmarGate

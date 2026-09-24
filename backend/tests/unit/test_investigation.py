@@ -4,7 +4,8 @@ Pruebas de la Fase 2.
 
 Lo que importa comprobar aquí son las tres decisiones que sostienen la fase: que **el
 prompt del investigador no puede llevar datos personales** porque no los recibe, que
-**rehacer no contamina el corpus**, y que un hecho sin respaldo **se degrada y no bloquea**.
+**rehacer no contamina el corpus**, y que un hecho sin respaldo **baja de firmeza y no
+bloquea**, sin que nadie reescriba lo que declaró el investigador.
 
 La calidad de lo que el investigador encuentre no se comprueba aquí: eso es U-2, la verdad
 histórica, que ninguna técnica de software decide.
@@ -19,6 +20,7 @@ from dobles.vectorizador import VectorizadorFalso
 from storymaker.commons.db.repos import arnes, mundo
 from storymaker.commons.embeddings import indice
 from storymaker.commons.validation.policy_checker import pii_en_prompt_de_investigacion
+from storymaker.commons.validation.puras import firmeza
 from storymaker.investigation import corpus, informe, prompts
 from storymaker.investigation.esquemas import (
     Dimension,
@@ -73,7 +75,7 @@ class TestPrompts:
     def test_sin_cita_el_verificador_lo_sabe(self) -> None:
         texto = prompts.prompt_de_verificacion([(7, "algo", "")])
         assert "(sin cita)" in texto
-        assert "Si no hay cita, el hecho no esta respaldado" in texto
+        assert "o no hay cita" in texto, "sin cita, el dato central no esta respaldado"
 
     def test_el_hueco_admite_no_encontrarlo(self) -> None:
         """Empujar a un modelo a responder lo que no sabe llena el corpus de invenciones."""
@@ -123,14 +125,18 @@ class TestCorpus:
         vigentes = await mundo.hechos_vigentes(db, segunda)
         assert [f["enunciado"] for f in vigentes] == ["Dato de la segunda pasada"]
 
-    async def test_un_hecho_sin_respaldo_se_degrada_y_no_se_borra(
+    async def test_un_hecho_sin_respaldo_baja_de_firmeza_sin_perder_lo_declarado(
         self, db: aiosqlite.Connection, fase_run: int, vectorizador: VectorizadorFalso
     ) -> None:
-        hecho_id = await corpus.escribir_hecho(db, vectorizador, hecho(), fase_run_id=fase_run)
-        await corpus.degradar_sin_respaldo(db, hecho_id, respaldado=False)
+        """El verificador escribe su veredicto; lo que declaró el investigador no se toca."""
+        hecho_id = await corpus.escribir_hecho(
+            db, vectorizador, hecho(estado=EstadoEpistemico.VERIFICADO), fase_run_id=fase_run
+        )
+        await corpus.anotar_veredicto(db, hecho_id, respaldado=False)
         (fila,) = await mundo.hechos_vigentes(db, fase_run)
-        assert fila["estado"] == "inferido"
+        assert fila["estado"] == "verificado"
         assert fila["respaldo"] == "no_respaldado"
+        assert firmeza(fila["estado"], fila["respaldo"], fila["origen"]) == "inferido"
 
     async def test_lo_respaldado_conserva_su_estado_epistemico(
         self, db: aiosqlite.Connection, fase_run: int, vectorizador: VectorizadorFalso
@@ -139,7 +145,7 @@ class TestCorpus:
         hecho_id = await corpus.escribir_hecho(
             db, vectorizador, hecho(estado=EstadoEpistemico.DEBATIDO), fase_run_id=fase_run
         )
-        await corpus.degradar_sin_respaldo(db, hecho_id, respaldado=True)
+        await corpus.anotar_veredicto(db, hecho_id, respaldado=True)
         (fila,) = await mundo.hechos_vigentes(db, fase_run)
         assert fila["estado"] == "debatido", "un hecho debatido y bien citado sigue debatido"
         assert fila["respaldo"] == "respaldado"
@@ -184,7 +190,22 @@ class TestInforme:
     ) -> None:
         """Es la mitigacion de la cita fabricada: el Autor la tiene a un clic."""
         hecho_id = await corpus.escribir_hecho(db, vectorizador, hecho(), fase_run_id=fase_run)
-        await corpus.degradar_sin_respaldo(db, hecho_id, respaldado=False)
+        await corpus.anotar_veredicto(db, hecho_id, respaldado=False)
         texto = (await informe.construir(db, fase_run)).como_texto()
-        assert "degradados a inferido" in texto
+        assert "su firmeza no pasa de inferido" in texto
         assert "https://ejemplo.test/cadiz" in texto
+
+    async def test_cuenta_los_hechos_por_firmeza(
+        self, db: aiosqlite.Connection, fase_run: int, vectorizador: VectorizadorFalso
+    ) -> None:
+        respaldado = await corpus.escribir_hecho(
+            db, vectorizador, hecho(estado=EstadoEpistemico.VERIFICADO), fase_run_id=fase_run
+        )
+        flojo = await corpus.escribir_hecho(
+            db, vectorizador, hecho(estado=EstadoEpistemico.VERIFICADO), fase_run_id=fase_run
+        )
+        await corpus.anotar_veredicto(db, respaldado, respaldado=True)
+        await corpus.anotar_veredicto(db, flojo, respaldado=False)
+        resultado = await informe.construir(db, fase_run)
+        assert resultado.por_firmeza == {"documentado": 1, "inferido": 1}
+        assert "Por firmeza: documentado 1, inferido 1." in resultado.como_texto()

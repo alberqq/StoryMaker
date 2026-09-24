@@ -1,6 +1,6 @@
 .contenido-ancho { max-width: none; }
 .tablero {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px, 1fr);
+  display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr));
   gap: var(--e3); overflow-x: auto; padding-bottom: var(--e3); scroll-snap-type: x proximity;
 }
 .columna {
@@ -15,6 +15,11 @@
 .columna-cabecera h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-suave); }
 .columna-cuenta { font-size: 0.75rem; font-weight: 600; color: var(--texto-tenue); background: var(--superficie); border-radius: 999px; padding: 1px var(--e2); }
 .columna-pista { font-size: 0.8rem; color: var(--texto-suave); text-align: center; margin: 0; }
+.publicadas { margin-top: var(--e6); padding: var(--e3) var(--e4); border-radius: var(--radio-l); background: var(--superficie); border: 1px solid var(--borde); }
+.publicadas-tabla { overflow-x: auto; }
+.publicadas .numero { font-variant-numeric: tabular-nums; }
+.publicadas-acciones { text-align: right; white-space: nowrap; }
+.publicadas-acciones a + a { margin-left: var(--e3); }
 .columna-tarjetas { display: flex; flex-direction: column; gap: var(--e2); }
 
 .tarjeta-novela {

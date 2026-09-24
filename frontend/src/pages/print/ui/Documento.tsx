@@ -7,6 +7,7 @@ import { Indice } from './Indice'
 import { Novedades } from './Novedades'
 import { Personajes } from './Personajes'
 import { Portada } from './Portada'
+import { romano } from './romano'
 
 export function Documento() {
   const params = useParams()
@@ -34,20 +35,25 @@ function DocumentoDeVersion({ id, n }: { id: string; n: number }) {
 
   const { version, capitulos, fichas, novedades } = carga.datos
   return (
-    <div className="documento" data-estado="listo">
+    <div className="documento" data-estado="listo" lang="es">
       <Portada paratexto={version.paratexto} />
       <Indice capitulos={version.capitulos} conNovedades={novedades != null} />
       {capitulos.map((capitulo, i) => {
         const numero = version.capitulos[i]?.numero ?? capitulo.orden
         return (
-          <section key={numero} id={`capitulo-${numero}`} className="texto-capitulo">
-            <h2>
-              Capítulo {numero}
-              {capitulo.titulo ? `. ${capitulo.titulo}` : ''}
-            </h2>
-            {parrafos(capitulo.texto).map((p, j) => (
-              <p key={j}>{p}</p>
-            ))}
+          <section key={numero} id={`capitulo-${numero}`} className="capitulo-libro">
+            <header className="cabecera-capitulo">
+              <p className="numero-capitulo">Capítulo {romano(numero)}</p>
+              <h2>{capitulo.titulo ?? `Capítulo ${numero}`}</h2>
+              <span className="ornamento" aria-hidden="true">
+                ⁂
+              </span>
+            </header>
+            <div className="texto-capitulo">
+              {parrafos(capitulo.texto).map((p, j) => (
+                <p key={j}>{p}</p>
+              ))}
+            </div>
           </section>
         )
       })}

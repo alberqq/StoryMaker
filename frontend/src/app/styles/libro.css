@@ -3,9 +3,12 @@
 .libro {
   background: var(--papel);
   color: var(--tinta);
-  font-family: var(--fuente-libro);
-  font-size: 1.2rem;
-  line-height: 1.65;
+  /* Las preferencias de lectura (spec §4.6) llegan como variables del propio `.libro`. */
+  font-family: var(--lectura-fuente, var(--fuente-libro));
+  font-size: var(--lectura-tamano, 1.2rem);
+  line-height: var(--lectura-interlineado, 1.65);
+  font-weight: var(--lectura-peso, 400);
+  transition: font-size 0.15s, line-height 0.15s, background 0.2s, color 0.2s;
   border: 1px solid var(--linea-libro);
   border-radius: var(--radio-l);
   padding: var(--e6) clamp(var(--e4), 6vw, var(--e7));
@@ -22,7 +25,36 @@
 .libro .tarjeta { background: var(--papel-claro); border-color: var(--linea-libro); }
 .libro .tabla th, .libro .tabla td { border-color: var(--linea-libro); }
 
-.navegacion-libro { display: flex; flex-wrap: wrap; gap: var(--e4); justify-content: center; font-family: var(--fuente-panel); font-size: 0.9rem; margin-bottom: var(--e5); }
+.cabecera-libro { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e3); margin-bottom: var(--e5); }
+.navegacion-libro { display: flex; flex-wrap: wrap; gap: var(--e4); font-family: var(--fuente-panel); font-size: 0.9rem; padding-top: var(--e2); }
+
+/* La pestaña «Aa»: como en un lector electrónico, fuera del registro del texto. */
+.ajustes-lectura { position: relative; flex-shrink: 0; font-family: var(--fuente-panel); font-size: 0.9rem; }
+.ajustes-boton { display: inline-flex; align-items: baseline; gap: 1px; padding: var(--e1) var(--e3); border: 1px solid var(--linea-libro); border-radius: var(--radio); background: var(--papel-claro); color: var(--tinta); cursor: pointer; font-family: var(--fuente-libro); line-height: 1; }
+.ajustes-boton:hover, .ajustes-boton[aria-expanded='true'] { border-color: var(--acento-libro); }
+.aa-pequena { font-size: 0.85rem; }
+.aa-grande { font-size: 1.25rem; }
+.ajustes-panel { position: absolute; right: 0; top: calc(100% + var(--e2)); z-index: 20; width: 18rem; font-weight: 400; line-height: 1.4; display: flex; flex-direction: column; gap: var(--e4); padding: var(--e4); background: var(--superficie); color: var(--texto); border: 1px solid var(--borde); border-radius: var(--radio-l); box-shadow: var(--sombra-2); }
+.ajustes-panel::before { content: ''; position: absolute; top: -7px; right: 18px; width: 12px; height: 12px; background: var(--superficie); border-left: 1px solid var(--borde); border-top: 1px solid var(--borde); transform: rotate(45deg); }
+.ajustes-grupo { display: flex; flex-direction: column; gap: var(--e2); }
+.ajustes-etiqueta { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-tenue); }
+.ajustes-tamano { display: flex; align-items: center; gap: var(--e3); }
+.ajustes-tamano button { min-width: 2.4rem; padding: var(--e1) var(--e2); border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie-2); color: var(--texto); cursor: pointer; font-weight: 600; }
+.ajustes-tamano button:disabled { opacity: 0.4; cursor: default; }
+.ajustes-pasos { flex: 1; display: flex; gap: 4px; }
+.ajustes-pasos .paso { flex: 1; height: 6px; border-radius: 3px; background: var(--superficie-2); }
+.ajustes-pasos .paso.lleno { background: var(--acento); }
+.ajustes-opciones { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--e2); }
+.ajustes-opciones .opcion { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--e2) var(--e1); border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie); color: var(--texto); cursor: pointer; font-size: 0.8rem; font-weight: 400; }
+.ajustes-opciones .opcion.elegida { border-color: var(--acento); background: var(--acento-suave); }
+.opcion-muestra { font-size: 1.4rem; line-height: 1.1; }
+.muestra-fondo { display: inline-block; width: 2.4rem; padding: 2px 0; border-radius: var(--radio-s); border: 1px solid var(--linea-libro); background: var(--papel); color: var(--tinta); font-family: var(--fuente-libro); font-size: 1.1rem; }
+.ajustes-interruptor { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); cursor: pointer; }
+.ajustes-interruptor input { appearance: none; position: relative; width: 38px; height: 22px; border-radius: 11px; background: var(--borde-fuerte); cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+.ajustes-interruptor input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--superficie); box-shadow: var(--sombra-1); transition: transform 0.15s; }
+.ajustes-interruptor input:checked { background: var(--acento); }
+.ajustes-interruptor input:checked::after { transform: translateX(16px); }
+.ajustes-interruptor input:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 
 .texto-capitulo p { text-indent: 1.5em; margin: 0 0 var(--e1); text-align: justify; hyphens: auto; }
 .texto-capitulo p:first-child { text-indent: 0; }

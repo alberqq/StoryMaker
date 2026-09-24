@@ -167,6 +167,18 @@ class FilaEditable(BaseModel):
 
 
 class Candidato(BaseModel):
+    """Una fila que la búsqueda propuso. Aprobar el gate eligiéndola envía
+    `<objeto>:<fila_id> <campo>=<valor>` (spec §4.6).
+
+    `objeto` y `fila_id` faltan solo en peticiones registradas antes de guardarlos: esas no
+    se pueden elegir.
+    """
+
+    objeto: Literal["hecho", "personaje", "escenario", "glosario"] | None = None
+    fila_id: int | None = None
+    #: El campo que se toca por defecto, y su valor hoy: lo que el Autor ve y sustituye.
+    campo: str | None = None
+    valor: str
     descripcion: str
     capitulos_a_regenerar: list[int]
     capitulos_a_revisar: list[int]
@@ -196,6 +208,34 @@ class Conversacion(BaseModel):
     brief: dict[str, Any] | None = None
 
 
+class AvisoDeLaTrama(BaseModel):
+    validador: str
+    #: Lo que el validador considera bloqueante. No cierra el gate: se enseña primero.
+    grave: bool
+    mensaje: str
+    ubicacion: str | None = None
+
+
+class HuecoDeLaTrama(BaseModel):
+    pregunta: str
+    dimension: str
+    #: `encontrado`, `inventado`, o `None` si el tope de huecos no llegó a él.
+    resultado: str | None = None
+    enunciado: str | None = None
+    capitulo: int | None = None
+    escena: int | None = None
+
+
+class RevisionDeLaTrama(BaseModel):
+    """Lo que encontró la revisión de la escaleta, para decidir si se rehace."""
+
+    avisos: list[AvisoDeLaTrama]
+    huecos: list[HuecoDeLaTrama]
+    inventados: int
+    #: «cap. N esc. M» de cada escena que solo se apoya en hechos poco firmes.
+    escenas_poco_firmes: list[str]
+
+
 class GateDeNovela(BaseModel):
     id: int
     fase: str
@@ -207,6 +247,7 @@ class GateDeNovela(BaseModel):
     editables: list[FilaEditable]
     corpus_sellado: bool
     decisiones: list[str]
+    trama: RevisionDeLaTrama | None = None
 
 
 # --- Lectura del fichero -------------------------------------------------------------
@@ -781,16 +822,32 @@ async def _peticion(db: aiosqlite.Connection) -> PeticionDeRegeneracion | None:
         fragmento=datos.get("fragmento"),
         capitulo=datos.get("capitulo"),
         version=datos.get("version"),
-        candidatos=[
-            Candidato(
-                descripcion=str(c.get("descripcion", "")),
-                capitulos_a_regenerar=list(c.get("capitulos_a_regenerar", [])),
-                capitulos_a_revisar=list(c.get("capitulos_a_revisar", [])),
-                coste=str(c.get("coste", "")),
-            )
-            for c in datos.get("candidatos", [])
-            if isinstance(c, dict)
-        ],
+        candidatos=[_candidato(c) for c in datos.get("candidatos", []) if isinstance(c, dict)],
+    )
+
+
+def _candidato(c: dict[str, Any]) -> Candidato:
+    """Un candidato guardado, con lo que hace falta para elegirlo en el gate.
+
+    El valor actual es la descripción guardada: `buscar_candidatos` describe cada fila con
+    su campo por defecto, así que es lo que el Autor ve y sustituye.
+    """
+    from storymaker.regeneration.cambio import CAMPO_POR_DEFECTO
+    from storymaker.regeneration.esquemas import ObjetoDelCambio
+
+    descripcion = str(c.get("descripcion", ""))
+    objeto = c.get("objeto")
+    fila_id = c.get("fila_id")
+    elegible = objeto in {o.value for o in ObjetoDelCambio} and isinstance(fila_id, int)
+    return Candidato(
+        objeto=objeto if elegible else None,
+        fila_id=fila_id if elegible else None,
+        campo=CAMPO_POR_DEFECTO[ObjetoDelCambio(str(objeto))] if elegible else None,
+        valor=descripcion,
+        descripcion=descripcion,
+        capitulos_a_regenerar=list(c.get("capitulos_a_regenerar", [])),
+        capitulos_a_revisar=list(c.get("capitulos_a_revisar", [])),
+        coste=str(c.get("coste", "")),
     )
 
 
@@ -835,6 +892,7 @@ async def gate_de(carpeta: Path) -> GateDeNovela:
         editables = await _editables(db, sellado)
         peticion = await _peticion(db) if gate.fase == "regeneration" else None
         conversacion = await conversacion_de(db, carpeta) if gate.fase == "intake" else None
+        trama = await revision_de_la_trama(db) if gate.fase == "plotting" else None
     decisiones = ["aprobar", "rehacer"] + (["abortar"] if gate.fase == "intake" else [])
     return GateDeNovela(
         id=gate.id,
@@ -847,6 +905,44 @@ async def gate_de(carpeta: Path) -> GateDeNovela:
         editables=editables,
         corpus_sellado=sellado,
         decisiones=decisiones,
+        trama=trama,
+    )
+
+
+async def revision_de_la_trama(db: aiosqlite.Connection) -> RevisionDeLaTrama:
+    """El informe de Plotting en forma de datos, leído de lo que la revisión guardó."""
+    from storymaker.plotting import gate as revision
+    from storymaker.plotting import informe
+
+    incidencias = await revision.incidencias_guardadas(db)
+    corpus = await _uno(db, "SELECT MAX(id) FROM fase_run WHERE fase = 'investigation'")
+    datos = await informe.construir(
+        db, int(corpus or 0), revision.PuertaDePlotting(tuple(incidencias)), huecos_gastados=0
+    )
+    return RevisionDeLaTrama(
+        # Lo grave primero: es lo que merece un rehacer.
+        avisos=sorted(
+            (
+                AvisoDeLaTrama(
+                    validador=i.validador, grave=i.bloquea, mensaje=i.mensaje, ubicacion=i.ubicacion
+                )
+                for i in incidencias
+            ),
+            key=lambda a: not a.grave,
+        ),
+        huecos=[
+            HuecoDeLaTrama(
+                pregunta=h.pregunta,
+                dimension=h.dimension,
+                resultado=h.resultado,
+                enunciado=h.enunciado,
+                capitulo=h.capitulo,
+                escena=h.escena,
+            )
+            for h in datos.huecos
+        ],
+        inventados=datos.inventados,
+        escenas_poco_firmes=[f"cap. {c} esc. {o}" for c, o in datos.escenas_poco_firmes],
     )
 
 

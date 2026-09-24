@@ -15,6 +15,7 @@ export type GatePendiente = Esquemas['GatePendiente']
 export type GateDeNovela = Esquemas['GateDeNovela']
 export type FilaEditable = Esquemas['FilaEditable']
 export type Conversacion = Esquemas['Conversacion']
+export type RevisionDeLaTrama = Esquemas['RevisionDeLaTrama']
 export type EstadoDeNovela = TarjetaNovela['estado']
 export type EstadoDeFase = FaseDelPanel['estado']
 

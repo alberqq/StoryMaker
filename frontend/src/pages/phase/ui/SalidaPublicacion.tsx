@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { type SalidaPublicacion as Salida, urlDelPdf } from '@/shared/api'
-import { rutaImprimir, rutaIndice } from '@/shared/config'
+import { rutaIndice } from '@/shared/config'
 import { formatearFecha, formatearPuntuacion } from '@/shared/lib'
 import { EstadoVacio, Insignia, Progreso, Seccion } from '@/shared/ui'
 
@@ -48,7 +48,6 @@ export function SalidaPublicacion({ id, salida }: { id: string; salida: Salida }
           extra={
             <div className="fila">
               <Link className="boton boton-secundario boton-pequeno" to={rutaIndice(id, v.numero)}>Leer</Link>
-              <Link className="boton boton-fantasma boton-pequeno" to={rutaImprimir(id, v.numero)}>Imprimir</Link>
               <a className="boton boton-fantasma boton-pequeno" href={urlDelPdf(id, v.numero)} download>PDF</a>
             </div>
           }

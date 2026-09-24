@@ -22,7 +22,8 @@ export function Personajes({ fichas }: { fichas: Fichas }) {
   return (
     <section id="personajes" data-render="personajes">
       <h2>Personajes y lugares</h2>
-      <ul>
+      <h3>Personajes</h3>
+      <ul className="reparto">
         {fichas.personajes.map((p) => (
           <li key={`p${p.id}`}>
             <strong>{p.nombre}</strong>
@@ -32,8 +33,9 @@ export function Personajes({ fichas }: { fichas: Fichas }) {
           </li>
         ))}
       </ul>
+      {fichas.escenarios.length > 0 && <h3>Lugares</h3>}
       {fichas.escenarios.length > 0 && (
-        <ul>
+        <ul className="reparto">
           {fichas.escenarios.map((e) => (
             <li key={`e${e.id}`}>
               <strong>{e.nombre}</strong>

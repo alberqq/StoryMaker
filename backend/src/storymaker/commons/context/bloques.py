@@ -28,6 +28,7 @@ from storymaker.commons.context.paquete import Bloque
 from storymaker.commons.db.repos import arnes, canon, intake, mundo, plan, texto
 from storymaker.commons.embeddings import indice
 from storymaker.commons.embeddings.modelo import Vectorizador
+from storymaker.commons.validation.puras import anadido_vigente, firmeza
 
 
 def _valor(fila: aiosqlite.Row, columna: str, defecto: str = "") -> str:
@@ -266,9 +267,9 @@ async def anclajes(
     """Bloque 5. Los hechos que la escaleta ancló, más los vecinos del corpus sellado.
 
     **Los anclajes explícitos entran siempre**, y por eso son fijos: son lo que el arquitecto
-    decidió que este capítulo tiene que usar. Cada uno viaja con su estado epistémico, que es
-    lo que permite al escritor saber si lo que está usando es un dato verificado o una
-    inferencia.
+    decidió que este capítulo tiene que usar. Cada uno viaja con su firmeza (arq. §7), que
+    es lo que permite al escritor saber si lo que está usando es un dato documentado, una
+    inferencia o una licencia.
     """
     fragmentos: list[str] = []
     anclados: set[int] = set()
@@ -276,8 +277,10 @@ async def anclajes(
     for anclaje in await plan.anclajes_de(db, numero):
         if anclaje["hecho_id"] is not None:
             anclados.add(int(anclaje["hecho_id"]))
+            enunciado = _valor(anclaje, "hecho_enunciado")
             fragmentos.append(
-                f"[{_valor(anclaje, 'hecho_estado')}] {_valor(anclaje, 'hecho_enunciado')} "
+                f"[{_firmeza_del_anclaje(anclaje)}] {enunciado}"
+                f"{nota_de_la_cita(enunciado, anclaje['hecho_sin_respaldo'])} "
                 f"(escena {anclaje['escena_orden']}, {_valor(anclaje, 'tipo_vinculo')})"
             )
         elif anclaje["entidad_id"] is not None:
@@ -296,11 +299,30 @@ async def anclajes(
             fila = await mundo.hecho_por_id(db, vecino.id)
             if fila is not None:
                 fragmentos.append(
-                    f"[{_valor(fila, 'estado')}] {_valor(fila, 'enunciado')} "
+                    f"[{firmeza(str(fila['estado']), str(fila['respaldo']), str(fila['origen']))}] "
+                    f"{_valor(fila, 'enunciado')}"
+                    f"{nota_de_la_cita(_valor(fila, 'enunciado'), fila['sin_respaldo'])} "
                     f"(corpus, {_valor(fila, 'dimension')})"
                 )
 
     return Bloque(5, tuple(fragmentos), fijos=fijos)
+
+
+def nota_de_la_cita(enunciado: str, sin_respaldo: object) -> str:
+    """` (no lo dice la cita: «…»)` si el veredicto fue parcial y el añadido sigue ahí.
+
+    Es lo que separa, para quien escribe, el dato que la cita sostiene de lo que el
+    investigador le añadió (arq. §4, Fase 2). Si el Autor quitó el añadido, no queda nada.
+    """
+    anadido = anadido_vigente(enunciado, str(sin_respaldo) if sin_respaldo else None)
+    return f" (no lo dice la cita: «{anadido}»)" if anadido else ""
+
+
+def _firmeza_del_anclaje(anclaje: aiosqlite.Row) -> str:
+    """La firmeza del hecho anclado, con las columnas que `plan.anclajes_de` le trae."""
+    return firmeza(
+        str(anclaje["hecho_estado"]), str(anclaje["hecho_respaldo"]), str(anclaje["hecho_origen"])
+    )
 
 
 #: Las cuatro reglas de escritura fijas del bloque 6 (arq. §6). Cada una responde a un
@@ -314,6 +336,17 @@ REGLAS_DE_ESCRITURA = (
     "fecha narrativa de su escena.",
     "No contradigas lo que la continuidad dice que ya paso: lo entregado, prometido o "
     "decidido sigue asi.",
+)
+
+#: Qué hacer con cada firmeza del bloque 5 (arq. §6). Sin esto la etiqueta llegaba al
+#: escritor y no cambiaba nada de lo que escribía.
+USO_DE_LA_FIRMEZA = (
+    "documentado: cuentalo como hecho, con sus fechas y cifras.",
+    "debatido: no tomes partido; mejor por boca de un personaje o como rumor.",
+    "inferido: usalo como ambiente, sin cifras exactas y sin que la trama gire sobre ello.",
+    "desconocido: espacio libre para la ficcion, sin contradecir lo documentado.",
+    "inventado: usalo dentro del grado de licencia del encargo.",
+    "Lo que un anclaje marca como «no lo dice la cita» no lo cuentes como hecho.",
 )
 
 
@@ -333,7 +366,12 @@ async def reglas(db: aiosqlite.Connection, numero: int = 1) -> Bloque:
     obra = await canon.obra(db)
     if obra is not None:
         fragmentos.append(f"Voz: {_valor(obra, 'voz')}")
-    fragmentos.append("Reglas de escritura:\n- " + "\n- ".join(REGLAS_DE_ESCRITURA))
+    fragmentos.append(
+        "Reglas de escritura:\n- "
+        + "\n- ".join(REGLAS_DE_ESCRITURA)
+        + "\nQue hacer con cada anclaje segun su firmeza:\n- "
+        + "\n- ".join(USO_DE_LA_FIRMEZA)
+    )
 
     estilo: dict[str, Any] = await canon.estilo(db)
     if estilo:

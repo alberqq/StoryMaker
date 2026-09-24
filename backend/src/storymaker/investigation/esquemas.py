@@ -114,7 +114,11 @@ class VeredictoDeRespaldo(BaseModel):
     """
 
     hecho_id: int
+    #: Si la cita sostiene el **dato central** del enunciado.
     respaldado: bool
+    #: Lo que el enunciado añade y la cita no dice. Con `respaldado`, es el veredicto
+    #: parcial: el dato vale y esto se enseña aparte (arq. §4, Fase 2).
+    sin_respaldo: str = Field(default="", max_length=300)
     motivo: str = Field(default="", max_length=300)
 
 

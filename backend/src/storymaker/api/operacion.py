@@ -39,7 +39,7 @@ from storymaker.api.seguimiento import (
 )
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela, ruta_de_novela
-from storymaker.commons.db.repos import arnes
+from storymaker.commons.db.repos import arnes, mundo
 from storymaker.commons.graph import cerrojo
 
 router = APIRouter(tags=["operacion"], dependencies=[Depends(solo_local)])
@@ -330,6 +330,66 @@ async def desbloquear(nombre: str, peticion: Request) -> Hecha:
         )
     cerrojo.romper(ruta)
     return Hecha(nombre=carpeta.name, mensaje="Cerrojo roto. Ya puedes continuar la novela.")
+
+
+class CuerpoDeDescarte(BaseModel):
+    motivo: str = ""
+
+
+@router.post("/novelas/{nombre}/hechos/{hecho_id}/descartar")
+async def descartar(
+    nombre: str, hecho_id: int, cuerpo: CuerpoDeDescarte, peticion: Request
+) -> Hecha:
+    """Quita un hecho del corpus antes del sello, con el cerrojo tomado y trazado.
+
+    Queda en `edicion_humana` —el enunciado como `antes`, nada como `despues`— y en
+    `audit_log`, igual que cualquier otra intervención del Autor.
+    """
+    carpeta = carpeta_de(nombre, _settings(peticion))
+    ruta = carpeta / f"{carpeta.name}.db"
+    if not ruta.exists():
+        raise _rechazo(422, "La novela todavía no tiene corpus.")
+    try:
+        with cerrojo.tomar(ruta):
+            async with abrir_novela(ruta) as db:
+                if await corpus_sellado(db):
+                    raise _rechazo(422, "El corpus ya está sellado: sus hechos no se descartan.")
+                try:
+                    fila = await mundo.descartar_hecho(db, hecho_id)
+                except ValueError as error:
+                    raise _rechazo(409, str(error)) from error
+                if fila is None:
+                    raise _rechazo(404, f"No hay ningún hecho {hecho_id} en el corpus.")
+                pendiente = await arnes.gate_pendiente(db)
+                await db.execute(
+                    "INSERT INTO edicion_humana"
+                    " (fase_run_id, tabla, fila_id, campo, antes, despues, motivo)"
+                    " VALUES (?, 'mundo_hecho', ?, 'descartado', ?, NULL, ?)",
+                    (
+                        int(pendiente["fase_run_id"]) if pendiente is not None else None,
+                        hecho_id,
+                        str(fila["enunciado"]),
+                        cuerpo.motivo or None,
+                    ),
+                )
+                await arnes.registrar_audit(
+                    db,
+                    actor="autor",
+                    accion="descartar",
+                    objeto=f"hecho:{hecho_id}",
+                    antes={"enunciado": fila["enunciado"], "estado": fila["estado"]},
+                    despues={"motivo": cuerpo.motivo},
+                )
+                await db.commit()
+    except HTTPException:
+        raise
+    except Exception as error:
+        from storymaker.commons.errores import NovelaOcupada
+
+        if isinstance(error, NovelaOcupada):
+            raise _rechazo(409, "Hay una ejecución en curso sobre esta novela.") from error
+        raise
+    return Hecha(nombre=carpeta.name, mensaje="Hecho descartado del corpus.")
 
 
 @router.post("/novelas/{nombre}/ediciones")

@@ -18,7 +18,9 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from storymaker.investigation.esquemas import Dimension
 
 
 class TipoDePersonaje(StrEnum):
@@ -130,6 +132,35 @@ class CapituloPropuesto(BaseModel):
     escenas: list[EscenaPropuesta] = Field(default_factory=list)
 
 
+class HuecoPropuesto(BaseModel):
+    """Lo que la escaleta necesita y el corpus no tiene, dicho junto a la escena que lo pide.
+
+    Lleva **la invención ya enunciada** porque el segundo final del hueco —no encontrarlo—
+    autoriza a inventar, y lo que se inventa tiene que ser una afirmación. Sin ella, lo único
+    que el arnés tenía para escribir en el corpus era la pregunta.
+    """
+
+    pregunta: str = Field(min_length=1)
+    #: Clave de la escena que se apoya en la respuesta. Al cubrir el hueco, el hecho se
+    #: ancla a ella.
+    escena: str = ""
+    dimension: Dimension = Dimension.CULTURA_MATERIAL
+    #: La afirmación que el arquitecto usaría si la investigación no encuentra nada.
+    si_no_se_encuentra: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _desde_texto(cls, valor: object) -> object:
+        """Un hueco escrito como texto suelto es una pregunta sin escena ni propuesta."""
+        if isinstance(valor, str):
+            return {"pregunta": valor}
+        if isinstance(valor, dict) and valor.get("dimension") not in {d.value for d in Dimension}:
+            # Una dimensión mal escrita no tumba la escaleta entera: el hueco sigue siendo
+            # útil, y la dimensión solo decide en qué pestaña del corpus aparece.
+            return {**valor, "dimension": Dimension.CULTURA_MATERIAL.value}
+        return valor
+
+
 class SalidaArquitecto(BaseModel):
     """La entrega completa de la Fase 3."""
 
@@ -143,7 +174,7 @@ class SalidaArquitecto(BaseModel):
     glosario: list[TerminoDeGlosario] = Field(default_factory=list)
     capitulos: list[CapituloPropuesto] = Field(default_factory=list)
     #: Lo que la escaleta destapó y el corpus no tiene. Cada uno cuesta una micro-llamada.
-    huecos: list[str] = Field(default_factory=list)
+    huecos: list[HuecoPropuesto] = Field(default_factory=list)
 
     @property
     def homenajeado(self) -> PersonajePropuesto | None:

@@ -1,0 +1,14 @@
+.metrica-boton { all: unset; cursor: pointer; border-radius: var(--radio); }
+.metrica-boton .metrica { border: 1px solid transparent; }
+.metrica-boton.activa .metrica { border-color: var(--acento); background: var(--acento-suave); }
+.metrica-boton:focus-visible { outline: 2px solid var(--acento); }
+.hechos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e3); }
+.hecho { padding: var(--e3) 0; border-bottom: 1px solid var(--borde); }
+.hecho:last-child { border-bottom: none; }
+.hecho p { margin-bottom: var(--e2); }
+.hecho-acciones { gap: var(--e2); }
+.cita-hecho { margin: var(--e2) 0; padding: var(--e2) var(--e3); border-left: 3px solid var(--borde-fuerte); color: var(--texto-suave); font-size: 0.9rem; }
+.verificador { margin: var(--e2) 0 0; font-size: 0.88rem; color: var(--texto-tenue); }
+.verificador > summary { cursor: pointer; width: fit-content; }
+.verificador > p { margin: var(--e1) 0 0 var(--e3); }
+.fuentes { margin: var(--e2) 0 0; padding-left: var(--e5); font-size: 0.85rem; }

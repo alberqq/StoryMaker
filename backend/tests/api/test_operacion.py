@@ -19,7 +19,7 @@ from storymaker.api.app import crear_app
 from storymaker.api.novelas import ruta_de
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela
-from storymaker.commons.db.repos import arnes
+from storymaker.commons.db.repos import arnes, mundo
 from storymaker.commons.graph import cerrojo
 
 
@@ -220,3 +220,131 @@ class TestEditar:
             json={"objeto": "personaje", "fila_id": 2, "campo": "tipo", "valor": "x"},
         )
         assert respuesta.status_code == 422
+
+
+async def _sembrar_hecho(
+    ruta: Path, *, motivo: str | None = None, anadido: str | None = None
+) -> int:
+    """Un hecho sin respaldo con su fuente, y el veredicto del verificador si se pide.
+
+    Con `anadido`, el veredicto es parcial: respaldado, y el añadido en `sin_respaldo`.
+    """
+    async with abrir_novela(ruta) as db:
+        fase = await arnes.abrir_fase_run(db, "investigation")
+        cursor = await db.execute(
+            "INSERT INTO mundo_hecho (fase_run_id, enunciado, estado, dimension, origen, cita,"
+            " respaldo) VALUES (?, 'En 1983 hubo nieve', 'verificado', 'cronologia',"
+            " 'investigacion_inicial', 'Hubo frío', 'no_respaldado')",
+            (fase,),
+        )
+        hecho = int(cursor.lastrowid or 0)
+        if anadido is not None:
+            await mundo.anotar_respaldo(db, hecho, "respaldado", anadido)
+        fuente = await db.execute("INSERT INTO mundo_fuente (tipo, titulo) VALUES ('web', 'X')")
+        await db.execute(
+            "INSERT INTO mundo_hecho_fuente (hecho_id, fuente_id) VALUES (?, ?)",
+            (hecho, fuente.lastrowid),
+        )
+        if motivo is not None:
+            await arnes.registrar_audit(
+                db,
+                actor="verificador",
+                accion="respaldo",
+                objeto=f"hecho:{hecho}",
+                despues={"respaldado": False, "motivo": motivo},
+            )
+        await arnes.abrir_gate(db, fase)
+        await db.commit()
+    return hecho
+
+
+class TestDescartar:
+    async def test_descartar_borra_el_hecho_y_queda_trazado(
+        self, publicada: Path, cliente: Any
+    ) -> None:
+        hecho = await _sembrar_hecho(publicada)
+        respuesta = cliente.post(
+            f"/api/novelas/mar/hechos/{hecho}/descartar", json={"motivo": "adornado"}
+        )
+        assert respuesta.status_code == 200, respuesta.text
+        async with abrir_novela(publicada) as db:
+            async with db.execute("SELECT COUNT(*) FROM mundo_hecho") as cursor:
+                assert (await cursor.fetchone())[0] == 0
+            async with db.execute(
+                "SELECT campo, antes, despues, motivo FROM edicion_humana"
+            ) as cursor:
+                assert [tuple(f) for f in await cursor.fetchall()] == [
+                    ("descartado", "En 1983 hubo nieve", None, "adornado")
+                ]
+
+    async def test_un_hecho_que_no_existe_es_404(self, publicada: Path, cliente: Any) -> None:
+        await _sembrar_hecho(publicada)
+        assert cliente.post("/api/novelas/mar/hechos/999/descartar", json={}).status_code == 404
+
+    async def test_un_corpus_sellado_no_se_toca(self, publicada: Path, cliente: Any) -> None:
+        hecho = await _sembrar_hecho(publicada)
+        async with abrir_novela(publicada) as db:
+            await db.execute("INSERT INTO mundo_sello (hash, fase_run_id) VALUES ('h', 1)")
+            await db.commit()
+        respuesta = cliente.post(f"/api/novelas/mar/hechos/{hecho}/descartar", json={})
+        assert respuesta.status_code == 422
+
+    async def test_la_salida_trae_el_motivo_del_verificador(
+        self, publicada: Path, cliente: Any
+    ) -> None:
+        await _sembrar_hecho(publicada, motivo="La cita no habla de nieve")
+        hechos = cliente.get("/api/novelas/mar/fases/investigacion").json()["investigacion"][
+            "hechos"
+        ]
+        assert hechos[0]["motivo_respaldo"] == "La cita no habla de nieve"
+
+    async def test_la_salida_trae_la_firmeza(self, publicada: Path, cliente: Any) -> None:
+        """Lo declarado se sirve intacto, y al lado lo que el escritor va a ver."""
+        await _sembrar_hecho(publicada)
+        (hecho,) = cliente.get("/api/novelas/mar/fases/investigacion").json()["investigacion"][
+            "hechos"
+        ]
+        assert hecho["estado"] == "verificado"
+        assert hecho["firmeza"] == "inferido"
+
+    async def test_corregir_no_toca_el_respaldo(self, publicada: Path, cliente: Any) -> None:
+        """Sobre el corpus decide el Autor: su corrección no reabre el veredicto."""
+        hecho = await _sembrar_hecho(publicada)
+        respuesta = cliente.post(
+            "/api/novelas/mar/ediciones",
+            json={"objeto": "hecho", "fila_id": hecho, "campo": "enunciado", "valor": "Nevó"},
+        )
+        assert respuesta.status_code == 200, respuesta.text
+        async with abrir_novela(publicada) as db:
+            fila = await mundo.hecho_por_id(db, hecho)
+        assert fila is not None
+        assert (fila["enunciado"], fila["respaldo"]) == ("Nevó", "no_respaldado")
+
+    async def test_corregir_no_toca_el_anadido(self, publicada: Path, cliente: Any) -> None:
+        """Si el Autor quita el añadido, deja de verse; el veredicto no se reescribe."""
+        hecho = await _sembrar_hecho(publicada, anadido="hubo nieve")
+        assert _salida_del_hecho(cliente)["no_lo_dice_la_cita"] == "hubo nieve"
+        cliente.post(
+            "/api/novelas/mar/ediciones",
+            json={"objeto": "hecho", "fila_id": hecho, "campo": "enunciado", "valor": "En 1983"},
+        )
+        async with abrir_novela(publicada) as db:
+            fila = await mundo.hecho_por_id(db, hecho)
+        assert fila is not None
+        assert fila["sin_respaldo"] == "hubo nieve"
+        assert _salida_del_hecho(cliente)["no_lo_dice_la_cita"] is None
+
+    async def test_la_salida_trae_lo_que_no_dice_la_cita(
+        self, publicada: Path, cliente: Any
+    ) -> None:
+        await _sembrar_hecho(publicada, anadido="hubo nieve")
+        hecho = _salida_del_hecho(cliente)
+        assert hecho["firmeza"] == "documentado"
+        assert hecho["no_lo_dice_la_cita"] == "hubo nieve"
+
+
+def _salida_del_hecho(cliente: Any) -> dict[str, Any]:
+    (hecho,) = cliente.get("/api/novelas/mar/fases/investigacion").json()["investigacion"][
+        "hechos"
+    ]
+    return dict(hecho)

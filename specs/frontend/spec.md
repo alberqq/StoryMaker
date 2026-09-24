@@ -14,7 +14,7 @@ El frontend es **una aplicación React construida con Vite y organizada en Featu
 
 Cuatro afirmaciones lo gobiernan, y conviene tenerlas delante al leer el resto:
 
-1. **El frontend no tiene verdad propia.** Todo lo que enseña sale de la API, y la API lee el fichero SQLite de la novela. No hay estado de dominio en el cliente que sobreviva a una recarga, ni una copia local del canon, ni un almacén global de la novela. Seguir una ejecución es volver a preguntar, no acumular.
+1. **El frontend no tiene verdad propia.** Todo lo que enseña sale de la API, y la API lee el fichero SQLite de la novela. No hay estado de dominio en el cliente que sobreviva a una recarga, ni una copia local del canon, ni un almacén global de la novela. Seguir una ejecución es volver a preguntar, no acumular. **La única excepción son las preferencias de presentación** —el tema de la aplicación (§8) y los ajustes de lectura (§4.6)—, que no son de la novela sino de quien la mira y se guardan en el navegador desde un solo módulo.
 2. **Operar es pedir, no ejecutar.** Cuando el Autor lanza una novela o decide un gate, el frontend envía la acción y la API lanza la CLI como proceso aparte (arq. §16.5). La pantalla dice que la acción está lanzada y sigue mirando el fichero; nunca espera a que el proceso termine ni simula su resultado.
 3. **Se lee una Versión, no «la novela».** Un Capítulo publicado existe dentro de un manifiesto. Por eso **toda ruta de lectura lleva el número de versión**, y una URL de lectura sin versión es incorrecta, porque no identifica ningún texto.
 4. **La ruta que lee el lector es la que se imprime y la que se juzga.** El PDF sale de imprimirla con `page.pdf()` de Playwright, y `render_visual` la mira dentro de `PublishVersion`. El frontend es, por tanto, **la única pieza del repositorio fuera del backend que puede impedir una publicación**.
@@ -102,7 +102,9 @@ Cada una declara qué enseña, de dónde sale y qué hace cuando el dato no est�
 
 ### 4.1 `pages/library` — el taller
 
-**Es un tablero por fases, al estilo de Jira** (arq. §16.5). Tiene seis columnas: Encargo, Investigación, Trama, Escritura, Publicación y Publicadas. Cada novela del directorio `proyectos/` es una tarjeta en la columna de su fase actual, y las publicadas sin trabajo pendiente van a la última. Una novela en Regeneración va en Publicadas, con su insignia.
+**Es un tablero por fases, al estilo de Jira** (arq. §16.5). Tiene cinco columnas: Encargo, Investigación, Trama, Escritura y Publicación. Cada novela en curso del directorio `proyectos/` es una tarjeta en la columna de su fase actual.
+
+**Las publicadas van debajo, en un listado.** Una novela con versiones publicadas y sin trabajo en marcha sale del tablero y pasa a una tabla bajo él, titulada «Publicadas», con una fila por novela: el título, que abre su panel, el homenajeado, las versiones, lo gastado, cuándo se tocó por última vez y el enlace para leer la última versión. Una novela en Regeneración también va ahí, con su insignia, y si espera al Autor su fila enlaza al gate, que es donde se elige el candidato. Sin novelas publicadas, el listado no aparece.
 
 La tarjeta enseña el título, el homenajeado, **el estado de la novela** (§5.2) con su insignia de color, los capítulos aprobados sobre el total, lo gastado y, si espera al Autor, qué gate. Pulsarla abre su panel. Una novela sin versiones publicadas aparece igual, pero sin enlace de lectura: lo que se lee es una versión.
 
@@ -149,7 +151,7 @@ Enseña **qué fase espera**, desde cuándo, el resumen del gate —los mismos r
 
 **Editar no es una decisión en esta pantalla** (arq. §16.5). Abre el editor de filas, que alcanza los hechos del corpus, los personajes, los escenarios y el glosario. Cada cambio se guarda en el momento, con su motivo, y queda trazado; cuando el Autor termina, aprueba o rehace. La pantalla **nunca envía la decisión `editar`**. Un hecho de un corpus ya sellado no se ofrece como editable, porque la base no lo admitiría.
 
-**El gate de Regeneración** precarga la petición que lo abrió y enseña los candidatos que se calcularon al registrarla, con los capítulos que regeneraría y los que solo revisaría. El Autor puede afinar la petición —también con la forma `campo=valor`— antes de aprobar. Sin gate pendiente, la pantalla lo dice y enlaza al panel; si la novela está trabajando, dice en qué fase y espera, porque el gate puede estar a punto de abrirse. Tras decidir, vuelve al panel, donde se ve la novela reanudarse.
+**El gate de Regeneración** enseña la petición que lo abrió y **los candidatos como opciones a elegir**, cada uno con su descripción y los capítulos que regeneraría y los que solo revisaría. Debajo, la casilla **«Valor nuevo»**, precargada con el valor que el campo por defecto del candidato elegido tiene hoy; cambiar de candidato la vuelve a precargar. Aprobar envía `<objeto>:<fila_id> <campo>=<valor>`, que el backend aplica a esa fila sin volver a buscar (spec del backend §4.6, con los campos de cada candidato de §5.2); el primer candidato viene elegido, y aprobar sin cambiar el valor no cambia nada. Un candidato sin fila guardada se enseña pero no se elige, y sin candidatos aprobar deja pasar la regeneración de largo. Rehacer sigue llevando el comentario libre. Sin gate pendiente, la pantalla lo dice y enlaza al panel; si la novela está trabajando, dice en qué fase y espera, porque el gate puede estar a punto de abrirse. Tras decidir, vuelve al panel, donde se ve la novela reanudarse.
 
 ### 4.5 `pages/phase` — la salida de cada fase
 
@@ -158,7 +160,7 @@ Una pestaña por fase. En todas, arriba, **sus ejecuciones** —estado, tokens, 
 | Fase | Qué enseña |
 |---|---|
 | Encargo | El brief tal como quedó, los datos del encargo con su tipo, si son obligatorios y su origen, y el texto que entró en cuarentena |
-| Investigación | Los hechos **agrupados por dimensión**, con su estado epistémico, su respaldo, su cita y sus fuentes enlazadas; el recuento por dimensión; las entidades; y el sello del corpus si ya existe |
+| Investigación | Los hechos **agrupados por dimensión**, con su firmeza como única etiqueta, lo que no dice la cita, su cita y sus fuentes enlazadas; el recuento por dimensión; las entidades; y el sello del corpus si ya existe |
 | Trama | La obra —título, premisa, tema, voz y estilo—, los personajes con sus arcos e hitos, las relaciones, los escenarios, las Licencias, el glosario y **la escaleta** capítulo → escena → beat, con los anclajes de cada escena |
 | Escritura | Cada capítulo con **sus intentos**, su estado y sus palabras, **las incidencias de cada intento** con su validador, severidad y propuesta, y el texto de cualquier intento |
 | Publicación | Las versiones con **la rúbrica del juez por criterio**, el manifiesto y el acceso a leer cada versión |
@@ -174,6 +176,18 @@ Dos vistas sobre la misma slice:
 - **El capítulo** muestra el texto tal como esa versión lo fija, con navegación a anterior y siguiente y vuelta al índice.
 
 Sobre el texto del capítulo se ejercen **la selección de fragmento y la petición de cambio** (§6). Viven aquí, y no en una slice propia, porque solo se ejercen aquí.
+
+**Los ajustes de lectura, como en un lector electrónico.** Toda pantalla del registro de libro —capítulo, índice, portada, personajes, historial— lleva arriba a la derecha el botón **«Aa»**, que despliega una pestaña con cinco controles que se aplican en vivo, sin recargar:
+
+- **Tamaño de letra**, en cinco pasos, con «A−» y «A+».
+- **Fuente**, entre tres: **Garamond**, la del libro y la de por defecto; **Georgia**, otra serif más abierta; y **Inter**, una sin serifa. Las tres están ya en la máquina —Garamond e Inter servidas con la aplicación, Georgia del sistema—, así que cambiar de fuente no pide nada a la red.
+- **Interlineado**, en tres pasos: compacto, normal y amplio.
+- **Negrita**, que engruesa el texto corrido para quien lee mejor con más peso.
+- **Fondo del libro**: igual que la aplicación, claro u oscuro. **Es independiente del tema de la aplicación** (§8): se puede tener el panel oscuro y leer el libro en claro, o al revés.
+
+La pestaña se cierra al pulsar fuera o con Escape. Los ajustes **se recuerdan entre visitas** en el almacenamiento del navegador, bajo una sola clave y desde un solo módulo de `shared/lib`; si el navegador no deja guardar, se aplican igual durante la visita. **No tocan la ruta de impresión**: el PDF se maqueta siempre igual, lea quien lea.
+
+El lector **no ofrece imprimir**: la novela se lleva en papel con el PDF, que se descarga desde el índice. La ruta `/imprimir` sigue existiendo porque es de la que sale el PDF, pero ninguna pantalla enlaza a ella.
 
 ### 4.7 `pages/characters` — personajes y lugares
 
@@ -250,6 +264,8 @@ El lector selecciona un fragmento del capítulo, escribe en lenguaje natural qu�
 
 Esta sección es la que hace al frontend parte de un Quality Gate, y todo lo que dice es condición de G5.
 
+**Es un libro, no una página impresa.** El documento se maqueta en A5 con el registro de libro de §8: una **portada** a página completa con el título y la dedicatoria, la **nota del autor** y el **índice** cada uno en su página, **cada capítulo empezando en página nueva** con su número, su título y capitular en el primer párrafo, texto justificado con partición de palabras y sin líneas viudas ni huérfanas, y al final los personajes y lugares y las novedades. Los números de página los pone la impresión, al pie. En pantalla, la misma ruta enseña el documento como una sucesión de páginas.
+
 **Un solo documento y enlaces internos de verdad.** La ruta de impresión no navega: todo está en la misma página, y el índice enlaza por ancla (`#capitulo-7`), no por router.
 
 **Anclas estables, declaradas y feas a propósito.** Las regiones que `render_visual` comprueba se marcan con atributos que no cambian con el estilo:
@@ -273,7 +289,7 @@ Que sean atributos, y no clases de CSS ni textos visibles, es deliberado: el con
 
 La interfaz tiene que parecer un producto, no un esqueleto. Tiene **dos registros visuales**, porque sirve a dos cosas distintas:
 
-- **El panel** —taller, encargo, panel, gate y salidas— es una interfaz de trabajo moderna. Usa una tipografía sin serifa, densidad media y **modo claro y oscuro según el sistema**, con una barra de navegación persistente que lleva al taller y al encargo y dice en qué novela se está.
+- **El panel** —taller, encargo, panel, gate y salidas— es una interfaz de trabajo moderna. Usa una tipografía sin serifa, densidad media y **modo claro y oscuro según el sistema**, con una barra de navegación persistente que lleva al taller y al encargo y dice en qué novela se está. **El tema se elige en la propia barra**: según el sistema, que es el de por defecto, claro u oscuro. Se aplica a toda la aplicación, libro incluido, salvo que el lector haya fijado el fondo del libro en su pestaña «Aa» (§4.6). La impresión no lo sigue: el PDF se maqueta siempre en claro.
 - **El libro** —lector, portada, personajes, historial e impresión— tiene tipografía de libro con serifa, medida de línea de lectura y márgenes generosos. La impresión se maqueta en A5.
 
 **La interfaz lleva la marca de la empresa del Autor**: su logo en la barra de navegación y como icono de la pestaña, y su naranja `#ff7932` con el blanco roto `#f5f5f5` como color de acento y de fondo del panel. Donde el naranja no se lee como texto sobre fondo claro, los enlaces usan una variante más oscura del mismo tono. El registro de libro conserva su papel y su tinta: es la novela, no la empresa.
@@ -369,7 +385,7 @@ El identificador `REQ-FE-nn` es estable y **no se reutiliza jamás**: un requisi
 
 | # | Requisito | Apartado | Ítems |
 |---|---|---|---|
-| REQ-FE-01 | El frontend no guarda estado de dominio que sobreviva a una recarga: ni copia local del canon, ni almacén global de la novela | §1 | IMP-32 |
+| REQ-FE-01 | El frontend no guarda estado de dominio que sobreviva a una recarga: ni copia local del canon, ni almacén global de la novela; solo las preferencias de lectura, desde un único módulo | §1 | IMP-32, IMP-56 |
 | REQ-FE-02 | **Toda ruta de lectura lleva el número de versión** | §1, §3 | IMP-07, IMP-08 |
 | REQ-FE-03 | En desarrollo, `vite dev` sirve la aplicación y alcanza la API por el proxy de Vite en `/api` | §2.1 | IMP-01 |
 | REQ-FE-04 | Fuera de desarrollo, **FastAPI sirve el `dist/` construido** desde un solo origen | §2.1 | IMP-26, BE:P-136 |
@@ -445,7 +461,7 @@ El identificador `REQ-FE-nn` es estable y **no se reutiliza jamás**: un requisi
 
 | # | Requisito | Apartado | Ítems |
 |---|---|---|---|
-| REQ-FE-52 | El taller es un tablero con seis columnas —Encargo, Investigación, Trama, Escritura, Publicación y Publicadas—, y cada novela es una tarjeta en la columna de su fase actual | §4.1 | IMP-39 |
+| REQ-FE-52 | El taller es un tablero con cinco columnas —Encargo, Investigación, Trama, Escritura y Publicación—, y cada novela en curso es una tarjeta en la columna de su fase actual | §4.1 | IMP-39, IMP-55 |
 | REQ-FE-53 | La tarjeta enseña título, homenajeado, estado con su insignia, capítulos aprobados sobre el total, coste y, si espera, qué gate | §4.1 | IMP-39, IMP-34 |
 | REQ-FE-54 | Solo se arrastran tarjetas con gate pendiente distinto del de Regeneración, y solo a la columna siguiente o a la suya | §4.1 | IMP-39 |
 | REQ-FE-55 | Soltar en la columna siguiente propone aprobar y en la suya propone rehacer; **nada se decide sin confirmar** en un diálogo con el resumen del gate | §4.1 | IMP-39 |
@@ -469,10 +485,10 @@ El identificador `REQ-FE-nn` es estable y **no se reutiliza jamás**: un requisi
 | REQ-FE-68 | Aprobar y rehacer con comentario se ofrecen en todos los gates; abortar, solo en Intake y con confirmación | §4.4 | IMP-42, BE:P-165 |
 | REQ-FE-69 | Editar abre el editor de hechos, personajes, escenarios y glosario, guarda cada cambio al momento, y la pantalla **nunca envía la decisión `editar`** | §4.4 | IMP-42, BE:P-162 |
 | REQ-FE-70 | Un hecho de un corpus sellado no se ofrece como editable | §4.4 | IMP-42, BE:P-160 |
-| REQ-FE-71 | El gate de Regeneración precarga la petición que lo abrió, enseña sus candidatos con su alcance y se decide en su pantalla | §4.4 | IMP-42, BE:P-166 |
+| REQ-FE-71 | El gate de Regeneración enseña la petición que lo abrió y sus candidatos con su alcance, y se decide en su pantalla | §4.4 | IMP-42, BE:P-166 |
 | REQ-FE-72 | Cada fase enseña sus ejecuciones —estado, tokens, coste, inicio y duración— y las decisiones de sus gates | §4.5 | IMP-43, BE:P-161 |
 | REQ-FE-73 | La salida de Encargo enseña el brief, los datos del encargo con tipo, obligatoriedad y origen, y el texto en cuarentena | §4.5 | IMP-43, BE:P-161 |
-| REQ-FE-74 | La salida de Investigación agrupa los hechos por dimensión, con estado epistémico, respaldo, cita y fuentes enlazadas, su recuento, las entidades y el sello | §4.5 | IMP-43, BE:P-161 |
+| REQ-FE-74 | La salida de Investigación agrupa los hechos por dimensión, con su firmeza como única etiqueta, lo que no dice la cita, cita y fuentes enlazadas, su recuento, las entidades y el sello | §4.5 | IMP-43, BE:P-161 |
 | REQ-FE-75 | La salida de Trama enseña la obra, los personajes con arcos e hitos, relaciones, escenarios, Licencias, glosario y la escaleta capítulo → escena → beat con anclajes | §4.5 | IMP-43, BE:P-161 |
 | REQ-FE-76 | La salida de Escritura enseña por capítulo sus intentos, las incidencias de cada intento y el texto de cualquiera | §4.5 | IMP-43, BE:P-161 |
 | REQ-FE-77 | La salida de Publicación enseña las versiones con la rúbrica del juez por criterio y el manifiesto | §4.5 | IMP-43, BE:P-161 |
@@ -510,6 +526,12 @@ El identificador `REQ-FE-nn` es estable y **no se reutiliza jamás**: un requisi
 | REQ-FE-99 | Los dos modos del encargo ofrecen una casilla de investigación exhaustiva, que viaja como modo de investigación del encargo | §4.2 | IMP-50, BE:P-182 |
 | REQ-FE-100 | Los lugares se titulan con su nombre corto, y su descripción completa va debajo; la impresión y la salida de la Trama usan el mismo nombre | §4.7 | IMP-51, BE:P-183 |
 | REQ-FE-101 | Cada versión publicada ofrece descargar su PDF desde el panel, el índice de lectura y la salida de la Publicación, con la URL construida en `shared/api` | §4.3 | IMP-52, BE:P-184 |
+| REQ-FE-102 | La ruta de impresión se maqueta como un libro A5: portada a página completa, nota del autor e índice en su página, cada capítulo en página nueva con capitular, texto justificado sin viudas ni huérfanas | §7 | IMP-53 |
+| REQ-FE-103 | En el gate de Regeneración el Autor elige un candidato y escribe su valor nuevo, precargado con el actual; aprobar envía `<objeto>:<fila_id> <campo>=<valor>` | §4.4 | IMP-54, BE:P-186 |
+| REQ-FE-104 | Las novelas publicadas sin trabajo en marcha, y las que están en Regeneración, van en un listado bajo el tablero con título, homenajeado, versiones, gasto, última actividad y enlace a leer la última versión; si esperan en el gate de Regeneración, enlazan a él | §4.1 | IMP-55 |
+| REQ-FE-105 | Las pantallas del registro de libro llevan el botón «Aa», con tamaño de letra en cinco pasos, tres fuentes, tres interlineados, negrita y fondo del libro, aplicados en vivo y recordados entre visitas, sin afectar a la impresión | §4.6 | IMP-56, IMP-57 |
+| REQ-FE-107 | La barra permite elegir el tema de la aplicación —sistema, claro u oscuro—, y el fondo del libro puede fijarse aparte, en claro u oscuro, sea cual sea el tema de la aplicación | §8, §4.6 | IMP-57 |
+| REQ-FE-106 | Ninguna pantalla enlaza a la ruta de impresión; la novela en papel es el PDF | §4.6 | IMP-56 |
 
 ---
 
@@ -528,6 +550,13 @@ El identificador `REQ-FE-nn` es estable y **no se reutiliza jamás**: un requisi
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §4.5: cada hecho lleva **una sola etiqueta**, su firmeza, y lo que no dice la cita; REQ-FE-74 se reescribe | Petición del Autor; el detalle vive en la spec del gate de Investigación |
+| 2026-09-24 | §4.5: la salida de Investigación enseña **la firmeza** de cada hecho, con el estado declarado solo cuando difiere; REQ-FE-74 se reescribe. El detalle vive en la spec del gate de Investigación | Se propaga §7 de la arquitectura: el verificador ya no reescribe el estado y la firmeza se calcula al leer |
+| 2026-09-24 | §4.6: la pestaña «Aa» gana **interlineado, negrita y fondo del libro**. §8: **el tema de la aplicación se elige en la barra**, y el del libro puede fijarse aparte. §1 habla ya de preferencias de presentación. REQ-FE-105 cambia; entra REQ-FE-107 | Petición del Autor: poder tener la aplicación en oscuro y el libro en claro |
+| 2026-09-24 | §4.6: **ajustes de lectura** —tamaño y fuente, en la pestaña «Aa»— y el lector **deja de ofrecer imprimir**. §1 admite guardar en el navegador las preferencias de lectura, y solo ellas. REQ-FE-01 cambia; entran REQ-FE-105 y REQ-FE-106 | Petición del Autor: leer como en un Kindle, y quitar un «Imprimir» que duplicaba el PDF |
+| 2026-09-24 | §4.1: **las novelas publicadas salen del tablero** a un listado debajo, y el tablero queda con cinco columnas. REQ-FE-52 cambia y entra REQ-FE-104 | Petición del Autor: la sexta columna estiraba el tablero hacia la derecha |
+| 2026-09-24 | §4.4: en el gate de Regeneración **el Autor elige el candidato** y escribe el valor nuevo; aprobar envía `<objeto>:<fila_id> <campo>=<valor>`. Entra REQ-FE-103 | Petición del Autor: el backend deja de buscar con el texto del comentario al aprobar y aplica la fila elegida |
+| 2026-09-24 | §7: la ruta de impresión **se maqueta como un libro**. Entra REQ-FE-102 | El PDF pasa a imprimirse desde esta ruta, y su maqueta es lo que el Autor recibe |
 | 2026-09-24 | §4.3: las versiones publicadas ofrecen **descargar su PDF**. Entra REQ-FE-101 | El PDF se generaba y la interfaz no llevaba a él |
 | 2026-09-24 | §4.7: los lugares se titulan con **su nombre corto** y la descripción va debajo. Entra REQ-FE-100 | Petición del Autor |
 | 2026-09-24 | §4.2: el encargo ofrece **investigación exhaustiva** en los dos modos. Entra REQ-FE-99 | El modo exhaustivo de arq. §4, Fase 2, se elige al crear la novela |

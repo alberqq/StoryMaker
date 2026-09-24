@@ -10,7 +10,6 @@ import {
 import {
   numeroDeRuta,
   rutaCapitulo,
-  rutaImprimir,
   rutaPersonajes,
   rutaPortada,
   rutaVersiones,
@@ -40,7 +39,6 @@ function IndiceDeVersion({ id, n }: { id: string; n: number }) {
       <Link to={rutaPortada(id, n)}>Portada</Link>
       <Link to={rutaPersonajes(id, n)}>Personajes y lugares</Link>
       <Link to={rutaVersiones(id)}>Historial</Link>
-      <Link to={rutaImprimir(id, n)}>Imprimir</Link>
       <a href={urlDelPdf(id, n)} download>
         Descargar PDF
       </a>

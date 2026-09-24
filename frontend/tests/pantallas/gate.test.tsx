@@ -2,9 +2,34 @@
 
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { montar } from '../montar'
-import { enviados } from '../servidor'
+import { API, enviados, gateDe, servidor } from '../servidor'
+
+/** El gate de Regeneración de `rio`, con dos candidatos elegibles y uno registrado sin fila. */
+function conRegeneracion() {
+  const alcance = { capitulos_a_revisar: [], coste: '' }
+  servidor.use(
+    http.get(`${API}/novelas/:id/gate`, () =>
+      HttpResponse.json({
+        ...gateDe('rio'),
+        fase: 'regeneration',
+        peticion: {
+          texto: 'Quita el apellido del protagonista',
+          fragmento: null,
+          capitulo: null,
+          version: null,
+          candidatos: [
+            { objeto: 'personaje', fila_id: 1, campo: 'nombre', valor: 'Tomás Ruiz', descripcion: 'Tomás Ruiz', capitulos_a_regenerar: [1, 2], ...alcance },
+            { objeto: 'hecho', fila_id: 9, campo: 'enunciado', valor: 'El muelle existía', descripcion: 'El muelle existía', capitulos_a_regenerar: [3], ...alcance },
+            { objeto: null, fila_id: null, campo: null, valor: 'Viejo', descripcion: 'Viejo', capitulos_a_regenerar: [], ...alcance },
+          ],
+        },
+      }),
+    ),
+  )
+}
 
 describe('el gate', () => {
   it('dice qué fase espera, su resumen y enlaza a la salida completa', async () => {
@@ -82,5 +107,36 @@ describe('el gate', () => {
     montar('/novelas/mar/gate')
     expect(await screen.findByText('No hay ningún gate esperando')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir al panel de la novela' })).toHaveAttribute('href', '/novelas/mar')
+  })
+
+  describe('en Regeneración', () => {
+    it('el primer candidato viene elegido y su valor precargado', async () => {
+      conRegeneracion()
+      montar('/novelas/rio/gate')
+      await waitFor(() => expect(screen.getByRole('radio', { name: /Tomás Ruiz/ })).toBeChecked())
+      expect(await screen.findByRole('textbox', { name: /Valor nuevo/ })).toHaveValue('Tomás Ruiz')
+      expect(screen.getByRole('radio', { name: /Viejo/ })).toBeDisabled()
+    })
+
+    it('aprobar envía la fila elegida y su valor nuevo', async () => {
+      conRegeneracion()
+      montar('/novelas/rio/gate')
+      await userEvent.click(await screen.findByRole('radio', { name: /El muelle existía/ }))
+      const valor = await screen.findByRole('textbox', { name: /Valor nuevo/ })
+      await waitFor(() => expect(valor).toHaveValue('El muelle existía'))
+      await userEvent.clear(valor)
+      await userEvent.type(valor, 'El muelle no existía')
+      await userEvent.click(screen.getByRole('button', { name: 'Aprobar' }))
+      await waitFor(() => expect(enviados).toHaveLength(1))
+      expect(enviados[0]?.cuerpo).toEqual({ decision: 'aprobar', comentario: 'hecho:9 enunciado=El muelle no existía' })
+    })
+
+    it('aprobar sin cambiar el valor no envía ninguna elección', async () => {
+      conRegeneracion()
+      montar('/novelas/rio/gate')
+      expect(await screen.findByText('Sin cambiar el valor, aprobar no toca nada.')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Aprobar' }))
+      await waitFor(() => expect(enviados[0]?.cuerpo).toEqual({ decision: 'aprobar', comentario: '' }))
+    })
   })
 })

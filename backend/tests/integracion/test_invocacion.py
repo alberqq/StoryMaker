@@ -125,7 +125,7 @@ class TestInvocacion:
     ) -> None:
         """Sin guion, el entrevistador no tiene respuesta y el grafo revienta en `Configure`.
 
-        El aviso sale aunque nadie mire la terminal, y trae el comando para retomar.
+        El aviso sale aunque nadie mire la terminal, y dice dónde reventó.
         """
         nulo = NotifierNulo()
         resultado = await invocar(
@@ -139,7 +139,8 @@ class TestInvocacion:
         )
         assert resultado.nodo_final == "Fail"
         assert [a.titulo for a in nulo.enviados] == [f"StoryMaker · {novela.stem} · se ha detenido"]
-        assert f"storymaker continuar {novela.stem}" in nulo.enviados[0].cuerpo
+        assert "Nodo: entrevistar" in nulo.enviados[0].cuerpo
+        assert "storymaker" not in nulo.enviados[0].cuerpo
 
     async def test_parar_en_un_gate_no_manda_aviso_de_parada(
         self, novela: Path, ajustes: Settings, dobles: dict[str, Any]

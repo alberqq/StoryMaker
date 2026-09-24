@@ -1,6 +1,8 @@
 """spec: §4.3 · arq: §4, §10
 
-El informe del gate de Plotting.
+Lo que enseña lo fija además `specs/trama-rehacible/spec.md` §3.
+
+El informe del gate de Plotting: lo que el Autor tiene delante al decidir sobre la trama.
 
 Su pieza más importante es **el recuento de hechos inventados por dimensión**, y está ahí
 por una decisión concreta: la invención autorizada no se topa, se cuenta. Poner límite a lo
@@ -9,8 +11,9 @@ origen—, así que lo que hace el arnés es enseñarlo. Cuánta libertad es ace
 declara `grado_licencia` en el brief, y quien la juzga es el juez con el criterio de
 autenticidad de época.
 
-Lo demás que se enseña aquí es lo que el Autor necesita para decidir con conocimiento: qué
-validadores han pasado, cuántos huecos se gastaron y qué queda sin anclar.
+Lo demás es lo que el Autor necesita para decidir con conocimiento: cada hueco con su
+escena y cómo se cubrió, y los avisos de la revisión. **Ninguno cierra el gate**; si rehace,
+el arquitecto los recibe.
 """
 
 from __future__ import annotations
@@ -25,12 +28,30 @@ from storymaker.plotting.gate import PuertaDePlotting
 
 
 @dataclass(frozen=True)
+class HuecoDelInforme:
+    pregunta: str
+    dimension: str
+    #: `encontrado`, `inventado`, o `None` si el tope de huecos no llegó a él.
+    resultado: str | None
+    enunciado: str | None
+    capitulo: int | None
+    escena: int | None
+
+
+@dataclass(frozen=True)
 class InformeDePlotting:
     capitulos: int
     escenas: int
     inventados_por_dimension: dict[str, int]
     huecos_gastados: int
     incidencias: tuple[Incidencia, ...] = ()
+    #: Hechos que encontró la micro-sesión y el verificador no respaldó: su firmeza no pasa
+    #: de `inferido` aunque el investigador los diera por verificados.
+    micro_sin_respaldo: int = 0
+    #: `(capitulo, orden)` de las escenas que solo se apoyan en hechos inferidos o
+    #: desconocidos. Es aviso: el Autor decide si merecen otro ancla (arq. §4, Fase 3).
+    escenas_poco_firmes: tuple[tuple[int, int], ...] = ()
+    huecos: tuple[HuecoDelInforme, ...] = ()
 
     @property
     def inventados(self) -> int:
@@ -38,6 +59,7 @@ class InformeDePlotting:
 
     @property
     def puede_avanzar(self) -> bool:
+        """Si la revisión está en verde. Informa: el gate se puede aprobar igual."""
         return not any(i.bloquea for i in self.incidencias)
 
     def como_texto(self) -> str:
@@ -45,10 +67,15 @@ class InformeDePlotting:
             f"Escaleta: {self.capitulos} capitulos, {self.escenas} escenas.",
             f"Huecos de micro-investigacion gastados: {self.huecos_gastados}.",
         ]
+        for h in self.huecos:
+            donde = f"cap. {h.capitulo} esc. {h.escena}" if h.capitulo else "sin escena"
+            como = {
+                "encontrado": "encontrado",
+                "inventado": "inventado con permiso",
+            }.get(h.resultado or "", "sin cubrir")
+            lineas.append(f"  - {h.pregunta} ({donde}): {como}")
         if self.inventados:
-            lineas.append(
-                f"\n{self.inventados} hecho(s) inventados con permiso, por dimension:"
-            )
+            lineas.append(f"\n{self.inventados} hecho(s) inventados con permiso, por dimension:")
             for dimension, cuantos in sorted(self.inventados_por_dimension.items()):
                 lineas.append(f"  - {dimension}: {cuantos}")
             lineas.append(
@@ -58,33 +85,74 @@ class InformeDePlotting:
             )
         else:
             lineas.append("\nNingun hecho inventado: toda la escaleta se apoya en el corpus.")
+        if self.micro_sin_respaldo:
+            lineas.append(
+                f"{self.micro_sin_respaldo} hecho(s) de la micro-investigacion sin respaldo: "
+                "su firmeza no pasa de inferido."
+            )
+        if self.escenas_poco_firmes:
+            lineas.append(
+                f"{len(self.escenas_poco_firmes)} escena(s) se apoyan solo en hechos inferidos "
+                "o desconocidos: "
+                + ", ".join(f"cap. {c} esc. {o}" for c, o in self.escenas_poco_firmes)
+                + ". No bloquea; si alguna sostiene un giro, merece un ancla documentado."
+            )
 
         if self.incidencias:
-            lineas.append("\nLa puerta del gate no esta en verde:")
+            lineas.append("\nLa revision de la escaleta encontro esto:")
             for incidencia in self.incidencias:
-                marca = "BLOQUEA" if incidencia.bloquea else "aviso  "
+                marca = "grave" if incidencia.bloquea else "aviso"
                 lineas.append(f"  [{marca}] {incidencia.validador}: {incidencia.mensaje}")
             lineas.append(
                 "Corregir esto aqui cuesta un parrafo de escaleta. Descubrirlo con la "
-                "novela escrita cuesta diez capitulos."
+                "novela escrita cuesta diez capitulos. Si rehaces, el arquitecto recibe "
+                "estos avisos ademas de tu comentario."
             )
         else:
-            lineas.append("\nCobertura y arcos en verde: la escaleta puede sellarse.")
+            lineas.append("\nCobertura, arcos y cronologia en verde: la escaleta puede sellarse.")
         return "\n".join(lineas)
 
 
 async def construir(
     db: aiosqlite.Connection, fase_run_id: int, puerta: PuertaDePlotting, *, huecos_gastados: int
 ) -> InformeDePlotting:
+    """El informe de la trama vigente.
+
+    La invención se cuenta en los huecos **de esta trama** cuando los hay, y en el corpus de
+    `fase_run_id` si no: tras rehacer, lo inventado para la trama anterior sigue en el corpus
+    pero ya no es obra de la que se está juzgando.
+    """
     capitulos = await plan.total_de_capitulos(db)
     async with db.execute("SELECT COUNT(*) AS n FROM plan_escena") as cursor:
         fila = await cursor.fetchone()
     escenas = int(fila["n"]) if fila is not None else 0
 
+    huecos = tuple(
+        HuecoDelInforme(
+            pregunta=str(h["pregunta"]),
+            dimension=str(h["dimension"]),
+            resultado=h["resultado"],
+            enunciado=h["enunciado"],
+            capitulo=h["capitulo"],
+            escena=h["escena"],
+        )
+        for h in await plan.huecos_de_la_trama(db)
+    )
+    if huecos:
+        inventados: dict[str, int] = {}
+        for h in huecos:
+            if h.resultado == "inventado":
+                inventados[h.dimension] = inventados.get(h.dimension, 0) + 1
+    else:
+        inventados = await mundo.inventados_por_dimension(db, fase_run_id)
+
     return InformeDePlotting(
         capitulos=capitulos,
         escenas=escenas,
-        inventados_por_dimension=await mundo.inventados_por_dimension(db, fase_run_id),
-        huecos_gastados=huecos_gastados,
+        inventados_por_dimension=inventados,
+        huecos_gastados=huecos_gastados or sum(1 for h in huecos if h.resultado),
         incidencias=puerta.incidencias,
+        micro_sin_respaldo=await mundo.micro_sin_respaldo(db, fase_run_id),
+        escenas_poco_firmes=tuple(await plan.escenas_poco_firmes(db)),
+        huecos=huecos,
     )

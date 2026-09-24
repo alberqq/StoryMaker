@@ -1,12 +1,17 @@
-"""spec: §4.3 · arq: §4, §9
+"""spec: §4.3 · arq: §4, §9, §10
+
+La forma de rehacer y de los huecos la fija `specs/trama-rehacible/spec.md` §2 y §4.
 
 Fase 3 · Plotting. Los nodos `Plan`, `FillGap` y `SealCorpus`.
 
 **El hueco del arquitecto.** La investigación inicial se hizo sin saber todavía qué iba a
 necesitar la trama, así que la escaleta destapa huecos: un detalle de cultura material, el
-nombre de época de una calle, cómo se llamaba un oficio. Cada hueco dispara **una única
-llamada** al investigador, que termina siempre de una de dos formas: lo encuentra, o
-devuelve `no_encontrado` y **autoriza al arquitecto a inventarlo**.
+nombre de época de una calle, cómo se llamaba un oficio. El arquitecto declara cada hueco
+**junto a la escena que lo necesita y con la invención que usaría**, y cada uno dispara
+**una única llamada** al investigador, que termina siempre de una de dos formas: lo
+encuentra, o devuelve `no_encontrado` y la invención propuesta entra en el corpus como
+invención autorizada. En los dos casos el hecho **se ancla a su escena**, que es lo que
+hace que el escritor lo reciba.
 
 **El número de huecos está topado en cinco por ejecución**, y el contador vive en el estado
 del grafo, que es el único sitio donde un tope se puede imponer de verdad. Alcanzado el
@@ -16,6 +21,10 @@ nada y produce exactamente la misma fila.
 **La invención, en cambio, no se topa: se cuenta.** Poner límite a lo que el arquitecto
 puede inventar solo le dejaría salidas peores —fallar, o declarar otro origen—, así que lo
 que hace el arnés es enseñarlo en el informe del gate.
+
+**Rehacer replanifica.** Tras «rehacer» o «editar» en el gate, `Plan` sustituye la trama y
+el arquitecto recibe la anterior, el comentario del Autor y los avisos de la revisión
+(`plotting.trama`). Al volver de un hueco, no.
 """
 
 from __future__ import annotations
@@ -41,16 +50,35 @@ from storymaker.investigation.esquemas import (
     EstadoEpistemico,
     HechoPropuesto,
 )
-from storymaker.investigation.nodos import periodo_y_lugar, resolver_hueco
-from storymaker.plotting import canon, contexto, escaleta
-from storymaker.plotting.esquemas import SalidaArquitecto
+from storymaker.investigation.nodos import periodo_y_lugar, resolver_hueco, verificar_hecho
+from storymaker.plotting import canon, contexto, escaleta, trama
+from storymaker.plotting import gate as revision
+from storymaker.plotting.esquemas import HuecoPropuesto, SalidaArquitecto
 
 ORIGEN_MICRO = "micro_arquitecto"
 ORIGEN_INVENTADO = "invencion_autorizada"
 
+#: Qué hacer con cada firmeza al construir la trama (arq. §4, Fase 3). El arquitecto es
+#: quien decide dónde se apoya la novela, así que es a él a quien más le importa.
+USO_DE_LA_FIRMEZA_EN_LA_TRAMA = (
+    "Cada hecho del contexto lleva su firmeza delante.\n"
+    "- documentado: apoya aqui el evento ancla y los giros de la trama.\n"
+    "- debatido: puede sostener una escena si la duda forma parte de ella.\n"
+    "- inferido: usalo como ambiente, no como apoyo de un giro.\n"
+    "- desconocido: hueco libre; puedes inventar ahi.\n"
+    "- inventado: ya es licencia; usalo dentro del grado de licencia del encargo.\n"
+    "Lo marcado como «no lo dice la cita» no es parte del hecho."
+)
+
 
 async def cubrir_hueco(
-    pregunta: str, *, periodo: str, lugar: str, fase_run_id: int, dimension: Dimension
+    pregunta: str,
+    *,
+    periodo: str,
+    lugar: str,
+    fase_run_id: int,
+    dimension: Dimension,
+    propuesta: str = "",
 ) -> tuple[int, str]:
     """Resuelve un hueco. Devuelve (identificador del hecho, origen con el que entró).
 
@@ -58,6 +86,13 @@ async def cubrir_hueco(
     exige en Writing que todo anclaje apunte a un hecho del corpus sellado o a una Licencia
     declarada. Un detalle inventado que viviera solo en la cabeza del arquitecto tumbaría ese
     validador en cuanto el escritor lo usara.
+
+    **El hecho encontrado pasa en el acto por el verificador**; el inventado no, porque no
+    tiene cita que comprobar (arq. §4, Fase 3). Si el verificador falla, el hecho se queda
+    `pendiente`, su firmeza no pasa de `inferido` y la escaleta sigue.
+
+    Lo inventado es **la propuesta del arquitecto**, que es una afirmación. Solo si no la
+    dio se escribe la pregunta, que es lo único que queda.
     """
     deps = actuales()
     resuelto = await resolver_hueco(pregunta, periodo, lugar)
@@ -66,10 +101,11 @@ async def cubrir_hueco(
         hecho_id = await escribir_hecho(
             deps.db, deps.vectorizador, resuelto.hecho, fase_run_id=fase_run_id, origen=ORIGEN_MICRO
         )
+        await verificar_hecho(hecho_id)
         return hecho_id, ORIGEN_MICRO
 
     inventado = HechoPropuesto(
-        enunciado=pregunta,
+        enunciado=propuesta.strip() or pregunta,
         estado=EstadoEpistemico.INFERIDO,
         dimension=dimension,
         cita="",
@@ -109,7 +145,42 @@ def forma_de_la_escaleta(brief: Brief) -> str:
     )
 
 
-async def planificar(brief: Brief, *, fase_run_id: int) -> SalidaArquitecto:
+#: Cómo se le pide al arquitecto que declare un hueco. Sin escena ni propuesta, el hueco
+#: entraba en el corpus sin que nada de la trama se apoyara en él.
+FORMA_DE_LOS_HUECOS = (
+    "Declara cada hueco con: la pregunta concreta; la clave de la escena que lo necesita; "
+    "su dimension (cronologia, lugar, cultura_material, lenguaje, mentalidad o "
+    "estructura_social), y en si_no_se_encuentra la afirmacion que usarias si la "
+    "investigacion no lo encuentra, escrita como un hecho y no como una pregunta."
+)
+
+
+def rehacer_como_texto(anterior: str, comentarios: list[str], avisos: list[str]) -> str:
+    """El bloque que convierte «rehacer» en un reintento dirigido.
+
+    Va la trama anterior porque es lo que el Autor ha visto y quizá corregido; los avisos,
+    porque son lo que la revisión encontró, y rehacer sin arreglarlos repetiría el fallo; y
+    el comentario, que es lo que manda.
+    """
+    if not anterior and not comentarios and not avisos:
+        return ""
+    partes = ["--- Rehacer ---", "El Autor ha pedido rehacer la trama."]
+    if comentarios:
+        partes.append("Lo que pide, por orden (lo ultimo manda):")
+        partes += [f"- {c}" for c in comentarios]
+    if avisos:
+        partes.append("La revision de la trama anterior encontro esto; corrigelo:")
+        partes += [f"- {a}" for a in avisos]
+    if anterior:
+        partes.append(
+            "Esta es la trama anterior, con las correcciones del Autor. Conserva lo que el "
+            "comentario no pida cambiar:"
+        )
+        partes.append(anterior)
+    return "\n".join(partes) + "\n\n"
+
+
+async def planificar(brief: Brief, *, fase_run_id: int, rehacer: str = "") -> SalidaArquitecto:
     """Una llamada al arquitecto, con el corpus repartido por dimensiones delante.
 
     Lo que se le entrega no es el corpus entero sino la selección de `contexto`: el techo de
@@ -128,6 +199,9 @@ async def planificar(brief: Brief, *, fase_run_id: int) -> SalidaArquitecto:
         f"--- Contexto histórico ---\n{contexto.como_texto(hechos)}\n\n"
         f"--- Elementos del encargo ---\n{await elementos_con_clave(deps.db)}\n\n"
         f"--- Forma de la escaleta ---\n{forma_de_la_escaleta(brief)}\n\n"
+        f"--- Firmeza de los hechos ---\n{USO_DE_LA_FIRMEZA_EN_LA_TRAMA}\n\n"
+        f"--- Huecos ---\n{FORMA_DE_LOS_HUECOS}\n\n"
+        f"{rehacer}"
         "Ancla cada escena a los hechos y elementos que la sostienen escribiendo su "
         "clave #id tal como aparece arriba.\n"
     )
@@ -150,16 +224,21 @@ async def planificar(brief: Brief, *, fase_run_id: int) -> SalidaArquitecto:
     return resultado.valor
 
 
-async def volcar(salida: SalidaArquitecto, brief: Brief) -> None:
+async def volcar(
+    salida: SalidaArquitecto, brief: Brief, *, fase_run_id: int | None = None
+) -> dict[str, int]:
     """Canon, palabras prohibidas, escaleta y arcos, **en ese orden**.
 
     El orden no es cosmético: los arcos anclan sus hitos a escenas, y las escenas no tienen
     identificador hasta que la escaleta está escrita. Volcarlos antes dejaría todos los hitos
     con `escena_id` nulo y `arco_anclado` en rojo en el gate.
+
+    Devuelve clave de escena → identificador, que es lo que ancla cada hueco a su escena.
     """
     deps = actuales()
-    personajes = await canon.volcar_canon(deps.db, deps.vectorizador, salida, brief)
-    await canon.volcar_prohibidas(deps.db, brief)
+    personajes = await canon.volcar_canon(
+        deps.db, deps.vectorizador, salida, brief, fase_run_id=fase_run_id
+    )
     async with deps.db.execute("SELECT id, enunciado FROM mundo_hecho") as cursor:
         hechos = {int(f["id"]): str(f["enunciado"]) for f in await cursor.fetchall()}
     datos = {int(d["id"]): _valor_de_dato(d["valor_json"]) for d in await intake.datos(deps.db)}
@@ -182,6 +261,7 @@ async def volcar(salida: SalidaArquitecto, brief: Brief) -> None:
             severidad="aviso",
             mensaje=f"El anclaje no apunta a ningun hecho ni elemento conocido: {anclaje}",
         )
+    return escenas
 
 
 #: Los anclajes de la escaleta que no se pudieron resolver a un hecho o a un elemento.
@@ -212,53 +292,97 @@ async def elementos_con_clave(db: aiosqlite.Connection) -> str:
 async def plan(estado: EstadoNovela) -> EstadoNovela:
     """El arquitecto inventa la Premisa y el Tema, y construye canon y escaleta.
 
-    **Planifica una sola vez.** El nodo tiene dos aristas de entrada —la primera desde
-    `VerifyCorpus` y las siguientes desde `FillGap`—, y al volver de un hueco no rehace la
-    escaleta: el hueco resuelto entró en el corpus, que es lo que `anclaje_valido` mira en
-    Writing. Replanificar en cada vuelta duplicaría personajes y capítulos, y costaría cinco
-    llamadas de arquitecto para no cambiar nada que el escritor vaya a leer.
+    **Planifica cuando no hay trama o cuando el Autor pidió otra**, y en ningún otro caso
+    (`trama.hay_que_planificar`). El nodo tiene dos aristas de entrada —desde `VerifyCorpus`
+    o el gate, y desde `FillGap`—, y al volver de un hueco no rehace la escaleta: el hueco
+    resuelto ya entró en el corpus y se ancló a su escena. Replanificar en cada vuelta
+    duplicaría personajes y capítulos, y costaría cinco llamadas de arquitecto para nada.
 
-    El tope de huecos se recorta además a los que el arquitecto declaró de verdad: el
-    presupuesto de cinco es un máximo, no una cuota que haya que gastar.
+    Tras planificar, la revisión corre y guarda lo que encuentra, y los huecos se registran
+    con su escena. El tope de huecos se recorta a los que el arquitecto declaró de verdad:
+    el presupuesto es un máximo, no una cuota que haya que gastar.
     """
     deps = actuales()
-    if await repo_plan.total_de_capitulos(deps.db) > 0:
+    if not await trama.hay_que_planificar(deps.db):
         return {**estado, "pc": "AwaitApproval3"}
 
     brief = await brief_vigente(deps.db)
     if brief is None:
-        return {**estado, "pc": "AwaitApproval3", "huecos": 0}
+        return {**estado, "pc": "AwaitApproval3", "huecos": 0, "huecos_pendientes": []}
 
-    salida = await planificar(brief, fase_run_id=estado["fase_run_id"])
-    await volcar(salida, brief)
+    rehacer = ""
+    if await trama.hay_trama(deps.db):
+        avisos = [i.mensaje for i in await revision.incidencias_guardadas(deps.db)]
+        rehacer = rehacer_como_texto(
+            await trama.como_texto(deps.db),
+            await arnes.comentarios_de_rehacer(deps.db, "plotting"),
+            avisos,
+        )
+        await trama.borrar(deps.db)
+        await revision.retirar_incidencias(deps.db)
 
-    pendientes = salida.huecos[: estado["huecos"]]
+    salida = await planificar(brief, fase_run_id=estado["fase_run_id"], rehacer=rehacer)
+    escenas = await volcar(salida, brief, fase_run_id=estado["fase_run_id"])
+    await revision.revisar(deps.db, deps.vectorizador)
+
+    tope = deps.settings.huecos_por_plotting
+    pendientes = [await registrar_hueco(deps.db, hueco, escenas) for hueco in salida.huecos[:tope]]
     return {
         **estado,
         "pc": "AwaitApproval3",
         "huecos": len(pendientes),
-        "huecos_pendientes": list(pendientes),
+        "huecos_pendientes": [str(h) for h in pendientes],
     }
 
 
+async def registrar_hueco(
+    db: aiosqlite.Connection, hueco: HuecoPropuesto, escenas: dict[str, int]
+) -> int:
+    return await repo_plan.registrar_hueco(
+        db,
+        pregunta=hueco.pregunta,
+        dimension=hueco.dimension.value,
+        escena_id=escenas.get(hueco.escena),
+        propuesta=hueco.si_no_se_encuentra,
+    )
+
+
 async def fill_gap(estado: EstadoNovela) -> EstadoNovela:
-    """Resuelve un hueco, lo descuenta y vuelve a `Plan`.
+    """Resuelve un hueco, lo ancla a su escena, lo descuenta y vuelve a `Plan`.
 
     El contador vive aquí y no en el prompt: un tope que el arquitecto pudiera leer sería una
     sugerencia. Los dos finales de `cubrir_hueco` —encontrado o inventado— escriben fila, así
     que la vuelta a `Plan` es idéntica en ambos casos y el bucle siempre avanza.
+
+    El estado lleva el identificador del hueco y no su contenido, que vive en `plan_hueco`.
+    Un pendiente que no es un número —un checkpoint anterior, con la pregunta en claro— se
+    cubre igual, sin escena.
     """
     pendientes = list(estado["huecos_pendientes"])
     if pendientes:
         deps = actuales()
         periodo, lugar = await periodo_y_lugar(deps.db)
-        await cubrir_hueco(
-            pendientes.pop(0),
+        siguiente = pendientes.pop(0)
+        fila = await repo_plan.hueco(deps.db, int(siguiente)) if siguiente.isdigit() else None
+        hecho_id, origen = await cubrir_hueco(
+            str(fila["pregunta"]) if fila is not None else siguiente,
             periodo=periodo,
             lugar=lugar,
             fase_run_id=corpus_de(estado),
-            dimension=Dimension.CULTURA_MATERIAL,
+            dimension=(
+                Dimension(str(fila["dimension"]))
+                if fila is not None
+                else Dimension.CULTURA_MATERIAL
+            ),
+            propuesta=str(fila["propuesta"] or "") if fila is not None else "",
         )
+        if fila is not None:
+            await repo_plan.cerrar_hueco(
+                deps.db,
+                int(fila["id"]),
+                hecho_id=hecho_id,
+                resultado="encontrado" if origen == ORIGEN_MICRO else "inventado",
+            )
     return {
         **estado,
         "pc": "Plan",

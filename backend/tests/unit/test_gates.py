@@ -3,7 +3,7 @@
 Los gates se deciden en el PC y Telegram solo avisa.
 
 Lo que se comprueba es la frontera entre las dos cosas: que el aviso **no lleva botones** y
-sí el comando exacto para decidir, y que `aplicar` —lo que ejecuta `storymaker decidir`—
+ni comandos, solo «Decide en el PC», y que `aplicar` —lo que ejecuta `storymaker decidir`—
 solo toca el gate pendiente y rechaza sin escribir nada lo que no se puede aplicar.
 """
 
@@ -27,7 +27,7 @@ from storymaker.gates.notifier import (
 
 
 class TestAviso:
-    def test_el_aviso_de_un_gate_trae_el_comando_y_ningun_boton(self) -> None:
+    def test_el_aviso_de_un_gate_dice_decide_en_el_pc_sin_comandos_ni_botones(self) -> None:
         aviso = Aviso(
             titulo="Gate de Plotting",
             cuerpo="La escaleta espera tu visto bueno.",
@@ -36,21 +36,20 @@ class TestAviso:
             novela="ejemplo",
         )
         texto = texto_de(aviso)
-        assert "storymaker decidir ejemplo aprobar" in texto
-        assert "storymaker decidir ejemplo abortar" in texto
+        assert texto.endswith("Decide en el PC")
+        assert "storymaker" not in texto
         assert "inline_keyboard" not in texto
 
     def test_el_aviso_informativo_no_pide_decision(self) -> None:
         texto = texto_de(Aviso(titulo="Capitulo 6 de 10 aprobado", cuerpo="0,41 $"))
         assert "decidir" not in texto
 
-    def test_el_aviso_de_parada_dice_donde_y_como_retomar(self) -> None:
+    def test_el_aviso_de_parada_dice_donde_sin_comandos(self) -> None:
         aviso = aviso_de_parada("salamanca", nodo="extract", motivo="FOREIGN KEY constraint failed")
         texto = texto_de(aviso)
         assert not aviso.bloquea, "una parada informa: no hay gate que decidir"
         assert "extract" in texto and "FOREIGN KEY" in texto
-        assert "storymaker continuar salamanca" in texto
-        assert "storymaker estado salamanca" in texto
+        assert "storymaker" not in texto
 
     def test_el_aviso_de_final_trae_version_y_coste(self) -> None:
         texto = texto_de(aviso_de_terminada("salamanca", version=1, coste_usd=0.4123))
@@ -60,7 +59,8 @@ class TestAviso:
     def test_el_aviso_de_aparcada_recuerda_que_no_se_aprobo_nada(self) -> None:
         texto = texto_de(aviso_de_aparcada("salamanca", gate="Plotting"))
         assert "Plotting" in texto and "No se ha aprobado nada" in texto
-        assert "storymaker decidir salamanca aprobar" in texto
+        assert texto.endswith("Decide en el PC")
+        assert "storymaker decidir" not in texto
 
     async def test_un_notifier_que_revienta_no_sube_el_fallo(self) -> None:
         class Roto:

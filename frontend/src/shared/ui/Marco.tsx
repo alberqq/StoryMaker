@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router'
 import logo from './logo.png'
+import { SelectorDeTema } from './SelectorDeTema'
 
 interface Enlace {
   a: string
@@ -28,6 +29,7 @@ export function Marco({ enlaces, children }: Props) {
             </NavLink>
           ))}
         </nav>
+        <SelectorDeTema />
       </header>
       <main>{children}</main>
     </div>

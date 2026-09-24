@@ -45,6 +45,7 @@ export {
   type GateDeNovela,
   type GatePendiente,
   type Panel,
+  type RevisionDeLaTrama,
   type Suceso,
   type TarjetaNovela,
 } from './seguimiento'
@@ -66,6 +67,7 @@ export {
   continuar,
   decidir,
   desbloquear,
+  descartarHecho,
   editarFila,
   encargar,
   leerEjemplos,

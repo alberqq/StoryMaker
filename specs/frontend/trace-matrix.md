@@ -36,8 +36,9 @@ Correspondencia ítem a ítem entre [`docs/architecture.md`](../../docs/architec
 | ARQ-18 | §16.3 · La petición de cambio se ejerce **dentro del lector**, no en una slice propia; extracción a `features/change-request/` solo si un segundo consumidor aparece | IMP-20 | CUBIERTO | La condición de extracción está escrita en §4.2 de la spec y en el criterio de hecho de IMP-20 |
 | ARQ-19 | §4 Fase 5 · Lectura web contra el manifiesto: **índice navegable, ficha de personajes y lugares enlazada a sus capítulos, portada con dedicatoria** | IMP-14, IMP-16, IMP-17, IMP-24 | CUBIERTO | Son los tres objetos que `render_visual` mira |
 | ARQ-20 | §4 Fase 5, §11a · **`render_visual` corre dentro de `PublishVersion`, sobre la versión candidata y antes del `commit`** | IMP-23, IMP-27 | CUBIERTO | El nodo es del backend (P-92); del frontend dependen las anclas y ser interceptable |
-| ARQ-21 | §4 Fase 5 · El PDF se maqueta **después** del render, imprimiendo esa misma ruta | IMP-22, IMP-30 | CUBIERTO | — |
+| ARQ-21 | §4 Fase 5 · El PDF se maqueta **después** del render, imprimiendo esa misma ruta | IMP-22, IMP-30, IMP-53 | CUBIERTO | IMP-53 es la maqueta de libro que imprime `P-185` |
 | ARQ-22 | §4 Fase 6 · El lector pide el cambio **desde la propia página** | IMP-20, IMP-21 | CUBIERTO | — |
+| ARQ-49 | §4 Fase 6 · Los candidatos se muestran y **el Autor confirma en el gate** cuál es la fila | IMP-54 | CUBIERTO | Contrapartes `P-186` (los campos del candidato) y `P-95` (la elección aplicada) |
 | ARQ-23 | §4 Fase 6 · El diff de dos manifiestos produce **página de novedades en el PDF y distintivo en el índice web** | IMP-14, IMP-25 | CUBIERTO | — |
 | ARQ-24 | §4 Fase 6, §7 · **La versión anterior sobrevive entera** y se puede seguir leyendo | IMP-18 | CUBIERTO | — |
 | ARQ-25 | §16.4 · La API sirve la lectura y la petición de cambio **sin autenticación** (U-17) | IMP-08, IMP-09 | CUBIERTO | IMP-09 no envía credenciales ni las guarda, e IMP-08 garantiza que ninguna de las dos variables es un secreto. Riesgo aceptado con fila en `verification.md` §5 |
@@ -52,7 +53,7 @@ Correspondencia ítem a ítem entre [`docs/architecture.md`](../../docs/architec
 | ARQ-34 | §16.3 · **Cliente único**: ningún módulo fuera de `shared/api` emite una petición de red, y aquí es **condición de G5** y no higiene | IMP-09, IMP-27 | CUBIERTO | El criterio de hecho de IMP-09 es una prueba que falla si aparece red fuera de `shared/api` |
 | ARQ-35 | §16.4 · **FastAPI sirve el frontend construido**, con un solo origen y la URL base en la configuración | IMP-26 | CUBIERTO | Contraparte `P-136`. IMP-26 nombra ya sus mismos símbolos —`montar_frontend`, `Settings.frontend_dist` y `Settings.frontend_base_url`, la URL base que la fila exige—. Ninguno existe todavía en el código, y no hace falta hasta que haya `dist/` que servir |
 | ARQ-36 | §4 Fase 5 · El navegador ve la versión candidata porque `publication.publish` **le sirve las peticiones interceptadas** desde el manifiesto que vive en la transacción abierta | IMP-27 | CUBIERTO | El nodo es `P-92`; del frontend depende solo ser interceptable, que es lo que ARQ-34 garantiza |
-| ARQ-37 | §2, §15, §16.4 · **De una novela no vive nada en dos sitios**, y los datos del homenajeado no salen de su fichero: el frontend no guarda copia local —ni almacenamiento del navegador, ni caché persistente, ni *service worker*— y no pide nada a terceros | IMP-32, IMP-06 | CUBIERTO | IMP-32 es nuevo: el criterio de IMP-09 solo miraba la red y nada impedía un `localStorage`. IMP-06 cubre las peticiones a terceros al servir las fuentes desde el propio origen |
+| ARQ-37 | §2, §15, §16.4 · **De una novela no vive nada en dos sitios**, y los datos del homenajeado no salen de su fichero: el frontend no guarda copia local —ni almacenamiento del navegador, ni caché persistente, ni *service worker*— y no pide nada a terceros | IMP-32, IMP-56, IMP-57, IMP-06 | CUBIERTO | IMP-32 es nuevo: el criterio de IMP-09 solo miraba la red y nada impedía un `localStorage`. IMP-06 cubre las peticiones a terceros al servir las fuentes desde el propio origen |
 | ARQ-38 | §16.1 · El PDF **conserva los enlaces internos** que necesitan el índice navegable y la página de novedades | IMP-24, IMP-25, IMP-30 | CUBIERTO | La fila faltaba; el plan ya lo realizaba en IMP-24 y lo comprueba en IMP-30 (enlaces que saltan en el PDF impreso) |
 | ARQ-39 | §16.3 · **Una API pública por slice**: cada slice de `pages/` expone su `index.ts` y nadie importa su interior | IMP-02 | CUBIERTO | IMP-02 declaraba el `index.ts` de `library/` y de ninguna otra página; ahora nombra las seis y su criterio prohíbe importar el interior de una slice |
 | ARQ-40 | §1, §11e · **La spec enumera sus requisitos `REQ-FE-nn`** derivados de su propio contenido, y `requisitos_declarados` los coteja contra este plan | IMP-33 | CUBIERTO | Contraparte `P-139`, que ya declara la lectura de §12 de la spec del frontend. El enunciado de los requisitos vive en la spec; el ítem solo los comprueba |
@@ -60,8 +61,8 @@ Correspondencia ítem a ítem entre [`docs/architecture.md`](../../docs/architec
 | ARQ-42 | §16.5 · **La interfaz opera la novela entera**: encargar, lanzar, seguir fase a fase, consultar la salida de cada fase, decidir los gates y continuar | IMP-39, IMP-40, IMP-41, IMP-42, IMP-43, IMP-44, IMP-47, IMP-48, IMP-50, IMP-51, IMP-52 | CUBIERTO | Contraparte `P-160` a `P-162`, y `P-180` y `P-181` para el encargo por conversación |
 | ARQ-43 | §16.5 · **Lo que ejecuta el grafo lo lanza la API como CLI aparte**; la interfaz pide y sigue, y dice «lanzado» sin esperar al proceso | IMP-35, IMP-41 | CUBIERTO | El lanzador es `P-162` |
 | ARQ-44 | §16.5 · **Seguimiento sondeando el fichero**, con la actividad interpretada y el registro del proceso solo consultable | IMP-36, IMP-41 | CUBIERTO | El estado lo calcula `P-160` |
-| ARQ-45 | §16.5 · **El taller es un tablero por fases tipo Jira**: arrastrar a la columna siguiente aprueba y a la suya rehace, siempre tras confirmar con el informe, y solo con gate pendiente | IMP-39 | CUBIERTO | — |
-| ARQ-46 | §16.5, §10 · En la interfaz **editar es corregir filas antes de decidir**, y **abortar solo cabe en Intake** | IMP-42 | CUBIERTO | Contrapartes `P-162` (ediciones) y `P-165` (abortar) |
+| ARQ-45 | §16.5 · **El taller es un tablero por fases tipo Jira**: arrastrar a la columna siguiente aprueba y a la suya rehace, siempre tras confirmar con el informe, y solo con gate pendiente | IMP-39, IMP-55 | CUBIERTO | — |
+| ARQ-46 | §16.5, §10 · En la interfaz **editar es corregir filas antes de decidir**, y **abortar solo cabe en Intake** | IMP-42, IMP-54 | CUBIERTO | Contrapartes `P-162` (ediciones) y `P-165` (abortar) |
 | ARQ-47 | §16.3 · **`entities/novela`**: estado y línea de fases, compartidos por taller, panel y gate | IMP-34 | CUBIERTO | — |
 | ARQ-48 | §16.5 · **Un cerrojo cuyo proceso no vive es una novela detenida**, y se ofrece desbloquear y continuar | IMP-41 | CUBIERTO | Contraparte `P-163` |
 
@@ -109,6 +110,11 @@ No hay ningún otro ítem sin ancla: los treinta y dos restantes, de `IMP-01` a 
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | Donde está `IMP-56` entra también `IMP-57`: los temas de la aplicación y del libro, que también se guardan como preferencia | Se mueve con la spec del frontend, §4.6 y §8 |
+| 2026-09-24 | `ARQ-37` suma `IMP-56`: las preferencias de lectura, lo único que el navegador guarda | Se mueve con la spec del frontend, §1 y §4.6 |
+| 2026-09-24 | `ARQ-45` suma IMP-55: las publicadas en un listado bajo el tablero | Arq. §16.5 saca las publicadas del tablero |
+| 2026-09-24 | Entra `ARQ-49`, con IMP-54, y `ARQ-46` suma IMP-54 | El candidato de Regeneración se elige en su gate |
+| 2026-09-24 | `ARQ-21` suma IMP-53 | La maqueta de libro de la impresión |
 | 2026-09-24 | `ARQ-42` suma IMP-52 | Descargar el PDF |
 | 2026-09-24 | `ARQ-42` suma IMP-51 | Los lugares con nombre corto |
 | 2026-09-24 | `ARQ-42` suma IMP-50 | La casilla de investigación exhaustiva |

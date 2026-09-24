@@ -18,9 +18,11 @@ from __future__ import annotations
 import aiosqlite
 
 from storymaker.commons.config import Settings
+from storymaker.commons.context.bloques import nota_de_la_cita
 from storymaker.commons.db.repos import mundo
 from storymaker.commons.embeddings import indice
 from storymaker.commons.embeddings.modelo import Vectorizador
+from storymaker.commons.validation.puras import firmeza
 from storymaker.intake.esquemas import Brief
 from storymaker.investigation.esquemas import Dimension
 
@@ -69,13 +71,15 @@ async def hechos_relevantes(
 
 
 def como_texto(hechos: list[aiosqlite.Row]) -> str:
-    """El corpus tal como lo ve el arquitecto, con el estado epistémico delante.
+    """El corpus tal como lo ve el arquitecto, con la firmeza de cada hecho delante.
 
-    El estado va delante y no al final porque es lo que decide cómo usar el hecho: sobre un
-    `verificado` se puede anclar una escena entera; sobre un `desconocido`, conviene no
-    apoyar la trama.
+    Va la firmeza y no el estado declarado (arq. §7), y va delante porque es lo que decide
+    cómo usar el hecho: sobre un `documentado` se puede anclar una escena entera; sobre un
+    `desconocido`, conviene no apoyar la trama.
     """
     return "\n".join(
-        f"[{fila['estado']}·{fila['dimension']}] (#{fila['id']}) {fila['enunciado']}"
+        f"[{firmeza(fila['estado'], fila['respaldo'], fila['origen'])}·{fila['dimension']}] "
+        f"(#{fila['id']}) {fila['enunciado']}"
+        f"{nota_de_la_cita(str(fila['enunciado']), fila['sin_respaldo'])}"
         for fila in hechos
     )

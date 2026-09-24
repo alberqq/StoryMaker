@@ -88,7 +88,7 @@ async def await_approval(estado: EstadoNovela, gate: str = "") -> EstadoNovela:
         # Primera pasada por este gate: se escribe pendiente y se avisa. Al reanudar, el
         # nodo vuelve a correr desde aquí y la marca evita abrirlo y avisar dos veces.
         titulo = f"StoryMaker · {Path(estado['novela']).stem} · gate de {GATES.get(gate, gate)}"
-        gate_id = await abrir(estado, titulo=titulo, informe=await _resumen(gate))
+        gate_id = await abrir(estado, titulo=titulo, informe=await _resumen(gate, estado))
     decision: Any = interrupt(
         {
             "gate": gate,
@@ -134,7 +134,7 @@ _RESUMENES: dict[str, tuple[tuple[str, str], ...]] = {
 }
 
 
-async def _resumen(gate: str) -> str:
+async def _resumen(gate: str, estado: EstadoNovela | None = None) -> str:
     deps = actuales()
     lineas = []
     for etiqueta, consulta in _RESUMENES.get(gate, ()):
@@ -147,6 +147,17 @@ async def _resumen(gate: str) -> str:
             lineas += ["", "El entrevistador pregunta:"]
             lineas += [f"  {i}. {p}" for i, p in enumerate(preguntas, start=1)]
             lineas += ["", 'Contesta con: rehacer --comentario "tus respuestas"']
+    if gate == "AwaitApproval3":
+        # El informe de la trama entero: los huecos, lo inventado y lo que encontró la
+        # revisión. Es lo que el Autor tiene que leer para decidir si rehace.
+        from storymaker.commons.graph.contabilidad import corpus_de
+        from storymaker.plotting import gate as revision
+        from storymaker.plotting import informe
+
+        puerta = revision.PuertaDePlotting(tuple(await revision.incidencias_guardadas(deps.db)))
+        corpus = corpus_de(estado) if estado is not None else 0
+        resumen = await informe.construir(deps.db, corpus, puerta, huecos_gastados=0)
+        lineas += ["", resumen.como_texto()]
     lineas.append("")
     lineas.append("La invocacion se ha detenido y espera tu decision.")
     return "\n".join(lineas)

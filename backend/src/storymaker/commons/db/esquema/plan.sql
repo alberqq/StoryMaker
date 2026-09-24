@@ -54,6 +54,20 @@ CREATE TABLE IF NOT EXISTS plan_anclaje (
   )
 ) STRICT;
 
+-- Lo que la escaleta destapó y el corpus no tenía. El hueco nace con la escena que lo
+-- necesita, y al cubrirlo el hecho —encontrado o inventado— se ancla a ella: sin esa
+-- escena, el hecho entraría en el corpus sin que ninguna parte de la trama se apoyara en él.
+CREATE TABLE IF NOT EXISTS plan_hueco (
+  id        INTEGER PRIMARY KEY,
+  escena_id INTEGER REFERENCES plan_escena(id),
+  pregunta  TEXT    NOT NULL,
+  dimension TEXT    NOT NULL,
+  -- Lo que el arquitecto inventaría si la investigación no lo encuentra, ya enunciado.
+  propuesta TEXT,
+  hecho_id  INTEGER REFERENCES mundo_hecho(id),
+  resultado TEXT    CHECK (resultado IS NULL OR resultado IN ('encontrado','inventado'))
+) STRICT;
+
 CREATE INDEX IF NOT EXISTS ix_plan_escena_capitulo ON plan_escena(capitulo_id);
 CREATE INDEX IF NOT EXISTS ix_plan_anclaje_escena ON plan_anclaje(escena_id);
 CREATE INDEX IF NOT EXISTS ix_plan_anclaje_dato ON plan_anclaje(dato_id);

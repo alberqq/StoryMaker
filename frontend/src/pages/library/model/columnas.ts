@@ -1,4 +1,5 @@
-// Las columnas del tablero y las reglas del arrastre (spec §4.1).
+// Las columnas del tablero, qué novelas van al listado de publicadas y las reglas del
+// arrastre (spec §4.1).
 //
 // Una tarjeta solo se arrastra si su novela espera en un gate que no sea el de Regeneración,
 // y solo se suelta en dos sitios: la columna siguiente, que es aprobar, y la suya, que es
@@ -17,19 +18,26 @@ export const COLUMNAS: readonly Columna[] = [
   { clave: 'plotting', titulo: 'Trama' },
   { clave: 'writing', titulo: 'Escritura' },
   { clave: 'publication', titulo: 'Publicación' },
-  { clave: 'publicadas', titulo: 'Publicadas' },
 ]
 
 export type Decision = 'aprobar' | 'rehacer'
 
 const indice = (clave: string) => COLUMNAS.findIndex((c) => c.clave === clave)
 
-/** La columna de una novela: la de su gate si espera, si no la de su fase. */
+/**
+ * Si la novela va en el listado de publicadas, bajo el tablero, y no en una columna: las
+ * publicadas sin trabajo en marcha y las que están en Regeneración.
+ */
+export function enListado(tarjeta: TarjetaNovela): boolean {
+  if (tarjeta.gate && tarjeta.gate.fase !== 'regeneration') return false
+  if (tarjeta.fase === 'regeneration') return true
+  const trabajando = tarjeta.estado === 'en_marcha' || tarjeta.estado === 'arrancando'
+  return tarjeta.fase === 'publication' && tarjeta.versiones > 0 && !trabajando
+}
+
+/** La columna de una novela en curso: la de su gate si espera, si no la de su fase. */
 export function columnaDe(tarjeta: TarjetaNovela): string {
   if (tarjeta.gate && tarjeta.gate.fase !== 'regeneration') return tarjeta.gate.fase
-  if (tarjeta.fase === 'regeneration') return 'publicadas'
-  const trabajando = tarjeta.estado === 'en_marcha' || tarjeta.estado === 'arrancando'
-  if (tarjeta.fase === 'publication' && tarjeta.versiones > 0 && !trabajando) return 'publicadas'
   return indice(tarjeta.fase) >= 0 ? tarjeta.fase : 'intake'
 }
 

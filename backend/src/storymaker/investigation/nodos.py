@@ -39,6 +39,7 @@ from storymaker.investigation.esquemas import (
     HuecoResuelto,
     SalidaInvestigador,
     SalidaVerificador,
+    VeredictoDeRespaldo,
 )
 
 
@@ -112,32 +113,89 @@ async def verificar_respaldo(fase_run_id: int) -> tuple[int, int]:
     sin_respaldo = 0
 
     for numero, lote in enumerate(lotes, start=1):
-        pares = [
-            (int(fila["id"]), str(fila["enunciado"]), str(fila["cita"] or "")) for fila in lote
-        ]
-        resultado = await invocar_rol(
-            Perfil.VERIFICADOR,
-            prompts.prompt_de_verificacion(pares),
-            SalidaVerificador,
-            transporte=deps.transporte,
-            settings=deps.settings,
-            sistema=RepositorioDePrompts(deps.settings).para(Perfil.VERIFICADOR).texto,
-        )
-        deps.observador.registrar_span(
-            Span(
-                nombre=nombre_de_span(capitulo=None, rol="verificador", intento=numero),
-                rol="verificador",
-                consumo=resultado.consumo,
-            )
-        )
-        for veredicto in resultado.valor.veredictos:
-            await corpus.degradar_sin_respaldo(deps.db, veredicto.hecho_id, veredicto.respaldado)
+        veredictos = await _pedir_veredictos(lote, intento=numero)
+        for veredicto in veredictos:
+            await _anotar(veredicto)
             if veredicto.respaldado:
                 respaldados += 1
             else:
                 sin_respaldo += 1
 
     return respaldados, sin_respaldo
+
+
+async def verificar_hecho(hecho_id: int) -> bool | None:
+    """Verifica **un solo hecho**: el que acaba de encontrar la micro-sesión de Plotting.
+
+    Devuelve si quedó respaldado, o `None` si el verificador no dio un veredicto válido. En
+    ese caso el hecho se queda `pendiente` y su firmeza no pasa de `inferido`: lo que nadie
+    ha comprobado no se presenta como documentado, y un fallo del verificador no detiene la
+    escaleta (arq. §4, Fase 3). `PresupuestoExcedido` y los errores de entorno suben.
+
+    Con un solo hecho en juego, un modelo que numera mal no puede escribir el respaldo de
+    otro: se toma el veredicto cuyo `hecho_id` coincide y, si ninguno coincide y hay uno
+    solo, ese.
+    """
+    deps = actuales()
+    fila = await mundo.hecho_por_id(deps.db, hecho_id)
+    # Una laguna o una invención nacen `no_aplica`: no hay cita que leer.
+    if fila is None or fila["respaldo"] != "pendiente":
+        return None
+    try:
+        veredictos = await _pedir_veredictos([fila], intento=None)
+    except SalidaInvalida:
+        return None
+    elegido = next((v for v in veredictos if v.hecho_id == hecho_id), None)
+    if elegido is None and len(veredictos) == 1:
+        elegido = veredictos[0].model_copy(update={"hecho_id": hecho_id})
+    if elegido is None:
+        return None
+    await _anotar(elegido)
+    return elegido.respaldado
+
+
+async def _pedir_veredictos(
+    filas: list[aiosqlite.Row], *, intento: int | None
+) -> list[VeredictoDeRespaldo]:
+    """Una llamada al verificador sobre un lote de pares enunciado-cita."""
+    deps = actuales()
+    pares = [(int(f["id"]), str(f["enunciado"]), str(f["cita"] or "")) for f in filas]
+    resultado = await invocar_rol(
+        Perfil.VERIFICADOR,
+        prompts.prompt_de_verificacion(pares),
+        SalidaVerificador,
+        transporte=deps.transporte,
+        settings=deps.settings,
+        sistema=RepositorioDePrompts(deps.settings).para(Perfil.VERIFICADOR).texto,
+    )
+    deps.observador.registrar_span(
+        Span(
+            nombre=nombre_de_span(capitulo=None, rol="verificador", intento=intento),
+            rol="verificador",
+            consumo=resultado.consumo,
+        )
+    )
+    return list(resultado.valor.veredictos)
+
+
+async def _anotar(veredicto: VeredictoDeRespaldo) -> None:
+    deps = actuales()
+    await corpus.anotar_veredicto(
+        deps.db, veredicto.hecho_id, veredicto.respaldado, veredicto.sin_respaldo
+    )
+    # El motivo queda escrito: es lo que dice al Autor, en el gate, si el hecho falla
+    # porque el investigador adornó la cita o porque la cita no tiene nada que ver.
+    await arnes.registrar_audit(
+        deps.db,
+        actor="verificador",
+        accion="respaldo",
+        objeto=f"hecho:{veredicto.hecho_id}",
+        despues={
+            "respaldado": veredicto.respaldado,
+            "sin_respaldo": veredicto.sin_respaldo,
+            "motivo": veredicto.motivo,
+        },
+    )
 
 
 async def resolver_hueco(pregunta: str, periodo: str, lugar: str) -> HuecoResuelto:
@@ -341,9 +399,7 @@ async def research(estado: EstadoNovela) -> EstadoNovela:
                 periodo, lugar, fase_run_id=corpus_de(estado), comentarios=comentarios
             )
         else:
-            await investigar(
-                periodo, lugar, fase_run_id=corpus_de(estado), comentarios=comentarios
-            )
+            await investigar(periodo, lugar, fase_run_id=corpus_de(estado), comentarios=comentarios)
     return {**estado, "pc": "VerifyCorpus"}
 
 

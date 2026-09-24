@@ -145,3 +145,72 @@ def capitulos_afectados(usos: dict[int, tuple[int, ...]], hecho_id: int) -> list
     post: set(__return__) == set(usos.get(hecho_id, ()))
     """
     return sorted(usos.get(hecho_id, ()))
+
+
+#: De más a menos firme. `inventado` no está: no es un grado de lo documentado sino una
+#: licencia, y no se compara con los demás.
+ORDEN_DE_FIRMEZA = ("documentado", "debatido", "inferido", "desconocido")
+
+#: Lo más que puede valer un hecho cuya cita nadie ha comprobado que lo sostenga.
+TECHO_SIN_RESPALDO = "inferido"
+
+#: Cómo se lee cada estado declarado en la escala de firmeza.
+_FIRMEZA_DECLARADA = {
+    "verificado": "documentado",
+    "debatido": "debatido",
+    "inferido": "inferido",
+    "desconocido": "desconocido",
+}
+
+
+def firmeza(estado: str, respaldo: str, origen: str) -> str:
+    """Cuánto puede apoyarse la obra en un hecho (arq. §7).
+
+    No se guarda: se calcula al leer, a partir de lo que declaró quien creó la fila
+    (`estado`), de lo que dictó el verificador (`respaldo`) y de dónde salió (`origen`).
+    Cada una de esas columnas tiene un solo dueño, y esta función es la única que las junta.
+
+    La regla es un mínimo: lo declarado, recortado por el techo que permite el respaldo. Un
+    hecho sin respaldo comprobado —`no_respaldado` o todavía `pendiente`— no pasa de
+    `inferido`, de modo que una cita floja **nunca sube a nadie de categoría**: un
+    `desconocido` sin respaldo sigue siendo `desconocido`. Una invención autorizada es
+    `inventado` sea cual sea lo demás. Es total: un estado que no reconoce cuenta como
+    `desconocido`, que es el suelo.
+
+    post: __return__ in ORDEN_DE_FIRMEZA or __return__ == "inventado"
+    """
+    if origen == "invencion_autorizada":
+        return "inventado"
+    declarada = _FIRMEZA_DECLARADA.get(estado, "desconocido")
+    if respaldo == "respaldado":
+        return declarada
+    return max(declarada, TECHO_SIN_RESPALDO, key=ORDEN_DE_FIRMEZA.index)
+
+
+def anadido_vigente(enunciado: str, sin_respaldo: str | None) -> str | None:
+    """Lo que el enunciado añade y su cita no dice, **si sigue en el enunciado**.
+
+    Es el añadido del veredicto parcial (arq. §4, Fase 2). El verificador lo copió del
+    enunciado tal como era; si después el Autor corrige el hecho y lo quita, ya no hay nada
+    que señalar, y reescribir el veredicto no es cosa suya.
+
+    Se compara normalizado y **por palabras significativas**, no por copia literal: el
+    verificador a veces lo copia con otras palabras —«para la Exposición de 1888» frente a
+    «para la Exposición Universal de 1888»—, y exigir la copia exacta escondía la nota. Son
+    significativas las palabras de más de tres letras y los números; si el añadido no tiene
+    ninguna, cuentan todas.
+
+    post: __return__ is None or __return__ == sin_respaldo
+    """
+    if not sin_respaldo:
+        return None
+    anadido = normalizar(sin_respaldo)
+    if not anadido:
+        return None
+    texto = normalizar(enunciado)
+    if anadido in texto:
+        return sin_respaldo
+    palabras = anadido.split()
+    significativas = [p for p in palabras if len(p) > 3 or p.isdigit()] or palabras
+    presentes = set(texto.split())
+    return sin_respaldo if all(p in presentes for p in significativas) else None

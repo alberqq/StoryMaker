@@ -48,9 +48,7 @@ class AgenteFalso:
         self.respuestas.setdefault(rol, []).extend(respuestas)
         return self
 
-    def invocar_rol(
-        self, rol: Rol, prompt: str, herramientas: tuple[str, ...] = ()
-    ) -> Any:
+    def invocar_rol(self, rol: Rol, prompt: str, herramientas: tuple[str, ...] = ()) -> Any:
         self.invocaciones.append(Invocacion(rol=rol, prompt=prompt, herramientas=herramientas))
         cola = self.respuestas.get(rol)
         if not cola:
@@ -79,6 +77,8 @@ class TransporteFalso:
 
     respuestas: dict[Perfil, list[Any]] = field(default_factory=dict)
     pedidos: list[Perfil] = field(default_factory=list)
+    #: Lo que se le pidió a cada perfil, en orden, para comprobar qué llega al modelo.
+    prompts: dict[Perfil, list[str]] = field(default_factory=dict)
 
     def preparar(self, perfil: Perfil, *respuestas: Any) -> TransporteFalso:
         self.respuestas.setdefault(perfil, []).extend(respuestas)
@@ -96,6 +96,7 @@ class TransporteFalso:
         cuota: Any,
     ) -> RespuestaBruta:
         self.pedidos.append(perfil)
+        self.prompts.setdefault(perfil, []).append(prompt)
         cola = self.respuestas.get(perfil)
         if not cola:
             raise SinRespuestaPreparada(

@@ -37,3 +37,7 @@ export const desbloquear = (id: string) => cliente.post<Hecha>(`/novelas/${seg(i
 
 export const editarFila = (id: string, edicion: CuerpoDeEdicion) =>
   cliente.post<Hecha>(`/novelas/${seg(id)}/ediciones`, edicion)
+
+/** Quita un hecho del corpus antes del sello. Se escribe en el acto y queda trazado. */
+export const descartarHecho = (id: string, hecho: number, motivo = '') =>
+  cliente.post<Hecha>(`/novelas/${seg(id)}/hechos/${hecho}/descartar`, { motivo })

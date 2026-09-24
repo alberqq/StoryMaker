@@ -63,23 +63,41 @@ async def calcular_alcance(
 async def _capitulos_por_canon(
     db: aiosqlite.Connection, objeto: ObjetoDelCambio, fila_id: int
 ) -> list[int]:
-    """Qué capítulos tocan una ficha del canon. Por los hitos, si es un personaje."""
+    """Qué capítulos tocan una ficha del canon: los que la **usan**, según las tablas.
+
+    Un personaje se usa en todo capítulo donde aparece, no solo donde ejecuta un hito de su
+    arco: cambiarle el nombre y regenerar solo los de sus hitos dejaba el nombre viejo en el
+    resto. Aparecer lo dicen dos tablas —`continuidad`, que escribe el extractor del texto
+    aprobado, y `plan_escena_personaje`, la escaleta— más `uso_hito` para el arco.
+    """
     if objeto is not ObjetoDelCambio.PERSONAJE:
         return []
     async with db.execute(
         """
-        SELECT DISTINCT pc.numero
+        SELECT pc.numero
+          FROM continuidad c
+          JOIN capitulo_version cv ON cv.id = c.capitulo_version_id
+          JOIN plan_capitulo pc ON pc.id = cv.capitulo_id
+         WHERE c.personaje_id = ? AND cv.estado = 'aprobado'
+        UNION
+        SELECT pc.numero
+          FROM plan_escena_personaje ep
+          JOIN plan_escena e ON e.id = ep.escena_id
+          JOIN plan_capitulo pc ON pc.id = e.capitulo_id
+         WHERE ep.personaje_id = ?
+        UNION
+        SELECT pc.numero
           FROM uso_hito uh
           JOIN canon_arco_hito h ON h.id = uh.hito_id
           JOIN canon_arco a ON a.id = h.arco_id
           JOIN capitulo_version cv ON cv.id = uh.capitulo_version_id
           JOIN plan_capitulo pc ON pc.id = cv.capitulo_id
          WHERE a.personaje_id = ? AND cv.estado = 'aprobado'
-         ORDER BY pc.numero
+         ORDER BY 1
         """,
-        (fila_id,),
+        (fila_id, fila_id, fila_id),
     ) as cursor:
-        return [int(f["numero"]) for f in await cursor.fetchall()]
+        return [int(f[0]) for f in await cursor.fetchall()]
 
 
 async def invalidar(db: aiosqlite.Connection, capitulos: tuple[int, ...]) -> list[int]:

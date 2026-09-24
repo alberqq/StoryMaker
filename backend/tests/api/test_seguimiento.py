@@ -186,3 +186,37 @@ class TestConversacion:
     async def test_fuera_de_intake_no_hay_conversacion(self, publicada: Path, cliente: Any) -> None:
         await _abrir_gate(publicada, "writing")
         assert cliente.get("/api/novelas/mar/gate").json()["conversacion"] is None
+
+
+class TestCandidatosDeRegeneracion:
+    async def test_cada_candidato_lleva_lo_que_hace_falta_para_elegirlo(
+        self, publicada: Path, cliente: Any
+    ) -> None:
+        gate = await _abrir_gate(publicada, "regeneration")
+        async with abrir_novela(publicada) as db:
+            await arnes.registrar_audit(
+                db,
+                actor="autor",
+                accion="peticion:lector",
+                objeto=f"gate:{gate}",
+                despues={
+                    "texto": "sin apellido",
+                    "candidatos": [
+                        {
+                            "objeto": "personaje",
+                            "fila_id": 1,
+                            "descripcion": "Manuel Pérez",
+                            "capitulos_a_regenerar": [1, 2],
+                            "capitulos_a_revisar": [],
+                            "coste": "2",
+                        },
+                        # Registrado antes de guardar objeto y fila: se enseña, no se elige.
+                        {"descripcion": "Un hecho viejo", "capitulos_a_regenerar": []},
+                    ],
+                },
+            )
+            await db.commit()
+        candidatos = cliente.get("/api/novelas/mar/gate").json()["peticion"]["candidatos"]
+        assert (candidatos[0]["objeto"], candidatos[0]["fila_id"]) == ("personaje", 1)
+        assert (candidatos[0]["campo"], candidatos[0]["valor"]) == ("nombre", "Manuel Pérez")
+        assert candidatos[1]["objeto"] is None and candidatos[1]["campo"] is None

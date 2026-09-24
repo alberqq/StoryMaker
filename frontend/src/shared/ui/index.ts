@@ -1,5 +1,6 @@
 import './ui.css'
 
+export { AjustesDeLectura } from './AjustesDeLectura'
 export { Boton } from './Boton'
 export { Campo } from './Campo'
 export { Dialogo } from './Dialogo'
@@ -13,5 +14,6 @@ export { Pagina } from './Pagina'
 export { Pestanas } from './Pestanas'
 export { Progreso } from './Progreso'
 export { Seccion } from './Seccion'
+export { SelectorDeTema } from './SelectorDeTema'
 export { Tabla } from './Tabla'
 export { Tarjeta } from './Tarjeta'

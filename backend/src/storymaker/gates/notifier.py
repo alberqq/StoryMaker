@@ -2,10 +2,10 @@
 
 La notificación, **detrás de una interfaz**, y **solo para avisar**.
 
-Telegram avisa de que un gate espera y trae el comando exacto para decidirlo, pero no lleva
-botones: **la decisión se toma en el PC del Autor**, con `storymaker decidir`, donde el
-informe se lee entero. Sin decisiones por Telegram no hace falta webhook ni URL pública, y
-nada fuera de la máquina del Autor puede reanudar una ejecución.
+Telegram avisa de que un gate espera y termina con «Decide en el PC», sin comandos ni
+botones: **la decisión se toma en el PC del Autor**, en la interfaz o con `storymaker
+decidir`, donde el informe se lee entero. Sin decisiones por Telegram no hace falta webhook
+ni URL pública, y nada fuera de la máquina del Autor puede reanudar una ejecución.
 
 La interfaz existe para que WhatsApp pueda ser un adaptador futuro sin tocar los gates, y
 para que la suite corra sin red: el `NotifierNulo` recuerda lo que se le pidió en lugar de
@@ -54,12 +54,7 @@ def texto_de(aviso: Aviso) -> str:
     """El mensaje, en texto plano: Markdown hace que Telegram rechace un `_` suelto."""
     partes = [aviso.titulo, "", aviso.cuerpo]
     if aviso.bloquea and aviso.decisiones:
-        novela = aviso.novela or "<novela>"
-        partes += [
-            "",
-            "Decide en el PC:",
-            *(f"  storymaker decidir {novela} {d}" for d in aviso.decisiones),
-        ]
+        partes += ["", "Decide en el PC"]
     return "\n".join(partes)
 
 
@@ -77,8 +72,6 @@ def aviso_de_parada(novela: str, *, nodo: str, motivo: str) -> Aviso:
                 f"Motivo: {motivo or 'sin detalle'}",
                 "",
                 "El ultimo checkpoint queda intacto.",
-                f"  storymaker estado {novela}",
-                f"  storymaker continuar {novela}",
             ]
         ),
         novela=novela,
@@ -104,7 +97,7 @@ def aviso_de_aparcada(novela: str, *, gate: str) -> Aviso:
                 "Nadie decidio a tiempo y la ejecucion se ha aparcado.",
                 "No se ha aprobado nada: el gate sigue esperando.",
                 "",
-                f"  storymaker decidir {novela} aprobar",
+                "Decide en el PC",
             ]
         ),
         novela=novela,

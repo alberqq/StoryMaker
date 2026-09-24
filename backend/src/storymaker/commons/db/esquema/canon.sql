@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS canon_obra (
   -- Aquí bajan los diales de la frontera historia-ficción: licencia, arcaísmo y
   -- contenido admisible. De aquí los toma el bloque 6 del paquete de contexto.
   estilo_json           TEXT,
-  homenajeado_id        INTEGER REFERENCES canon_personaje(id)
+  homenajeado_id        INTEGER REFERENCES canon_personaje(id),
+  -- La ejecución de Plotting que escribió la trama. Es lo que distingue volver de un hueco
+  -- —la trama es de esta ejecución— de rehacer: el Autor pidió otra después de escribirla.
+  fase_run_id           INTEGER REFERENCES fase_run(id)
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS canon_personaje (
