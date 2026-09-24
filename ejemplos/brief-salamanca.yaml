@@ -1,0 +1,59 @@
+# Tercer brief de prueba — Salamanca, proceso y regreso de fray Luis de León (1572-1576)
+#
+# Mismos tres bloques que brief-ejemplo.yaml. Los otros dos briefs y los de evals/ viven
+# entre 1800 y 1900; este lleva la novela al Siglo de Oro, a una ciudad universitaria de
+# interior y a un género de intriga, para probar al investigador con un corpus más antiguo
+# y al escritor con un registro de época más marcado.
+#
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/brief-salamanca.yaml --nombre salamanca --batch
+#   uv run storymaker estado salamanca
+
+homenajeado:
+  nombre_homenajeado: Tomás Aldecoa Villarreal
+  fecha_nacimiento: 1961-11-09
+  rol_epoca: impresor y encuadernador con taller junto a las Escuelas Mayores
+  ocasion: cierre de su librería tras treinta y cinco años
+
+  elementos_personalizacion:
+    - texto: aprendió el oficio componiendo tipos en la imprenta de su tío
+      obligatorio: true
+    - texto: guarda en un cajón la primera página que compuso, con una errata
+      obligatorio: true
+    - texto: le gusta leer en voz alta
+      obligatorio: false
+
+mundo:
+  periodo:
+    inicio: 1572
+    fin: 1576
+    denominacion: Siglo de Oro
+  lugar: Salamanca
+
+  evento_ancla: el regreso de fray Luis de León a su cátedra en diciembre de 1576
+
+  personajes_historicos:
+    aparecen:
+      - fray Luis de León
+    se_evitan:
+      - Felipe II
+
+obra:
+  genero:
+    principal: histórica
+    subgenero: intriga
+  tono: sereno, con tensión contenida y final esperanzado
+  punto_de_vista: tercera persona con focalización en el homenajeado
+  grado_licencia: moderado
+  arcaismo: marcado
+  contenido_admisible: sin violencia explícita ni escenas de tortura
+
+  palabras_prohibidas:
+    novela:
+      - hoguera
+      - hereje
+    destinatario:
+      - ruina
+
+  n_capitulos: 10
+  palabras_por_capitulo: 1200
