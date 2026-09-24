@@ -35,7 +35,7 @@ No se escribe código antes de haber recorrido esta secuencia. Cada paso termina
    - Si lo está, se implementa bajo ella.
    - Si la petición **contradice** una decisión fijada, **parar y preguntar al Autor**. No se resuelve por cuenta propia.
    - Si **no está**, se escribe en `docs/architecture.md`: la decisión, su consecuencia principal, las opciones consideradas con su criterio en la tabla de trade-offs, y una fila en el registro de cambios.
-2. **Grilling de la arquitectura.** Invocar la skill `mattpocock-skills:grilling` sobre lo recién escrito. Busca hilos sueltos e incompatibilidades con las decisiones ya fijadas. Lo que aparezca se resuelve en el documento antes de seguir.
+2. **Grilling de la arquitectura.** Invocar la skill `grilling` (o `/grill-me`) sobre lo recién escrito. Busca hilos sueltos e incompatibilidades con las decisiones ya fijadas. Lo que aparezca se resuelve en el documento antes de seguir.
 3. **Escribir la spec** en `specs/<nombre>/spec.md`.
 4. **Grilling de la spec.** Misma skill, mismo criterio: contradicciones con la arquitectura, casos no cubiertos, contratos ambiguos.
 5. **Escribir el plan de implementación** en `specs/<nombre>/plan.md`.

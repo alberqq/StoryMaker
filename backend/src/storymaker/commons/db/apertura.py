@@ -133,3 +133,22 @@ async def crear_novela(ruta: Path) -> None:
     """Escribe el fichero de una novela con el esquema aplicado y nada dentro."""
     async with abrir_novela(ruta, crear=True):
         pass
+
+
+def ruta_de_novela(nombre: str, directorio: Path) -> Path:
+    """`proyectos/<nombre>/<nombre>.db`: **una carpeta por novela** (arq. §16.4).
+
+    La novela sigue siendo un solo fichero; la carpeta guarda junto a él lo que se deriva
+    de él —cerrojo, ficheros de trabajo de SQLite, PDF, capítulos exportados— para que
+    varias novelas no se mezclen en un mismo directorio. El `name` final no es paranoia: el
+    nombre llega por la URL o por la CLI, y sin él `../../algo` saldría del registro.
+    """
+    limpio = Path(nombre).name.removesuffix(".db")
+    return directorio / limpio / f"{limpio}.db"
+
+
+def novelas_en(directorio: Path) -> list[Path]:
+    """Las novelas del registro: las carpetas que contienen su propio fichero."""
+    if not directorio.exists():
+        return []
+    return sorted(p for p in directorio.glob("*/*.db") if p.stem == p.parent.name)

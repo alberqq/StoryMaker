@@ -15,11 +15,11 @@ Los identificadores son `IMP-nn` y no `P-nn` porque el plan del backend ya ocupa
 | Hito | Qué deja en pie | Gate |
 |---|---|---|
 | **H0** | Andamiaje, capas vacías, rutas y puertas estáticas | G1 |
-| **H1** | `shared/`: el cliente único, los errores y el kit | G1 |
+| **H1** | `shared/`: el cliente único, los errores, el kit y la ausencia de copia local | G1 |
 | **H2** | Las seis pantallas leyendo de la API | G1, G2 |
 | **H3** | La petición de cambio del lector | G1, G2 |
 | **H4** | El modo impresión, el PDF y la condición de G5 | G5 |
-| **H5** | Verificación de extremo a extremo y entrega | G2, G5 |
+| **H5** | Verificación de extremo a extremo, trazabilidad en CI y entrega | G1, G2, G5 |
 
 El criterio de corte de cada hito es el mismo que en el backend: **el hito termina cuando su parte de la comprobación está en verde, no cuando el código existe.**
 
@@ -30,13 +30,13 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 | # | Entregable | Ficheros y símbolos | Criterio de hecho | Arq. | Gate |
 |---|---|---|---|---|---|
 | **IMP-01** | Proyecto **React + Vite** con TypeScript en `frontend/`, con los scripts `dev`, `build`, `preview`, `tipos` y `estructura` | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `frontend/index.html` | `npm run build` produce `dist/`; `npm run dev` sirve la aplicación con el proxy de `/api` contra FastAPI | §16.1 | G1 |
-| **IMP-02** | Árbol **FSD v2.1** con el juego mínimo: `app/`, `pages/`, `shared/` con un `index.ts` **por segmento** de `shared`. Sin `widgets/`, sin `features/` y sin `entities/` | `frontend/src/{app,pages,shared}/…`, `shared/{api,ui,lib,config}/index.ts` | No existe `shared/index.ts` único ni carpeta de capa vacía; Steiger no reporta violación de capa | §16.3 | G1 |
+| **IMP-02** | Árbol **FSD v2.1** con el juego mínimo: `app/`, `pages/`, `shared/`, con un `index.ts` **por segmento** de `shared` y **una API pública por slice** de `pages/`. Sin `widgets/`, sin `features/` y sin `entities/` | `frontend/src/{app,pages,shared}/…`, `shared/{api,ui,lib,config}/index.ts`, `pages/{library,reading,characters,cover,versions,print}/index.ts` | No existe `shared/index.ts` único; **no existen `widgets/`, `features/` ni `entities/`**, ni vacías ni llenas; cada slice de `pages/` expone su `index.ts` y **ningún módulo de fuera importa el interior de una slice**, empezando por `app/router.tsx`; Steiger no reporta violación de capa | §16.3 | G1 |
 | **IMP-03** | Alias `@/app`, `@/pages`, `@/shared` declarados **con el mismo mapa** en `tsconfig.json` y en `vite.config.ts` | `frontend/tsconfig.json::paths`, `frontend/vite.config.ts::resolve.alias` | Un import por alias compila con `tsc` y resuelve en `dev` y en `build`; los dos mapas coinciden literalmente | §16.3 | G1 |
 | **IMP-04** | **Steiger** como script y como trabajo de CI que **informa y no bloquea**, con su salida publicada junto al informe de G1 | `frontend/package.json::scripts.estructura`, `.github/workflows/ci.yml` (trabajo `frontend-estructura`) | El trabajo publica la salida de `npx steiger src` y **termina en verde aunque haya hallazgos** | §16.1, §16.3, verif. §3.2 | G1 |
 | **IMP-05** | Generación de los **tipos de transporte desde el OpenAPI** que FastAPI publica; no se escriben a mano | `frontend/scripts/generar-tipos.ts`, `shared/api/transporte.ts` (generado) | Regenerar contra un backend con un endpoint cambiado hace fallar `tsc`; el fichero generado está marcado como tal y no se edita | §16.3, spec §7 | G1 |
-| **IMP-06** | `app/styles`: reset, tipografía de lectura, **fuentes locales** y la hoja `@media print` | `app/styles/global.css`, `app/styles/print.css`, `app/styles/fonts/` | Las fuentes se sirven desde el propio origen —sin petición a terceros— y la hoja de impresión oculta la navegación | §16.3 | G1 |
+| **IMP-06** | `app/styles`: reset, tipografía de lectura, **fuentes locales** y la hoja `@media print` | `app/styles/global.css`, `app/styles/print.css`, `app/styles/fonts/` | Las fuentes se sirven desde el propio origen —sin petición a terceros— y la hoja de impresión oculta la navegación; **no hay carpeta `assets/` de primer nivel** ni en `frontend/src` ni en `shared/`, y cada imagen vive en la slice que la importa | §16.3, §15 | G1 |
 | **IMP-07** | `app/router.tsx` con las **ocho rutas** de §3 de la spec y `app/providers` | `app/router.tsx::rutas`, `app/providers/index.tsx`, `app/main.tsx` | Cada ruta monta su página; una ruta desconocida cae en la pantalla de «no existe»; ninguna ruta de lectura carece de versión | §7, §16.3, spec §3 | G1 |
-| **IMP-08** | `shared/config`: **constructores de ruta** (`rutaCapitulo`, `rutaPersonajes`, `rutaPortada`, `rutaImprimir`, `rutaVersiones`) y lectura de `VITE_API_URL` y `VITE_BASE_PATH` | `shared/config/rutas.ts`, `shared/config/entorno.ts` | Ninguna página construye una URL con plantilla propia, y ninguna slice de `pages/` importa de otra | §16.3, spec §3 | G1 |
+| **IMP-08** | `shared/config`: **constructores de ruta** (`rutaCapitulo`, `rutaPersonajes`, `rutaPortada`, `rutaImprimir`, `rutaVersiones`) y lectura de `VITE_API_URL` y `VITE_BASE_PATH` | `shared/config/rutas.ts`, `shared/config/entorno.ts` | Ninguna página construye una URL con plantilla propia, y ninguna slice de `pages/` importa de otra; **solo se leen `VITE_API_URL` y `VITE_BASE_PATH`, y ninguna es un secreto** | §16.3, §16.4, spec §2.2, §3 | G1 |
 
 **Lo que rompe:** nada. H0 no enseña todavía ninguna novela.
 
@@ -46,10 +46,11 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 
 | # | Entregable | Ficheros y símbolos | Criterio de hecho | Arq. | Gate |
 |---|---|---|---|---|---|
-| **IMP-09** | **Cliente único** de la API: una instancia, base tomada de `shared/config`, y el **único punto del código que emite red** | `shared/api/cliente.ts::cliente`, `shared/api/novelas.ts`, `shared/api/versiones.ts` | Una prueba de repositorio falla si aparece `fetch(`, `XMLHttpRequest` o una segunda instancia de cliente fuera de `shared/api/` | §16.3, spec §6 | G1, G5 |
-| **IMP-10** | **Errores tipados** `NoEncontrado`, `NovelaOcupada` y `SinRespuesta`, traducidos desde el código HTTP **una sola vez** | `shared/api/errores.ts` | Ningún módulo de `pages/` menciona `404`, `409` ni `status` | spec §7, §9 | G1 |
+| **IMP-09** | **Cliente único** de la API: una instancia, base tomada de `shared/config`, y el **único punto del código que emite red** | `shared/api/cliente.ts::cliente`, `shared/api/novelas.ts`, `shared/api/versiones.ts` | Una prueba de repositorio falla si aparece `fetch(`, `XMLHttpRequest` o una segunda instancia de cliente fuera de `shared/api/`; **el cliente no envía cabecera de autenticación ni guarda credenciales**, y sus funciones devuelven los tipos de transporte **tal cual**: ninguna calcula, filtra ni reordena datos de dominio | §16.3, §16.4, spec §6 | G1, G5 |
+| **IMP-10** | **Errores tipados** `NoEncontrado`, `NovelaOcupada` y `SinRespuesta`, traducidos desde el código HTTP **una sola vez** | `shared/api/errores.ts` | Ningún módulo de `pages/` menciona `404`, `409` ni `status` | §16.3, spec §7, §9 | G1 |
 | **IMP-11** | Kit de `shared/ui`: `Pagina`, `Tarjeta`, `Tabla`, `Boton`, `EnlaceCapitulo`, `MarcaCambiado` y los tres estados `EstadoCarga`, `EstadoError`, `EstadoVacio` | `shared/ui/*/index.ts` | Los tres estados existen como componentes y **toda pantalla los usa**: no hay ninguna que se quede en blanco mientras carga | §16.3, spec §4 | G1 |
 | **IMP-12** | `shared/lib`: hook de **selección de texto** y formateo de fecha y de puntuación | `shared/lib/seleccion.ts::useSeleccion`, `shared/lib/formato.ts` | El hook devuelve el fragmento seleccionado y el capítulo en el que se seleccionó, y cadena vacía cuando no hay selección | §16.3, spec §5 | G1 |
+| **IMP-32** | **Sin copia local de la novela**: ni almacenamiento del navegador, ni caché persistente de respuestas, ni *service worker*. Lo que el lector ve se pide a la API cada vez que se monta la pantalla | `frontend/tests/estructura/sin-copia-local.test.ts` | Una prueba de repositorio falla si aparece `localStorage`, `sessionStorage`, `indexedDB`, `caches.` o el registro de un *service worker* en `frontend/src`; tras una recarga la pantalla vuelve a pedir sus datos, y con la API caída enseña el aviso de §9 de la spec y **no la última lectura** | §2, §15, §16.4, spec §1, §9 | G1 |
 
 **Lo que rompe:** nada; no hay pantalla que consuma esto todavía.
 
@@ -87,11 +88,11 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 | # | Entregable | Ficheros y símbolos | Criterio de hecho | Arq. | Gate |
 |---|---|---|---|---|---|
 | **IMP-22** | `pages/print`: **un solo documento** con portada y dedicatoria, nota del autor, índice, capítulos, ficha de personajes y novedades, en ese orden | `pages/print/ui/Documento.tsx`, `pages/print/api/todo.ts` | Una sola navegación lo trae entero; dentro no hay router ni paginación | §16.1, §4 F5 | G5 |
-| **IMP-23** | **Anclas estables** `data-render="indice|portada|personajes|novedades"` y un `id` por capítulo | `pages/print/ui/*`, `pages/reading/ui/Indice.tsx` | Los cuatro selectores existen en el DOM renderizado y **no dependen de ninguna clase de CSS ni de ningún rótulo visible** | §11a, spec §6 | G5 |
+| **IMP-23** | **Anclas estables** `data-render` con los valores `indice`, `portada`, `personajes` y `novedades`, y un `id` por capítulo | `pages/print/ui/*`, `pages/reading/ui/Indice.tsx` | Los cuatro selectores existen en el DOM renderizado y **no dependen de ninguna clase de CSS ni de ningún rótulo visible** | §11a, spec §6 | G5 |
 | **IMP-24** | **Enlaces internos por ancla** en el índice, en la ficha de personajes y en la página de novedades | `pages/print/ui/Indice.tsx`, `pages/print/ui/Novedades.tsx` | En el PDF impreso los enlaces saltan a su destino dentro del documento | §4 F5, §4 F6 | G5 |
 | **IMP-25** | **Página de novedades** cuando la versión tiene predecesora, construida desde el endpoint de diff | `pages/print/ui/Novedades.tsx` | Sin predecesora la sección se omite entera y el índice no la enlaza | §4 F6 | G5 |
-| **IMP-26** | **FastAPI monta el `dist/` construido** y declara la URL base con la que Playwright abre la lectura. *Ítem compartido con el backend*, donde es `P-136` | `backend/src/storymaker/api/estaticos.py`, `commons/config.py::Settings.frontend_base_url`, `frontend/package.json::scripts.build` | `render_visual` y el PDF abren **la misma URL del mismo origen** que el lector; no hace falta un segundo proceso vivo | §16.1, §16.4 | G5 |
-| **IMP-27** | **Contrato de interceptación**: todas las peticiones salen del cliente único, de modo que el navegador de `render_visual` pueda servirlas desde el manifiesto candidato que vive en la transacción abierta. El lado del backend es `P-92` | `shared/api/cliente.ts`, `tests/estructura/cliente-unico.test.ts` | La prueba falla si algún módulo fuera de `shared/api` emite red; `render_visual` renderiza la versión candidata **sin que esté publicada** | §4 F5, §11a | G5 |
+| **IMP-26** | **FastAPI monta el `dist/` construido** y declara la URL base con la que Playwright abre la lectura. *Ítem compartido con el backend*, donde es `P-136` | `backend/src/storymaker/api/estaticos.py::montar_frontend`, `commons/config.py::Settings.frontend_dist`, `commons/config.py::Settings.frontend_base_url`, `frontend/package.json::scripts.build` | `render_visual` y el PDF abren **la misma URL del mismo origen** que el lector; no hace falta un segundo proceso vivo | §16.1, §16.4 | G5 |
+| **IMP-27** | **Contrato de interceptación**: todas las peticiones salen del cliente único, de modo que el navegador de `render_visual` pueda servirlas desde el manifiesto candidato que vive en la transacción abierta. El lado del backend es `P-92` | `shared/api/cliente.ts`, `frontend/tests/estructura/cliente-unico.test.ts` | La prueba falla si algún módulo fuera de `shared/api` emite red; `render_visual` renderiza la versión candidata **sin que esté publicada** | §4 F5, §11a | G5 |
 
 **Lo que rompe:** IMP-26 cambia cómo se sirve la aplicación. Mientras no esté, `render_visual` no tiene URL que abrir y el PDF tampoco.
 
@@ -102,9 +103,10 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 | # | Entregable | Ficheros y símbolos | Criterio de hecho | Arq. | Gate |
 |---|---|---|---|---|---|
 | **IMP-28** | Pruebas de componente e integración con **MSW** sobre los contratos de `shared/api`, incluidos los siete casos de error de §9 de la spec | `frontend/tests/**` | Los siete casos de error tienen prueba, y la suite corre en el mismo trabajo de CI que Steiger | verif. §3.5 | G1 |
-| **IMP-29** | Recorrido con **Playwright MCP**: índice navegable, enlaces de la ficha y portada con dedicatoria, más la configuración del MCP en el harness | `.claude/mcp.json`, `frontend/tests/recorrido.md` | Se demuestran LEC-02, LEC-04 y LEC-05 sobre una novela real, y el acta queda con el informe de G2 | §19, verif. §2 nº 11 | G2 |
-| **IMP-30** | **`ejemplos/novela-ejemplo.pdf`** impreso con `page.pdf()` desde la ruta de impresión de una versión publicada | `ejemplos/novela-ejemplo.pdf`, `backend/src/storymaker/publication/pdf.py` | El PDF tiene los diez capítulos, índice con enlaces que saltan y portada con dedicatoria (ENT-06) | §16.1, §4 F5 | G5 |
+| **IMP-29** | Recorrido con **Playwright MCP**: índice navegable, enlaces de la ficha y portada con dedicatoria, más la configuración del MCP en el harness | `.mcp.json`, `frontend/tests/recorrido.md` | Se demuestran LEC-02, LEC-04 y LEC-05 sobre una novela real, y el acta queda con el informe de G2 | §19, verif. §2 nº 11 | G2 |
+| **IMP-30** | **`ejemplos/novela-ejemplo.pdf`** impreso con `page.pdf()` desde la ruta de impresión de una versión publicada | `ejemplos/novela-ejemplo.pdf`, `backend/src/storymaker/publication/render.py::imprimir_pdf` | El PDF tiene los diez capítulos, índice con enlaces que saltan y portada con dedicatoria (ENT-06) | §16.1, §4 F5 | G5 |
 | **IMP-31** | **Castellano** en toda la interfaz, sin capa de internacionalización | `frontend/src/**` | No hay fichero de traducciones ni cadena en inglés visible al lector | §19 | G1 |
+| **IMP-33** | **Trazabilidad del frontend en CI**: `inventario_del_plan` lee también las filas `IMP-nn` de este plan y coteja sus rutas contra `frontend/` en las dos direcciones, y `requisitos_declarados` recorre §12 de la spec contra este plan. *Ítem compartido con el backend*, donde son `P-129` y `P-139` | `backend/tests/correspondencia/test_inventario.py`, `backend/tests/correspondencia/test_requisitos.py` | Una ruta nombrada en un ítem `IMP-nn` que no existe cae en el cubo «declarado y ausente»; un módulo de `frontend/src` que ningún ítem nombra cae en «presente y no declarado»; un `REQ-FE-nn` que cita un `IMP-nn` inexistente se informa. **Ninguno de los tres bloquea** | §1, §11e | G1 |
 
 ---
 
@@ -114,14 +116,15 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 - **IMP-16 e IMP-17 dependen de dos endpoints concretos** —la ficha versionada y el bloque de paratexto—, que la spec del backend ya contrata en su §5. Dejaron de necesitar comportamiento degradado el día que esos dos endpoints se declararon.
 - **IMP-26 e IMP-27 son la frontera con `publication/`**: sin ellos el frontend funciona para un lector y no funciona para G5.
 - **IMP-30 cierra el círculo**: no se puede imprimir hasta que hay una versión publicada, y no hay versión publicada hasta que `render_visual` pasa.
+- **IMP-33 puede ir en cualquier momento, y cuanto antes mejor.** Informa y no bloquea, así que no rompe nada; mientras no esté, este plan se puede quedar atrás respecto de `frontend/src` sin que nadie lo vea, que es la deriva que §11e existe para señalar.
 
 ---
 
 ## 9. Lo que este plan no cubre
 
 - **El diseño visual concreto**: tipografías, paleta y maquetación fina.
-- **El backend**, salvo los dos ítems declarados como compartidos, IMP-26 y su parte de IMP-30.
-- **El lado del backend de IMP-26 e IMP-27**, que son `P-136` y `P-92` en su plan. Aquí se planifica lo que toca a `frontend/src`.
+- **El backend**, salvo los tres ítems declarados como compartidos: IMP-26, IMP-33 y la parte de IMP-30 que imprime.
+- **El lado del backend de IMP-26, IMP-27 e IMP-33**, que son `P-136`, `P-92`, `P-129` y `P-139` en su plan. Aquí se planifica lo que toca a `frontend/`.
 
 ---
 
@@ -129,5 +132,7 @@ El criterio de corte de cada hito es el mismo que en el backend: **el hito termi
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | IMP-29 nombra **`.mcp.json`** en la raíz, como declara ya §16.3 de la arquitectura; las contrapartes de IMP-26 e IMP-33 —`P-136` y `P-129`— recogen en el plan del backend la URL base y la lectura de las filas `IMP-nn` | La arquitectura resolvió dónde vive la configuración MCP y el plan del backend cerró lo que a este le faltaba de sus ítems compartidos: los tres hallazgos que la tercera pasada elevó al Autor |
+| 2026-09-24 | Tras la tercera pasada de trazabilidad contra la arquitectura: entran **IMP-32** (sin copia local de la novela, §2, §15 y §16.4) e **IMP-33** (trazabilidad del frontend en CI, §1 y §11e, compartido con `P-129` y `P-139`); IMP-02 gana la **API pública por slice** de `pages/` y nombra las tres capas ausentes en su criterio; IMP-06, IMP-08 e IMP-09 ganan en su criterio los assets junto al código, las dos variables sin secreto, la ausencia de credenciales y el cliente sin reglas de negocio; IMP-10 cita su apartado de la arquitectura; IMP-23 deja de partir su fila con barras sin escapar; IMP-26 e IMP-30 nombran los símbolos de sus contrapartes (`montar_frontend`, `Settings.frontend_dist`, `render.py::imprimir_pdf`), e IMP-27 sitúa su prueba bajo `frontend/tests/` | Cinco decisiones de la arquitectura no tenían ítem, y cuatro filas de la matriz estaban en `CUBIERTO` con un criterio de hecho que no comprobaba lo que la fila afirmaba. Un ítem compartido que nombra ficheros distintos de los de su contraparte no es compartido: son dos planes que discrepan sin saberlo |
 | 2026-09-23 | Cerradas las cinco costuras arriba: IMP-16 lee la ficha **versionada**, IMP-17 deja de declarar render degradado y dibuja la portada con el **bloque de paratexto**, y IMP-26 e IMP-27 nombran a sus contrapartes del backend, `P-136` y `P-92` | Un plan que declara comportamiento degradado para un hueco ya tapado construye el rodeo igualmente, y nadie vuelve a quitarlo |
 | 2026-09-23 | Versión inicial: treinta y un ítems en seis hitos, con criterio de hecho por ítem | El frontend no tenía plan, y la matriz de trazabilidad que el Autor pidió necesita ítems con entregable y criterio para poder marcar cubierto algo sin mentir |

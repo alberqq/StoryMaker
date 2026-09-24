@@ -16,11 +16,14 @@ import pytest
 from dobles.fabrica import NovelaDePrueba, poblar
 from dobles.vectorizador import VectorizadorFalso
 
+from storymaker.commons.agents.schema_guard import SalidaInvalida, validar
+from storymaker.commons.config import Settings
 from storymaker.commons.db.repos import arnes, intake, texto
 from storymaker.commons.embeddings import indice
 from storymaker.commons.validation.modelos import CapituloEnRevision, Severidad
 from storymaker.writing import avisos, extraccion, gate, similitud, validacion
 from storymaker.writing.esquemas import (
+    Dominio,
     EstadoDeContinuidad,
     EventoNarrativo,
     SalidaEscritor,
@@ -96,6 +99,42 @@ class TestPasadaDelExtractor:
             resumen="r", elementos_usados=[UsoDeElemento(dato_id=7, escena=1)]
         )
         assert validacion.pasada_del_extractor(revision, salida) == []
+
+
+class TestCatalogoDelExtractor:
+    """ER §7.3: el extractor mide con los identificadores delante, y no puede salirse de ellos."""
+
+    async def test_lleva_la_escaleta_y_los_identificadores(
+        self, db: aiosqlite.Connection, novela: NovelaDePrueba, vectorizador: VectorizadorFalso
+    ) -> None:
+        escaleta = await extraccion.catalogo(db, vectorizador, 2, Settings(_env_file=None))
+
+        assert "Escaleta del capitulo 2" in escaleta.texto
+        assert f"#{novela.homenajeado} Manuel Ferrer" in escaleta.texto
+        assert novela.homenajeado in escaleta.dominio.personajes
+        assert novela.hecho_anclado in escaleta.dominio.hechos
+        assert novela.dato_obligatorio in escaleta.dominio.datos
+        assert novela.hito in escaleta.dominio.hitos
+
+    def test_un_identificador_fuera_de_dominio_invalida_la_salida(self) -> None:
+        """Falla en schema_guard, donde se reintenta, y no en una clave foranea."""
+        dominio = Dominio(personajes=frozenset({1, 2}), hechos=frozenset({7}))
+        bruto = (
+            '{"resumen": "r", "continuidad": [{"personaje_id": 9}],'
+            ' "hechos_usados": [{"hecho_id": 7, "escena": 1}]}'
+        )
+        with pytest.raises(SalidaInvalida) as fallo:
+            validar(SalidaExtractorDeCapitulo, bruto, {"dominio": dominio})
+
+        assert "personaje_id [9]" in str(fallo.value)
+        assert "admitidos: 1, 2" in str(fallo.value)
+
+    def test_dentro_de_dominio_pasa_y_sin_contexto_no_se_comprueba(self) -> None:
+        bruto = '{"resumen": "r", "continuidad": [{"personaje_id": 2}]}'
+        dominio = Dominio(personajes=frozenset({2}))
+
+        assert validar(SalidaExtractorDeCapitulo, bruto, {"dominio": dominio}).continuidad
+        assert validar(SalidaExtractorDeCapitulo, bruto.replace("2", "9")).continuidad
 
 
 class TestVolcadoDelExtractor:

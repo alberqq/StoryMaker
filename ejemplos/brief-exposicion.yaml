@@ -1,0 +1,56 @@
+# Segundo brief de prueba — Barcelona, Exposición Universal de 1888
+#
+# Mismos tres bloques que brief-ejemplo.yaml, con otro período, otro lugar y otro género,
+# para comprobar que una novela nueva se escribe de principio a fin.
+#
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/brief-exposicion.yaml --nombre exposicion --batch
+#   uv run storymaker estado exposicion
+
+homenajeado:
+  nombre_homenajeado: Mercè Vidal Rovira
+  fecha_nacimiento: 1964-06-02
+  rol_epoca: fotógrafa ambulante con estudio en la Rambla
+  ocasion: sesenta cumpleaños
+
+  elementos_personalizacion:
+    - texto: reveló su primera fotografía en el lavadero de casa de su madre
+      obligatorio: true
+    - texto: siempre lleva una libreta donde apunta la luz de cada día
+      obligatorio: true
+    - texto: le gustan los tranvías
+      obligatorio: false
+
+mundo:
+  periodo:
+    inicio: 1887
+    fin: 1888
+    denominacion: Restauración borbónica
+  lugar: Barcelona
+  evento_ancla: la inauguración de la Exposición Universal de 1888
+
+  personajes_historicos:
+    aparecen:
+      - Francesc de Paula Rius i Taulet
+    se_evitan:
+      - Alfonso XIII
+
+obra:
+  genero:
+    principal: histórica
+    subgenero: costumbrista
+  tono: luminoso y con humor suave
+  punto_de_vista: tercera persona con focalización en la homenajeada
+  grado_licencia: moderado
+  arcaismo: bajo
+  contenido_admisible: apto para todos los públicos
+
+  palabras_prohibidas:
+    novela:
+      - selfie
+      - móvil
+    destinatario:
+      - incendio
+
+  n_capitulos: 10
+  palabras_por_capitulo: 1200

@@ -21,11 +21,19 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[3]
 PLANES = sorted((RAIZ / "specs").glob("*/plan.md"))
 FUENTE = RAIZ / "backend" / "src" / "storymaker"
+FRONTEND = RAIZ / "frontend" / "src"
+
+#: Filas de ítem de los dos planes: `P-nn` en el del backend, `IMP-nn` en el del frontend.
+#: Leer solo las primeras dejaba el plan del frontend fuera del inventario sin avisar.
+_FILA_DE_ITEM = re.compile(r"^\| \*\*(?:P|IMP)-\d+\*\*")
 
 #: Rutas dentro de una celda de la columna «Ficheros y símbolos»: algo con barra o con
 #: extensión conocida, entre acentos graves.
 _RUTA = re.compile(r"`([^`]+)`")
-_PARECE_RUTA = re.compile(r"[/\\]|\.(py|sql|toml|yaml|yml|lean|tla|cfg|json|lock|md)\b")
+_PARECE_RUTA = re.compile(r"[/\\]|\.(py|sql|toml|yaml|yml|lean|tla|cfg|json|lock|md|ts|tsx|css)\b")
+
+#: Lo que el cubo «declarado y ausente» mira: módulos y hojas, no configuración ni actas.
+_EXTENSIONES_DE_CODIGO = (".py", ".sql", ".ts", ".tsx", ".css")
 
 
 def _expandir_llaves(ruta: str) -> list[str]:
@@ -50,7 +58,7 @@ def _rutas_declaradas() -> set[str]:
     declaradas: set[str] = set()
     for plan in PLANES:
         for linea in plan.read_text(encoding="utf-8").splitlines():
-            if not linea.startswith("| **P-"):
+            if not _FILA_DE_ITEM.match(linea):
                 continue
             celdas = [c.strip() for c in linea.strip().strip("|").split("|")]
             if len(celdas) < 3:
@@ -87,23 +95,69 @@ def _esta_declarado(modulo: str, declaradas: set[str]) -> bool:
     return False
 
 
+def _modulos_del_frontend() -> set[str]:
+    """Los módulos de `frontend/src`, relativos a esa carpeta. Vacío mientras no exista."""
+    if not FRONTEND.exists():
+        return set()
+    return {
+        str(p.relative_to(FRONTEND)).replace("\\", "/")
+        for patron in ("*.ts", "*.tsx")
+        for p in FRONTEND.rglob(patron)
+    }
+
+
+def _esta_declarado_en_el_frontend(modulo: str, declaradas: set[str]) -> bool:
+    """El plan del frontend escribe sus rutas relativas a `frontend/src/` —`shared/api/…`—."""
+    for declarada in declaradas:
+        normalizada = declarada.replace("\\", "/").removeprefix("frontend/src/")
+        # IMP-31 nombra `frontend/src/**` para decir «en toda la interfaz», no para declarar
+        # módulos: tomarlo como comodín dejaría el segundo cubo vacío para siempre.
+        if normalizada in ("", "*", "**"):
+            continue
+        if normalizada.endswith(("/", "/*", "/**")):
+            if modulo.startswith(normalizada.rstrip("*/") + "/"):
+                return True
+        if "*" in normalizada:
+            patron = normalizada.replace("**", "*").replace("*", "[^/]*")
+            if re.fullmatch(patron, modulo):
+                return True
+        if normalizada == modulo:
+            return True
+    return False
+
+
+def _existe(ruta: str) -> bool:
+    """Una ruta del plan existe si aparece bajo alguna de las raíces que los planes usan."""
+    candidatas = (
+        RAIZ / ruta,
+        RAIZ / "backend" / "src" / ruta.removeprefix("backend/src/"),
+        RAIZ / "backend" / "src" / "storymaker" / ruta,
+        # Las rutas de prueba se escriben en el plan relativas a `backend/` —`tests/unit/…`—,
+        # y sin este intento el cubo «declarado y ausente» se llenaba de ficheros que sí
+        # existen. Un informe con falsos ausentes es el camino más corto a que nadie lo mire.
+        RAIZ / "backend" / ruta,
+        # Y el plan del frontend escribe las suyas relativas a `frontend/src/`.
+        FRONTEND / ruta,
+    )
+    return any(c.exists() for c in candidatas)
+
+
 def cubos() -> tuple[list[str], list[str]]:
     """Devuelve («declarado y ausente», «presente y no declarado»)."""
     declaradas = _rutas_declaradas()
     ausentes = sorted(
         ruta
         for ruta in declaradas
-        if ruta.endswith((".py", ".sql"))
-        and "*" not in ruta
-        and not (RAIZ / "backend" / "src" / ruta.removeprefix("backend/src/")).exists()
-        and not (RAIZ / ruta).exists()
-        and not (RAIZ / "backend" / "src" / "storymaker" / ruta).exists()
-        # Las rutas de prueba se escriben en el plan relativas a `backend/` —`tests/unit/…`—,
-        # y sin este intento el cubo «declarado y ausente» se llenaba de ficheros que sí
-        # existen. Un informe con falsos ausentes es el camino más corto a que nadie lo mire.
-        and not (RAIZ / "backend" / ruta).exists()
+        if ruta.endswith(_EXTENSIONES_DE_CODIGO) and "*" not in ruta and not _existe(ruta)
     )
-    no_declarados = sorted(m for m in _modulos_en_el_arbol() if not _esta_declarado(m, declaradas))
+    no_declarados = sorted(
+        [m for m in _modulos_en_el_arbol() if not _esta_declarado(m, declaradas)]
+        + [
+            f"frontend/src/{m}"
+            for m in _modulos_del_frontend()
+            if not _esta_declarado_en_el_frontend(m, declaradas)
+        ]
+    )
     return ausentes, no_declarados
 
 
@@ -111,6 +165,9 @@ def test_el_plan_se_puede_leer() -> None:
     """Un parser roto informaria de cero derivas y pareceria una buena noticia."""
     assert PLANES, "no se encontro ningun plan de implementacion"
     assert len(_rutas_declaradas()) > 40, "el plan declara menos rutas de las que deberia"
+    assert any(r.endswith(".tsx") for r in _rutas_declaradas()), (
+        "no se ha leido ninguna ruta del plan del frontend: sus filas son `IMP-nn`, no `P-nn`"
+    )
 
 
 def test_informe_en_dos_cubos() -> None:

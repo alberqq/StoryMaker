@@ -16,11 +16,104 @@ por la misma razón: sin él, mover un hito del capítulo 8 al 5 no invalidaría
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 
 import aiosqlite
 
-from storymaker.commons.db.repos import id_insertado, intake, plan, texto
-from storymaker.writing.esquemas import SalidaExtractorDeCapitulo
+from storymaker.commons.config import Settings
+from storymaker.commons.context.bloques import consulta_semantica
+from storymaker.commons.db.repos import id_insertado, intake, mundo, plan, texto
+from storymaker.commons.embeddings import indice
+from storymaker.commons.embeddings.modelo import Vectorizador
+from storymaker.writing.esquemas import Dominio, SalidaExtractorDeCapitulo
+
+#: Lo que ocupa como mucho la etiqueta de cada entrada del catálogo. El catálogo es para
+#: reconocer, no para leer: el texto completo de un hecho ya lo tuvo el escritor.
+_ETIQUETA = 140
+
+
+@dataclass(frozen=True)
+class Catalogo:
+    """La escaleta del capítulo y los identificadores que el extractor puede devolver."""
+
+    texto: str
+    dominio: Dominio
+
+
+def _corta(valor: object) -> str:
+    texto_plano = " ".join(str(valor or "").split())
+    return texto_plano if len(texto_plano) <= _ETIQUETA else texto_plano[: _ETIQUETA - 1] + "…"
+
+
+async def catalogo(
+    db: aiosqlite.Connection, vectorizador: Vectorizador, numero: int, settings: Settings
+) -> Catalogo:
+    """Lo que el extractor tiene que tener delante para medir sin adivinar (ER §7.3).
+
+    Los hechos son **los que el escritor vio**: los anclados más los vecinos del bloque 5,
+    con la misma consulta. Personajes, escenarios y elementos del encargo van enteros, porque
+    son pocos y porque la continuidad y la cobertura no se limitan a lo que la escena nombra.
+    """
+    lineas = [f"Escaleta del capitulo {numero}:"]
+    for escena in await plan.escenas_de(db, numero):
+        lineas.append(
+            f"Escena {escena['orden']}: {_corta(escena['objetivo'])}"
+            f" | conflicto: {_corta(escena['conflicto'])}"
+        )
+        for beat in await plan.beats_de(db, int(escena["id"])):
+            lineas.append(f"  - beat: {_corta(beat['accion'])}")
+
+    async with db.execute("SELECT id, nombre FROM canon_personaje ORDER BY id") as cursor:
+        personajes = {int(f["id"]): str(f["nombre"]) for f in await cursor.fetchall()}
+    async with db.execute("SELECT id, descripcion FROM canon_escenario ORDER BY id") as cursor:
+        escenarios = {int(f["id"]): _corta(f["descripcion"]) for f in await cursor.fetchall()}
+
+    hechos: dict[int, str] = {}
+    for anclaje in await plan.anclajes_de(db, numero):
+        if anclaje["hecho_id"] is not None:
+            hechos[int(anclaje["hecho_id"])] = _corta(anclaje["hecho_enunciado"])
+    consulta = await consulta_semantica(db, numero)
+    if consulta:
+        for vecino in await indice.buscar_hechos(db, vectorizador, consulta, k=settings.k_vecinos):
+            if vecino.id in hechos:
+                continue
+            fila = await mundo.hecho_por_id(db, vecino.id)
+            if fila is not None:
+                hechos[vecino.id] = _corta(fila["enunciado"])
+
+    datos = {int(d["id"]): _corta(d["valor_json"]) for d in await intake.datos(db)}
+    hitos = {
+        int(h["id"]): f"{_corta(h['descripcion'])} (escena {h['escena_orden']})"
+        for h in await plan.hitos_de(db, numero)
+    }
+
+    lineas.append("")
+    lineas.append(
+        "Catalogo de identificadores. Usa SOLO estos numeros en los campos *_id, "
+        "participantes e hitos; si algo no esta aqui, no lo declares."
+    )
+    for titulo, entradas in (
+        ("Personajes (personaje_id, participantes)", personajes),
+        ("Escenarios (escenario_id)", escenarios),
+        ("Hechos del corpus que el escritor tuvo delante (hecho_id)", hechos),
+        ("Elementos del encargo (dato_id)", datos),
+        ("Hitos de arco de este capitulo (hitos_ejecutados, hitos_pendientes)", hitos),
+    ):
+        lineas.append(f"{titulo}:")
+        lineas.extend(f"  #{clave} {etiqueta}" for clave, etiqueta in entradas.items())
+        if not entradas:
+            lineas.append("  (ninguno)")
+
+    return Catalogo(
+        texto="\n".join(lineas),
+        dominio=Dominio(
+            personajes=frozenset(personajes),
+            escenarios=frozenset(escenarios),
+            hechos=frozenset(hechos),
+            datos=frozenset(datos),
+            hitos=frozenset(hitos),
+        ),
+    )
 
 
 async def _escenas_por_orden(db: aiosqlite.Connection, numero: int) -> dict[int, int]:

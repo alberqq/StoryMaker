@@ -36,6 +36,10 @@ async def volcar_canon(
     por_nombre: dict[str, int] = {}
 
     for personaje in salida.personajes:
+        # El nombre del homenajeado lo fija el encargo, no el arquitecto (arq. §3): si lo
+        # abrevia, `nombres_exactos` compararía contra la abreviatura y el nombre completo
+        # no se exigiría nunca. Su clave en la escaleta sigue siendo la del arquitecto.
+        nombre = brief.nombre_homenajeado if personaje.es_homenajeado else personaje.nombre
         cursor = await db.execute(
             """
             INSERT INTO canon_personaje
@@ -43,7 +47,7 @@ async def volcar_canon(
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                personaje.nombre,
+                nombre,
                 personaje.tipo.value,
                 personaje.objetivo,
                 personaje.miedo,
@@ -60,7 +64,7 @@ async def volcar_canon(
             vectorizador,
             tabla="canon_personaje",
             fila_id=identificador,
-            texto=f"{personaje.nombre} {personaje.estatus} {personaje.objetivo} {personaje.voz}",
+            texto=f"{nombre} {personaje.estatus} {personaje.objetivo} {personaje.voz}",
             familia="personaje",
         )
 

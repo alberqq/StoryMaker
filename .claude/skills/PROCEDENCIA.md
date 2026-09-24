@@ -22,8 +22,12 @@ vuelve a copiar desde el origen.
 | `lean4-setup` | `leanprover/skills` @ `7d3da02` | El proyecto Lake y las toolchains de `elan` |
 | `tlaplus` | [`swingerman/engineer`](https://github.com/swingerman/engineer) @ `32947eb` | La especificación PlusCal del arnés y TLC (§11d arq.) |
 | `webapp-testing` | [`anthropics/skills`](https://github.com/anthropics/skills) @ `34040c9` | Validación visual del lector y la ruta desde la que se imprime el PDF (§16.1 arq.) |
+| `grilling` | [`mattpocock/skills`](https://github.com/mattpocock/skills) @ `c55ee46` | El *grilling* con el que `AGENTS.md` cierra cada documento —arquitectura, spec y plan— antes de pasar al siguiente. Se omite `agents/openai.yaml`, que solo lee Codex |
+| `grill-me` | `mattpocock/skills` @ `c55ee46` | Atajo que solo se invoca a mano (`/grill-me`) y llama a `grilling`. Sin ella el nombre por el que se conoce la técnica no respondería |
 
 ### Reparaciones aplicadas
+
+- **`grilling`** venía de un plugin, `mattpocock-skills`, y como tal se invocaba `mattpocock-skills:grilling`. Copiada al proyecto se llama `grilling` a secas, y `AGENTS.md` la nombra así. El `SKILL.md` no se ha tocado.
 
 - **`sqlite-vec`** fue retirada de `main` de `beagle` el 2026-05-27, en la reestructuración
   del marketplace (`242d64b`), aunque sigue publicada en

@@ -82,7 +82,7 @@ graph TD
     ORQ --> LF["Langfuse<br/>trazas, scores, prompts"]
     ORQ --> OUT["PDF + lectura web<br/>+ informe de trazabilidad"]
 
-    CC[".claude/<br/>skills · hooks · agents · MCP"] -. "mismo Core Domain" .-> VAL
+    CC[".claude/ · .mcp.json<br/>skills · hooks · agents · MCP"] -. "mismo Core Domain" .-> VAL
 ```
 
 Hay dos piezas que no son ni agente ni base de datos, y son las que sostienen el sistema:
@@ -902,11 +902,11 @@ La línea que sí se mantiene es **quién** recupera: el ensamblador, con una co
 ```
 storyMaker/
 ├─ CLAUDE.md                     instrucciones del harness, parte del examen
+├─ .mcp.json                     Playwright MCP, donde Claude Code lee los servidores del proyecto
 ├─ .claude/
 │  ├─ agents/                    definiciones de los nueve roles
 │  ├─ skills/continuity-check/   skill reutilizable sobre el Core Domain
-│  ├─ settings.json              hooks: validación de capítulo y policy
-│  └─ mcp.json                   Playwright MCP
+│  └─ settings.json              hooks: validación de capítulo y policy
 │
 ├─ backend/src/storymaker/
 │  ├─ intake/                    entrevistador, Brief, extracción de texto libre
@@ -987,7 +987,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 **FastAPI sirve el frontend construido, y por eso hay un solo origen.** Fuera del desarrollo —donde Vite recarga en caliente y habla con la API por su proxy— la aplicación de React se construye a estáticos y **los sirve el propio FastAPI**, con la URL base declarada en la configuración. La alternativa, dejar el servidor de Vite levantado al lado, ataría la publicación a un segundo proceso vivo y obligaría al navegador que conduce `render_visual` a conocer dos orígenes, justo cuando este apartado acaba de argumentar que de una novela no debe vivir nada en dos sitios. Con un solo origen, la URL que abre el validador, la que imprime el PDF y la que teclea el lector son la misma, y esa identidad es lo que hace que el PDF sea literalmente lo que se ve.
 
-**Una novela es un fichero, y el directorio es el registro.** Los ficheros viven en `proyectos/`, uno por novela, y ramificar deja el nuevo al lado del original tal como describe el §8. **No hay una base de datos global de novelas, y no la va a haber**: si el registro viviera fuera del fichero, copiarlo dejaría de ser ramificar y descargar una novela dejaría de ser copiarla, que son las dos propiedades de las que cuelga aquella decisión. Listar las novelas es listar el directorio, y los datos que la lista enseña —título, fase en curso, número de versiones— se leen abriendo cada fichero. El precio es que listar cuesta tantas aperturas como novelas haya; con las decenas que este sistema contempla es instantáneo, y no aspira a miles.
+**Una novela es un fichero, y el directorio es el registro.** Cada novela vive en **su propia carpeta**, `proyectos/<nombre>/`, y dentro está el fichero que la es, `<nombre>.db`, junto a todo lo que se deriva de él: el cerrojo, los ficheros de trabajo de SQLite, el PDF de cada versión publicada y los capítulos exportados. La carpeta no cambia la decisión, la ordena: la novela sigue siendo **un solo fichero** y lo demás se regenera desde él. Ramificar crea la carpeta del destino con la copia del fichero dentro, tal como describe el §8. **No hay una base de datos global de novelas, y no la va a haber**: si el registro viviera fuera del fichero, copiarlo dejaría de ser ramificar y descargar una novela dejaría de ser copiarla, que son las dos propiedades de las que cuelga aquella decisión. Listar las novelas es listar las carpetas de `proyectos/` que contienen su fichero, y los datos que la lista enseña —título, fase en curso, número de versiones— se leen abriendo cada fichero. El precio es que listar cuesta tantas aperturas como novelas haya; con las decenas que este sistema contempla es instantáneo, y no aspira a miles.
 
 **No hay superficie pública que reanude nada.** Ningún endpoint decide un gate ni reanuda una ejecución: eso solo lo hace la CLI, en la máquina del Autor. La API —lectura y petición de cambio, que no toca nada hasta el gate de Regeneration— no lleva autenticación: es un ejercicio académico que corre en local, y montar usuarios y sesiones costaría más que el riesgo que cubre. Queda anotado como riesgo aceptado U-17 en [`verification.md`](verification.md).
 
@@ -1026,6 +1026,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Alcance de los embeddings | Solo resolución de peticiones y linters · también la gestión de contexto del escritor | Escalar a novelas largas sin recortar por antigüedad, sin perder determinismo | Gestión de contexto, recuperando el ensamblador y no el agente |
 | Organización del backend | Por capa técnica · *package by feature* con `commons` | Que rehacer una fase sea tocar una carpeta | Por feature |
 | Organización del frontend | *package by feature* con `commons` · Feature-Sliced Design v2.1 · por capa técnica | Reglas de importación comprobables por un linter, en vez de una convención que hay que recordar | FSD v2.1, con el juego mínimo `app/ pages/ shared/` |
+| Entorno y dependencias del backend | `pip` con `requirements.txt` · `pip-tools` · Poetry · PDM · uv | Un único *lockfile* que la CI instale tal cual y sobre el que corra `pip-audit`, con restricciones por plataforma y una sola herramienta para resolver, fijar versiones y gestionar el entorno | uv, con `uv.lock` como el fichero que G1 audita |
 | Ejecución del grafo | Dentro del proceso que lo invoca · worker con cola de trabajos · un demonio por novela | Que no haya un segundo lugar donde el estado pueda vivir | Dentro del proceso que lo invoca, también al decidir un gate |
 | Registro de novelas | El directorio es el registro · base de datos global de novelas | Que copiar el fichero siga siendo ramificar y descargarlo siga siendo descargar la novela | El directorio |
 | Protección de la API | Sin protección · secreto en el webhook · usuarios y sesiones | Superficie real de un proyecto local frente al coste de la alternativa | Sin protección: la API solo lee y registra peticiones, y ningún endpoint reanuda |
@@ -1108,6 +1109,9 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §17 gana la fila «Entorno y dependencias del backend», con las alternativas a uv que no se habían escrito | §16.1 fijó uv y su motivo quedó en este registro, pero sin fila de trade-offs: la elección estaba hecha y lo que se descartó no constaba en ningún sitio |
+| 2026-09-24 | El árbol de §16.3 declara la configuración de Playwright MCP en **`.mcp.json` de la raíz** y no en `.claude/mcp.json`, y la topología de §3 lo nombra | Es donde está el fichero y el único sitio del que Claude Code lee los servidores MCP de un proyecto: un `.claude/mcp.json` no lo cargaría nadie. Lo destapó la tercera pasada de trazabilidad del frontend, con `inventario_del_plan` a punto de señalar como ausente un fichero que nunca iba a existir |
+| 2026-09-24 | §16.4: **cada novela vive en su propia carpeta**, `proyectos/<nombre>/<nombre>.db`, con sus derivados al lado; listar es listar esas carpetas y ramificar crea la del destino | Decisión del Autor: con el cerrojo, los ficheros de SQLite, los PDF y los capítulos exportados, `proyectos/` mezclaba varias novelas en una sola carpeta. La novela sigue siendo un solo fichero, así que copiar sigue siendo ramificar |
 | 2026-09-24 | Fase 1: **la entrevista pasa por el gate de Intake**. Las preguntas del entrevistador se guardan y las enseña el aviso del gate; el Autor contesta con «rehacer» y su comentario, y `Configure` vuelve a correr con todas las respuestas sin duplicar datos | El entrevistador se llamaba una sola vez y sus preguntas no las veía nadie: no había entrevista. La arista «rehacer» de `AwaitApproval` a `Configure` ya existía, así que no cambia el grafo ni el modelo TLA+ |
 | 2026-09-24 | **Telegram solo avisa y los gates se deciden en el PC**, con `storymaker decidir`. Se retira el webhook con su secreto; §1, §3, §10, §16.1, §16.3, §16.4 y §17 se reescriben en consecuencia | Decisión del Autor: el informe de un gate se lee entero antes de decidir, y en el móvil no se lee. Retirar el webhook elimina la única superficie pública que reanudaba ejecuciones, junto con la URL pública y el túnel que exigía en un portátil |
 | 2026-09-24 | Fase 5: en modo batch **el umbral del juez informa y no detiene**, y el PDF se imprime tras publicar con su fallo como aviso | La auditoría previa a la primera ejecución real vio que, en batch, un juez por debajo de 6 volvía a juzgar el mismo texto y acababa en `Fail`, y que ningún camino llamaba a `imprimir_pdf`. Es ablandar una puerta que en batch no tiene a nadie detrás, como pide el criterio de producto |

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Any, Protocol
 
 from pydantic import BaseModel
 
@@ -113,6 +113,7 @@ async def invocar_rol[T: BaseModel](
     settings: Settings,
     sistema: str = "",
     reintentos_de_esquema: int = 1,
+    contexto: dict[str, Any] | None = None,
 ) -> Resultado[T]:
     """Invoca un rol y devuelve su salida ya validada.
 
@@ -142,7 +143,7 @@ async def invocar_rol[T: BaseModel](
         )
         consumo = consumo + respuesta.consumo
         try:
-            return Resultado(validar(esquema, respuesta.texto), consumo, intento)
+            return Resultado(validar(esquema, respuesta.texto, contexto), consumo, intento)
         except SalidaInvalida as fallo:
             if intento > reintentos_de_esquema:
                 raise

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
@@ -51,15 +52,23 @@ def _extraer_json(bruto: str) -> str:
     return bruto.strip()
 
 
-def validar[T: BaseModel](esquema: type[T], bruto: str) -> T:
-    """Devuelve la instancia validada, o lanza `SalidaInvalida` con el motivo."""
+def validar[T: BaseModel](
+    esquema: type[T], bruto: str, contexto: dict[str, Any] | None = None
+) -> T:
+    """Devuelve la instancia validada, o lanza `SalidaInvalida` con el motivo.
+
+    El `contexto` llega a los validadores del esquema. Es por donde entra lo que la forma
+    sola no sabe: qué identificadores existen en esta novela (ER §7.3). Un identificador
+    fuera de dominio falla aquí, donde el reintento todavía es barato, y no en una clave
+    foránea con el capítulo ya escrito.
+    """
     texto = _extraer_json(bruto)
     try:
         datos = json.loads(texto)
     except json.JSONDecodeError as exc:
         raise SalidaInvalida(f"La salida no es JSON valido: {exc}", bruto=bruto) from exc
     try:
-        return esquema.model_validate(datos)
+        return esquema.model_validate(datos, context=contexto)
     except ValidationError as exc:
         raise SalidaInvalida(
             f"La salida no cumple el esquema {esquema.__name__}:\n{exc}", bruto=bruto

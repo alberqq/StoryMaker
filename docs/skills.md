@@ -8,7 +8,7 @@ Qué capacidades de Claude Code usa este repositorio, de dónde vienen y para qu
 
 Cada reparación aplicada queda anotada en `PROCEDENCIA.md` con lo que se tocó y por qué.
 
-## Las trece instaladas
+## Las quince instaladas
 
 Agrupadas por la parte del sistema a la que sirven.
 
@@ -41,6 +41,13 @@ Agrupadas por la parte del sistema a la que sirven.
 | `lean-proof` | Los invariantes de la cronología (§11c). Del repositorio **oficial** de Lean |
 | `lean4-setup` | El proyecto Lake y las toolchains de `elan` |
 | `tlaplus` | La especificación del arnés y las ejecuciones de TLC (§11d) |
+
+### El método
+
+| Skill | Sirve a |
+|---|---|
+| `grilling` | El *grilling* que `AGENTS.md` exige al cerrar la arquitectura, la spec y el plan: una entrevista por rondas que recorre el árbol de decisiones hasta que no quedan hilos sueltos. Los hechos los busca el agente; las decisiones son del Autor |
+| `grill-me` | El mismo *grilling*, invocado a mano con `/grill-me` |
 
 ### El código Python
 

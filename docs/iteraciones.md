@@ -8,6 +8,42 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ---
 
+## 2026-09-24 · La segunda novela real
+
+### It-17 · El extractor adivinaba los identificadores
+
+**Causa.** Un encargo nuevo, [`ejemplos/brief-exposicion.yaml`](../ejemplos/brief-exposicion.yaml) —Barcelona, 1888, diez capítulos, en batch—, se detuvo dos veces con `FOREIGN KEY constraint failed`: en el capítulo 5 y en el 10, las dos con el capítulo ya escrito y validado. El extractor de capítulo tiene que devolver `hecho_id`, `dato_id`, `personaje_id`, `escenario_id`, participantes e hitos, y su prompt era solo la prosa. La arquitectura (§4) le prometía la escaleta y el código no se la daba. Adivinaba, y cuando adivinaba un número que no existía, el volcado reventaba en la clave foránea. Cuando acertaba era por casualidad: en los cuatro primeros capítulos quedaron **una** fila en `uso_hecho` y **una** en `intake_uso_dato`, y `arco_ejecutado` avisaba en cada capítulo de que sus hitos no habían ocurrido, porque el extractor no sabía cuáles eran.
+
+**Qué se hizo.** Bajó de arriba abajo: §7.3 de la [spec de ejecución real](../specs/ejecucion-real/spec.md) fija el catálogo y entra REQ-ER-30; `P-31` y `P-83` del plan lo declaran. En el código, `extraccion.catalogo` monta la escaleta del capítulo y el catálogo de identificadores. `schema_guard.validar` acepta un contexto de validación, `invocar_rol` se lo pasa, y `SalidaExtractorDeCapitulo` rechaza cualquier identificador que no esté en el `Dominio`, con la lista de admitidos en el mensaje, que es lo que el reintento le inyecta al modelo.
+
+**Efecto medido.** La novela se retomó con `continuar` tras cada caída sin perder capítulos aprobados, y terminó completa: diez capítulos aprobados, entre 1.036 y 1.259 palabras, versión 1 publicada y PDF impreso. El capítulo 10, el único escrito con el catálogo, dejó cuatro filas en `uso_hecho`, cuatro en `uso_hito` y tres en `intake_uso_dato`, y ningún aviso falso de `arco_ejecutado`.
+
+### It-18 · La escaleta sin anclajes y la homenajeada abreviada
+
+**Causa.** La misma novela salió con `plan_anclaje` vacía, igual que la primera: `volcar` no pasaba los mapas a `volcar_escaleta`, y al arquitecto los elementos del encargo le llegaban dentro del `Brief`, sin identificador. Los tres validadores de cobertura aprobaron sin mirar nada. Además, el arquitecto registró a la homenajeada sin su segundo apellido, y como `nombres_exactos` compara contra el canon, el nombre completo no se exigió: salió cero veces en diez capítulos, frente a 141 del nombre de pila.
+
+**Qué se hizo.** §7.2 y §7.4 de la [spec de ejecución real](../specs/ejecucion-real/spec.md), `P-75` y `P-80`, y después el código: el prompt del arquitecto lista los elementos con su `#id`, `volcar_escaleta` resuelve la clave o el texto, lo que no resuelve queda como aviso `anclaje_resuelto` en el gate, y la ficha del homenajeado se escribe con `nombre_homenajeado`.
+
+**Efecto medido.** 676 pruebas pasan. Falta verlo en una novela real, porque esta ya había pasado Plotting.
+
+**Deuda o pendiente.** Si el nombre completo tiene que aparecer al menos una vez es una decisión del Autor. §9.1 —una `fase_run` por fase— no se puede implementar todavía: seis consultas de `mundo` identifican el corpus por la `fase_run` compartida. §9.2 y §9.3 siguen abiertos: la novela entera consta como 0 tokens y 0 $, y `judge_score_json` quedó vacío aunque el juez puntuó 7,43.
+
+---
+
+## 2026-09-24 · Tercera pasada de trazabilidad del frontend
+
+### It-16 · El inventario prometía leer todos los planes y solo leía uno
+
+**Causa.** Al cruzar el plan del frontend con la arquitectura apareció que `inventario_del_plan` (`P-129`) solo recogía las filas que empiezan por `| **P-` y solo recorría `backend/src/storymaker/`. El plan del frontend numera sus ítems `IMP-nn`, así que sus rutas no las comprobaba nadie. El ítem prometía leer «todo `specs/*/plan.md`» y el código leía la mitad: una desviación respecto del plan que el propio validador de desviaciones no podía ver.
+
+**Qué se hizo.** La corrección bajó de arriba abajo. §7.1 nº 21 de la [spec del backend](../specs/backend/spec.md) y `P-129` declaran las dos clases de fila y el recorrido inverso de `frontend/src/**`, y [`test_inventario.py`](../backend/tests/correspondencia/test_inventario.py) lee `P-nn` e `IMP-nn`, resuelve las rutas del frontend relativas a `frontend/src/` y cuenta `.ts`, `.tsx` y `.css` como código. `frontend/src/**`, que `IMP-31` escribe para decir «en toda la interfaz», no se toma como comodín. En la misma pasada, §16.3 de la arquitectura pasa a declarar `.mcp.json` en la raíz en lugar de un `.claude/mcp.json` que Claude Code nunca leería, y `P-136` nombra la URL base que §16.4 exige.
+
+**Efecto medido.** El cubo «declarado y ausente» pasa de 0 a 47 rutas, todas del frontend, que todavía no existe: es el estado normal durante el desarrollo. La parte del backend no cambia, con 0 ausentes y 0 no declarados. La dirección inversa se probó con un árbol falso fuera del repositorio: un módulo sin declarar y un `main.tsx` suelto en `src/` aparecen en «presente y no declarado», y uno declarado deja de figurar como ausente.
+
+**Deuda o pendiente.** `P-136` sigue sin implementar: ni `Settings.frontend_dist` ni `Settings.frontend_base_url` existen en `commons/config.py`, y no hace falta que existan hasta que haya un `dist/` que servir.
+
+---
+
 ## 2026-09-24 · La primera ejecución contra el modelo
 
 ### It-15 · El nombre del modelo de embeddings llegaba sin su organización

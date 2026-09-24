@@ -262,11 +262,11 @@ Los apartados anteriores son el contrato, y están en prosa porque un contrato n
 
 | # | Requisito | Apartado | Ítems |
 |---|---|---|---|
-| REQ-FE-01 | El frontend no guarda estado de dominio que sobreviva a una recarga: ni copia local del canon, ni almacén global de la novela | §1 | IMP-09 |
+| REQ-FE-01 | El frontend no guarda estado de dominio que sobreviva a una recarga: ni copia local del canon, ni almacén global de la novela | §1 | IMP-32 |
 | REQ-FE-02 | **Toda ruta de lectura lleva el número de versión**; una URL sin versión no identifica ningún texto y es incorrecta | §1, §3 | IMP-07, IMP-08 |
 | REQ-FE-03 | En desarrollo, `vite dev` sirve la aplicación y alcanza la API por el proxy de Vite en `/api` | §2.1 | IMP-01 |
 | REQ-FE-04 | Fuera de desarrollo, **FastAPI sirve el `dist/` construido**: la URL que abre `render_visual`, la que imprime el PDF y la que teclea el lector son la misma | §2.1 | IMP-26, BE:P-136 |
-| REQ-FE-05 | Solo hay dos variables de configuración y **ninguna es un secreto** | §2.2 | IMP-01 |
+| REQ-FE-05 | Solo hay dos variables de configuración y **ninguna es un secreto** | §2.2 | IMP-08 |
 | REQ-FE-06 | Los alias de importación se declaran **con el mismo mapa** en `tsconfig.json` y en `vite.config.ts` | §2.2 | IMP-03 |
 | REQ-FE-07 | El mapa de rutas vive entero en `app/router.tsx`, y es el único sitio donde vive | §3 | IMP-07 |
 | REQ-FE-08 | `/novelas/:id` redirige a la última versión publicada | §3 | IMP-19 |
@@ -321,13 +321,13 @@ Los apartados anteriores son el contrato, y están en prosa porque un contrato n
 | # | Requisito | Apartado | Ítems |
 |---|---|---|---|
 | REQ-FE-44 | Un `404` lleva a una pantalla de «no existe» con vuelta al listado, **nunca a una página en blanco** | §9 | IMP-10 |
-| REQ-FE-45 | Con la API caída se avisa y se ofrece reintento; **la lectura no se cachea para fingir que sigue viva** | §9 | IMP-10 |
+| REQ-FE-45 | Con la API caída se avisa y se ofrece reintento; **la lectura no se cachea para fingir que sigue viva** | §9 | IMP-10, IMP-32 |
 | REQ-FE-46 | Una versión sin predecesora no marca capítulos cambiados y omite la página de novedades | §9 | IMP-25 |
 | REQ-FE-47 | Una ficha sin capítulos que enlazar se enseña sin enlaces; la entrada **no se oculta** | §9 | IMP-16 |
 | REQ-FE-48 | Los enlaces internos del índice y de la ficha se comprueban con un recorrido de **Playwright MCP** | §10 | IMP-29 |
 | REQ-FE-49 | El PDF de ejemplo se imprime con `page.pdf()` desde la ruta de impresión de este frontend | §10 | IMP-30, BE:P-94 |
 | REQ-FE-50 | La interfaz va en castellano, **sin capa de internacionalización** | §13 | IMP-31 |
-| REQ-FE-51 | Los identificadores de este apartado no se repiten ni se reutilizan, y todo ítem citado existe en el plan | §12 | BE:P-139 |
+| REQ-FE-51 | Los identificadores de este apartado no se repiten ni se reutilizan, y todo ítem citado existe en el plan | §12 | IMP-33, BE:P-139 |
 
 ---
 
@@ -345,6 +345,7 @@ Los apartados anteriores son el contrato, y están en prosa porque un contrato n
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §12 reasigna cuatro requisitos a los ítems que de verdad los comprueban: REQ-FE-01 y REQ-FE-45 a **IMP-32** (sin copia local), REQ-FE-05 a **IMP-08** (las dos variables, sin secreto) y REQ-FE-51 a **IMP-33** (trazabilidad del frontend en CI). Ningún enunciado cambia | La tercera pasada de trazabilidad encontró que los ítems citados existían pero sus criterios de hecho miraban otra cosa: IMP-09 comprueba la red y no el almacenamiento, e IMP-01 comprueba la construcción y no las variables |
 | 2026-09-23 | Las cinco costuras de §11 quedan cerradas arriba y §11 pasa a decir dónde: dos endpoints en la spec del backend, y en la arquitectura quién sirve la aplicación, cómo ve el navegador la versión candidata y las dos pantallas que faltaban en §16.3 | Una spec que enumera lo que le falta al de al lado sirve una vez, para pedirlo. Cuando lo pedido se concede, lo que tiene que contar es dónde quedó decidido |
 | 2026-09-23 | Versión inicial | Fijar el contrato del frontend: las seis pantallas, el mapa de rutas, la petición de cambio y —sobre todo— las condiciones del modo impresión, que es donde este frontend deja de ser una interfaz y pasa a sostener G5 |
 | 2026-09-23 | Entra **§12, los 51 requisitos** `REQ-FE-nn` derivados de los propios apartados de este documento, con el apartado del que nacen y los ítems que los realizan, y los apartados finales se renumeran | Mismo motivo que en la spec del backend: el contrato estaba escrito para leerse y no para comprobarse. Los requisitos salen de lo que este documento ya afirma, de modo que no añaden ninguna decisión |

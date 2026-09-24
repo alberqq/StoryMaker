@@ -155,3 +155,15 @@ async def total_de_capitulos(db: aiosqlite.Connection) -> int:
     async with db.execute("SELECT COUNT(*) AS n FROM plan_capitulo") as cursor:
         fila = await cursor.fetchone()
     return int(fila["n"]) if fila is not None else 0
+
+
+async def escenas_por_capitulo(db: aiosqlite.Connection) -> list[tuple[int, int]]:
+    """`(numero, escenas)` de cada capítulo de la escaleta, incluidos los que no tienen."""
+    async with db.execute(
+        """
+        SELECT c.numero AS numero, COUNT(e.id) AS escenas
+        FROM plan_capitulo AS c LEFT JOIN plan_escena AS e ON e.capitulo_id = c.id
+        GROUP BY c.id ORDER BY c.numero
+        """
+    ) as cursor:
+        return [(int(f["numero"]), int(f["escenas"])) for f in await cursor.fetchall()]

@@ -1,0 +1,29 @@
+# Secretos. El único fichero de configuración que se versiona es .env.example.
+.env
+backend/.env
+
+# Las novelas: cada una es un fichero con los datos personales del homenajeado, más su
+# cerrojo, los ficheros de trabajo de SQLite y los PDF que se derivan de ella. Se copian a
+# mano entre máquinas; no viajan por git. La evidencia que sí se commitea va a ejemplos/.
+proyectos/
+backend/proyectos/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+mutants/
+.coverage
+htmlcov/
+
+# Lean y TLA+
+formal/lean/.lake/
+formal/tla/states/
+
+# Frontend
+node_modules/
+frontend/dist/

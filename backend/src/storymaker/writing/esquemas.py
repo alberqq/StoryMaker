@@ -15,7 +15,10 @@ Por eso la salida del escritor es **solo prosa**. No lleva un campo «hechos usa
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
+from typing import Self
+
+from pydantic import BaseModel, Field, ValidationInfo, model_validator
 
 
 class SalidaEscritor(BaseModel):
@@ -104,6 +107,29 @@ class VeredictoDeEjecucion(BaseModel):
     hitos_pendientes: list[int] = Field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class Dominio:
+    """Los identificadores que el extractor tuvo delante (ER §7.3).
+
+    Viaja como contexto de validación y no como parte del esquema: el esquema es la forma,
+    común a toda novela; el dominio es de esta novela y de este capítulo.
+    """
+
+    personajes: frozenset[int] = field(default_factory=frozenset)
+    escenarios: frozenset[int] = field(default_factory=frozenset)
+    hechos: frozenset[int] = field(default_factory=frozenset)
+    datos: frozenset[int] = field(default_factory=frozenset)
+    hitos: frozenset[int] = field(default_factory=frozenset)
+
+
+def _fuera(nombre: str, usados: list[int], validos: frozenset[int]) -> str | None:
+    ajenos = sorted({u for u in usados if u not in validos})
+    if not ajenos:
+        return None
+    admitidos = ", ".join(str(v) for v in sorted(validos)) or "ninguno"
+    return f"{nombre} {ajenos} no estan en el catalogo; admitidos: {admitidos}"
+
+
 class SalidaExtractorDeCapitulo(BaseModel):
     """Todo lo que el extractor mide en una sola llamada.
 
@@ -118,3 +144,35 @@ class SalidaExtractorDeCapitulo(BaseModel):
     continuidad: list[EstadoDeContinuidad] = Field(default_factory=list)
     eventos: list[EventoNarrativo] = Field(default_factory=list)
     veredicto: VeredictoDeEjecucion = Field(default_factory=VeredictoDeEjecucion)
+
+    @model_validator(mode="after")
+    def _en_dominio(self, info: ValidationInfo) -> Self:
+        """Ningún identificador fuera del catálogo llega al volcado."""
+        dominio = (info.context or {}).get("dominio")
+        if not isinstance(dominio, Dominio):
+            return self
+        continuidad = self.continuidad
+        errores = [
+            _fuera("personaje_id", [c.personaje_id for c in continuidad], dominio.personajes),
+            _fuera(
+                "participantes",
+                [p for e in self.eventos for p in e.participantes],
+                dominio.personajes,
+            ),
+            _fuera(
+                "escenario_id",
+                [c.escenario_id for c in continuidad if c.escenario_id is not None],
+                dominio.escenarios,
+            ),
+            _fuera("hecho_id", [h.hecho_id for h in self.hechos_usados], dominio.hechos),
+            _fuera("dato_id", [e.dato_id for e in self.elementos_usados], dominio.datos),
+            _fuera(
+                "hitos",
+                [*self.veredicto.hitos_ejecutados, *self.veredicto.hitos_pendientes],
+                dominio.hitos,
+            ),
+        ]
+        motivos = [e for e in errores if e is not None]
+        if motivos:
+            raise ValueError("; ".join(motivos))
+        return self

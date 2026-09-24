@@ -233,3 +233,104 @@ class TestInforme:
         resultado = await informe.construir(db, novela.fase_run, puerta, huecos_gastados=0)
         assert not resultado.puede_avanzar
         assert "cuesta diez capitulos" in resultado.como_texto()
+
+
+class TestAnclajesDeLaEscaleta:
+    """ER §7.2: el arquitecto ancla por clave, y lo que no resuelve lo enseña el gate."""
+
+    def test_la_clave_se_resuelve_como_la_escriba(self) -> None:
+        from storymaker.plotting.escaleta import mapa_de_claves, resolver_clave
+
+        mapa = mapa_de_claves({12: "Las aulas se calentaban con estufa de leña."})
+
+        assert resolver_clave(mapa, "#12") == 12
+        assert resolver_clave(mapa, "hecho #12") == 12
+        assert resolver_clave(mapa, "12") == 12
+        assert resolver_clave(mapa, "las aulas se calentaban con estufa de lena.") == 12
+        assert resolver_clave(mapa, "#99") is None
+        assert resolver_clave(mapa, None) is None
+
+    async def test_el_volcado_escribe_los_anclajes_y_apunta_los_que_no_resuelve(
+        self, db: aiosqlite.Connection, vectorizador: VectorizadorFalso
+    ) -> None:
+        from dobles import guion
+
+        from storymaker.plotting import canon, escaleta
+
+        salida = guion.arquitectura()
+        personajes = await canon.volcar_canon(db, vectorizador, salida, brief())
+        enunciado = salida.capitulos[0].escenas[0].anclajes[0].hecho or ""
+
+        from storymaker.commons.db.repos import arnes
+
+        hecho_id = await escribir_hecho(
+            db,
+            vectorizador,
+            HechoPropuesto(
+                enunciado=enunciado, estado=EstadoEpistemico.VERIFICADO, dimension=Dimension.LUGAR
+            ),
+            fase_run_id=await arnes.abrir_fase_run(db, "investigation"),
+        )
+        sin_resolver: list[str] = []
+        await escaleta.volcar_escaleta(
+            db,
+            salida,
+            personajes=personajes,
+            hechos=escaleta.mapa_de_claves({hecho_id: enunciado}),
+            sin_resolver=sin_resolver,
+        )
+        async with db.execute("SELECT COUNT(*) AS n FROM plan_anclaje") as cursor:
+            fila = await cursor.fetchone()
+
+        assert fila is not None and int(fila["n"]) > 0
+        assert sin_resolver == []
+
+    async def test_el_homenajeado_se_llama_como_dice_el_encargo(
+        self, db: aiosqlite.Connection, vectorizador: VectorizadorFalso
+    ) -> None:
+        """Si el arquitecto lo abrevia, nombres_exactos no exigiria nunca el nombre entero."""
+        from dobles import guion
+
+        from storymaker.plotting import canon
+
+        encargo = brief().model_copy(update={"nombre_homenajeado": "Casilda Berrocal Diaz"})
+        personajes = await canon.volcar_canon(db, vectorizador, guion.arquitectura(), encargo)
+        async with db.execute(
+            "SELECT p.nombre FROM canon_obra o JOIN canon_personaje p ON p.id = o.homenajeado_id"
+        ) as cursor:
+            fila = await cursor.fetchone()
+
+        assert fila is not None and fila["nombre"] == "Casilda Berrocal Diaz"
+        assert guion.HOMENAJEADO in personajes
+
+
+class TestFormaDeLaEscaleta:
+    """REQ-BE-135: el arquitecto conoce el rango de escenas y el gate avisa si no lo cumple."""
+
+    def test_el_prompt_dice_capitulos_escenas_y_extension(self) -> None:
+        from types import SimpleNamespace
+
+        from storymaker.plotting.nodos import forma_de_la_escaleta
+
+        texto = forma_de_la_escaleta(
+            SimpleNamespace(n_capitulos=12, palabras_por_capitulo=1500)  # type: ignore[arg-type]
+        )
+        assert "12 capitulos" in texto
+        assert "entre 2 y 4 escenas" in texto
+        assert "1500 palabras" in texto
+
+    async def test_el_gate_avisa_de_cada_capitulo_fuera_de_rango(
+        self, db: aiosqlite.Connection
+    ) -> None:
+        from storymaker.plotting.gate import escenas_fuera_de_rango
+
+        for numero, escenas in ((1, 1), (2, 3), (3, 5)):
+            cursor = await db.execute("INSERT INTO plan_capitulo (numero) VALUES (?)", (numero,))
+            for orden in range(escenas):
+                await db.execute(
+                    "INSERT INTO plan_escena (capitulo_id, orden) VALUES (?, ?)",
+                    (cursor.lastrowid, orden),
+                )
+        avisos = await escenas_fuera_de_rango(db)
+        assert [a.mensaje.split(" tiene")[0] for a in avisos] == ["El capitulo 1", "El capitulo 3"]
+        assert all(not a.bloquea for a in avisos)

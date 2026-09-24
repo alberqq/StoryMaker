@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from storymaker.commons.config import Settings
-from storymaker.commons.db.apertura import abrir_novela
+from storymaker.commons.db.apertura import abrir_novela, novelas_en, ruta_de_novela
 from storymaker.commons.db.repos import canon
 from storymaker.commons.errores import NovelaNoEncontrada
 from storymaker.commons.graph import cerrojo
@@ -42,17 +42,11 @@ def ruta_de(nombre: str, settings: Settings) -> Path:
     El `name` final no es paranoia: el nombre llega por la URL, y sin esto `../../algo`
     abriría ficheros de fuera del registro.
     """
-    limpio = Path(nombre).name
-    if not limpio.endswith(".db"):
-        limpio = f"{limpio}.db"
-    return settings.directorio_proyectos / limpio
+    return ruta_de_novela(nombre, settings.directorio_proyectos)
 
 
 def listar_ficheros(settings: Settings) -> list[Path]:
-    directorio = settings.directorio_proyectos
-    if not directorio.exists():
-        return []
-    return sorted(p for p in directorio.glob("*.db") if not p.name.endswith(".lock"))
+    return novelas_en(settings.directorio_proyectos)
 
 
 async def ficha(ruta: Path) -> FichaDeNovela:

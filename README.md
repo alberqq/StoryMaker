@@ -73,11 +73,33 @@ Para reproducirlo:
 
 ```bash
 cd backend
-uv run storymaker nueva --brief ../ejemplos/brief-ejemplo.yaml
-uv run storymaker correr --novela ramon-iriarte
+uv run storymaker nueva ../ejemplos/brief-ejemplo.yaml --nombre ejemplo
 ```
 
-En modo interactivo el arnés se detiene en cinco puntos a esperar tu decisión y avisa por Telegram. Con `--batch` los cinco gates quedan desactivados y la ejecución corre sola, que es como se pasan los briefs de evaluación de [`evals/`](evals/).
+`nueva` crea el fichero de la novela en `proyectos/` y **arranca la ejecución en el mismo paso**: no hay un segundo comando para lanzarla. Sin `--nombre`, el fichero toma el nombre del homenajeado.
+
+En modo interactivo el arnés se detiene en cinco gates a esperar tu decisión, y avisa por Telegram si está configurado. Telegram solo avisa: el gate se decide en el PC, y la decisión reanuda la ejecución en el mismo proceso.
+
+```bash
+uv run storymaker decidir ejemplo aprobar
+uv run storymaker decidir ejemplo rehacer --comentario "lo que hay que cambiar"
+```
+
+Las decisiones son `aprobar`, `rehacer`, `editar` y `abortar`. Con `--batch` los cinco gates quedan desactivados y la ejecución corre sola, que es como se pasan los briefs de evaluación de [`evals/`](evals/) con `storymaker evaluar`.
+
+Para seguir una novela o recuperarla tras un fallo:
+
+```bash
+uv run storymaker estado ejemplo        # fase, gate abierto, capítulos aprobados y consumo
+uv run storymaker continuar ejemplo     # reanuda desde el último checkpoint
+uv run storymaker desbloquear ejemplo   # rompe el cerrojo que deja un proceso muerto
+```
+
+La lectura web la sirve la API de FastAPI:
+
+```bash
+uv run uvicorn storymaker.api.app:crear_app --factory --port 8765
+```
 
 ## Cómo lee el resultado quien recibe la novela
 

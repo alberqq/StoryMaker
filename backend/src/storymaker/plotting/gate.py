@@ -21,7 +21,8 @@ from dataclasses import dataclass
 
 import aiosqlite
 
-from storymaker.commons.db.repos import canon, intake, plan
+from storymaker.commons.config import Defaults
+from storymaker.commons.db.repos import arnes, canon, intake, plan
 from storymaker.commons.formal.generador import (
     Evento,
     NovelaLean,
@@ -33,6 +34,7 @@ from storymaker.commons.validation.modelos import (
     ArcoEnRevision,
     EscaletaEnRevision,
     Incidencia,
+    Severidad,
 )
 
 
@@ -154,6 +156,32 @@ class PuertaDePlotting:
 async def comprobar(db: aiosqlite.Connection) -> PuertaDePlotting:
     """Los dos validadores del gate. Lean corre aparte, porque necesita el subproceso."""
     revision = await construir_revision(db)
+    # Los anclajes que el volcado no pudo resolver (ER §7.2). Avisan y no bloquean: la
+    # escena existe igual, y lo que falte de cobertura ya lo bloquea `cobertura_anclada`.
+    sin_resolver = [
+        Incidencia(validador="anclaje_resuelto", severidad=Severidad.AVISO, mensaje=mensaje)
+        for mensaje in await arnes.incidencias_sin_capitulo(db, "anclaje_resuelto")
+    ]
+    fuera_de_rango = await escenas_fuera_de_rango(db)
     return PuertaDePlotting(
-        tuple([*cobertura_anclada(revision), *arco_anclado(revision)])
+        tuple(
+            [*cobertura_anclada(revision), *arco_anclado(revision), *sin_resolver, *fuera_de_rango]
+        )
     )
+
+
+async def escenas_fuera_de_rango(db: aiosqlite.Connection) -> list[Incidencia]:
+    """Un aviso por capítulo con menos o más escenas que el rango de §19. No bloquea."""
+    minimo, maximo = Defaults.RANGO_ESCENAS_POR_CAPITULO
+    return [
+        Incidencia(
+            validador="escenas_por_capitulo",
+            severidad=Severidad.AVISO,
+            mensaje=(
+                f"El capitulo {numero} tiene {escenas} escena(s); "
+                f"la escaleta pide entre {minimo} y {maximo}."
+            ),
+        )
+        for numero, escenas in await plan.escenas_por_capitulo(db)
+        if not minimo <= escenas <= maximo
+    ]

@@ -137,9 +137,26 @@ En los tres, el generador escribe `Cronologia/Generado.lean` con **solo datos** 
 
 **7.1 Todo identificador del esquema tiene su dominio en la entrada.** Si el esquema de salida de un rol lleva un campo que es clave foránea, el prompt de ese rol contiene la lista de valores válidos, con la clave y una etiqueta legible.
 
-**7.2 El arquitecto ancla por clave.** El contexto de Plotting ya imprime cada hecho del corpus y cada dato del encargo como `#id`. El arquitecto ancla escenas a esas claves y `volcar_escaleta` recibe los dos mapas. Un anclaje a una clave inexistente es **incidencia del gate de Plotting**, no un descarte silencioso.
+**7.2 El arquitecto ancla por clave.** El contexto de Plotting imprime cada hecho del corpus como `(#id)` y, en una sección propia, cada elemento del encargo con su clave, su marca de obligatorio y su texto: el `Brief` que va delante los trae sin identificador, y las filas de `intake_dato` —que son la verdad (arq. §7)— no redactan igual que el brief. El arquitecto ancla escenas a esas claves y `volcar_escaleta` recibe los dos mapas. Se acepta la clave (`#12`, `hecho #12`, `12`) y también el texto normalizado, porque copiar el enunciado en vez de la clave apunta a lo mismo.
 
-**7.3 El extractor recibe su escaleta.** Recibe las escenas del capítulo con sus beats, los hechos y datos anclados a ellas, los personajes y escenarios que intervienen y los hitos de arco, cada uno con su identificador. Todo cabe en los 6.000 tokens de contexto que §12 ya le reserva. Si devuelve un identificador que no está en su entrada, la salida es inválida y `schema_guard` reintenta con el error.
+Un anclaje que no resuelve es **aviso del gate de Plotting** —validador `anclaje_resuelto`—, no un descarte silencioso. No bloquea: la escena existe igual, y si lo que se pierde es un obligatorio, `cobertura_anclada` ya bloquea por su cuenta.
+
+**7.4 El homenajeado se llama como dice el encargo.** La ficha del canon marcada como homenajeado se escribe con `nombre_homenajeado` del `Brief`, no con el nombre que proponga el arquitecto; su clave dentro de la escaleta sigue siendo la del arquitecto. En la segunda novela real el arquitecto la abrevió («Mercè Vidal» por el nombre con los dos apellidos) y, como `nombres_exactos` compara contra el canon, el nombre completo no se exigió nunca.
+
+*Lo que queda para el Autor.* `nombres_exactos` comprueba **cómo** se escribe el nombre cuando aparece, no **que** aparezca entero. En esa misma novela el nombre de pila salió 141 veces y el completo ninguna. Exigir que aparezca al menos una vez es una decisión de producto que este documento no toma.
+
+**7.3 El extractor recibe su escaleta.** Recibe las escenas del capítulo con sus beats y, detrás, un **catálogo de identificadores**, cada uno con su etiqueta legible:
+
+- los **personajes y escenarios del canon entero**, y no solo los de estas escenas, porque la continuidad de un personaje que se nombra sin intervenir también es continuidad;
+- los **hechos que el escritor tuvo delante**: los anclados a estas escenas más los vecinos semánticos del bloque 5, con la misma consulta. El extractor mide lo que se usó de lo que se ofreció, y un hecho que el escritor no vio no puede declararse usado;
+- los **elementos de personalización del encargo entero**, porque `cobertura_personalizacion` pregunta si un obligatorio apareció en *algún* capítulo, no solo en el que lo tenía anclado;
+- los **hitos de arco anclados a escenas de este capítulo**.
+
+Todo cabe en los 6.000 tokens de contexto que §12 ya le reserva.
+
+**El catálogo es el dominio.** `schema_guard` valida la salida con ese catálogo como contexto: un `hecho_id`, `dato_id`, `personaje_id`, `escenario_id`, participante de evento o hito que no esté en él hace la salida inválida, y el reintento de esquema inyecta el error con la lista de valores admitidos. **Ninguna escritura del volcado ve nunca un identificador fuera de dominio.**
+
+*Por qué no basta la clave foránea.* En la segunda novela real, el extractor del capítulo 5 —sin catálogo, adivinando— devolvió un identificador que no existía. La clave foránea hizo su trabajo y abortó la transacción, pero en el peor sitio: con el capítulo ya escrito y validado, la invocación entera se detuvo y hubo que retomarla con `continuar`. Los cuatro capítulos anteriores habían dejado **una** fila en `uso_hecho` y **una** en `intake_uso_dato`, que es lo que da un modelo que acierta por casualidad los identificadores bajos. La clave foránea detecta el defecto; el catálogo lo evita, y el reintento lo corrige donde todavía es barato.
 
 *Clase: **T** (un capítulo con anclaje no puede aprobarse sin que el extractor lo declare usado). Gate: G1 y G3.*
 
@@ -175,7 +192,14 @@ En los tres, el generador escribe `Cronologia/Generado.lean` con **solo datos** 
 
 **Contrato.** Lo que una invocación hizo queda escrito, aunque se interrumpa.
 
-**9.1 Cada fase abre su `fase_run`.** Hoy solo la abre Intake, y `storymaker estado` enseña «Fase: intake» a una novela publicada. Cada fase la abre al entrar y la cierra al salir con su estado —`completada`, `fallida` o `interrumpida`— y su consumo.
+**9.1 Cada fase abre su `fase_run`.** Hoy solo la abre Intake, y `storymaker estado` enseña «Fase: intake» a una novela publicada. Cada fase la abre al entrar y la cierra al salir con su estado —`completada`, `fallida` o `esperando_gate`— y su consumo.
+
+*Dos costuras que hay que cerrar antes de implementarlo.* Las encontró la segunda novela real, al ir a escribirlo:
+
+- **El corpus se identifica por su `fase_run`.** Seis consultas de `commons/db/repos/mundo.py` filtran `mundo_hecho` por `fase_run_id`, y hoy funcionan porque todas las fases comparten la de Intake. En cuanto Plotting abra la suya, `sellar_corpus` y la lectura de hechos buscarían el corpus bajo un identificador que no lo tiene. El estado tiene que llevar **aparte el `fase_run` de Investigation** —`corpus_run_id`— y esas consultas leer de él.
+- **`interrumpida` no está en el `CHECK` de `fase_run.estado`.** Los valores del esquema son `en_curso`, `esperando_gate`, `completada`, `fallida`, `aparcada` y `abortada`. Este apartado usa los del esquema en lugar de añadir uno: una fase que se detiene en un gate está `esperando_gate`, y una que revienta está `fallida`.
+
+Hoy, además, una invocación retomada con `continuar` no marca nada si falla, porque `invocar` solo conoce la `fase_run` de un `Arranque`. Con cada fase abriendo la suya, la fila abierta es la de la fase en curso, y es esa la que se cierra como `fallida`.
 
 **9.2 El consumo se acumula en el estado.** Todo nodo agente suma el consumo de su `Resultado` al estado del grafo, incluido el juez. `storymaker estado` y el `ResultadoInvocacion` enseñan la suma. Una novela entera no puede costar cero.
 
@@ -233,8 +257,10 @@ La versión guarda además la nota del juez en `judge_score_json`.
 | REQ-ER-15 | Un invariante violado bloquea en los tres puntos; en la publicación, sin anulación | §6 | P-80, P-84, P-91 |
 | REQ-ER-16 | `lake` ausente es aviso en los tres puntos y queda como `no_verificado` en el manifiesto | §6 | P-48, P-93 |
 | REQ-ER-17 | Todo identificador del esquema de un rol tiene su dominio en el prompt de ese rol | §7.1 | P-75, P-83 |
-| REQ-ER-18 | `volcar_escaleta` recibe los mapas de hechos y de datos; un anclaje a una clave inexistente es incidencia del gate de Plotting | §7.2 | P-75, P-80 |
-| REQ-ER-19 | El extractor de capítulo recibe las escenas de su capítulo con sus anclajes, personajes, escenarios e hitos, dentro de su techo | §7.3 | P-83, P-85 |
+| REQ-ER-18 | `volcar_escaleta` recibe los mapas de hechos y de datos, y el arquitecto ve los elementos del encargo con su clave; un anclaje que no resuelve es aviso `anclaje_resuelto` del gate de Plotting | §7.2 | P-75, P-80 |
+| REQ-ER-31 | La ficha del homenajeado en el canon lleva `nombre_homenajeado` del `Brief`, no el nombre del arquitecto | §7.4 | P-75 |
+| REQ-ER-19 | El extractor de capítulo recibe las escenas de su capítulo con sus beats y el catálogo de §7.3 —personajes y escenarios del canon, hechos que vio el escritor, elementos del encargo e hitos del capítulo—, dentro de su techo | §7.3 | P-83, P-85 |
+| REQ-ER-30 | `schema_guard` valida la salida del extractor contra ese catálogo; un identificador fuera de dominio es salida inválida y se reintenta con el error, y nunca llega al volcado | §7.3 | P-31, P-83 |
 | REQ-ER-20 | El juez recibe la rúbrica, la política del encargo y los elementos de personalización antes de la novela | §8.1 | P-90 |
 | REQ-ER-21 | El esquema del juez exige exactamente siete puntuaciones, una por criterio | §8.1 | P-90 |
 | REQ-ER-22 | En batch, una media del juez por debajo del umbral se registra y no impide publicar | §8.2 | P-90 |
@@ -278,4 +304,7 @@ Ninguna pieza introduce un camino que publique una versión sin validar. Las dos
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §7.2 añade los elementos del encargo con clave al contexto del arquitecto, acepta clave o texto y hace del anclaje sin resolver un **aviso** del gate; entra §7.4 con REQ-ER-31 y queda anotada para el Autor la presencia del nombre completo | La segunda novela real salió con `plan_anclaje` vacía, como la primera, y con la homenajeada abreviada en el canon: el nombre completo no apareció en ninguno de los diez capítulos |
+| 2026-09-24 | §9.1 cambia `interrumpida` por los estados que el esquema admite y declara dos costuras previas: el corpus identificado por su `fase_run` y el fallo de una invocación retomada | Al ir a implementarlo apareció que seis consultas de `mundo` dependen de que todas las fases compartan una `fase_run`: abrir una por fase sin separar el corpus rompería el sello |
+| 2026-09-24 | §7.3 fija el **catálogo** del extractor —canon entero, hechos que vio el escritor, encargo entero e hitos del capítulo— y lo convierte en dominio de `schema_guard`; entra REQ-ER-30 | La segunda novela real se detuvo en el capítulo 5 por una clave foránea: el extractor adivinaba identificadores. Restringir el catálogo a lo anclado habría dejado sin dominio la continuidad de quien no interviene y la cobertura de un obligatorio fuera de su capítulo |
 | 2026-09-24 | Versión inicial | Contratar la costura con el CLI, el SDK, FastEmbed, Playwright y Lean, que la spec del backend daba por supuesta y ningún doble de la suite puede comprobar, y fijar con qué se verifica una novela terminada |

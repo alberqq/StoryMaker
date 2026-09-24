@@ -26,7 +26,8 @@ import aiosqlite
 
 from storymaker.commons.agents.invocacion import invocar_rol
 from storymaker.commons.agents.techos import Perfil
-from storymaker.commons.db.repos import mundo
+from storymaker.commons.config import Defaults
+from storymaker.commons.db.repos import arnes, intake, mundo
 from storymaker.commons.db.repos import plan as repo_plan
 from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
@@ -93,6 +94,20 @@ async def brief_vigente(db: aiosqlite.Connection) -> Brief | None:
     return Brief.model_validate(json.loads(str(fila["json"])))
 
 
+def forma_de_la_escaleta(brief: Brief) -> str:
+    """Capítulos, escenas por capítulo y extensión (arq. §19), dichos al arquitecto.
+
+    Sin esto la primera escaleta con gates salió con una escena por capítulo: el rango de
+    §19 existía en la configuración y no lo usaba nada.
+    """
+    minimo, maximo = Defaults.RANGO_ESCENAS_POR_CAPITULO
+    return (
+        f"Exactamente {brief.n_capitulos} capitulos, cada uno con entre {minimo} y {maximo} "
+        f"escenas, y unas {brief.palabras_por_capitulo} palabras por capitulo repartidas "
+        "entre sus escenas."
+    )
+
+
 async def planificar(brief: Brief, *, fase_run_id: int) -> SalidaArquitecto:
     """Una llamada al arquitecto, con el corpus repartido por dimensiones delante.
 
@@ -109,7 +124,11 @@ async def planificar(brief: Brief, *, fase_run_id: int) -> SalidaArquitecto:
         "Premisa y el Tema, construye el canon y desglosa la escaleta capítulo a capítulo. "
         "Lo que necesites y no esté en el contexto, decláralo como hueco.\n\n"
         f"--- Encargo ---\n{brief.model_dump_json(indent=2)}\n\n"
-        f"--- Contexto histórico ---\n{contexto.como_texto(hechos)}\n"
+        f"--- Contexto histórico ---\n{contexto.como_texto(hechos)}\n\n"
+        f"--- Elementos del encargo ---\n{await elementos_con_clave(deps.db)}\n\n"
+        f"--- Forma de la escaleta ---\n{forma_de_la_escaleta(brief)}\n\n"
+        "Ancla cada escena a los hechos y elementos que la sostienen escribiendo su "
+        "clave #id tal como aparece arriba.\n"
     )
     resultado = await invocar_rol(
         Perfil.ARQUITECTO,
@@ -140,8 +159,53 @@ async def volcar(salida: SalidaArquitecto, brief: Brief) -> None:
     deps = actuales()
     personajes = await canon.volcar_canon(deps.db, deps.vectorizador, salida, brief)
     await canon.volcar_prohibidas(deps.db, brief)
-    escenas = await escaleta.volcar_escaleta(deps.db, salida, personajes=personajes)
+    async with deps.db.execute("SELECT id, enunciado FROM mundo_hecho") as cursor:
+        hechos = {int(f["id"]): str(f["enunciado"]) for f in await cursor.fetchall()}
+    datos = {int(d["id"]): _valor_de_dato(d["valor_json"]) for d in await intake.datos(deps.db)}
+    sin_resolver: list[str] = []
+    escenas = await escaleta.volcar_escaleta(
+        deps.db,
+        salida,
+        personajes=personajes,
+        hechos=escaleta.mapa_de_claves(hechos),
+        datos=escaleta.mapa_de_claves(datos),
+        sin_resolver=sin_resolver,
+    )
     await canon.volcar_arcos(deps.db, salida, personajes, escenas)
+    # Lo que no se pudo anclar no se pierde en silencio: lo enseña el gate (ER §7.2).
+    await arnes.retirar_incidencias_sin_capitulo(deps.db, VALIDADOR_DE_ANCLAJES)
+    for anclaje in sin_resolver:
+        await arnes.registrar_incidencia(
+            deps.db,
+            validador=VALIDADOR_DE_ANCLAJES,
+            severidad="aviso",
+            mensaje=f"El anclaje no apunta a ningun hecho ni elemento conocido: {anclaje}",
+        )
+
+
+#: Los anclajes de la escaleta que no se pudieron resolver a un hecho o a un elemento.
+VALIDADOR_DE_ANCLAJES = "anclaje_resuelto"
+
+
+def _valor_de_dato(valor_json: object) -> str:
+    """El texto de un elemento del encargo, que en la base vive dentro de un JSON."""
+    try:
+        cargado = json.loads(str(valor_json))
+    except json.JSONDecodeError:
+        return str(valor_json)
+    if isinstance(cargado, dict):
+        return str(cargado.get("valor", "")) or json.dumps(cargado, ensure_ascii=False)
+    return str(cargado)
+
+
+async def elementos_con_clave(db: aiosqlite.Connection) -> str:
+    """Los elementos de personalización con la clave con la que se anclan."""
+    lineas = [
+        f"(#{d['id']}) [{'OBLIGATORIO' if int(d['obligatorio']) else 'opcional'}] "
+        f"{_valor_de_dato(d['valor_json'])}"
+        for d in await intake.datos(db)
+    ]
+    return "\n".join(lineas) or "(ninguno)"
 
 
 async def plan(estado: EstadoNovela) -> EstadoNovela:

@@ -48,7 +48,7 @@ Un único objeto `Settings` de `pydantic-settings`, leído del entorno y de un `
 
 | Grupo | Claves | Nota |
 |---|---|---|
-| Rutas | `directorio_proyectos` (por defecto `proyectos/`) | El directorio es el registro de novelas (§16.4 arq.) |
+| Rutas | `directorio_proyectos` (por defecto `proyectos/`) | El directorio es el registro de novelas (§16.4 arq.): **una carpeta por novela**, `<nombre>/<nombre>.db`, con el cerrojo, los PDF y los capítulos exportados al lado |
 | Frontend | `frontend_dist` (por defecto `frontend/dist`), `frontend_base_url` | Lo que FastAPI sirve y la URL con la que Playwright abre la lectura para imprimir y para `render_visual` |
 | Modelos | `modelo_por_rol` (mapa rol→id de modelo), `sdk_version` | Por defecto los nueve roles en Haiku 4.5 |
 | Gates | `gates_enabled`, `timeout_gate_horas` | `false` en modo batch |
@@ -280,7 +280,9 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **El sello.** Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes y se escribe `mundo_sello`. **A partir de ahí el corpus es de solo lectura**: durante Writing solo se puede anclar a lo existente o declarar una Licencia.
 
-**Errores.** Tope de huecos alcanzado no bloquea: queda la invención autorizada, que no cuesta nada y produce exactamente la misma fila.
+**La forma de la escaleta.** El prompt del arquitecto enuncia el número de capítulos del brief, **de 2 a 4 escenas por capítulo** y la extensión por capítulo (arq. §19), junto a los elementos del encargo que tiene que anclar. El gate de Plotting abre una **incidencia de aviso** por cada capítulo fuera del rango de escenas. No bloquea, por el criterio de producto, pero el Autor lo ve en el informe antes de aprobar, y puede rehacer.
+
+**Errores.** Tope de huecos alcanzado no bloquea: queda la invención autorizada, que no cuesta nada y produce exactamente la misma fila. Un capítulo fuera del rango de escenas es aviso en el gate.
 
 ### 4.4 `writing/` — Fase 4
 
@@ -356,7 +358,7 @@ Lectura, más una petición de cambio que no toca nada hasta su gate. **Ningún 
 
 | Método y ruta | Quién llama | Contrato | Errores |
 |---|---|---|---|
-| `GET /novelas` | Frontend | Lista el directorio `proyectos/` y abre cada fichero para leer título, fase en curso y número de versiones | — |
+| `GET /novelas` | Frontend | Lista las carpetas de `proyectos/` que contienen su `<nombre>.db` y abre cada fichero para leer título, fase en curso y número de versiones | — |
 | `GET /novelas/{id}` | Frontend | Ficha de la novela: fase, gate abierto si lo hay, versiones publicadas | `404` |
 | `GET /novelas/{id}/versiones/{n}` | Frontend | Manifiesto de la versión y sus capítulos en orden, más el **bloque de paratexto** con el que se arma la portada: título, homenajeado tal como debe escribirse, dedicatoria con su ocasión y las Licencias declaradas de la nota del autor | `404` |
 | `GET /novelas/{id}/versiones/{n}/capitulos/{k}` | Frontend | Texto del capítulo tal como esa versión lo fija | `404` |
@@ -379,7 +381,7 @@ Lectura, más una petición de cambio que no toca nada hasta su gate. **Ningún 
 
 | Comando | Qué hace |
 |---|---|
-| `storymaker nueva <brief.json>` | Crea el fichero de la novela en `proyectos/` y arranca la invocación |
+| `storymaker nueva <brief.json>` | Crea la carpeta y el fichero de la novela, `proyectos/<nombre>/<nombre>.db`, y arranca la invocación |
 | `storymaker continuar <novela>` | Reanuda desde el último checkpoint tras un fallo. **Se niega** si hay un gate pendiente |
 | `storymaker decidir <novela> <aprobar\|rehacer\|editar\|abortar> [--comentario]` | **La única entrada de una decisión de gate.** La escribe sobre el gate pendiente y reanuda en el mismo proceso; sin gate pendiente o con una decisión desconocida, se rechaza sin tocar nada |
 | `storymaker estado <novela>` | Fase, gate abierto, capítulos aprobados, consumo acumulado |
@@ -663,6 +665,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-72 | Un veredicto `no_encontrado` **autoriza la invención**, que entra como fila `inferido` con `origen = 'invencion_autorizada'`, sin fuente y con `respaldo = 'no_aplica'` | §4.3 | P-77 |
 | REQ-BE-73 | La invención **no se topa, se cuenta**, y aparece por dimensión en el informe del gate | §4.3 | P-78 |
 | REQ-BE-74 | Al aprobarse la escaleta se calcula el hash sobre el contenido ordenado de las tablas `mundo_*` vigentes y el corpus pasa a ser de solo lectura | §4.3 | P-79 |
+| REQ-BE-135 | El prompt del arquitecto enuncia los capítulos, de 2 a 4 escenas por capítulo y la extensión, y el gate de Plotting avisa de cada capítulo fuera del rango de escenas | §4.3 | P-75, P-80 |
 | REQ-BE-75 | El escritor **redacta el capítulo entero de una vez**: la escena es unidad de planificación y de traza, no de redacción | §4.4 | P-81 |
 | REQ-BE-76 | `Validate` corre en dos pasadas, ambas dentro del bucle de reparación: primero la determinista, después la del extractor | §4.4 | P-82, P-83 |
 | REQ-BE-77 | La pasada del extractor es **una sola llamada y solo si la determinista no dejó incidencias** | §4.4 | P-83 |
@@ -702,7 +705,8 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-106 | `storymaker decidir` escribe la decisión sobre el gate pendiente y reanuda en el mismo proceso | §6 | P-109 |
 | REQ-BE-107 | Al reanudar, el gate decidido no se reabre ni se vuelve a avisar; `continuar` no reanuda un gate pendiente | §4.7 | P-109 |
 | REQ-BE-108 | Una decisión sin gate pendiente, o fuera de las cuatro, se rechaza sin tocar nada | §6 | P-109 |
-| REQ-BE-109 | `GET /novelas` lista el directorio `proyectos/` y abre cada fichero: no hay registro global de novelas | §5 | P-111 |
+| REQ-BE-109 | `GET /novelas` lista las carpetas de `proyectos/` y abre el fichero de cada una: no hay registro global de novelas | §5 | P-111 |
+| REQ-BE-136 | Cada novela vive en `proyectos/<nombre>/<nombre>.db`, con sus derivados —cerrojo, PDF, capítulos exportados— en la misma carpeta; ramificar crea la carpeta del destino | §2.2 | P-111, P-102 |
 | REQ-BE-110 | El endpoint de versión devuelve el manifiesto, sus capítulos en orden y el **bloque de paratexto** con el que se arma la portada | §5 | P-110 |
 | REQ-BE-111 | La ficha de personajes cuelga de una **versión**, no de la novela | §5 | P-110 |
 | REQ-BE-112 | `POST /novelas/{id}/cambios` no toca nada: abre la Fase 6, que se detiene en su gate | §5 | P-110, P-95 |
@@ -741,6 +745,8 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | **Una carpeta por novela**: §2.2, §5 y §6 dicen `proyectos/<nombre>/<nombre>.db`; entra REQ-BE-136 | Se propaga la decisión del Autor en §16.4 de la arquitectura |
+| 2026-09-24 | §4.3 fija **la forma de la escaleta**: el arquitecto recibe capítulos, escenas por capítulo y extensión, y el gate de Plotting avisa de los capítulos fuera del rango. Entra REQ-BE-135 | La primera escaleta con gates salió con una escena por capítulo. §19 de la arquitectura fija de 2 a 4, pero ni el prompt lo decía ni nada lo comprobaba |
 | 2026-09-24 | §4.1: **la entrevista pasa por el gate de Intake**. Entran REQ-BE-133 y REQ-BE-134 | Se propaga la decisión de la arquitectura en la Fase 1. El entrevistador se llamaba una vez y sus preguntas no las veía nadie |
 | 2026-09-24 | **Telegram solo avisa y los gates se deciden con `storymaker decidir`**: se retira `POST /webhook/telegram` con su secreto, §4.7 fija que el nodo abre el gate antes de `interrupt()` y no lo reabre al reanudar, `continuar` se niega ante un gate pendiente, y la CLI pasa a ocho comandos. REQ-BE-106, 107, 108, 114, 115 y 116 se reescriben | Decisión del Autor, propagada desde la arquitectura. Al probarla con gates apareció además que el nodo nunca abría el gate: no quedaba fila, no se avisaba y nada podía decidirse |
 | 2026-09-24 | §4.5: el juez recibe la rúbrica, el PDF se imprime tras publicar con su fallo como aviso, y en batch el umbral del juez no detiene | Se propaga la decisión de la arquitectura en Fase 5, a raíz de la auditoría previa a la primera ejecución real |

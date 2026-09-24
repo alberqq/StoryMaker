@@ -122,14 +122,18 @@ async def extraer(capitulo_version_id: int, numero: int, *, intento: int = 1) ->
     if fila is None:
         return []
 
+    # Sin catálogo, el extractor adivinaba los identificadores y el volcado moría en una
+    # clave foránea con el capítulo ya validado (ER §7.3).
+    escaleta = await extraccion.catalogo(deps.db, deps.vectorizador, numero, deps.settings)
     span = nombre_de_span(capitulo=numero, rol="extractor_capitulo", intento=intento)
     resultado = await invocar_rol(
         Perfil.EXTRACTOR_CAPITULO,
-        f"Capitulo {numero}:\n\n{fila['texto']}",
+        f"Capitulo {numero}:\n\n{fila['texto']}\n\n{escaleta.texto}",
         SalidaExtractorDeCapitulo,
         transporte=deps.transporte,
         settings=deps.settings,
         sistema=RepositorioDePrompts(deps.settings).para(Perfil.EXTRACTOR_CAPITULO).texto,
+        contexto={"dominio": escaleta.dominio},
     )
     deps.observador.registrar_span(
         Span(nombre=span, rol="extractor_capitulo", consumo=resultado.consumo)

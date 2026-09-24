@@ -64,9 +64,11 @@ class TestSuperficies:
 
 class TestListado:
     async def test_lista_el_directorio(self, ajustes: Settings, cliente: Any) -> None:
-        """No hay registro global: listar las novelas es listar el directorio."""
-        await crear_novela(ajustes.directorio_proyectos / "una.db")
-        await crear_novela(ajustes.directorio_proyectos / "otra.db")
+        """No hay registro global: listar las novelas es listar sus carpetas."""
+        await crear_novela(ruta_de("una", ajustes))
+        await crear_novela(ruta_de("otra", ajustes))
+        # Lo que no es la carpeta de una novela no es una novela.
+        (ajustes.directorio_proyectos / "suelta.db").write_bytes(b"")
         cuerpo = cliente.get("/novelas").json()
         assert {n["nombre"] for n in cuerpo} == {"una", "otra"}
 
@@ -78,11 +80,12 @@ class TestRutas:
     def test_el_nombre_no_puede_salirse_del_directorio(self, ajustes: Settings) -> None:
         """El nombre llega por la URL: sin esto, `../../algo` abriria ficheros de fuera."""
         ruta = ruta_de("../../secreto", ajustes)
-        assert ruta.parent == ajustes.directorio_proyectos
-        assert ".." not in ruta.name
+        assert ruta.parent.parent == ajustes.directorio_proyectos
+        assert ".." not in ruta.parts
 
-    def test_se_le_pone_la_extension(self, ajustes: Settings) -> None:
-        assert ruta_de("novela-1", ajustes).name == "novela-1.db"
+    def test_cada_novela_tiene_su_carpeta(self, ajustes: Settings) -> None:
+        ruta = ruta_de("novela-1.db", ajustes)
+        assert ruta == ajustes.directorio_proyectos / "novela-1" / "novela-1.db"
 
 
 class TestTraduccionDeErrores:

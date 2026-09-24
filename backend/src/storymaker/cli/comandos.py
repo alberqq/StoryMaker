@@ -23,7 +23,7 @@ import typer
 
 from storymaker.cli import salida
 from storymaker.commons.config import Settings
-from storymaker.commons.db.apertura import abrir_novela, crear_novela
+from storymaker.commons.db.apertura import abrir_novela, crear_novela, ruta_de_novela
 from storymaker.commons.errores import ErrorDeStoryMaker
 from storymaker.commons.graph import cerrojo
 from storymaker.commons.graph.branch import ramificar as copiar_novela
@@ -41,10 +41,7 @@ def _ajustes() -> Settings:
 
 
 def _ruta(nombre: str, settings: Settings) -> Path:
-    limpio = Path(nombre).name
-    if not limpio.endswith(".db"):
-        limpio = f"{limpio}.db"
-    return settings.directorio_proyectos / limpio
+    return ruta_de_novela(nombre, settings.directorio_proyectos)
 
 
 def _ejecutar(corrutina: Any) -> Any:
@@ -255,7 +252,7 @@ def evaluar(
     async def correr() -> None:
         for fichero in ficheros:
             encargo = leer_encargo(fichero)
-            ruta = settings.directorio_proyectos / f"eval-{fichero.stem}.db"
+            ruta = ruta_de_novela(f"eval-{fichero.stem}", settings.directorio_proyectos)
             salida.aviso(f"  - {fichero.stem} -> {ruta.name}")
             if not ruta.exists():
                 await crear_novela(ruta)

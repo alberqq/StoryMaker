@@ -124,12 +124,12 @@ async def correr_uno(brief: Path) -> ResultadoDeBrief:
     no es una tabla, es una anecdota.
     """
     from storymaker.commons.config import Settings
-    from storymaker.commons.db.apertura import abrir_novela, crear_novela
+    from storymaker.commons.db.apertura import abrir_novela, crear_novela, ruta_de_novela
     from storymaker.commons.graph.run import Arranque, invocar
     from storymaker.intake.encargo import leer
 
     settings = Settings().en_modo_batch()
-    ruta = settings.directorio_proyectos / f"eval-{brief.stem}.db"
+    ruta = ruta_de_novela(f"eval-{brief.stem}", settings.directorio_proyectos)
 
     try:
         encargo = leer(brief)
