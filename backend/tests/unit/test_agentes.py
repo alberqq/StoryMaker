@@ -58,9 +58,9 @@ def settings() -> Settings:
 
 
 class TestTechos:
-    def test_los_diez_perfiles_tienen_techo(self) -> None:
+    def test_los_once_perfiles_tienen_techo(self) -> None:
         """Un agente sin fila seria un hueco en la suma con la que se garantiza §12."""
-        assert len(TECHOS) == 10
+        assert len(TECHOS) == len(Perfil) == 11
         assert {t.rol for t in TECHOS.values()} == set(Rol)
 
     def test_el_peor_caso_es_la_sesion_inicial_del_investigador(self) -> None:
@@ -70,7 +70,12 @@ class TestTechos:
 
     def test_solo_el_investigador_tiene_red(self) -> None:
         con_red = {p for p in Perfil if herramientas_de(p)}
-        assert con_red == {Perfil.INVESTIGADOR_INICIAL, Perfil.INVESTIGADOR_MICRO}
+        assert con_red == {
+            Perfil.INVESTIGADOR_INICIAL,
+            Perfil.INVESTIGADOR_MICRO,
+            Perfil.INVESTIGADOR_DIRIGIDO,
+        }
+        assert {TECHOS[p].rol for p in con_red} == {Rol.INVESTIGADOR}
         assert herramientas_de(Perfil.ESCRITOR) == ()
         assert herramientas_de(Perfil.VERIFICADOR) == (), "el verificador trabaja sobre la cita"
 
@@ -179,7 +184,7 @@ class TestInvocacion:
         (llamada,) = transporte.llamadas
         assert llamada["modelo"] == Defaults.MODELO_HAIKU
         assert llamada["herramientas"] == ("WebSearch", "WebFetch")
-        assert llamada["max_turns"] == 12
+        assert llamada["max_turns"] == 20
 
     async def test_el_esquema_de_salida_viaja_con_la_llamada(self, settings: Settings) -> None:
         """REQ-BE-132: sin él, el rol improvisa los campos, como en la primera ejecución real."""

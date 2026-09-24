@@ -66,7 +66,25 @@ def _aparece(prohibida: TerminoProhibido, texto_normalizado: str) -> bool:
     palabras = texto_normalizado.split()
     agujas = aguja.split()
     n = len(agujas)
-    return any(palabras[i : i + n] == agujas for i in range(len(palabras) - n + 1))
+    if any(palabras[i : i + n] == agujas for i in range(len(palabras) - n + 1)):
+        return True
+    raiz = _raiz(aguja) if n == 1 else ""
+    return bool(raiz) and any(raiz in palabra for palabra in palabras)
+
+
+#: Por debajo de esta longitud la raíz ya no identifica la palabra: «asa» está en «casa».
+_RAIZ_MINIMA = 4
+
+
+def _raiz(palabra: str) -> str:
+    """La palabra sin su vocal final, para cazar derivadas: «ruina» → «ruin».
+
+    Con ella, «arruinada» cae por «ruina» y «herejía» por «hereje», que la comparación por
+    palabra completa dejaba pasar. Solo se aplica a términos de una palabra y con raíz de
+    al menos cuatro letras; por debajo, la comparación sigue siendo por palabra completa.
+    """
+    raiz = palabra[:-1] if len(palabra) > _RAIZ_MINIMA and palabra[-1] in "aeo" else palabra
+    return raiz if len(raiz) >= _RAIZ_MINIMA else ""
 
 
 def texto_libre_no_filtrado(prompt: str, textos_en_cuarentena: Sequence[str]) -> list[Incidencia]:

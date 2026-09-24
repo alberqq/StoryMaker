@@ -8,6 +8,139 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ---
 
+## 2026-09-24 · La interfaz opera el arnés
+
+### It-24 · Del lector al taller
+
+**Causa.** El Autor vio la interfaz de lectura de It-21 y la describió como «súper pobre»: no salían todas las novelas, y no había forma de lanzar una ejecución, seguirla ni consultar lo que dejaba cada fase. Lo primero era un servidor de demo apuntado a otra carpeta. Lo segundo contradecía una decisión fijada: solo la CLI reanudaba una ejecución.
+
+**Qué se hizo.** Se preguntó al Autor antes de escribir nada, y decidió que **la interfaz lo opere todo**, con un panel moderno y el lector en maqueta de libro. Pidió además que el taller fuera **un tablero tipo Jira** donde arrastrar una tarjeta aprueba su gate. La decisión se escribió en §16.5 de la arquitectura, conservando la razón de ser de la anterior en lugar de su letra: cada acción que ejecuta el grafo **lanza la CLI como proceso aparte**, el servidor no guarda nada en memoria y la API solo acepta acciones locales y en JSON. El grilling restringió «abortar» al gate de Intake, la única arista del modelo TLA+, y convirtió «editar» en corregir filas antes de aprobar o rehacer. Bajó a §5 de la spec del backend (P-160 a P-166), a la spec del frontend reescrita (REQ-FE-52 a REQ-FE-92) y a su plan (IMP-34 a IMP-46), con las tres matrices al día, y se implementó: seguimiento, salidas por fase, operación con su lanzador, `entities/novela`, tablero, encargo, panel, gate, salidas y tokens de diseño en claro y oscuro.
+
+**Efecto medido.** 64 pruebas de API, 38 de ellas nuevas; 81 del frontend con MSW, entre ellas el arrastre con su confirmación, las acciones por estado, las preguntas de Intake y el editor que nunca envía `editar`. El inventario de P-129 queda en cero en las dos direcciones. Sobre las dos novelas reales publicadas, nueve pantallas sin errores de consola, y una acción real que la API lanzó desacoplada y la CLI rechazó en su propio registro.
+
+**Deuda o pendiente.** El aviso de Telegram todavía no lleva la dirección de la pantalla del gate que promete §10. Falta encargar una novela desde la interfaz y seguirla hasta publicarla, que cuesta una ejecución completa. `render_visual` e `imprimir_pdf` siguen sin usar la ruta de impresión de React (It-21).
+
+## 2026-09-24 · La cuarta novela real
+
+### It-26 · Leer la novela entera
+
+**Causa.** La cuarta novela real, *La cartógrafa del corazón*, se publicó con un 7,4 del juez y un 8 en continuidad, y al leerla aparecieron defectos que ningún validador mira:
+
+- **Contradicciones de trama.** La firma del mapa se contradice en cinco capítulos: Magallanes promete llevar el nombre de Inés en los márgenes, luego «su nombre no estaría en él», luego lo firma ella y al final «Magallanes desconoce el nombre». La navaja del padre se entrega dos veces.
+- **Conocimiento imposible.** Magallanes, antes de zarpar, dice «esto no es lo que encontré… llegué más al sur».
+- **Repetición.** «Precisión» aparece 63 veces y «treinta años» 34, y los capítulos 8 y 9 cierran con el mismo párrafo.
+- **Forma.** El tiempo verbal pasa de pretérito a presente en el capítulo 8, y en el capítulo 4 aparecen encabezados de escena.
+
+La causa común es que el escritor solo ve N−1: el estado de continuidad dice qué posee cada personaje, pero no qué se prometió o se entregó tres capítulos atrás, y la repetición de la novela entera no la ve nadie. El juez sí podía ver las contradicciones, pero su nota no dependía de ellas.
+
+**Qué se hizo.** En §6 de la [arquitectura](architecture.md), el bloque 3 lleva **lo que ya ha pasado**: los eventos narrativos que el extractor ya escribía para Lean, de los capítulos aprobados anteriores a N−1. Su techo sube a 2.500 a costa de la memoria, que baja a 3.000. El bloque 6 lleva cuatro **reglas de escritura** fijas y **lo que la novela ya ha gastado**: las palabras y expresiones más repetidas y la frase con la que cerró cada capítulo. En §11b, el juez **enumera las contradicciones** antes de puntuar, y Python topa la continuidad a `10 − 2·n`. Hay dos filas nuevas en §17, REQ-BE-145 a REQ-BE-147 en la spec del backend, y `P-150` a `P-152` en el plan. Los encabezados markdown los quita ya `texto.sin_encabezados` al guardar el capítulo (It-25).
+
+**Efecto medido.** Hay trece pruebas nuevas en `test_contexto_de_trama.py`:
+
+- el recuento de repeticiones, sin los nombres del canon;
+- los eventos del capítulo 1 en el bloque 3 del capítulo 3, sin los de un intento descartado y sin los de N−1;
+- los techos, que siguen sumando 12.000;
+- las reglas fijas y la frase de cierre del anterior;
+- el tope de continuidad.
+
+Sobre la base de la novela de Sevilla, el paquete del capítulo 10 habría llevado 46 eventos en el bloque 3 dentro de su techo. En el bloque 6 habría ido la lista «precisión» (48), «treinta años» (32) y «sus manos» (21), y entre los cierres ya usados el «Y por fin descansa» que el capítulo 9 repitió. La suite completa pasa: 787 pruebas. **El efecto sobre la prosa está sin medir** hasta la próxima novela real.
+
+**Deuda o pendiente.** Los errores de dato histórico que contradicen el corpus —la corte de Carlos I en Sevilla en 1517, «Río de la Plata» en 1518— siguen sin comprobación: `anacronismo_fechado` solo mira entidades con fecha, y el escritor recibe del corpus lo que la búsqueda semántica le acerca, no lo que su escena contradice.
+
+### It-23 · El capítulo 8 y el mismo texto tres veces
+
+**Causa.** La cuarta novela real se detuvo en el capítulo 8 de 10, con siete aprobados. `cobertura_capitulo` bloqueó los tres intentos porque el extractor no declaró usado el elemento «aprendió a dibujar copiando los mapas que guardaba su padre». El elemento estaba escrito de forma indirecta: «la letra que había practicado treinta años copiando los antiguos», «Es de mi padre». La incidencia lo nombraba solo por su identificador —«no aparecen: [1]»—, así que el editor no sabía qué faltaba, y **los tres intentos tienen el mismo texto, carácter por carácter**. Con el capítulo en `Fail`, el grafo había terminado y `continuar` no tenía nada que retomar: la única salida era empezar de nuevo.
+
+**Qué se hizo.** §11a de la [arquitectura](architecture.md) hace que `cobertura_capitulo` avise en lugar de bloquear, y la cobertura que bloquea queda en `cobertura_personalizacion`, antes de publicar. §16.5 añade `storymaker reintentar`, con dos filas nuevas en §17. En la spec del backend, §6 y §7.2 con REQ-BE-137 y REQ-BE-138, y en el plan, `P-143` y `P-144`. La incidencia nombra ahora cada elemento por su texto, y el registro de validadores la declara no bloqueante. `reintentar` escribe en el checkpoint un capítulo recién empezado como salida de `SealCorpus` y reanuda por `invocar`, sin tocar lo aprobado.
+
+**Efecto medido.** Dos pruebas nuevas de `reintentar`. En la primera, una novela cae en el capítulo 1 por longitud, se reabre y llega a publicarse, con los intentos fallidos conservados como filas y su `fase_run` de Writing cerrada como `fallida`. En la segunda, una novela que espera en un gate rechaza el comando sin tocar nada. `test_writing.py` comprueba que el aviso lleva el texto del elemento, y `test_core_domain.py` que bloquean diez de los once validadores programáticos. La suite completa pasa: 717 pruebas.
+
+**Deuda o pendiente.** El extractor sigue sin reconocer un elemento escrito de forma indirecta. Ya no detiene el capítulo, pero la cobertura de la novela depende de que algún capítulo lo nombre de manera que el extractor lo vea; si ninguno lo hace, lo detiene `cobertura_personalizacion` en G5.
+
+### It-22 · Una sola `fase_run` y un coste de cero dólares
+
+**Causa.** La cuarta novela real, en Sevilla entre 1517 y 1519, llegó al gate de Plotting con el corpus investigado y la escaleta escrita, y `storymaker estado` seguía diciendo «Fase: intake» y «0 + 0 tokens, 0.0000 $». En la base había una sola fila de `fase_run`, la que `invocar` abre para un `Arranque`, todavía `en_curso`. Ninguna otra fase abría la suya, nada cerraba esa fila si todo iba bien, y el consumo de cada llamada al modelo solo llegaba a los *spans* del observador. Como todos los hechos del corpus colgaban de esa misma fila, rehacer Investigation desde su gate habría mezclado el corpus nuevo con el anterior.
+
+**Qué se hizo.** §9.1 y §9.2 de la [spec de ejecución real](../specs/ejecucion-real/spec.md) pasan de describir el defecto a fijar el contrato, con REQ-ER-25, REQ-ER-26 y REQ-ER-36. El detalle está en su [plan](../specs/ejecucion-real/plan.md), y en el plan del backend como `P-141` y `P-142`. Un envoltorio común a los veinticuatro nodos, puesto en `nodos_resueltos`, abre la fila de cada fase según `FASE_DE_NODO`: la abre cuando la fase cambia o cuando la abierta ya no está en curso, que es rehacer desde un gate. `invocar` cierra la última fila al salir del grafo, también tras reanudar. El estado lleva `corpus_run_id`, con el que `Research`, `VerifyCorpus`, `FillGap` y `SealCorpus` escriben, verifican y sellan el corpus. El consumo lo cuenta un `TransporteContado` alrededor del transporte, y el envoltorio reparte la diferencia de cada nodo entre el estado y la fila.
+
+Contarlo en el transporte y no en cada nodo agente, como decía la versión anterior de §9.2, cubre por construcción a todos los nodos, juez incluido, y cuenta también los reintentos de esquema que `invocar_rol` descarta. La fila abierta es la última de la base y no la que apunta el estado, porque la Fase 6 abre la suya desde la API antes de que corra ningún nodo.
+
+**Efecto medido.** Nueve pruebas nuevas en `tests/integracion/test_contabilidad.py`. En batch, una novela deja cinco filas, de `intake` a `publication`, todas `completada`, encadenadas por `input_run_id` y con tokens, y el consumo de la invocación es su suma. El corpus, huecos de `FillGap` incluidos, se escribe y se sella bajo la fila de Investigation. Con gates, la fila del gate queda `esperando_gate` y la anterior `completada`. Rehacer Investigation abre una segunda fila, y los hechos nuevos llevan su identificador sin mezclarse con los de la primera. La suite completa pasa: 713 pruebas.
+
+**Deuda o pendiente.** Las lecturas del corpus que no filtran por ejecución —el contexto del arquitecto, `anclaje_valido` y el resumen del gate de Investigation— siguen viendo los hechos de todas las ejecuciones. Tras un rehacer, verían también los de la ejecución descartada. Las novelas que ya estaban a medias no traen `corpus_run_id` en su checkpoint y siguen con su única fila: el envoltorio la toma como su corpus, y la primera fase nueva la cierra como `completada`.
+
+---
+
+## 2026-09-24 · El frontend
+
+### It-21 · La API que el frontend consume no era la que las specs describían
+
+**Causa.** Al implementar [`specs/frontend/plan.md`](../specs/frontend/plan.md) contra la API real aparecieron tres huecos. La API servía la ficha de personajes sin versión, el manifiesto sin bloque de paratexto y los capítulos sin título, aunque §5 de la spec del backend ya contrataba las dos primeras cosas (P-110); `estaticos.py` servía un HTML propio en `/lectura` en lugar del `dist/` de React (P-136); y todas las respuestas eran `dict[str, Any]`, con lo que los tipos que IMP-05 deriva del OpenAPI no decían nada. Además, con un solo origen, la aplicación y la API chocaban: las dos tienen rutas `/novelas/…`.
+
+**Qué se hizo.** La API pasa a `/api` y FastAPI sirve el `dist/` con *fallback* a `index.html` en el manejador de `404`, solo para `GET`. Los endpoints de lectura declaran modelos Pydantic y devuelven lo que las dos specs pedían: paratexto, ficha versionada con personajes y escenarios, historial con fecha y puntuación, título de capítulo y versión anterior. La petición de cambio recibe el fragmento y lo usa en la búsqueda. El frontend entero —seis pantallas, cliente único, modo impresión— se construye sobre esa superficie, con los tipos generados. Se propagó a §5 de la spec del backend, §2.1 de la del frontend y el plan del frontend, cada uno con su fila de registro.
+
+**Efecto medido.** 26 pruebas de API en verde, 8 de ellas nuevas sobre una novela sembrada de dos versiones, y 5 sobre el `dist/` servido. 46 pruebas del frontend con MSW, incluidas las de estructura: cliente único, sin copia local, capas y alias. El inventario de P-129 pasa de diez módulos del frontend «presente y no declarado» a cero. Un recorrido con Playwright contra FastAPI sirviendo el `dist/` encontró las cuatro regiones `data-render` e imprimió el documento a PDF.
+
+**Deuda o pendiente.** `render_visual` y `imprimir_pdf` (P-92, P-94) siguen juzgando e imprimiendo el HTML que arma `publication/render.py`, no la ruta de impresión de React interceptando sus peticiones: el frontend es interceptable, pero el lado del backend no está escrito. IMP-29 e IMP-30 quedan sin cerrar porque ninguna novela tiene todavía una versión publicada; el acta de [`frontend/tests/recorrido.md`](../frontend/tests/recorrido.md) registra el ensayo.
+
+## 2026-09-24 · La tercera novela real
+
+### It-28 · El investigador que no entregaba
+
+**Causa.** Una novela nueva —Imperio romano bajo Marco Aurelio, Cáceres, años 161-180, en modo estándar y con gates— pasó el gate de Intake y se detuvo en Research con «La salida no es JSON valido». El investigador consumió 58.341 tokens de entrada y dejó cero hechos y cero fuentes, y el reintento de esquema acabó igual. Lo que encaja: en un período con poca información en la red siguió buscando tras gastar su cuota, cada intento denegado le costó un turno, el mensaje de denegación solo decía «cuota agotada», y agotó los doce turnos sin llegar a entregar el JSON. Lo único que recogió el transporte fue su texto intermedio.
+
+**Qué se hizo.** §4 de la [arquitectura](architecture.md), §4.2 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-194 y REQ-BE-195, y `P-69` del plan. El motivo de la denegación le dice al rol que no insista y entregue ya lo que tenga; la sesión única pasa de doce a veinte turnos; y una sesión única sin respuesta válida deja un aviso en el gate y la fase sigue con el corpus que haya, como una sesión dirigida del modo exhaustivo.
+
+**Efecto medido.** Dos pruebas nuevas: el motivo de la denegación y la sesión sin JSON que no detiene la fase. Pasan las 805 de la suite. La novela se relanzó desde la interfaz.
+
+### It-27 · La investigación exhaustiva
+
+**Causa.** La tercera novela real salió con doce hechos, siete de cultura material, y sus errores históricos venían de lo concreto del encargo: la fecha de detención de la figura real, el evento ancla sin narrar y la ley de imprenta que era el conflicto de la trama. Tres páginas repartidas por el modelo entre seis dimensiones no llegaban a eso.
+
+**Qué se hizo.** §4, §12, §15, §17, §18 y §19 de la [arquitectura](architecture.md), sometidos a grilling; §4.2 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-148, REQ-BE-149 y REQ-BE-190 a REQ-BE-193; `P-153`, `P-154`, `P-73` y `P-74` del plan. El modo exhaustivo corre ocho sesiones dirigidas en serie —seis por dimensión, personajes con evento ancla, oficio— con un perfil nuevo de una búsqueda y una página. El grilling destapó que `pii_en_prompt_de_investigacion` existía y tenía pruebas pero no la llamaba nadie: ahora mira todo prompt del investigador antes de emitirlo, y la regla de Semgrep deja de tratar el rol de época como dato personal. La API y la casilla del encargo las añadió otra sesión (REQ-BE-182, REQ-FE-99).
+
+**Efecto medido.** Diez pruebas nuevas en `test_investigacion_exhaustiva.py`: las ocho sesiones y su informe, las seis cuando el brief no trae personajes ni oficio, el comentario en todas, una sesión inválida que se salta, un nombre del homenajeado escrito en el oficio que no sale a internet y la elección de sesión según el modo. Pasan las 797 de la suite. Falta verlo en una novela real.
+
+### It-25 · Lo que la novela terminada enseñó
+
+**Causa.** Leída entera, la novela de Salamanca —diez capítulos, versión 1, 7,86 del juez— tenía tres defectos que ninguna puerta había visto. «Herejía» y «arruinada» estaban en el texto con «hereje» y «ruina» prohibidas: la comparación por palabra completa solo cazaba la forma exacta, el plural y los acentos. Cinco capítulos repetían su título dentro del texto («# Capítulo 1: El Oficio»), y otra novela traía además encabezados de escena («## Escena 1: …»): el escritor los mete a veces y se guardaban tal cual. Y el evento ancla, el regreso de fray Luis a su cátedra en diciembre de 1576, no se narró: el capítulo 9 se quedó en su liberación. Anclarlo era una instrucción al arquitecto, no una comprobación.
+
+**Qué se hizo.** §4 y §11a de la [arquitectura](architecture.md), §4.1, §4.4 y §7.2 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-140 a REQ-BE-142, y `P-41`, `P-68` y `P-81` del plan. `guardrail_prohibidas` busca además la raíz del término —la palabra sin su vocal final, de al menos cuatro letras— dentro de cada palabra, así que «asa» sigue sin saltar en «casa». `insertar_capitulo_version` quita toda línea de encabezado markdown, de cualquier nivel, antes de guardar y de contar palabras. `Brief.elementos_a_cubrir` añade el evento ancla como elemento obligatorio, e Intake lo vuelca con los demás: desde ahí lo ven el arquitecto, `cobertura_anclada` y `cobertura_personalizacion`.
+
+**Efecto medido.** Cinco pruebas nuevas: tres derivadas que saltan, los encabezados que no se guardan y el evento que entra como obligatorio. Pasan las 651 unitarias, de correspondencia, de contratos y adversarias, y las 30 de integración.
+
+**Deuda o pendiente.** Siguen sin puerta las erratas de la prosa —una palabra inglesa, «se sintió» por «se sentó»—, las contradicciones entre capítulos y la fidelidad histórica fina, como la fecha de la detención de fray Luis. Las tres dependen hoy del juez, que puntuó la novela más alto que una lectura atenta.
+
+### It-29 · «Fray» a principio de frase
+
+**Causa.** La novela de Salamanca agotó los reintentos del capítulo 9. El primer intento lo tumbó `nombres_exactos`: el canon registra «fray Luis de León», con minúscula, y el capítulo lo escribía «Fray Luis de León» al abrir frase. El validador comparaba carácter a carácter, y lo que es ortografía del castellano contaba como un nombre mal escrito.
+
+**Qué se hizo.** §11a de la [arquitectura](architecture.md), la fila de §7.2 de la [spec del backend](../specs/backend/spec.md) con REQ-BE-139 y `P-41` del plan: `nombres_exactos` acepta el nombre con la primera letra en mayúscula. Cualquier otra diferencia sigue bloqueando. Dos pruebas nuevas en `test_core_domain.py`: «Fray Luis de León» pasa y «Fray luis de León» sigue saltando.
+
+**Efecto medido.** Las dos pruebas pasan. La novela se retomó desde el capítulo 9 con este cambio y con `cobertura_capitulo` ya en aviso (It-23).
+
+### It-19 · Un `INSERT` ignorado y un `lastrowid` ajeno
+
+**Causa.** Un encargo nuevo, [`ejemplos/brief-salamanca.yaml`](../ejemplos/brief-salamanca.yaml) —Salamanca, 1572-1576, diez capítulos, en batch—, se detuvo dos veces con `FOREIGN KEY constraint failed`, ya con el catálogo de It-17 en su sitio: en el capítulo 3 y en el 4, las dos veces en un intento posterior al primero. La traza señaló `volcar_cronologia`, al escribir `cronologia_participante`. Los participantes estaban en dominio; el evento no. Los eventos se escriben con `INSERT OR IGNORE` sobre `cap<N>-<clave>`, el segundo intento repetía las claves del primero y su `INSERT` se ignoraba, y el código tomaba `lastrowid` como id del evento. Tras un `INSERT` ignorado, `lastrowid` conserva el último id insertado en la conexión, de cualquier tabla.
+
+**Qué se hizo.** §7.3 de la [spec de ejecución real](../specs/ejecucion-real/spec.md) fija que un evento con clave ya escrita no se duplica ni cuelga sus participantes de otro, con REQ-ER-35. `volcar_cronologia` mira `rowcount` y salta el evento si no hubo fila. Una prueba de `test_writing.py` vuelca dos intentos con las mismas claves y exige `PRAGMA foreign_key_check` vacío; contra el código anterior falla.
+
+**Efecto medido.** La prueba pasa con el cambio y falla sin él.
+
+**Deuda o pendiente.** Los eventos de un intento posterior cuya clave ya existe no se registran: la cronología de ese capítulo sigue siendo la del primer intento que la escribió. Es lo que ya hacía el `OR IGNORE`, ahora sin romper la transacción.
+
+### It-20 · Telegram callaba en batch
+
+**Causa.** Con `--batch` los gates se desactivan, y los gates eran lo único que avisaba. Las dos caídas de It-19 solo se supieron mirando la terminal, y tampoco habría llegado nada al terminar la novela.
+
+**Qué se hizo.** §10 de la [arquitectura](architecture.md), §9.5 de la spec de ejecución real con REQ-ER-32 a REQ-ER-34, y `P-140` del plan del backend: tres avisos fuera de gate —parada, final y aparcamiento— que salen siempre. `invocar` emite los dos primeros al salir del grafo y `aparcar` el tercero, todos a través de `avisar_sin_fallar`, de modo que un aviso perdido no cambia el resultado. `invocar` y `reanudar` aceptan un `notifier` inyectable.
+
+**Efecto medido.** Siete pruebas nuevas en `test_gates.py`, `test_invocacion.py` y `test_extremo_a_extremo.py`: el texto de los tres avisos, la parada en un fallo, el silencio en un gate, el final con su versión y un notifier que revienta sin tumbar nada. Las 31 pruebas de esos tres ficheros pasan.
+
+**Deuda o pendiente.** `aparcar` avisa, pero ningún nodo lo llama todavía: el *timeout* de `P-107` no está cableado, así que el aviso de aparcamiento no puede salir en una ejecución real hasta que lo esté.
+
+---
+
 ## 2026-09-24 · La segunda novela real
 
 ### It-17 · El extractor adivinaba los identificadores

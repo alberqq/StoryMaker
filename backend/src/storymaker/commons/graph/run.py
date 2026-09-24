@@ -25,14 +25,23 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from storymaker.commons.agents.contador import TransporteContado
 from storymaker.commons.agents.invocacion import Consumo
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela
 from storymaker.commons.db.repos import arnes
+from storymaker.commons.errores import NadaQueReintentar
 from storymaker.commons.graph import cerrojo
 from storymaker.commons.graph.construccion import construir
 from storymaker.commons.graph.dependencias import Dependencias, usando
 from storymaker.commons.graph.estado import EstadoNovela, estado_inicial
+from storymaker.gates.notifier import (
+    Notifier,
+    avisar_sin_fallar,
+    aviso_de_parada,
+    aviso_de_terminada,
+)
+from storymaker.gates.notifier import construir as construir_notifier
 
 if TYPE_CHECKING:
     from storymaker.commons.agents.invocacion import Transporte
@@ -134,6 +143,7 @@ async def invocar(
     transporte: Transporte | None = None,
     vectorizador: Vectorizador | None = None,
     observador: Observador | None = None,
+    notifier: Notifier | None = None,
 ) -> ResultadoInvocacion:
     """Avanza la novela hasta el siguiente gate o hasta el final.
 
@@ -145,7 +155,8 @@ async def invocar(
     Las tres dependencias que los nodos no pueden recibir por el estado —transporte,
     vectorizador y observador— se instalan aquí, en el contexto de invocación, y se retiran
     al salir. Son parámetros con valor por defecto para que las pruebas puedan inyectar sus
-    dobles sin tocar ningún global.
+    dobles sin tocar ningún global. `notifier` sigue la misma regla: sin él, el que diga
+    `Settings`; las pruebas pasan un `NotifierNulo` y miran qué se le pidió.
     """
     piezas = _por_defecto(settings, transporte, vectorizador, observador)
 
@@ -155,10 +166,13 @@ async def invocar(
 
             checkpointer = AsyncSqliteSaver(db)
             grafo = construir(checkpointer=checkpointer)
+            # El contador ve pasar cada llamada al modelo: de él sale el consumo de la
+            # invocación, y el envoltorio de los nodos lo reparte por `fase_run`.
+            contador = TransporteContado(piezas[0])
             dependencias = Dependencias(
                 db=db,
                 settings=settings,
-                transporte=piezas[0],
+                transporte=contador,
                 vectorizador=piezas[1],
                 observador=piezas[2],
                 reanudando_gate=(
@@ -177,34 +191,148 @@ async def invocar(
                     max_intentos=settings.reintentos_por_capitulo,
                     huecos=settings.huecos_por_plotting,
                     gates_enabled=settings.gates_enabled,
+                    investigacion=settings.investigacion,
                 )
             else:
                 from langgraph.types import Command
 
-                fase_run_id = 0
                 estado = Command(resume=entrada.decision or "")
 
+            aviso = notifier or construir_notifier(settings)
             try:
                 with usando(dependencias):
                     final: EstadoNovela = await grafo.ainvoke(estado, config=_hilo(novela))
             except Exception as fallo:
-                if fase_run_id:
-                    await arnes.cerrar_fase_run(db, fase_run_id, estado="fallida")
-                    await db.commit()
+                # La fila abierta es la última de la base, también tras reanudar: antes solo
+                # se cerraba la de un `Arranque`, y un fallo tras `continuar` no dejaba rastro.
+                await arnes.cerrar_abierta(db, "fallida")
+                await db.commit()
                 if os.environ.get(TRAZA_DE_FALLOS):
                     traceback.print_exception(fallo)
-                return ResultadoInvocacion(nodo_final="Fail", error=str(fallo))
+                resultado = ResultadoInvocacion(
+                    nodo_final="Fail", error=str(fallo), consumo=contador.consumo
+                )
+                await _avisar(db, aviso, novela, resultado, nodo=_ultimo_nodo(fallo))
+                return resultado
 
             pendiente = await arnes.gate_pendiente(db)
-            return ResultadoInvocacion(
-                nodo_final=str(final.get("pc", "Fail")),
-                gate_abierto=int(pendiente["id"]) if pendiente is not None else None,
-                consumo=Consumo(
-                    tokens_in=int(final.get("tokens_in", 0)),
-                    tokens_out=int(final.get("tokens_out", 0)),
-                    coste_usd=float(final.get("coste_usd", 0.0)),
+            # El nodo `Fail` no reescribe `pc`, así que unos reintentos agotados llegan aquí
+            # con el `pc` de quien los mandó —`Extract`, `Validate`, `Judge`—. Un grafo que
+            # termina sin publicar y sin gate pendiente ha fallado, diga lo que diga `pc`.
+            ultimo = str(final.get("pc", "Fail"))
+            fallo_declarado = pendiente is None and ultimo != "Idle"
+            resultado = ResultadoInvocacion(
+                nodo_final="Fail" if fallo_declarado else ultimo,
+                error=(
+                    f"el grafo termino en Fail desde {ultimo}: reintentos agotados"
+                    if fallo_declarado and ultimo != "Fail"
+                    else None
                 ),
+                gate_abierto=int(pendiente["id"]) if pendiente is not None else None,
+                # El de esta invocación. El estado acumula el de toda la novela.
+                consumo=contador.consumo,
             )
+            if pendiente is not None:
+                await arnes.cerrar_abierta(db, "esperando_gate")
+            else:
+                cierre = "completada" if resultado.nodo_final == "Idle" else "fallida"
+                await arnes.cerrar_abierta(db, cierre)
+            await db.commit()
+            nodo = f"{ultimo}, capitulo {final.get('capitulo', '?')}"
+            await _avisar(db, aviso, novela, resultado, nodo=nodo)
+            return resultado
+
+
+
+async def reintentar(
+    novela: Path,
+    *,
+    settings: Settings,
+    transporte: Transporte | None = None,
+    vectorizador: Vectorizador | None = None,
+    observador: Observador | None = None,
+    notifier: Notifier | None = None,
+) -> ResultadoInvocacion:
+    """Reabre el capítulo que agotó sus reintentos y reanuda (arq. §16.5).
+
+    Un `Fail` de capítulo termina el grafo: el checkpoint se queda sin nodo siguiente y
+    `continuar` no tiene nada que retomar. Aquí se escribe en el checkpoint el estado de un
+    capítulo recién empezado —intentos a cero, sin versión en curso— **como salida de
+    `SealCorpus`**, cuya única arista lleva a `WriteChapter`, y se reanuda por el camino de
+    siempre. Lo aprobado no se toca, y los intentos fallidos se quedan como filas.
+    """
+    with cerrojo.tomar(novela):
+        async with abrir_novela(novela) as db:
+            from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+            grafo = construir(checkpointer=AsyncSqliteSaver(db))
+            foto = await grafo.aget_state(_hilo(novela))
+            valores = foto.values
+            if foto.next or not valores:
+                raise NadaQueReintentar(
+                    "La novela no ha terminado: usa `storymaker continuar` o decide su gate."
+                )
+            if await arnes.gate_pendiente(db) is not None:
+                raise NadaQueReintentar("La novela espera tu decision en un gate.")
+            if valores.get("pc") == "Idle":
+                raise NadaQueReintentar("La novela esta publicada: no hay capitulo que reabrir.")
+            if not valores.get("sellado") or valores["capitulo"] > valores["n_capitulos"]:
+                raise NadaQueReintentar("La novela no se detuvo escribiendo un capitulo.")
+            await grafo.aupdate_state(
+                _hilo(novela),
+                {
+                    "pc": "WriteChapter",
+                    "intentos": 0,
+                    "capitulo_version_id": None,
+                    "hay_bloqueantes": False,
+                },
+                as_node="SealCorpus",
+            )
+    return await invocar(
+        novela,
+        Reanudacion(),
+        settings=settings,
+        transporte=transporte,
+        vectorizador=vectorizador,
+        observador=observador,
+        notifier=notifier,
+    )
+
+def _ultimo_nodo(fallo: BaseException) -> str:
+    """El nodo del grafo en el que reventó la invocación, leído de la traza.
+
+    Los nodos viven en módulos de fase (`writing.nodos`, `plotting.nodos`...), así que el
+    último marco de la traza que caiga en uno de ellos nombra la función del nodo. Si no hay
+    ninguno, el fallo ocurrió fuera del grafo y se dice así.
+    """
+    nodo = "fuera del grafo"
+    for marco in traceback.extract_tb(fallo.__traceback__):
+        if marco.filename.replace("\\", "/").endswith("/nodos.py"):
+            nodo = marco.name
+    return nodo
+
+
+async def _avisar(
+    db: Any, notifier: Notifier, novela: Path, resultado: ResultadoInvocacion, *, nodo: str
+) -> None:
+    """Los avisos que no son de gate: la parada y el final.
+
+    El gate avisa desde su propio nodo, porque es quien sabe qué informe resumir; lo que
+    queda para aquí es lo que solo se sabe al salir del grafo. Salen **también en batch**,
+    que es cuando nadie mira la terminal.
+    """
+    nombre = novela.stem
+    if resultado.nodo_final == "Fail":
+        motivo = resultado.error or "el grafo termino en Fail: reintentos agotados"
+        await avisar_sin_fallar(notifier, aviso_de_parada(nombre, nodo=nodo, motivo=motivo))
+    elif resultado.nodo_final == "Idle" and not resultado.espera_al_autor:
+        async with db.execute("SELECT MAX(numero) AS n FROM version_novela") as cursor:
+            fila = await cursor.fetchone()
+        version = int(fila["n"]) if fila is not None and fila["n"] is not None else None
+        await avisar_sin_fallar(
+            notifier,
+            aviso_de_terminada(nombre, version=version, coste_usd=resultado.consumo.coste_usd),
+        )
 
 
 async def reanudar(
@@ -216,6 +344,7 @@ async def reanudar(
     transporte: Transporte | None = None,
     vectorizador: Vectorizador | None = None,
     observador: Observador | None = None,
+    notifier: Notifier | None = None,
 ) -> ResultadoInvocacion:
     """Azúcar sobre `invocar` con una `Reanudacion`. El camino es el mismo."""
     return await invocar(
@@ -225,4 +354,5 @@ async def reanudar(
         transporte=transporte,
         vectorizador=vectorizador,
         observador=observador,
+        notifier=notifier,
     )

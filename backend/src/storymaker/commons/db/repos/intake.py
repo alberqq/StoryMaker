@@ -11,6 +11,8 @@ invalidación.
 
 from __future__ import annotations
 
+import json
+
 import aiosqlite
 
 from storymaker.commons.db.repos import id_insertado
@@ -147,6 +149,17 @@ async def datos_de_capitulo(db: aiosqlite.Connection, numero: int) -> list[aiosq
         (numero,),
     ) as cursor:
         return list(await cursor.fetchall())
+
+
+def texto_de_dato(valor_json: object) -> str:
+    """El texto de un elemento del encargo, que en la base vive dentro de un JSON."""
+    try:
+        cargado = json.loads(str(valor_json))
+    except json.JSONDecodeError:
+        return str(valor_json)
+    if isinstance(cargado, dict):
+        return str(cargado.get("valor", "")) or json.dumps(cargado, ensure_ascii=False)
+    return str(cargado)
 
 
 async def registrar_uso(

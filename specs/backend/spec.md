@@ -155,7 +155,11 @@ Ninguna de las tres es declarativa: no hay opción en `settings.json` ni en `Cla
 
 **Contrato.** `ensamblar(novela, capitulo_n) -> Paquete`. Python puro sobre SQLite y los índices vectoriales. **Es el corazón del arnés y conviene que no tenga nada de inteligente.**
 
-Monta los siete bloques de §6 de la arquitectura en orden, con sus techos: encargo (800), canon relevante (2.500), continuidad (1.500), memoria (4.000), anclajes (1.500), reglas (1.200) y personalización (500). Total 12.000.
+Monta los siete bloques de §6 de la arquitectura en orden, con sus techos: encargo (800), canon relevante (2.500), continuidad (2.500), memoria (3.000), anclajes (1.500), reglas (1.200) y personalización (500). Total 12.000.
+
+**El bloque 3 lleva lo que ya ha pasado.** Tras el estado de continuidad al cierre de N−1, que es fijo, van los eventos de `cronologia_evento` con `origen = 'narrativo'` de las versiones **aprobadas** de los capítulos 1 a N−2, como `Capitulo k: descripcion`, con la descripción recortada a 160 caracteres y del capítulo más reciente al más antiguo. Así el recorte, que va por la cola, suelta primero lo más lejano.
+
+**El bloque 6 lleva reglas de escritura y lo que la novela ya ha gastado.** Van fijas cuatro reglas: narrar en pretérito; entregar solo prosa, sin títulos ni encabezados; que ningún personaje, histórico incluido, sepa ni cuente lo que aún no ha ocurrido en la fecha narrativa de su escena, y no contradecir lo que el bloque 3 dice que ya pasó. Después, calculadas en Python sobre el texto de los capítulos aprobados 1 a N−1, dos listas: **las ocho palabras y las cuatro expresiones de dos palabras más frecuentes**, fuera de las palabras vacías y de los nombres del canon, con su recuento, y **la última frase de cada capítulo anterior**. Las dos se recortan antes que las reglas.
 
 **Tres propiedades que el ensamblador debe cumplir siempre**, y que son las que se verifican con Hypothesis y con CrossHair:
 
@@ -242,6 +246,8 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **Salida.** `intake_brief` con el `Brief` serializado y su `hash`, y las filas de `intake_dato`. **La verdad son las filas, no el JSON**: el JSON es la fotografía auditable que no decide nada.
 
+**El evento ancla es un elemento más.** Si el `Brief` trae `evento_ancla`, se guarda en `intake_dato` como elemento obligatorio, junto a los del comprador, y desde ahí lo recorren la escaleta y las tres comprobaciones de cobertura.
+
 **Contradicciones.** Las detecta un `@model_validator` de Pydantic, no un modelo: edad del homenajeado contra el período, fecha de nacimiento contra el `evento_ancla` si viene relleno, tono festivo contra un período de duelo, dato aportado que coincide con una palabra prohibida. El agente captura el `ValueError`, lo traduce a pregunta y obliga a resolverlo.
 
 **Contrato de seguridad.** Una cadena del texto en bruto **no puede aparecer jamás en el prompt del escritor**, y hay una aserción que lo comprueba sobre cargas de inyección. La defensa es estructural: una inyección tiene que sobrevivir a convertirse en una fila tipada para hacer daño.
@@ -252,13 +258,25 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 - un dato dictado que ya existe con el mismo tipo, valor y origen **no se vuelve a escribir**;
 - `intake_brief` guarda una fila por pasada, y todo lector toma la última.
 
+**La descripción del encargo es premisa, no cuarentena.** El encargo admite un campo `descripcion`: la novela contada con las palabras de quien la encarga, que es como la interfaz propone empezar. El lector del encargo la **antepone a la premisa en prosa**, de modo que el entrevistador la lee entera y pregunta solo por lo que no dice. No pasa por la cuarentena porque no es texto pegado de un tercero, sino lo que escribe el Autor en su propia pantalla, igual que los campos del encargo; lo que sí es texto de terceros sigue entrando por `texto_libre`.
+
 **Errores.** Brief incompleto tras agotar las preguntas → el gate se abre igualmente con el informe de lo que falta; decide el Autor. Aprobar con preguntas pendientes sigue con el brief que haya.
 
 ### 4.2 `investigation/` — Fase 2
 
-**Entrada.** Período y lugar del `Brief`. **Nunca sus campos personales**: el investigador es el único rol con red, y la regla Semgrep `pii-fuera-del-investigador` más una aserción sobre el prompt ensamblado impiden que los datos del homenajeado salgan por ahí.
+**Entrada.** Período y lugar del `Brief` y, en el modo exhaustivo, sus personajes históricos, su evento ancla y su rol de época. **Nunca sus campos personales** —nombre del homenajeado, fecha de nacimiento, elementos de personalización—: el investigador es el único rol con red. La regla Semgrep `pii-fuera-del-investigador` impide construir el prompt con ellos, y `pii_en_prompt_de_investigacion` mira cada prompt ya ensamblado —sesión única, dirigidas y micro-sesiones— antes de emitirlo; si encuentra uno, esa sesión no sale y queda un aviso.
 
 **Paso 1 · una sesión, tres búsquedas.** El investigador reparte **3 `WebSearch` y 3 `WebFetch`** entre las seis dimensiones del período y las deja todas pobladas. El tope lo impone el arnés con los hooks de §3.3, no una instrucción del prompt: la cuarta llamada no se emite. Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y su **cita de 300 caracteres como mucho**.
+
+**Paso 1 en modo exhaustivo · ocho sesiones dirigidas.** Si el estado de la novela dice `investigacion = "exhaustiva"`, en lugar de la sesión única corren en serie, con el perfil `investigador_dirigido` —**1 `WebSearch` y 1 `WebFetch`** cada una, techo de 15.000 tokens—:
+
+| # | Encargo | Qué recibe | Se omite si |
+|---|---|---|---|
+| 1–6 | Una dimensión del período | Período, lugar y la dimensión | — |
+| 7 | Personajes históricos y evento ancla | Período, lugar, los personajes que deben aparecer y el evento ancla | El brief no trae ni personajes ni evento |
+| 8 | El oficio del homenajeado | Período, lugar y `rol_epoca` | No hay `rol_epoca` |
+
+Los hechos de las dos últimas llevan una de las seis dimensiones de siempre. Cada sesión deja una incidencia de severidad `aviso` y validador `investigacion_dirigida`, sin capítulo, con su encargo y sus hechos o el motivo por el que se saltó: es la línea que el informe del gate enseña. Una salida inválida tras los reintentos de esquema **salta esa sesión** y las demás siguen; `PresupuestoExcedido` y los errores de entorno suben. Los comentarios de «rehacer» del gate de Investigation se añaden a todas las sesiones, y también a la única en el modo estándar. El modo se fija al crear la novela —`storymaker nueva --investigacion estandar|exhaustiva`, la API o `Settings.investigacion`— y no cambia después.
 
 **Paso 2 · el verificador.** Un agente distinto, **sin herramientas y sin red**, lee los pares enunciado–cita **por lotes de veinte** y responde una sola pregunta por hecho: ¿el fragmento dice lo que el hecho afirma? Un `no_respaldado` **degrada el hecho a `inferido` y lo marca; no lo borra y no detiene la fase.**
 
@@ -266,7 +284,9 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 
 **Rehacer no contamina.** Los hechos de la ejecución anterior no se borran ni se mezclan: solo cuentan los del `fase_run` vigente, y los antiguos quedan como historia consultable.
 
-**Errores.** Cero hechos en una dimensión no es un error bloqueante: es una fila del informe del gate, con el recuento por dimensión delante del Autor, que puede rehacer con comentario dirigido a lo que falte.
+**Una llamada denegada dice qué hacer.** El motivo de la denegación del hook de cuota le pide al rol que no lo intente de nuevo y entregue ya su respuesta en JSON. La sesión única tiene veinte turnos.
+
+**Errores.** Una sesión única que termina sin una respuesta válida tras sus reintentos de esquema **no detiene la fase**: deja una incidencia `aviso` de validador `investigacion_dirigida` —«sesion unica: sin resultado»— y la fase sigue con el corpus vacío hacia el verificador y el gate. Cero hechos en una dimensión no es un error bloqueante: es una fila del informe del gate, con el recuento por dimensión delante del Autor, que puede rehacer con comentario dirigido a lo que falte.
 
 ### 4.3 `plotting/` — Fase 3
 
@@ -289,7 +309,7 @@ Cada feature expone sus nodos al grafo, su agente y sus esquemas. Lo que sigue e
 El bucle por capítulo, que es la unidad de generación, validación, checkpoint y regeneración.
 
 1. El ensamblador monta el paquete del capítulo N.
-2. El escritor **redacta el capítulo entero de una vez**. La escena es unidad de planificación y de traza, no de redacción: coser escenas generadas por separado es la forma más fiable de producir prosa mecánica.
+2. El escritor **redacta el capítulo entero de una vez**. La escena es unidad de planificación y de traza, no de redacción: coser escenas generadas por separado es la forma más fiable de producir prosa mecánica. Los encabezados markdown que traiga el texto —el título del capítulo, los de escena—, de cualquier nivel, se quitan al guardarlo: título y escenas viven en la escaleta, y dejarlos los duplicaba en la lectura y los contaba como palabras.
 3. **`Validate`, en dos pasadas, ambas dentro del bucle de reparación:**
    - **Determinista**, de coste cero: los validadores programáticos que actúan sobre el capítulo, solo texto contra filas ya escritas.
    - **Del extractor**, una sola llamada y **solo si la anterior no dejó incidencias**. Un extractor independiente devuelve resumen, delta de continuidad, hechos usados, elementos de personalización usados, **eventos de cronología narrativa** y veredicto de ejecución. Sobre su salida corren `cobertura_capitulo`, `ejecucion_escaleta`, `arco_ejecutado` y **los cuatro invariantes de Lean sobre la cronología acumulada**. Lean vive aquí y no en la pasada anterior porque las filas de `cronologia_evento` con `origen = 'narrativo'` **las escribe el extractor al leer el capítulo**: antes de su llamada, la cronología del capítulo N sencillamente no existe.
@@ -321,7 +341,7 @@ El bucle por capítulo, que es la unidad de generación, validación, checkpoint
 
 **Sin gate humano**, porque el manuscrito ya se aprobó al cerrar Writing y lo que queda es automático.
 
-**El juez recibe la rúbrica** —las siete preguntas de `rubrica.yaml`, el mismo fichero de la revisión humana— antepuesta a la novela. **El PDF** se imprime tras `publish`, junto al fichero de la novela como `<novela>.v<n>.pdf`, y si falla queda como aviso: la versión ya está publicada y validada.
+**El juez recibe la rúbrica** —las siete preguntas de `rubrica.yaml`, el mismo fichero de la revisión humana— antepuesta a la novela. **Antes de puntuar enumera las contradicciones**: lo que un capítulo afirma y otro desmiente, y lo que un personaje sabe o cuenta antes de que ocurra en la fecha narrativa. `SalidaJuez.contradicciones` las recoge, y la nota de continuidad **se topa en Python** a `10 − 2·n`, con mínimo 1; el juez las cuenta, pero no decide cuánto pesan. Las contradicciones se guardan en el detalle del *score*. **El PDF** se imprime tras `publish`, junto al fichero de la novela como `<novela>.v<n>.pdf`, y si falla queda como aviso: la versión ya está publicada y validada.
 
 **Errores.** Lean falla → **la versión no se publica, sin anulación posible**. Umbral del juez no superado → vuelta al gate de Writing **con gates**; **en modo batch se registra la nota y se publica**, porque no hay nadie que decida qué rehacer.
 
@@ -354,26 +374,80 @@ Cuatro decisiones: **aprobar**, **rehacer con comentario** —el texto libre se 
 
 ## 5. La API de FastAPI
 
-Lectura, más una petición de cambio que no toca nada hasta su gate. **Ningún endpoint reanuda una ejecución**: los gates se deciden con la CLI.
+Tres superficies: **lectura**, **seguimiento** y **operación**. Las dos primeras solo leen el fichero de la novela. La tercera opera la novela entera desde la interfaz (arq. §16.5), y **lo que ejecuta el grafo no lo ejecuta la API: lanza la CLI como proceso aparte** y responde en el acto. Todas las rutas van bajo el prefijo `/api` —`GET /api/novelas`, y así las demás—, salvo la aplicación.
 
-| Método y ruta | Quién llama | Contrato | Errores |
-|---|---|---|---|
-| `GET /novelas` | Frontend | Lista las carpetas de `proyectos/` que contienen su `<nombre>.db` y abre cada fichero para leer título, fase en curso y número de versiones | — |
-| `GET /novelas/{id}` | Frontend | Ficha de la novela: fase, gate abierto si lo hay, versiones publicadas | `404` |
-| `GET /novelas/{id}/versiones/{n}` | Frontend | Manifiesto de la versión y sus capítulos en orden, más el **bloque de paratexto** con el que se arma la portada: título, homenajeado tal como debe escribirse, dedicatoria con su ocasión y las Licencias declaradas de la nota del autor | `404` |
-| `GET /novelas/{id}/versiones/{n}/capitulos/{k}` | Frontend | Texto del capítulo tal como esa versión lo fija | `404` |
-| `GET /novelas/{id}/versiones/{n}/personajes` | Frontend | Fichas de personajes y lugares con los capítulos **de esa versión** en los que aparecen | `404` |
-| `GET /novelas/{id}/versiones/{a}/diff/{b}` | Frontend | Diff de dos manifiestos: qué capítulos cambian | `404` |
-| `POST /novelas/{id}/cambios` | Frontend | Petición de cambio del lector. **No toca nada**: abre la Fase 6, que se detiene en su gate | `409` si la novela está ocupada |
-| `GET /` y el resto de rutas de la aplicación | Navegador | **Sirve el frontend construido** desde `frontend/dist`, de modo que lectura, PDF y `render_visual` compartan origen (§16.4 arq.) | `404` solo fuera de las rutas declaradas |
+### 5.1 Lectura
 
-**La ficha de personajes cuelga de una versión y no de la novela.** El canon es vivo, pero «los capítulos en los que aparece este personaje» solo tiene respuesta dentro de un manifiesto: sin versión en la ruta, la ficha enlazaría a capítulos de una versión que el lector no está leyendo. Es la misma razón por la que ninguna ruta de lectura del frontend carece de número de versión.
+| Método y ruta | Contrato | Errores |
+|---|---|---|
+| `GET /novelas/{id}` | Ficha de la novela: fase, gate abierto si lo hay, y el **historial** de versiones con fecha y media de la rúbrica del juez | `404` |
+| `GET /novelas/{id}/versiones/{n}` | Manifiesto de la versión; sus capítulos en orden, cada uno con **número y título**; la versión **anterior** si la hay; y el **bloque de paratexto** —título, homenajeado tal como lo fija el canon, ocasión y Licencias declaradas— | `404` |
+| `GET /novelas/{id}/versiones/{n}/capitulos/{k}` | Texto del capítulo tal como esa versión lo fija, con su título y el total de capítulos del manifiesto | `404` |
+| `GET /novelas/{id}/versiones/{n}/personajes` | **Personajes y escenarios** por separado, con los capítulos **de esa versión** en que aparecen; cada personaje con sus rasgos, si es el homenajeado y su relación con él; cada escenario con su lugar, su nombre de época y **un nombre corto** | `404` |
+| `GET /novelas/{id}/versiones/{a}/diff/{b}` | Qué capítulos cambian entre dos manifiestos: un `JOIN`, no un diff de texto | `404` |
+| `GET /novelas/{id}/versiones/{n}/pdf` | **El PDF de la versión**, el que `publish` imprimió junto al fichero de la novela como `<nombre>.v<n>.pdf`, servido para descargar | `404` si la versión no existe o su PDF no se generó |
+| `POST /novelas/{id}/cambios` | Petición de cambio del lector con su texto, su **fragmento**, el capítulo y la versión. El fragmento entra en la búsqueda semántica. **No toca nada**: abre la Fase 6, que se detiene en su gate, y **deja en `audit_log` la petición con sus candidatos**, para que la pantalla del gate los enseñe sin repetir la búsqueda | `409` si está ocupada; `422` si viene sin texto |
 
-**Ningún endpoint reanuda una ejecución**, y por eso ninguno va protegido. Todo es lectura, más una petición de cambio que no altera nada hasta que el Autor la aprueba en su gate. Que la API quede abierta es una decisión declarada, no un olvido: está en U-17.
+**La ficha de personajes cuelga de una versión y no de la novela**: «los capítulos en los que aparece» solo tiene respuesta dentro de un manifiesto.
 
-**OpenAPI y Schemathesis** cubren la petición de cambio: **una petición malformada no abre la Fase 6.** Una prueba fija además que no existe ninguna ruta que reanude.
+**Cada escenario lleva un nombre corto.** Es el del lugar del corpus si el escenario está enlazado a uno y, si no, el arranque de su descripción: hasta la primera coma, punto o cláusula de detalle —«con…», «donde…»—, y como mucho seis palabras. El arquitecto solo escribe una descripción, y sin esto la pantalla titulaba cada lugar con un párrafo. La regla vive en un solo sitio de la API, de modo que la ficha, la escaleta y el documento de impresión nombran igual cada escenario.
 
-*Clase: **A/T** (contrato OpenAPI y Schemathesis). Gate: G1.*
+### 5.2 Seguimiento
+
+| Método y ruta | Contrato | Errores |
+|---|---|---|
+| `GET /novelas` | Una fila por carpeta de `proyectos/` con su `<nombre>.db`: título, homenajeado, fase actual, **estado de la novela**, gate pendiente con su fase, capítulos aprobados y total, coste acumulado y versiones publicadas | — |
+| `GET /novelas/{id}/panel` | Todo lo que el panel enseña: el estado; **las seis fases** con su estado, sus ejecuciones, tokens, coste, inicio y fin, y si dejaron salida; el gate pendiente; los capítulos con su estado e intentos; la **actividad** reciente; el consumo total; si el proceso vive; y los registros de proceso disponibles | `404` |
+| `GET /novelas/{id}/gate` | El gate pendiente: su fase, desde cuándo, **los recuentos del aviso**, las preguntas del entrevistador en Intake, la petición y los candidatos en Regeneración, y **las filas editables** de hechos, personajes, escenarios y glosario, con los hechos marcados como no editables si el corpus está sellado. En Intake, además, **la conversación**: la descripción del encargo, las respuestas de cada ronda anterior —los comentarios de los gates de Intake decididos como «rehacer»— y el brief si el entrevistador ya lo cerró | `404` si no hay gate pendiente |
+| `GET /novelas/{id}/fases/{fase}` | La salida de una fase y sus ejecuciones con las decisiones de sus gates. Encargo: brief, datos y cuarentena. Investigación: hechos con dimensión, estado, respaldo, cita y fuentes, entidades y sello. Trama: obra, personajes con arcos e hitos, relaciones, escenarios, Licencias, glosario y escaleta con anclajes. Escritura: capítulos con sus intentos y las incidencias de cada uno. Publicación: versiones con la rúbrica por criterio y el manifiesto. Regeneración: peticiones y ediciones humanas | `404` |
+| `GET /novelas/{id}/intentos/{capitulo_version}` | El texto de un intento de capítulo, con sus incidencias | `404` |
+| `GET /novelas/{id}/registros/{nombre}` | El final del registro de un proceso lanzado desde la interfaz | `404` |
+| `GET /ejemplos` | Los briefs de `ejemplos/`, ya leídos, para partir de uno en el encargo | — |
+
+**El estado de una novela lo calcula el backend, con esta precedencia:**
+
+| Estado | Condición |
+|---|---|
+| `en_marcha` | El cerrojo existe y el proceso cuyo PID guarda sigue vivo |
+| `detenida` | El cerrojo existe y su proceso ya no vive |
+| `arrancando` | No hay cerrojo, pero hay un registro de proceso de hace menos de veinte segundos |
+| `esperando_autor` | Hay un gate `pendiente` |
+| `aparcada` | El último gate está `aparcado` |
+| `fallida` | La última ejecución de fase terminó `fallida` |
+| `terminada` | Hay versión publicada y ninguna ejecución de fase abierta |
+| `en_pausa` | Ninguna de las anteriores |
+
+**Una novela recién encargada existe antes que su fichero.** `POST /novelas` crea la carpeta con el encargo y el registro, y `storymaker nueva` crea el `.db` un momento después. Una carpeta con `encargo.json` y sin `.db` aparece en el listado y en el panel: `arrancando` mientras su registro tenga menos de veinte segundos, y `fallida` después, con el registro a la vista para ver por qué no arrancó. Volver a encargar con ese nombre se admite, porque no hay novela que pisar.
+
+**Cada fase tiene estado aunque no tenga filas.** Sale de su última fila de `fase_run` y, si no tiene ninguna, de si dejó salida: hay brief, hay hechos, hay escaleta, hay capítulos o hay versión. Una fase sin filas y con salida es `completada`, marcada como deducida. Es lo que hace legibles las novelas empezadas antes de que cada fase abriera su fila.
+
+**La actividad está interpretada**: las ejecuciones de fase que se abren y se cierran, los intentos de capítulo con su resultado, las decisiones de gate con su comentario, las ediciones humanas y las acciones lanzadas desde la interfaz, cada una con su momento y una frase. No es el registro del proceso.
+
+### 5.3 Operación
+
+| Método y ruta | Contrato | Errores |
+|---|---|---|
+| `POST /encargos/validar` | Valida un brief con el mismo modelo que `storymaker nueva` y devuelve los errores por campo | — |
+| `POST /novelas` | Con el nombre, el brief, si va en batch y el **modo de investigación** —`estandar` o `exhaustiva`—: escribe el brief como `encargo.json` en la carpeta de la novela y **lanza `storymaker nueva`**, con `--investigacion exhaustiva` cuando se pide | `409` si ya existe su `.db`; `422` si el brief no valida |
+| `POST /novelas/{id}/continuar` | **Lanza `storymaker continuar`** | `409` si está ocupada; `422` si hay un gate pendiente |
+| `POST /novelas/{id}/decisiones` | Con la decisión —`aprobar`, `rehacer` o `abortar`— y el comentario: **lanza `storymaker decidir`** | `409` si está ocupada; `422` si no hay gate pendiente, si la decisión es `editar` o si es `abortar` fuera de Intake |
+| `POST /novelas/{id}/reintentar` | **Lanza `storymaker reintentar`**, que decide él mismo si procede | `409` si está ocupada |
+| `POST /novelas/{id}/desbloquear` | Rompe el cerrojo **solo si su proceso ha muerto** | `409` si el proceso vive; `422` si no hay cerrojo |
+| `POST /novelas/{id}/ediciones` | Edición humana directa de una fila —hecho, personaje, escenario o glosario— con su campo, su valor nuevo y su motivo, **tomando el cerrojo durante la escritura**, con la maquinaria de `regeneration/`: la fila cambia, se reindexa y queda en `edicion_humana` y en `audit_log` | `409` si está ocupada; `422` si el campo no es editable o el corpus está sellado |
+
+**Lanzar es desacoplar.** El proceso se crea en su propio grupo, fuera del servidor y **con una consola oculta que heredan los procesos que él abra** —el Agent SDK, Lean, Playwright—, de modo que operar desde la interfaz no abre ninguna ventana, con el mismo intérprete y el mismo directorio de proyectos, y su salida va a `proyectos/<nombre>/registro/<momento>-<comando>.log`. La respuesta es un `202` con el nombre del registro, y la acción queda en `audit_log` con el actor `autor`. **El servidor no guarda ningún proceso en memoria**: reiniciarlo no mata nada, y el estado de §5.2 se recalcula del fichero en cada consulta.
+
+**Las comprobaciones previas no sustituyen al comando.** La API rechaza lo que el comando rechazaría para que el Autor lo vea en la pantalla, pero si dos acciones se cruzan, la que llega segunda choca con el cerrojo en su proceso y lo dice en su registro. No se pierde nada, porque la decisión ya está escrita.
+
+**Las acciones solo se aceptan desde la propia máquina y como JSON.** Cada ruta de operación rechaza con `403` a un cliente que no sea `127.0.0.1` o `::1`, y con `415` un cuerpo que no sea `application/json`. La API no concede CORS, y el servidor se arranca escuchando en `127.0.0.1`. Es la mitigación de U-17.
+
+### 5.4 La aplicación
+
+`GET /` y el resto de rutas de la aplicación **sirven el frontend construido** desde `frontend/dist`, de modo que lectura, PDF y `render_visual` compartan origen (arq. §16.4). El *fallback* va en el manejador de `404` y solo para `GET`: un `POST` a una dirección inexistente sigue siendo un `404`, y nada bajo `/api` cae en la aplicación.
+
+**Cada respuesta declara su modelo Pydantic**, porque el frontend deriva sus tipos de transporte del OpenAPI. Las pruebas de API cubren las rutas de escritura: una petición malformada no abre la Fase 6 ni lanza ningún proceso.
+
+*Clase: **A/T** (contrato OpenAPI y pruebas de API). Gate: G1.*
 
 ---
 
@@ -383,11 +457,12 @@ Lectura, más una petición de cambio que no toca nada hasta su gate. **Ningún 
 |---|---|
 | `storymaker nueva <brief.json>` | Crea la carpeta y el fichero de la novela, `proyectos/<nombre>/<nombre>.db`, y arranca la invocación |
 | `storymaker continuar <novela>` | Reanuda desde el último checkpoint tras un fallo. **Se niega** si hay un gate pendiente |
-| `storymaker decidir <novela> <aprobar\|rehacer\|editar\|abortar> [--comentario]` | **La única entrada de una decisión de gate.** La escribe sobre el gate pendiente y reanuda en el mismo proceso; sin gate pendiente o con una decisión desconocida, se rechaza sin tocar nada |
+| `storymaker decidir <novela> <aprobar\|rehacer\|editar\|abortar> [--comentario]` | **La única entrada de una decisión de gate**, también cuando decide la interfaz, que lanza este mismo comando. La escribe sobre el gate pendiente y reanuda en el mismo proceso; sin gate pendiente, con una decisión desconocida o con `abortar` fuera del gate de Intake, se rechaza sin tocar nada |
 | `storymaker estado <novela>` | Fase, gate abierto, capítulos aprobados, consumo acumulado |
 | `storymaker ramificar <novela> <destino>` | **Copia el fichero** y escribe la fila de `procedencia` |
 | `storymaker cambiar <novela> "<peticion>"` | Entra en la Fase 6 por la puerta del Autor |
 | `storymaker desbloquear <novela>` | Rompe un cerrojo huérfano dejado por un proceso muerto |
+| `storymaker reintentar <novela>` | Reabre el capítulo que agotó sus reintentos: escribe en el checkpoint un capítulo recién empezado, como salida de `SealCorpus`, y reanuda. **Se niega** si la novela no terminó en `Fail`, si el corpus no está sellado o si hay un gate pendiente |
 | `storymaker evaluar` | Corre los cinco briefs en modo batch con `gates_enabled = false` |
 
 `ramificar` es literalmente copiar el fichero. La alternativa —ramas conviviendo con una columna de rama— obligaría a meter un filtro en **todas** las consultas del sistema, y bastaría con que una lo olvidara para que la rama B leyese capítulos de la rama A.
@@ -447,20 +522,20 @@ Corren dentro del grafo, sobre el contenido. Su gate es G3, G4, G5 o G6. **Todos
 | Validador | Comprueba | Punto | Clase | Gate | Bloquea |
 |---|---|---|---|---|---|
 | `schema_guard` | La salida de cada rol cumple su modelo Pydantic | Salida de cada nodo agente | A | G3 | Sí |
-| `nombres_exactos` | Homenajeado y personajes escritos exactamente como en el canon | Post `WriteChapter` | A | G3 | Sí |
+| `nombres_exactos` | Homenajeado y personajes escritos exactamente como en el canon; la mayúscula inicial de principio de frase no cuenta como otra grafía | Post `WriteChapter` | A | G3 | Sí |
 | `longitud_capitulo` | Palabras dentro del rango del brief | Post `WriteChapter` | A | G3 | Sí |
-| `guardrail_prohibidas` | Términos prohibidos en tres niveles, **normalizando antes de comparar** | Post `WriteChapter` | A/T | G3 | Sí |
+| `guardrail_prohibidas` | Términos prohibidos en tres niveles, **normalizando antes de comparar**; un término de una palabra salta también en sus derivadas, por su raíz de al menos cuatro letras | Post `WriteChapter` | A/T | G3 | Sí |
 | `anacronismo_fechado` | Ningún objeto, término o concepto con `fecha_inicio` posterior a la fecha narrativa | Post `WriteChapter` | A | G3 | Sí |
 | `anclaje_valido` | Todo anclaje apunta a un hecho del corpus sellado o a una Licencia declarada | Post `WriteChapter` | A | G3 | Sí |
 | `cobertura_anclada` | Cada elemento obligatorio del brief está anclado a ≥1 escena de la escaleta | Gate de Plotting | A | G4 | Sí |
 | `arco_anclado` | Todo personaje presente en **≥3 escenas** de `plan_escena_personaje` tiene fila en `canon_arco`; si su arco es positivo o negativo, **≥2 hitos** anclados a escenas de capítulos estrictamente crecientes. **El arco plano cuenta**: declarar que un personaje no se transforma es la decisión que el validador reclama. El homenajeado es la única excepción — no puede tener arco plano y su último hito cae en el tercio final | Gate de Plotting | A | G4 | Sí |
-| `cobertura_capitulo` | Lo que la escaleta encomendó a este capítulo aparece en él | Post `Extract` | A | G3 | Sí |
+| `cobertura_capitulo` | Lo que la escaleta encomendó a este capítulo aparece en él. Abre incidencia de severidad `aviso` que **nombra cada elemento por su texto** | Post `Extract` | A | G3 | No |
 | `cobertura_personalizacion` | Cada elemento obligatorio aparece en ≥1 capítulo | Gate de Writing | A | G5 | Sí |
 | `render_visual` | Índice, ficha de personajes y portada renderizan bien (Playwright MCP) | Dentro de `PublishVersion`, sobre la versión candidata, **antes del `commit`** | D | G5 | Sí |
 
 **El linter de auto-similitud no es uno de los once.** El cuarto uso que §16.2 de la arquitectura da a los embeddings —detectar repeticiones y auto-similitud entre capítulos, como linter de prosa y de originalidad— se recoge aquí por lo que es: el vector del capítulo recién escrito se compara con los de los anteriores y se abre incidencia de severidad `aviso` cuando la repetición pasa del umbral declarado. No bloquea, no gobierna ninguna arista y no entra en la tabla de arriba, porque la lista de §11a es cerrada y esto no es una puerta: es una señal para el informe del gate de Writing.
 
-**La cobertura se comprueba tres veces y cada una cuesta menos que la siguiente.** `cobertura_anclada` convierte un fallo de diez capítulos escritos y pagados en un fallo de escaleta; `cobertura_capitulo` convierte un fallo de novela en un reintento de capítulo; `cobertura_personalizacion` se queda como red de seguridad, porque anclar no es escribir y escribir el capítulo N no garantiza que ningún otro se quedara sin su parte.
+**La cobertura se comprueba tres veces y cada una cuesta menos que la siguiente.** `cobertura_anclada` convierte un fallo de diez capítulos escritos y pagados en un fallo de escaleta; `cobertura_capitulo` avisa al escribir cada capítulo, y el aviso viaja al encargo del siguiente, que puede recoger el elemento; `cobertura_personalizacion` es la que bloquea, antes de publicar, porque anclar no es escribir y escribir el capítulo N no garantiza que ningún otro se quedara sin su parte.
 
 #### b) Semánticos — los juzga un modelo
 
@@ -469,7 +544,7 @@ Corren dentro del grafo, sobre el contenido. Su gate es G3, G4, G5 o G6. **Todos
 | `respaldo_fuente` | Que la cita guardada sostenga el enunciado del hecho | Cierre de Investigation | I | G4 | **No**: degrada a `inferido` |
 | `ejecucion_escaleta` | Que los beats planificados para este capítulo hayan ocurrido | Post `Extract` | I | G4 | **No**: aviso |
 | `arco_ejecutado` | Que los hitos de arco anclados a este capítulo hayan ocurrido | Post `Extract` | I | G4 | **No**: aviso |
-| `juez_rubrica` | Siete criterios 1-10 con justificación | `Judge` | T/I | G5 | Sí, por umbral |
+| `juez_rubrica` | Siete criterios 1-10 con justificación, y la lista de contradicciones con la que se topa la continuidad | `Judge` | T/I | G5 | Sí, por umbral |
 | `revision_humana` | La misma rúbrica, aplicada por una persona a ≥1 novela completa | Fuera de línea | I | G4 | — |
 
 **Tres de ellos no bloquean, y es deliberado.** Una novela de regalo no se detiene porque una fecha del contexto venga mal citada. Y `ejecucion_escaleta` y `arco_ejecutado` son **el juicio de un modelo sobre si algo narrativo ocurrió, y eso no es una puerta**: un beat resuelto de otra manera no es un error, y un validador bloqueante gastaría los dos reintentos discutiendo con el editor sobre una lectura. Abren incidencia de severidad `aviso`, entran en el informe del gate de Writing y **viajan al bloque 1 del paquete del capítulo siguiente**, donde el escritor lee qué quedó pendiente. Ese viaje es lo que los distingue de un simple apunte.
@@ -651,6 +726,7 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-60 | Un brief incompleto tras agotar las preguntas no bloquea: el gate se abre con el informe de lo que falta | §4.1 | P-127 |
 | REQ-BE-133 | Las preguntas del entrevistador se guardan y el aviso del gate de Intake las enseña; el Autor las contesta con «rehacer» y su comentario, y `Configure` vuelve a entrevistar con todas las respuestas dadas | §4.1 | P-68 |
 | REQ-BE-134 | Repetir `Configure` no duplica nada: el texto pegado se extrae una vez y un dato dictado que ya existe no se reescribe | §4.1 | P-68, P-66 |
+| REQ-BE-180 | El encargo admite `descripcion`, que el lector antepone a la premisa en prosa y no pasa por la cuarentena | §4.1 | P-180 |
 | REQ-BE-61 | El prompt del investigador se construye solo con período y lugar; los campos personales del `Brief` no salen a la red, y lo imponen una regla Semgrep y una aserción | §4.2 | P-74, P-06 |
 | REQ-BE-62 | El investigador dispone de **3 `WebSearch` y 3 `WebFetch` en una sesión**, y el tope lo impone el arnés con sus hooks, no una instrucción del prompt | §4.2 | P-69, P-29 |
 | REQ-BE-63 | Cada hecho se guarda con su enunciado, su estado epistémico, sus fuentes, el `fase_run_id` que lo escribió y una cita de 300 caracteres como mucho | §4.2 | P-70 |
@@ -706,14 +782,54 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 | REQ-BE-107 | Al reanudar, el gate decidido no se reabre ni se vuelve a avisar; `continuar` no reanuda un gate pendiente | §4.7 | P-109 |
 | REQ-BE-108 | Una decisión sin gate pendiente, o fuera de las cuatro, se rechaza sin tocar nada | §6 | P-109 |
 | REQ-BE-109 | `GET /novelas` lista las carpetas de `proyectos/` y abre el fichero de cada una: no hay registro global de novelas | §5 | P-111 |
+| REQ-BE-145 | El bloque 3 lleva, tras el estado al cierre de N−1, los eventos narrativos de las versiones aprobadas de los capítulos 1 a N−2, del más reciente al más antiguo, con techo de 2.500; la memoria baja a 3.000 | §3.4 | P-150 |
+| REQ-BE-146 | El bloque 6 lleva fijas las cuatro reglas de escritura, y después las palabras y expresiones más repetidas en los capítulos aprobados y la última frase de cada uno | §3.4 | P-151 |
+| REQ-BE-147 | El juez enumera las contradicciones antes de puntuar, y la nota de continuidad se topa en Python a `10 − 2·n`, con mínimo 1 | §4.5 | P-152 |
+| REQ-BE-137 | `cobertura_capitulo` abre una incidencia de severidad `aviso`, no bloqueante, que nombra cada elemento que falta por su texto | §7.2 | P-143 |
+| REQ-BE-140 | `guardrail_prohibidas` detecta un término de una palabra también dentro de otra que contenga su raíz —la palabra sin su vocal final, de al menos cuatro letras—; por debajo compara por palabra completa | §7.2 | P-41 |
+| REQ-BE-141 | Un capítulo se guarda sin ninguna línea de encabezado markdown, de cualquier nivel, y sus palabras se cuentan sin ellas | §4.4 | P-81 |
+| REQ-BE-142 | El `evento_ancla` del `Brief`, si viene, se guarda como elemento obligatorio del encargo | §4.1 | P-68 |
+| REQ-BE-148 | En modo exhaustivo, `Research` corre en serie seis sesiones por dimensión y dos dirigidas por el brief —personajes históricos con evento ancla, y oficio—, cada una con una `WebSearch` y un `WebFetch`; las dirigidas se omiten si el brief no trae de qué | §4.2 | P-153 |
+| REQ-BE-149 | Una sesión dirigida con salida inválida se salta con un aviso y las demás siguen; `PresupuestoExcedido` y los errores de entorno detienen la fase | §4.2 | P-153 |
+| REQ-BE-190 | El modo de investigación se elige al crear la novela, viaja en el estado del grafo y no cambia después; por defecto es el estándar | §4.2 | P-154 |
+| REQ-BE-191 | Todo prompt del investigador —sesión única, dirigidas y micro-sesiones— pasa por `pii_en_prompt_de_investigacion` antes de emitirse, y una sesión con un dato personal no se emite | §4.2 | P-74, P-153 |
+| REQ-BE-192 | Los comentarios de «rehacer» del gate de Investigation llegan a todas las sesiones del investigador | §4.2 | P-153 |
+| REQ-BE-193 | El informe del gate de Investigation enseña una línea por sesión dirigida, con sus hechos o el motivo por el que se saltó | §4.2 | P-73 |
+| REQ-BE-194 | La denegación de una llamada por cuota le pide al rol que entregue ya su respuesta, y la sesión única del investigador tiene veinte turnos | §4.2 | P-29, P-69 |
+| REQ-BE-195 | Una sesión única del investigador sin respuesta válida deja un aviso en el gate y no detiene la fase | §4.2 | P-69 |
+| REQ-BE-139 | `nombres_exactos` acepta el nombre canónico con la primera letra en mayúscula y sigue bloqueando cualquier otra diferencia de grafía | §7.2 | P-41 |
+| REQ-BE-138 | `storymaker reintentar` reabre el capítulo de una novela terminada en `Fail` sin tocar lo aprobado, y se niega sin tocar nada fuera de ese caso | §6 | P-144 |
 | REQ-BE-136 | Cada novela vive en `proyectos/<nombre>/<nombre>.db`, con sus derivados —cerrojo, PDF, capítulos exportados— en la misma carpeta; ramificar crea la carpeta del destino | §2.2 | P-111, P-102 |
 | REQ-BE-110 | El endpoint de versión devuelve el manifiesto, sus capítulos en orden y el **bloque de paratexto** con el que se arma la portada | §5 | P-110 |
 | REQ-BE-111 | La ficha de personajes cuelga de una **versión**, no de la novela | §5 | P-110 |
 | REQ-BE-112 | `POST /novelas/{id}/cambios` no toca nada: abre la Fase 6, que se detiene en su gate | §5 | P-110, P-95 |
 | REQ-BE-113 | FastAPI sirve el frontend construido desde `frontend_dist` y declara su URL base en `frontend_base_url`, de modo que lectura, PDF y `render_visual` compartan origen | §5 | P-136 |
-| REQ-BE-114 | Ningún endpoint de la API reanuda una ejecución | §5 | P-109, P-138 |
+| REQ-BE-114 | *Retirado el 2026-09-24.* Decía que ningún endpoint reanudaba una ejecución; desde arq. §16.5 la API lanza la CLI para decidir y continuar (REQ-BE-157), y lo que protege es que solo se opere desde la propia máquina (REQ-BE-164) | §5 | — |
 | REQ-BE-115 | El contrato OpenAPI y Schemathesis garantizan que **una petición de cambio malformada no abre la Fase 6** | §5 | P-112 |
-| REQ-BE-116 | La CLI expone los ocho comandos declarados | §6 | P-113 |
+| REQ-BE-150 | `GET /novelas` devuelve para cada novela su estado, fase actual, homenajeado, gate pendiente, capítulos aprobados y total, coste y versiones | §5.2 | P-160 |
+| REQ-BE-151 | El estado de una novela sigue la precedencia de §5.2: en marcha, detenida, arrancando, esperando al Autor, aparcada, fallida, terminada y en pausa | §5.2 | P-160, P-163 |
+| REQ-BE-152 | Cada fase tiene estado aunque no tenga filas en `fase_run`: una fase sin filas y con salida es `completada` y va marcada como deducida | §5.2 | P-160 |
+| REQ-BE-153 | El panel devuelve las seis fases con sus ejecuciones, el gate pendiente, los capítulos con sus intentos, la actividad interpretada, el consumo y si el proceso vive | §5.2 | P-160 |
+| REQ-BE-154 | El endpoint del gate devuelve su fase, los recuentos del aviso, las preguntas del entrevistador, la petición y candidatos de Regeneración y las filas editables, sin ofrecer como editable un hecho de un corpus sellado | §5.2 | P-160 |
+| REQ-BE-155 | Cada fase expone su salida y sus ejecuciones con las decisiones de sus gates; el texto de un intento se pide aparte | §5.2 | P-161 |
+| REQ-BE-156 | `GET /ejemplos` devuelve los briefs de `ejemplos/` ya leídos | §5.2 | P-162 |
+| REQ-BE-157 | Encargar, continuar, decidir y reintentar **lanzan la CLI como proceso aparte** y responden `202` sin esperar a que termine | §5.3 | P-162, P-164 |
+| REQ-BE-158 | El proceso lanzado sobrevive a un reinicio del servidor, y su salida va a `proyectos/<nombre>/registro/` | §5.3 | P-162 |
+| REQ-BE-159 | El servidor no guarda ningún proceso en memoria: el estado se recalcula del fichero en cada consulta | §5.3 | P-160, P-162 |
+| REQ-BE-160 | La API rechaza antes de lanzar lo que el comando rechazaría: novela ocupada, gate ausente o presente, decisión `editar`, abortar fuera de Intake, brief inválido | §5.3 | P-162, P-165 |
+| REQ-BE-161 | Desbloquear rompe el cerrojo solo si su proceso ha muerto | §5.3 | P-162, P-163 |
+| REQ-BE-162 | Una edición de gate toma el cerrojo, cambia la fila, la reindexa y queda en `edicion_humana` y `audit_log`, y rechaza un campo no editable o un hecho de un corpus sellado | §5.3 | P-162 |
+| REQ-BE-163 | Toda acción de la interfaz queda en `audit_log` con el actor `autor` | §5.3 | P-162 |
+| REQ-BE-164 | Las rutas de operación rechazan con `403` a un cliente no local y con `415` un cuerpo que no sea JSON, y la API no concede CORS | §5.3 | P-162 |
+| REQ-BE-165 | La petición de cambio del lector queda en `audit_log` con su texto, fragmento, capítulo, versión y candidatos, y el gate los lee de ahí sin repetir la búsqueda | §5.1 | P-166 |
+| REQ-BE-167 | Una carpeta con encargo y sin `.db` es una novela `arrancando` durante veinte segundos y `fallida` después, y se puede volver a encargar | §5.2 | P-160, P-162 |
+| REQ-BE-181 | En Intake, el endpoint del gate devuelve la descripción del encargo, las respuestas de las rondas anteriores en orden y el brief si ya está cerrado | §5.2 | P-181 |
+| REQ-BE-182 | `POST /novelas` acepta el modo de investigación y, si es `exhaustiva`, lanza `storymaker nueva` con `--investigacion exhaustiva`; otro valor se rechaza con `422` | §5.3 | P-182 |
+| REQ-BE-183 | Cada escenario se sirve con un nombre corto: el del lugar del corpus o el arranque de su descripción, de seis palabras como mucho, el mismo en la ficha, la escaleta y la impresión | §5.1 | P-183 |
+| REQ-BE-184 | El PDF de una versión se descarga por la API; si no se generó, la respuesta es `404` y no un error del servidor | §5.1 | P-184 |
+| REQ-BE-185 | Un proceso lanzado desde la interfaz no abre ninguna ventana, ni él ni los que él lance | §5.3 | P-162 |
+| REQ-BE-166 | `decidir` rechaza `abortar` fuera del gate de Intake sin tocar nada | §5.3 | P-165 |
+| REQ-BE-116 | La CLI expone los nueve comandos declarados | §6 | P-113, P-144 |
 | REQ-BE-117 | `ramificar` **copia el fichero** y escribe la fila de `procedencia`; no hay columna de rama en las consultas | §6 | P-102 |
 | REQ-BE-118 | `evaluar` corre los cinco briefs en modo batch con `gates_enabled = false` | §6 | P-120, P-108 |
 | REQ-BE-119 | Todos los validadores de ejecución son nodos o aristas condicionales; **ninguno es una herramienta que un agente decida llamar** | §7.2 | P-06, P-56 |
@@ -745,6 +861,18 @@ Los apartados anteriores son el contrato, y están escritos en prosa porque un c
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §5.1: `GET /novelas/{id}/versiones/{n}/pdf` sirve **el PDF de la versión**. §5.3: el proceso lanzado lleva **una consola oculta** que heredan los suyos. Entran REQ-BE-184 y REQ-BE-185 | El Autor no tenía forma de llegar al PDF desde la interfaz, y cada lanzamiento abría ventanas de consola: el proceso se creaba sin consola y Windows se la daba, visible, a cada proceso que abría |
+| 2026-09-24 | §4.2: la denegación por cuota pide entregar ya, la sesión única tiene veinte turnos y su falta de resultado es un aviso y no un error. Entran REQ-BE-194 y REQ-BE-195 | Se propaga §4 de la arquitectura: una novela se detuvo en Research porque el investigador agotó los turnos intentando búsquedas denegadas |
+| 2026-09-24 | §5.1: cada escenario lleva **un nombre corto**, derivado del lugar o del arranque de la descripción. Entra REQ-BE-183 | Petición del Autor: los lugares salían titulados con su descripción entera |
+| 2026-09-24 | §4.2 gana el modo exhaustivo de la investigación —ocho sesiones dirigidas, su perfil, su tabla de encargos y su política de fallos—, amplía la entrada del investigador a personajes, evento y rol de época y conecta la guarda de PII a todo prompt del investigador. Entran REQ-BE-148, REQ-BE-149 y REQ-BE-190 a REQ-BE-193 | Se propagan §4 y §15 de la arquitectura, con las decisiones de su grilling |
+| 2026-09-24 | §5.3: `POST /novelas` acepta **el modo de investigación** y lo pasa a `storymaker nueva`. Entra REQ-BE-182 | El modo exhaustivo de arq. §4, Fase 2, se elige al crear la novela, y la interfaz crea novelas |
+| 2026-09-24 | §4.1: el encargo admite **`descripcion`**, que entra en la premisa y no en la cuarentena; §5.2: el gate de Intake devuelve **la conversación** —descripción, respuestas de cada ronda y brief cerrado—. Entran REQ-BE-180 y REQ-BE-181 | Petición del Autor: que el encargo lo haga el entrevistador, como describe la Fase 1. Con el formulario completo no le quedaba nada que preguntar, y lo que se escribía con palabras propias acababa en la cuarentena, que el entrevistador no lee |
+| 2026-09-24 | §7.2: `guardrail_prohibidas` detecta derivadas; §4.4: los encabezados markdown del escritor no se guardan; §4.1: el evento ancla entra como elemento obligatorio. Entran REQ-BE-140 a REQ-BE-142 | Se propagan §4 y §11a de la arquitectura. La tercera novela real dejó pasar dos prohibidas en forma derivada, repitió el título de cinco capítulos dentro del texto y no narró su evento ancla |
+| 2026-09-24 | La fila de `nombres_exactos` en §7.2 admite la mayúscula inicial de principio de frase; entra REQ-BE-139 | Se propaga §11a de la arquitectura: un nombre canónico en minúscula inicial tumbaba los capítulos que lo escribían correctamente al abrir frase |
+| 2026-09-24 | **§5 se reescribe en tres superficies —lectura, seguimiento y operación—**: la API calcula el estado de cada novela y de cada fase, sirve la salida de cada fase y **lanza la CLI como proceso aparte** para encargar, continuar, decidir y reintentar; escribe ella misma las ediciones de un gate; solo acepta acciones locales y en JSON. Se retira REQ-BE-114 y entran REQ-BE-150 a REQ-BE-166. Los números saltan a 150, y los ítems a `P-160`, para no pisar los que otra línea de trabajo está numerando en paralelo | Baja de arq. §16.5: el Autor opera la novela desde la interfaz. Lo que la API ya no puede prometer —que ningún endpoint reanuda— se cambia por lo que sí protege: un solo camino de código y nada operable desde fuera de la máquina |
+| 2026-09-24 | §3.4: el bloque 3 lleva los eventos narrativos de los capítulos aprobados anteriores a N−1 y sube a 2.500; la memoria baja a 3.000; el bloque 6 lleva reglas de escritura, repeticiones y cierres. §4.5 y §7.2: el juez enumera contradicciones y la continuidad se topa. Entran REQ-BE-145 a REQ-BE-147 | Se propagan §6 y §11b de la arquitectura, a partir de la lectura de la cuarta novela real |
+| 2026-09-24 | `cobertura_capitulo` pasa a severidad `aviso` y su incidencia nombra el elemento por su texto; la CLI gana `storymaker reintentar`. Entran REQ-BE-137 y REQ-BE-138 | Se propagan §11a y §16.5 de la arquitectura. La cuarta novela real agotó los reintentos del capítulo 8 con el mismo texto tres veces: el editor recibía «no aparecen: [1]» y no tenía nada que corregir |
+| 2026-09-24 | §5 declara el prefijo `/api`, los modelos de respuesta y los campos que el frontend lee —historial con fecha y puntuación, título de capítulo, versión anterior, escenarios, fragmento de la petición—, y la ficha de personajes pasa a responder en `/versiones/{n}/personajes` | Al implementar el frontend: la API servía la ficha sin versión, sin paratexto y sin títulos, cosas que este apartado ya contrataba o que la spec del frontend pedía y ningún campo daba. Ninguna decisión nueva: es la superficie que las dos specs ya describían, escrita con la forma que tiene |
 | 2026-09-24 | **Una carpeta por novela**: §2.2, §5 y §6 dicen `proyectos/<nombre>/<nombre>.db`; entra REQ-BE-136 | Se propaga la decisión del Autor en §16.4 de la arquitectura |
 | 2026-09-24 | §4.3 fija **la forma de la escaleta**: el arquitecto recibe capítulos, escenas por capítulo y extensión, y el gate de Plotting avisa de los capítulos fuera del rango. Entra REQ-BE-135 | La primera escaleta con gates salió con una escena por capítulo. §19 de la arquitectura fija de 2 a 4, pero ni el prompt lo decía ni nada lo comprobaba |
 | 2026-09-24 | §4.1: **la entrevista pasa por el gate de Intake**. Entran REQ-BE-133 y REQ-BE-134 | Se propaga la decisión de la arquitectura en la Fase 1. El entrevistador se llamaba una vez y sus preguntas no las veía nadie |

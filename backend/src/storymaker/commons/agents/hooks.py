@@ -63,9 +63,14 @@ class CuotaDeHerramientas:
         if self.restantes(herramienta) <= 0:
             return {
                 "permissionDecision": "deny",
+                # El motivo le dice al rol qué hacer ahora, no solo qué no puede hacer:
+                # con «cuota agotada» a secas seguía intentándolo, gastaba un turno por
+                # intento y acababa sin turnos y sin entregar nada.
                 "permissionDecisionReason": (
                     f"Cuota agotada para {herramienta}: el arnes concede "
-                    f"{self.limites.get(herramienta, 0)} en esta sesion."
+                    f"{self.limites.get(herramienta, 0)} en esta sesion y no quedan mas. "
+                    "No lo intentes de nuevo: entrega ahora tu respuesta final en JSON "
+                    "con lo que ya hayas encontrado."
                 ),
             }
         self.usos[herramienta] = self.usos.get(herramienta, 0) + 1

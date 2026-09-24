@@ -78,3 +78,12 @@ class EscaletaAusente(ErrorDeStoryMaker):
     Aborta en lugar de generar a ciegas: un bloque vacío es normal —el capítulo 1 no
     tiene memoria de N-1—, pero un capítulo sin encargo no lo es.
     """
+
+
+class NadaQueReintentar(ErrorDeStoryMaker):
+    """`storymaker reintentar` sobre una novela que no terminó en un `Fail` de capítulo.
+
+    Se rechaza sin tocar el checkpoint: reabrir un capítulo de una novela que sigue viva,
+    espera en un gate o aún no ha sellado el corpus la sacaría del camino que el grafo
+    garantiza.
+    """

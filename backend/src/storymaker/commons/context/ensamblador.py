@@ -51,7 +51,7 @@ async def ensamblar(
         await constructores.continuidad(db, capitulo_n),
         await constructores.memoria(db, vectorizador, capitulo_n, settings),
         await constructores.anclajes(db, vectorizador, capitulo_n, settings),
-        await constructores.reglas(db),
+        await constructores.reglas(db, capitulo_n),
         await constructores.personalizacion(db, capitulo_n),
     ]
 

@@ -27,3 +27,5 @@ formal/tla/states/
 # Frontend
 node_modules/
 frontend/dist/
+frontend/*.tsbuildinfo
+frontend/steiger.txt

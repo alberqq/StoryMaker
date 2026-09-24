@@ -105,7 +105,7 @@ REGISTRO: Final[dict[str, EntradaValidador]] = {
         _e(
             "cobertura_capitulo",
             Punto.POST_EXTRACT,
-            True,
+            False,
             "storymaker.commons.validation.chapter_validator:cobertura_capitulo",
         ),
         _e(

@@ -21,8 +21,8 @@ import pytest
 
 from storymaker.commons.agents.hooks import CuotaDeHerramientas, truncar_salida
 from storymaker.commons.agents.presupuesto import estimar_tokens
-from storymaker.commons.agents.techos import Perfil, herramientas_de
-from storymaker.commons.config import Defaults
+from storymaker.commons.agents.techos import TECHOS, Perfil, herramientas_de
+from storymaker.commons.config import Defaults, Rol
 from storymaker.commons.db.repos import intake as repo
 from storymaker.commons.validation.modelos import CapituloEnRevision, TerminoProhibido
 from storymaker.commons.validation.policy_checker import (
@@ -96,7 +96,7 @@ class TestPaginaHostil:
 class TestHerramientaProhibida:
     @pytest.mark.parametrize(
         "perfil",
-        [p for p in Perfil if p not in (Perfil.INVESTIGADOR_INICIAL, Perfil.INVESTIGADOR_MICRO)],
+        [p for p in Perfil if TECHOS[p].rol is not Rol.INVESTIGADOR],
     )
     def test_ningun_otro_rol_tiene_red(self, perfil: Perfil) -> None:
         assert herramientas_de(perfil) == ()

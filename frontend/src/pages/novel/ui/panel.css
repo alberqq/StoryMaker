@@ -1,0 +1,38 @@
+.cabecera-panel { margin-bottom: var(--e5); }
+.titulo-panel { gap: var(--e1); }
+.titulo-panel .subtitulo { color: var(--texto-suave); margin: 0; }
+.ahora { display: flex; align-items: center; gap: var(--e3); padding: var(--e3) var(--e4); margin-bottom: var(--e4); border-radius: var(--radio); background: var(--azul-suave); color: var(--texto); font-weight: 500; }
+.cuerpo-panel { margin-top: var(--e5); }
+.progreso-panel { margin-bottom: var(--e4); }
+
+.rejilla-capitulos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--e2); }
+.casilla a { display: flex; flex-direction: column; gap: 2px; padding: var(--e2) var(--e3); border-radius: var(--radio); border: 1px solid var(--borde); color: var(--texto); background: var(--superficie); }
+.casilla a:hover { text-decoration: none; border-color: var(--borde-fuerte); }
+.casilla-numero { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.casilla-estado { font-size: 0.75rem; font-weight: 600; }
+.casilla-cifras { font-size: 0.72rem; color: var(--texto-tenue); }
+.casilla-aprobado a { background: var(--verde-suave); border-color: var(--verde-suave); }
+.casilla-aprobado .casilla-estado { color: var(--verde); }
+.casilla-en_curso a { background: var(--azul-suave); border-color: var(--azul); }
+.casilla-en_curso .casilla-estado { color: var(--azul); }
+.casilla-invalidado a, .casilla-descartado a { background: var(--rojo-suave); }
+.casilla-invalidado .casilla-estado { color: var(--rojo); }
+.casilla-pendiente .casilla-estado { color: var(--texto-tenue); }
+
+.actividad { list-style: none; margin: 0; padding: 0; position: relative; }
+.actividad::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 2px; background: var(--borde); }
+.suceso { position: relative; display: grid; grid-template-columns: 110px 1fr; gap: var(--e3); padding: var(--e2) 0 var(--e2) var(--e5); font-size: 0.9rem; }
+.suceso::before { content: ''; position: absolute; left: 0; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--superficie); border: 2px solid var(--color-suceso, var(--gris)); }
+.suceso-hora { color: var(--texto-tenue); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.suceso-detalle { color: var(--texto-suave); }
+.suceso-fase { --color-suceso: var(--acento); }
+.suceso-capitulo { --color-suceso: var(--verde); }
+.suceso-gate { --color-suceso: var(--ambar); }
+.suceso-edicion, .suceso-peticion { --color-suceso: var(--azul); }
+.suceso-accion { --color-suceso: var(--gris); }
+@media (max-width: 560px) { .suceso { grid-template-columns: 1fr; } }
+
+.lista-versiones { list-style: none; margin: 0 0 var(--e3); padding: 0; }
+.lista-versiones li { padding: var(--e2) 0; border-bottom: 1px solid var(--borde); }
+.incidencias { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e2); font-size: 0.88rem; }
+.registro { max-height: 420px; overflow: auto; margin: 0; padding: var(--e3); background: var(--superficie-2); border-radius: var(--radio-s); white-space: pre-wrap; word-break: break-word; font-size: 0.8rem; }

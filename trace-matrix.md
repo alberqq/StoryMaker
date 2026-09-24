@@ -8,11 +8,11 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 
 **`ARQ-nn`** identifica un requisito de la arquitectura y lleva delante el apartado del que sale. Los identificadores son estables y **no se reutilizan jamás**: si un requisito desaparece, su fila se queda con nota en lugar de dejar el hueco a otro.
 
-**`IMP-ID`** identifica un ítem de plan. El repositorio tiene dos planes con espacios de identificadores propios, así que aquí se escriben con su prefijo: **`BE:P-nn`** para el backend y **`FE:IMP-nn`** para el frontend. La correspondencia detallada de cada mitad vive en su propia matriz —[`specs/backend/trace-matrix.md`](specs/backend/trace-matrix.md) y [`specs/frontend/trace-matrix.md`](specs/frontend/trace-matrix.md)—, y esta es la vista consolidada: `ARQ-01` a `ARQ-116` son uno a uno los requisitos `A-01` a `A-116` de la matriz del backend, y `ARQ-117` a `ARQ-136` son los del frontend que ninguna matriz anterior enumeraba. Los que llegan después se numeran en orden de llegada: `ARQ-137` es `A-117`, `ARQ-138` es `A-118`, y `ARQ-139` a `ARQ-141` vuelven a ser del frontend: son `ARQ-37` a `ARQ-39` de su matriz.
+**`IMP-ID`** identifica un ítem de plan. El repositorio tiene dos planes con espacios de identificadores propios, así que aquí se escriben con su prefijo: **`BE:P-nn`** para el backend y **`FE:IMP-nn`** para el frontend. La correspondencia detallada de cada mitad vive en su propia matriz —[`specs/backend/trace-matrix.md`](specs/backend/trace-matrix.md) y [`specs/frontend/trace-matrix.md`](specs/frontend/trace-matrix.md)—, y esta es la vista consolidada: `ARQ-01` a `ARQ-116` son uno a uno los requisitos `A-01` a `A-116` de la matriz del backend, y `ARQ-117` a `ARQ-136` son los del frontend que ninguna matriz anterior enumeraba. Los que llegan después se numeran en orden de llegada: `ARQ-137` es `A-117`, `ARQ-138` es `A-118`, `ARQ-139` a `ARQ-141` vuelven a ser del frontend: son `ARQ-37` a `ARQ-39` de su matriz, y `ARQ-142` es `A-119`.
 
 **Estado.** `CUBIERTO` solo si algún ítem lo materializa **con entregable concreto y criterio de hecho**; «implementar X» no cuenta, y donde la cobertura depende de algo que todavía no existe la nota lo dice. `GAP` en cualquier otro caso.
 
-**Lo que esta matriz no hace.** No elimina ni fusiona filas para reducir huecos: el inventario nació con **132 filas** y hoy son **141**; crece cuando la arquitectura decide algo nuevo, nunca mengua. Un hueco se cierra **añadiendo o ampliando ítems en los planes**, nunca borrando la exigencia. Y donde la arquitectura es ambigua, queda anotado en la nota sin inventar requisito.
+**Lo que esta matriz no hace.** No elimina ni fusiona filas para reducir huecos: el inventario nació con **132 filas** y hoy son **142**; crece cuando la arquitectura decide algo nuevo, nunca mengua. Un hueco se cierra **añadiendo o ampliando ítems en los planes**, nunca borrando la exigencia. Y donde la arquitectura es ambigua, queda anotado en la nota sin inventar requisito.
 
 **El orden sigue los apartados de la arquitectura, no el número.** Los identificadores son estables desde la matriz del backend, que agrupaba por apartado, y respetar ese orden vale más que tener la columna ordenada.
 
@@ -46,7 +46,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-20 | §2 · El orquestador no acumula: todo su conocimiento está en SQLite | BE:P-21, BE:P-57 | CUBIERTO | — |
 | ARQ-21 | §3 · El ensamblador de paquetes como pieza propia, y conviene que no tenga nada de inteligente | BE:P-33 | CUBIERTO | — |
 | ARQ-22 | §3 · Core Domain con una sola implementación y dos puntos de ejecución | BE:P-40, BE:P-46, BE:P-116 | CUBIERTO | — |
-| ARQ-23 | §4 · Extracción previa y entrevistador que solo pregunta por lo vacío o ambiguo | BE:P-68 | CUBIERTO | — |
+| ARQ-23 | §4 · Extracción previa y entrevistador que solo pregunta por lo vacío o ambiguo | BE:P-68, BE:P-180, FE:IMP-47, FE:IMP-48 | CUBIERTO | El encargo por conversación lleva al entrevistador la descripción libre y presenta sus rondas en el gate |
 | ARQ-24 | §4 · Los tres bloques de campos del `Brief` | BE:P-64 | CUBIERTO | — |
 | ARQ-25 | §4 · Los diales de la frontera viajan por `canon_obra.estilo_json` hasta el bloque 6 | BE:P-37, BE:P-76 | CUBIERTO | — |
 | ARQ-26 | §4 · `evento_ancla` opcional y orientativo, contrastado en el `@model_validator` | BE:P-65 | CUBIERTO | — |
@@ -56,6 +56,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-30 | §4 · Cada `WebFetch` acotado a 10.000 tokens | BE:P-30 | CUBIERTO | — |
 | ARQ-31 | §4 · El hecho con enunciado, estado, fuentes, `fase_run_id` y cita de 300 caracteres | BE:P-70 | CUBIERTO | — |
 | ARQ-32 | §4 · Rehacer no contamina el corpus | BE:P-71 | CUBIERTO | — |
+| ARQ-145 | §4 · Modo exhaustivo de la investigación: ocho sesiones dirigidas en serie, elegido al crear la novela y guardado en el estado | BE:P-153, BE:P-154 | CUBIERTO | Es `A-122` de la matriz del backend |
 | ARQ-33 | §4 · Verificador de respaldo sin red, por lotes de veinte, que degrada sin borrar ni bloquear | BE:P-72 | CUBIERTO | — |
 | ARQ-34 | §4 · El arquitecto inventa Premisa y Tema y construye canon y escaleta jerárquica | BE:P-75 | CUBIERTO | — |
 | ARQ-35 | §4 · El hueco: una única llamada, tope de cinco, invención autorizada que no se topa sino que se cuenta | BE:P-77, BE:P-78 | CUBIERTO | — |
@@ -71,7 +72,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-45 | §5 · Solo el investigador tiene acceso a internet | BE:P-06, BE:P-74, BE:P-123 | CUBIERTO | — |
 | ARQ-46 | §5 · La varianza del juez se mide, no se supone | BE:P-121 | CUBIERTO | — |
 | ARQ-138 | §5 · El contrato de salida viaja con la llamada: la puerta de invocación adjunta al prompt el JSON Schema del modelo Pydantic del rol, dentro de su techo | BE:P-27 | CUBIERTO | Es el `A-118` de la matriz del backend |
-| ARQ-47 | §6 · Siete bloques con sus techos, 12.000 en total | BE:P-33, BE:P-34 | CUBIERTO | — |
+| ARQ-47 | §6 · Siete bloques con sus techos, 12.000 en total | BE:P-33, BE:P-34, BE:P-150, BE:P-151 | CUBIERTO | — |
 | ARQ-48 | §6 · El bloque 4 lleva el texto íntegro de N−1 | BE:P-36 | CUBIERTO | — |
 | ARQ-49 | §6 · Bloques 2, 4 y 5 llenados por relevancia semántica, con `k = 8` | BE:P-23, BE:P-35 | CUBIERTO | — |
 | ARQ-50 | §6 · Truncado por prioridad, con el bloque 3 como último en tocarse | BE:P-38 | CUBIERTO | — |
@@ -84,9 +85,9 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-57 | §7 · `cronologia_*`, que mezcla deliberadamente lo histórico y lo narrativo | BE:P-13 | CUBIERTO | — |
 | ARQ-58 | §7 · `arnes_*`, las ocho tablas de estado del sistema | BE:P-14, BE:P-16 | CUBIERTO | — |
 | ARQ-59 | §7 · `vec_*`, los tres índices `vec0` con sus metadatos y auxiliares | BE:P-15, BE:P-25 | CUBIERTO | — |
-| ARQ-60 | §7 · Nunca un `UPDATE` sobre un capítulo; la versión es el manifiesto | BE:P-12, BE:P-17, FE:IMP-07, FE:IMP-15, FE:IMP-19 | CUBIERTO | De aquí sale que toda ruta de lectura lleve el número de versión |
+| ARQ-60 | §7 · Nunca un `UPDATE` sobre un capítulo; la versión es el manifiesto | BE:P-12, BE:P-17, FE:IMP-07, FE:IMP-15 | CUBIERTO | De aquí sale que toda ruta de lectura lleve el número de versión |
 | ARQ-61 | §7 · `uso_hecho` a granularidad de escena, agregada a capítulo | BE:P-85 | CUBIERTO | — |
-| ARQ-62 | §8 · `fase_run` con `input_run_id` y las cuatro operaciones sobre un solo camino de código | BE:P-14, BE:P-58 | CUBIERTO | — |
+| ARQ-62 | §8 · `fase_run` con `input_run_id` y las cuatro operaciones sobre un solo camino de código | BE:P-14, BE:P-58, BE:P-141, BE:P-142 | CUBIERTO | — |
 | ARQ-63 | §8 · Ramificar es copiar el fichero y escribir `procedencia` | BE:P-102, BE:P-113 | CUBIERTO | — |
 | ARQ-64 | §8 · La edición humana dispara la maquinaria de la Fase 6, con re-sello y reembedding | BE:P-26, BE:P-101 | CUBIERTO | — |
 | ARQ-65 | §9 · Los nodos se llaman igual que las acciones de PlusCal, y la identidad se comprueba sobre nombres **y aristas** | BE:P-55, BE:P-62, BE:P-133 | CUBIERTO | La lectura de `Aristas` sigue en pie con la especificación escrita directamente en TLA+, pero el cuerpo de §11d y su registro de cambios discrepan sobre la forma de la especificación. Ver la nota de ARQ-78 |
@@ -97,9 +98,10 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-70 | §10 · `Notifier` con Telegram, solo para avisar; la decisión se toma en el PC | BE:P-105, BE:P-109 | CUBIERTO | — |
 | ARQ-71 | §10 · Notificaciones informativas, desactivadas por defecto | BE:P-106 | CUBIERTO | — |
 | ARQ-72 | §10 · El *timeout* aparca; nunca se auto-aprueba | BE:P-107 | CUBIERTO | — |
+| ARQ-142 | §10 · Tres avisos fuera de gate —parada, final y aparcamiento— que salen siempre, también en batch, y nunca cambian el resultado de la invocación | BE:P-140 | CUBIERTO | Es `A-119` de la matriz del backend |
 | ARQ-73 | §10 · `gates.enabled = false` desactiva los cinco para el modo batch | BE:P-02, BE:P-108, BE:P-120 | CUBIERTO | — |
-| ARQ-74 | §11 · Los once validadores programáticos, cada uno en su punto de ejecución | BE:P-31, BE:P-41, BE:P-42, BE:P-43, BE:P-44, BE:P-80, BE:P-89, BE:P-92, FE:IMP-23, FE:IMP-27 | CUBIERTO | `render_visual` es uno de los once: el nodo es de `publication/` (P-92, que sirve el manifiesto candidato por interceptación), y las anclas y la interceptabilidad son del frontend |
-| ARQ-75 | §11 · Los cinco validadores semánticos, tres de ellos no bloqueantes, con los avisos que viajan | BE:P-43, BE:P-72, BE:P-88, BE:P-90, BE:P-122 | CUBIERTO | — |
+| ARQ-74 | §11 · Los once validadores programáticos, cada uno en su punto de ejecución | BE:P-31, BE:P-41, BE:P-42, BE:P-43, BE:P-44, BE:P-80, BE:P-89, BE:P-92, BE:P-143, FE:IMP-23, FE:IMP-27 | CUBIERTO | `render_visual` es uno de los once: el nodo es de `publication/` (P-92, que sirve el manifiesto candidato por interceptación), y las anclas y la interceptabilidad son del frontend |
+| ARQ-75 | §11 · Los cinco validadores semánticos, tres de ellos no bloqueantes, con los avisos que viajan | BE:P-43, BE:P-72, BE:P-88, BE:P-90, BE:P-122, BE:P-152 | CUBIERTO | — |
 | ARQ-76 | §11 · Los cuatro invariantes de Lean, verificados por `decide` | BE:P-47, BE:P-49 | CUBIERTO | El proyecto Lake está en `formal/lean/`, y `P-47` y `P-49` ya apuntan ahí |
 | ARQ-77 | §11 · Lean en tres puntos: escaleta, pasada del extractor y publicación | BE:P-80, BE:P-84, BE:P-91, BE:P-97 | CUBIERTO | — |
 | ARQ-78 | §11 · TLA+ directo sobre las seis fases, con `Extract` como acción propia, los **cinco invariantes de estado** —incluido `CorpusSelladoNoSeToca`— y `PreviousVersionPreserved` como propiedad temporal | BE:P-61, BE:P-115, BE:P-133 | CUBIERTO | **Resuelto.** El cuerpo de §11d se reescribió para decir lo que su registro de cambios y el código ya decían, y `P-61` recoge los cinco invariantes y las dos propiedades temporales |
@@ -107,7 +109,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-110 | §11 · §11 delega en `verification.md` el plan de verificación completo: técnica, clase de confianza y gate por riesgo | BE:P-04, BE:P-05, BE:P-07, BE:P-45, BE:P-49, BE:P-112, BE:P-114, BE:P-115, BE:P-116, BE:P-117, BE:P-118, BE:P-119, BE:P-120, BE:P-121, BE:P-122, BE:P-123, BE:P-124 | CUBIERTO | — |
 | ARQ-112 | §11 · §11e `inventario_del_plan`: rutas y símbolos del plan contra el árbol y a la inversa, informando **en dos cubos** | BE:P-129, FE:IMP-33 | CUBIERTO | `P-129` promete leer todo `specs/*/plan.md`, pero su parser **solo recoge filas `P-nn`** y su dirección inversa solo recorría `backend/src/`. Desde R-08 lee también las filas `IMP-nn` y recorre `frontend/src/**` |
 | ARQ-113 | §11 · §11e `registro_de_validadores`: el registro **es el cableado**, con la ruta como cadena, y se comparan **tres tablas por pares** sobre los once de §11a. **Bloquea** | BE:P-131, BE:P-132 | CUBIERTO | — |
-| ARQ-114 | §11 · §11e `anclas_de_procedencia`: ancla de docstring en las dos direcciones, con la inversa acotada a §3 y §4 de la spec. Informa | BE:P-130 | CUBIERTO | — |
+| ARQ-114 | §11 · §11e `anclas_de_procedencia`: ancla de docstring en las dos direcciones, con la inversa acotada a §3 y §4 de la spec del backend. Solo el backend: el frontend se traza por el inventario y los requisitos. Informa | BE:P-130 | CUBIERTO | — |
 | ARQ-115 | §11 · §11e y §9: `identidad_nodo_accion` compara **nombres y aristas**, leyendo la definición `Aristas` que gobierna el `Next`. **Bloquea** | BE:P-62, BE:P-133 | CUBIERTO | — |
 | ARQ-80 | §12 · La tabla de techos por rol, los diez | BE:P-32 | CUBIERTO | — |
 | ARQ-81 | §12 · La guarda que rechaza la llamada antes de emitirla | BE:P-28 | CUBIERTO | — |
@@ -135,7 +137,15 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-103 | §16 · Dos puntos de entrada sobre un solo camino de código | BE:P-57, BE:P-109, BE:P-113, BE:P-138 | CUBIERTO | — |
 | ARQ-104 | §16 · La invocación que reanuda un gate corre en el proceso de la CLI que decide | BE:P-109 | CUBIERTO | — |
 | ARQ-105 | §16 · Cerrojo de fichero por novela; quien llega segundo es rechazado, no encolado | BE:P-59, BE:P-113, BE:P-128, FE:IMP-21 | CUBIERTO | Del lado del frontend significa no encolar ni reintentar solo ante un `409` |
-| ARQ-106 | §16 · El directorio `proyectos/` es el registro; no hay base de datos global de novelas | BE:P-111, FE:IMP-13 | CUBIERTO | — |
+| ARQ-143 | §16 · Un capítulo que agotó sus reintentos se reabre con `storymaker reintentar`, sin tocar lo aprobado | BE:P-144 | CUBIERTO | — |
+| ARQ-150 | §16.5 · **La interfaz opera la novela entera**: encargar, lanzar, seguir, consultar salidas, decidir y continuar | BE:P-160, BE:P-161, BE:P-181, FE:IMP-39, FE:IMP-40, FE:IMP-41, FE:IMP-42, FE:IMP-43, FE:IMP-44, FE:IMP-47, FE:IMP-48 | CUBIERTO | Es `ARQ-42` del frontend y `A-130` del backend |
+| ARQ-151 | §16.5 · **Lo que ejecuta el grafo lo lanza la API como CLI aparte**, y el servidor no guarda procesos en memoria | BE:P-162, BE:P-164, FE:IMP-35 | CUBIERTO | `ARQ-43` y `A-131` |
+| ARQ-152 | §16.5 · **Seguimiento sondeando el fichero**, con actividad interpretada | BE:P-160, FE:IMP-36, FE:IMP-41 | CUBIERTO | `ARQ-44` |
+| ARQ-153 | §16.5 · **Tablero tipo Jira** donde arrastrar aprueba o rehace tras confirmar | FE:IMP-39 | CUBIERTO | `ARQ-45` |
+| ARQ-154 | §16.5, §10 · Editar es corregir filas antes de decidir; abortar solo en Intake | BE:P-162, BE:P-165, BE:P-166, FE:IMP-42 | CUBIERTO | `ARQ-46`, `A-132` y `A-135` |
+| ARQ-155 | §16.5 · Desbloquear solo con el proceso muerto | BE:P-163, FE:IMP-41 | CUBIERTO | `ARQ-48` y `A-133` |
+| ARQ-156 | §16.5, U-17 · Acciones solo locales y en JSON, servidor en `127.0.0.1` | BE:P-162 | CUBIERTO | `A-134` |
+| ARQ-106 | §16 · El directorio `proyectos/` es el registro; no hay base de datos global de novelas | BE:P-111, FE:IMP-39 | CUBIERTO | — |
 | ARQ-107 | §16 · Ningún endpoint reanuda una ejecución, y la API queda abierta por decisión declarada (U-17) | BE:P-109, BE:P-110, BE:P-136, FE:IMP-08, FE:IMP-09 | CUBIERTO | El frontend no envía ni guarda credenciales, y ninguna de sus dos variables es un secreto; U-17 con fila en `verification.md` §5 |
 | ARQ-108 | §16 · Las mitigaciones de §18 que son código: recuento por dimensión, tope de fetch, recuento de afectados, carga comprobada, varianza medida | BE:P-19, BE:P-30, BE:P-73, BE:P-100, BE:P-121 | CUBIERTO | — |
 | ARQ-109 | §16 · Los valores por defecto de §19, parametrizables y con nombre | BE:P-02, BE:P-03, FE:IMP-29, FE:IMP-31 | CUBIERTO | — |
@@ -156,7 +166,7 @@ Este documento no decide nada: **comprueba**. Un requisito sin ítem es una deci
 | ARQ-130 | §16.3 · La petición de cambio se ejerce **dentro del lector**; extracción a `features/change-request/` solo si aparece un segundo consumidor | FE:IMP-20 | CUBIERTO | La condición de extracción está escrita en §4.2 de la spec del frontend |
 | ARQ-131 | §4 Fase 5 · Contenido de la lectura web: **índice navegable, ficha de personajes y lugares enlazada a sus capítulos, portada con dedicatoria** | FE:IMP-14, FE:IMP-16, FE:IMP-17, FE:IMP-24 | CUBIERTO | Son los tres objetos que `render_visual` mira |
 | ARQ-132 | §4 Fase 1 · La **Nota del autor** como paratexto que declara licencias y personajes históricos | FE:IMP-17 | CUBIERTO | La ambigüedad que R-04 anotó está resuelta: §16.3 asigna la nota del autor a `pages/cover/` |
-| ARQ-133 | §16.3 · `pages/library`, declarada como pantalla propia, y `pages/print`, la novela entera en un documento | FE:IMP-13, FE:IMP-22, FE:IMP-23, FE:IMP-24, FE:IMP-25 | CUBIERTO | Cada una nace de una decisión ya tomada: el directorio como registro y el PDF impreso desde la ruta de lectura |
+| ARQ-133 | §16.3 · `pages/library`, declarada como pantalla propia, y `pages/print`, la novela entera en un documento | FE:IMP-39, FE:IMP-22, FE:IMP-23, FE:IMP-24, FE:IMP-25 | CUBIERTO | Cada una nace de una decisión ya tomada: el directorio como registro y el PDF impreso desde la ruta de lectura |
 | ARQ-134 | §16.3 · **Cliente único**: ningún módulo fuera de `shared/api` emite red, y aquí es **condición de G5** | FE:IMP-09, FE:IMP-27 | CUBIERTO | Es lo que permite interceptar; sin ello `render_visual` juzgaría un render distinto del que se publica |
 | ARQ-135 | §16.4 · **FastAPI sirve el frontend construido**, un solo origen, URL base en la configuración | BE:P-136, FE:IMP-26 | CUBIERTO | Un solo origen es lo que hace que el PDF sea literalmente lo que se ve |
 | ARQ-136 | §4 Fase 5 · El navegador ve la versión candidata porque se le **sirven las peticiones interceptadas** desde el manifiesto de la transacción abierta | BE:P-92, FE:IMP-27 | CUBIERTO | Cierra el hueco que R-05 y R-06 dejaron a la vista: el validador que sostiene G5 no tenía forma de ver lo que juzga |
@@ -202,6 +212,14 @@ Nueve cosas que este recorrido dejó por escrito.
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | Entra `ARQ-145`: el modo exhaustivo de la investigación de §4, con `BE:P-153` y `BE:P-154` | Se mueve con la matriz del backend, que recoge `A-122` en la misma operación |
+| 2026-09-24 | `ARQ-23` suma `BE:P-180`, `FE:IMP-47` y `FE:IMP-48`, y `ARQ-150` suma `BE:P-181`, `FE:IMP-47` y `FE:IMP-48` | El encargo por conversación |
+| 2026-09-24 | Entran **ARQ-150 a ARQ-156**, la operación desde la interfaz de arq. §16.5; IMP-13 e IMP-19, retirados, se sustituyen por IMP-39 o desaparecen de sus filas | La matriz consolidada se mueve con las dos mitades |
+| 2026-09-24 | `ARQ-47` suma `BE:P-150` y `BE:P-151`, y `ARQ-75` suma `BE:P-152`. El inventario no cambia | Se mueve con la matriz del backend en la misma operación |
+| 2026-09-24 | `ARQ-74` suma `BE:P-143` y entra `ARQ-143`, reintentar un capítulo, con `BE:P-144`. El inventario sube de 142 a 143 filas | Se mueve con la matriz del backend, que recoge `A-120` en la misma operación |
+| 2026-09-24 | `ARQ-62` suma `BE:P-141` y `BE:P-142`. El inventario no cambia | Se mueve con la matriz del backend, que recoge los dos ítems en `A-62` en la misma operación |
+| 2026-09-24 | Entra `ARQ-142`: los tres avisos fuera de gate de §10, con `BE:P-140`. El inventario sube de 141 a 142 filas | Se mueve con la matriz del backend, que recoge `A-119` en la misma operación |
+| 2026-09-24 | La descripción de ARQ-114 dice que `anclas_de_procedencia` alcanza solo al backend | §11e de la arquitectura lo fija así; la fila se mueve con el documento que cambia |
 | 2026-09-24 | ARQ-70, ARQ-104 y ARQ-107 se reescriben: Telegram solo avisa y los gates se deciden en el PC | Decisión del Autor en §10 de la arquitectura |
 | 2026-09-24 | **R-07, R-08 y R-09 quedan resueltos**: §16.3 de la arquitectura declara `.mcp.json` en la raíz, `BE:P-129` lee las filas `IMP-nn` y recorre `frontend/src/**`, y `BE:P-136` nombra la URL base. Cambia la nota de `ARQ-112` | Las tres discrepancias se decidieron arriba y bajaron hasta el código en la misma operación |
 | 2026-09-24 | Tercera pasada del frontend: entran `ARQ-139` a `ARQ-141` —nada de una novela en dos sitios, los enlaces internos del PDF y la API pública por slice—; `FE:IMP-32` y `FE:IMP-33` se reparten entre `ARQ-93`, `ARQ-111`, `ARQ-112` y `ARQ-137`; `ARQ-107` recoge `FE:IMP-08`; `ARQ-120` y `ARQ-132` dejan de contar una ambigüedad ya resuelta; entran R-07, R-08 y R-09, y la tabla de hallazgos vuelve a ser una sola. El inventario sube de 138 a 141 filas | La matriz del frontend encontró quince vacíos al leer la arquitectura entera y no solo §4 y §16. Esta vista se mueve con ella en la misma operación: una consolidación que va un paso por detrás afirma en verde lo que ya no ha comprobado |

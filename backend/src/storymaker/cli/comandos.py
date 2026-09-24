@@ -62,6 +62,11 @@ def nueva(
     brief: Path = typer.Argument(..., help="fichero YAML o JSON con el encargo"),
     nombre: str = typer.Option("", help="nombre de la novela; por defecto, el del homenajeado"),
     batch: bool = typer.Option(False, "--batch", help="sin gates: no se detiene a preguntar"),
+    investigacion: str = typer.Option(
+        "",
+        "--investigacion",
+        help="estandar (una sesion, tres paginas) o exhaustiva (ocho sesiones dirigidas)",
+    ),
 ) -> None:
     """Crea el fichero de la novela en `proyectos/` y arranca la invocación.
 
@@ -78,6 +83,11 @@ def nueva(
 
     if batch:
         settings = settings.en_modo_batch()
+    if investigacion:
+        if investigacion not in ("estandar", "exhaustiva"):
+            salida.error("--investigacion admite «estandar» o «exhaustiva».")
+            raise typer.Exit(code=1)
+        settings = settings.model_copy(update={"investigacion": investigacion})
 
     async def correr() -> None:
         await crear_novela(ruta)
@@ -85,6 +95,7 @@ def nueva(
         salida.aviso(
             f"{encargo.n_capitulos} capitulos"
             + (" · modo batch, sin gates" if batch else " · con gates")
+            + f" · investigacion {settings.investigacion}"
         )
         resultado = await invocar(
             ruta,
@@ -231,6 +242,21 @@ def desbloquear(nombre: str) -> None:
     else:
         salida.aviso("No habia ningun cerrojo que romper.")
 
+
+
+@app.command()
+def reintentar(nombre: str) -> None:
+    """Reabre el capítulo que agotó sus reintentos y reanuda desde él.
+
+    Tras un `Fail` de capítulo el grafo ha terminado y `continuar` no tiene nada que retomar.
+    Se niega sin tocar nada si la novela no se detuvo así.
+    """
+    settings = _ajustes()
+    ruta = _ruta(nombre, settings)
+    from storymaker.commons.graph.run import reintentar as reintentar_capitulo
+
+    salida.aviso("Reabriendo el capitulo que agoto sus reintentos...")
+    salida.resultado(_ejecutar(reintentar_capitulo(ruta, settings=settings)))
 
 @app.command()
 def evaluar(

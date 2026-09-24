@@ -42,6 +42,10 @@ RESPALDO: dict[Perfil, str] = {
         "Buscas un dato concreto que la escaleta necesita. Si no lo encuentras, dices "
         "`no_encontrado`: es una respuesta valida y util."
     ),
+    Perfil.INVESTIGADOR_DIRIGIDO: (
+        "Investigas un unico encargo concreto de un periodo historico con una busqueda y "
+        "una pagina. Cada hecho va con su cita literal de la fuente."
+    ),
     Perfil.VERIFICADOR: (
         "Lees pares de enunciado y cita, y respondes una sola pregunta por hecho: si el "
         "fragmento dice lo que el hecho afirma. No tienes herramientas ni acceso a la red."

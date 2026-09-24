@@ -1,23 +1,26 @@
-"""spec: §5 · arq: §16.4
+"""spec: §5 · arq: §16.4, §16.5
 
-La API de FastAPI: **lectura**, más una **petición de cambio que no toca nada** hasta que el
-Autor la aprueba en su gate.
+La API de FastAPI, con tres superficies: **lectura**, **seguimiento** y **operación**.
 
-**Ningún endpoint reanuda una ejecución.** Los gates se deciden en el PC del Autor con
-`storymaker decidir`, y Telegram solo avisa (arq. §10): no hay webhook ni superficie pública
-que pueda mover una novela.
+La operación no ejecuta el grafo: lanza la CLI como proceso aparte (arq. §16.5), de modo que
+una novela operada desde la interfaz recorre exactamente el mismo código que una tecleada en
+la terminal. Telegram solo avisa: no hay webhook, y nada fuera de la máquina del Autor puede
+mover una novela, porque las acciones solo se aceptan desde `127.0.0.1`.
 
-Que la lectura quede abierta es una decisión declarada y no un olvido: montar usuarios y
-sesiones cuesta más que el riesgo que cubre en un sistema que corre en local. Queda anotado
-como riesgo aceptado U-17.
+Que la API no lleve autenticación es una decisión declarada y no un olvido: montar usuarios y
+sesiones cuesta más que el riesgo que cubre en un sistema que corre en local, con un solo
+usuario. Queda anotado como riesgo aceptado U-17.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from storymaker.api import cambios, estaticos, lectura
+from storymaker.api import cambios, estaticos, fases, lectura, operacion, seguimiento
 from storymaker.commons.config import Settings
+
+#: El prefijo de la API. El proxy de Vite reenvía exactamente este camino en desarrollo.
+PREFIJO_API = "/api"
 
 
 def crear_app(settings: Settings | None = None) -> Any:
@@ -35,9 +38,16 @@ def crear_app(settings: Settings | None = None) -> Any:
     app.state.settings = ajustes
 
     manejadores.registrar_en(app)
-    app.include_router(lectura.router)
-    app.include_router(cambios.router)
-    app.include_router(estaticos.router)
+    # La API va bajo `/api` porque comparte origen con la aplicación de React, y las dos
+    # tienen rutas que empiezan por `/novelas`: sin prefijo, recargar la página de una
+    # novela devolvería su ficha en JSON en lugar de la aplicación.
+    app.include_router(seguimiento.router, prefix=PREFIJO_API)
+    app.include_router(fases.router, prefix=PREFIJO_API)
+    app.include_router(lectura.router, prefix=PREFIJO_API)
+    app.include_router(operacion.router, prefix=PREFIJO_API)
+    app.include_router(operacion.ejemplos_router, prefix=PREFIJO_API)
+    app.include_router(cambios.router, prefix=PREFIJO_API)
+    estaticos.montar_frontend(app, ajustes)
 
     @app.get("/salud", tags=["operacion"])
     async def salud() -> dict[str, str]:

@@ -64,9 +64,7 @@ def transporte() -> TransporteFalso:
     falso.preparar(Perfil.INVESTIGADOR_MICRO, *[guion.hueco_resuelto() for _ in range(5)])
     falso.preparar(Perfil.ESCRITOR, *[guion.capitulo(n) for n in (1, 1, 1, 2, 2, 2)])
     falso.preparar(Perfil.EDITOR, *[guion.capitulo(n) for n in (1, 1, 2, 2)])
-    falso.preparar(
-        Perfil.EXTRACTOR_CAPITULO, *[guion.extraccion(n) for n in (1, 1, 1, 2, 2, 2)]
-    )
+    falso.preparar(Perfil.EXTRACTOR_CAPITULO, *[guion.extraccion(n) for n in (1, 1, 1, 2, 2, 2)])
     falso.preparar(Perfil.JUEZ, guion.juicio(), guion.juicio())
     return falso
 
@@ -101,6 +99,28 @@ class TestNovelaCompleta:
         nodo, error = await _recorrer(ruta, ajustes, transporte)
         assert error is None, error
         assert nodo != "Fail"
+
+    async def test_al_terminar_avisa_de_la_version_publicada(
+        self, tmp_path: Path, ajustes: Settings, transporte: TransporteFalso
+    ) -> None:
+        """En batch no hay gates, así que el final es el único aviso que llega."""
+        from storymaker.gates.notifier import NotifierNulo
+
+        ruta = tmp_path / "proyectos" / "avisada.db"
+        await crear_novela(ruta)
+        nulo = NotifierNulo()
+        resultado = await invocar(
+            ruta,
+            Arranque(n_capitulos=CAPITULOS),
+            settings=ajustes,
+            transporte=transporte,
+            vectorizador=VectorizadorFalso(),
+            observador=ObservadorNulo(),
+            notifier=nulo,
+        )
+        assert resultado.nodo_final == "Idle", resultado.error
+        assert [a.titulo for a in nulo.enviados] == ["StoryMaker · avisada · terminada"]
+        assert "Version 1 publicada" in nulo.enviados[0].cuerpo
 
     async def test_las_seis_fases_dejan_su_rastro(
         self, tmp_path: Path, ajustes: Settings, transporte: TransporteFalso

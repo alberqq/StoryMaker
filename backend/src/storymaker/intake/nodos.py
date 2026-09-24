@@ -124,7 +124,7 @@ async def cerrar_brief(brief: Brief, fase_run_id: int) -> int:
         json_brief=json.dumps(brief.model_dump(mode="json"), ensure_ascii=False),
         hash_brief=hash_del_brief(brief),
     )
-    await cuarentena.volcar_dictados(deps.db, brief.elementos_personalizacion)
+    await cuarentena.volcar_dictados(deps.db, brief.elementos_a_cubrir)
     return identificador
 
 

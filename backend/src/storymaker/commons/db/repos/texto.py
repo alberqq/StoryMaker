@@ -11,6 +11,8 @@ versiones sin duplicarse.
 
 from __future__ import annotations
 
+import re
+
 import aiosqlite
 
 from storymaker.commons.db.repos import id_insertado
@@ -30,7 +32,13 @@ async def insertar_capitulo_version(
     Se calcula y no se recibe porque `longitud_capitulo` compara contra este número: si lo
     declarase quien escribe, el validador estaría comprobando la aritmética del modelo en
     lugar de la longitud del texto.
+
+    Los encabezados markdown que a veces mete el modelo —«# Capítulo 1: El oficio»,
+    «## Escena 2: …»— se quitan aquí: el título del capítulo y sus escenas viven en la
+    escaleta, y la lectura y el PDF ya los pintan. Dejarlos los duplicaba en la página, los
+    contaba como palabras y convertía la prosa en un esquema.
     """
+    texto = sin_encabezados(texto)
     palabras = len(texto.split())
     cursor = await db.execute(
         """
@@ -40,6 +48,16 @@ async def insertar_capitulo_version(
         (capitulo_id, fase_run_id, intento, texto, palabras, resumen),
     )
     return id_insertado(cursor)
+
+
+#: Una línea de encabezado markdown, de cualquier nivel: `#` a `######` y un espacio.
+_ENCABEZADO = re.compile(r"^\s{0,3}#{1,6}\s")
+
+
+def sin_encabezados(texto: str) -> str:
+    """El texto sin ninguna línea de encabezado markdown y sin los blancos que dejan."""
+    lineas = [linea for linea in texto.splitlines() if not _ENCABEZADO.match(linea)]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lineas)).strip()
 
 
 async def aprobar_capitulo(db: aiosqlite.Connection, capitulo_version_id: int) -> None:
@@ -166,6 +184,47 @@ async def continuidad_de(db: aiosqlite.Connection, capitulo_version_id: int) -> 
         (capitulo_version_id,),
     ) as cursor:
         return list(await cursor.fetchall())
+
+
+async def eventos_anteriores(db: aiosqlite.Connection, hasta: int) -> list[aiosqlite.Row]:
+    """Los eventos narrativos de los capitulos aprobados **anteriores** a `hasta`.
+
+    Solo cuentan los de la version aprobada vigente de cada capitulo: los de un intento
+    descartado describen algo que ya no esta en la novela. Del capitulo mas reciente al mas
+    antiguo, de modo que un recorte por la cola suelta primero lo mas lejano.
+    """
+    async with db.execute(
+        """
+        SELECT pc.numero, e.descripcion
+          FROM cronologia_evento e
+          JOIN capitulo_version cv ON cv.id = e.capitulo_version_id
+          JOIN plan_capitulo pc ON pc.id = cv.capitulo_id
+         WHERE e.origen = 'narrativo'
+           AND pc.numero < ?
+           AND cv.id = (SELECT MAX(id) FROM capitulo_version
+                         WHERE capitulo_id = cv.capitulo_id AND estado = 'aprobado')
+         ORDER BY pc.numero DESC, e.id
+        """,
+        (hasta,),
+    ) as cursor:
+        return list(await cursor.fetchall())
+
+
+async def textos_aprobados(db: aiosqlite.Connection, hasta: int) -> list[str]:
+    """El texto de la version aprobada vigente de cada capitulo anterior a `hasta`, en orden."""
+    async with db.execute(
+        """
+        SELECT cv.texto
+          FROM capitulo_version cv
+          JOIN plan_capitulo pc ON pc.id = cv.capitulo_id
+         WHERE pc.numero < ?
+           AND cv.id = (SELECT MAX(id) FROM capitulo_version
+                         WHERE capitulo_id = cv.capitulo_id AND estado = 'aprobado')
+         ORDER BY pc.numero
+        """,
+        (hasta,),
+    ) as cursor:
+        return [str(f["texto"]) for f in await cursor.fetchall()]
 
 
 async def insertar_continuidad(

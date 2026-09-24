@@ -72,6 +72,31 @@ GATES: Final[dict[str, str]] = {
     "AwaitApproval4": "writing",
 }
 
+#: La fase de cada nodo, con los valores del `CHECK` de `fase_run.fase`. Es lo que lee el
+#: envoltorio de contabilidad para decidir cuándo empieza una `fase_run` nueva. Los cuatro
+#: gates y los tres nodos de reposo o término no están: **heredan la fila abierta**. Un
+#: gate con fila propia la abriría antes de `interrupt()`, y como LangGraph vuelve a
+#: ejecutar el gate al reanudar, dejaría una fila vacía por cada reanudación.
+FASE_DE_NODO: Final[dict[str, str]] = {
+    "Configure": "intake",
+    "Research": "investigation",
+    "VerifyCorpus": "investigation",
+    "Plan": "plotting",
+    "FillGap": "plotting",
+    "SealCorpus": "plotting",
+    "WriteChapter": "writing",
+    "Validate": "writing",
+    "Extract": "writing",
+    "Repair": "writing",
+    "ApproveChapter": "writing",
+    "Checkpoint": "writing",
+    "Judge": "publication",
+    "PublishVersion": "publication",
+    "RequestChange": "regeneration",
+    "Invalidate": "regeneration",
+    "RegenerateAffected": "regeneration",
+}
+
 
 async def idle(estado: EstadoNovela) -> EstadoNovela:
     """La novela está publicada y en reposo.

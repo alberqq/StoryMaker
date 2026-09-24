@@ -20,8 +20,8 @@ from storymaker.commons.agents.presupuesto import estimar_tokens
 TECHOS_DE_BLOQUE: Final[dict[int, int]] = {
     1: 800,  # Encargo
     2: 2_500,  # Canon relevante
-    3: 1_500,  # Continuidad
-    4: 4_000,  # Memoria
+    3: 2_500,  # Continuidad: estado al cierre de N-1 y lo que ya ha pasado
+    4: 3_000,  # Memoria
     5: 1_500,  # Anclajes
     6: 1_200,  # Reglas
     7: 500,  # Personalización

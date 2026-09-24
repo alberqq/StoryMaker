@@ -192,6 +192,13 @@ def redactar(datos: dict[str, Any]) -> str:
     palabras = obra.get("palabras_por_capitulo", Defaults.PALABRAS_POR_CAPITULO)
     partes.append(f"Son {capitulos} capitulos de unas {palabras} palabras cada uno.")
 
+    # La novela contada con las palabras de quien la encarga va delante de todo: es lo
+    # primero que el entrevistador tiene que leer, y lo que le deja preguntar solo por lo
+    # que no dice. No es texto de terceros, así que no pasa por la cuarentena.
+    descripcion = str(datos.get("descripcion") or "").strip()
+    if descripcion:
+        partes.insert(0, f"Quien encarga la novela la cuenta asi:\n{descripcion}")
+
     return "\n\n".join(partes)
 
 

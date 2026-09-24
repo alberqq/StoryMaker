@@ -29,6 +29,7 @@ class Perfil(StrEnum):
     EXTRACTOR_INTAKE = "extractor_intake"
     INVESTIGADOR_INICIAL = "investigador_inicial"
     INVESTIGADOR_MICRO = "investigador_micro"
+    INVESTIGADOR_DIRIGIDO = "investigador_dirigido"
     VERIFICADOR = "verificador"
     ARQUITECTO = "arquitecto"
     ESCRITOR = "escritor"
@@ -74,6 +75,14 @@ TECHOS: Final[dict[Perfil, Techo]] = {
         14_000,
         cuota_de_herramientas=(("WebSearch", 1), ("WebFetch", 1)),
     ),
+    Perfil.INVESTIGADOR_DIRIGIDO: Techo(
+        Rol.INVESTIGADOR,
+        2_000,
+        11_000,
+        2_000,
+        15_000,
+        cuota_de_herramientas=(("WebSearch", 1), ("WebFetch", 1)),
+    ),
     Perfil.VERIFICADOR: Techo(Rol.VERIFICADOR, 2_000, 8_000, 2_000, 12_000),
     Perfil.ARQUITECTO: Techo(Rol.ARQUITECTO, 2_000, 15_000, 8_000, 25_000),
     Perfil.ESCRITOR: Techo(Rol.ESCRITOR, 5_000, 12_000, 3_000, 20_000),
@@ -88,13 +97,15 @@ TECHOS: Final[dict[Perfil, Techo]] = {
 HERRAMIENTAS: Final[dict[Perfil, tuple[str, ...]]] = {
     Perfil.INVESTIGADOR_INICIAL: ("WebSearch", "WebFetch"),
     Perfil.INVESTIGADOR_MICRO: ("WebSearch", "WebFetch"),
+    Perfil.INVESTIGADOR_DIRIGIDO: ("WebSearch", "WebFetch"),
 }
 
 #: `max_turns` por perfil. La micro-sesión del arquitecto es de uno o dos turnos: busca
 #: una cosa concreta y vuelve.
 TURNOS: Final[dict[Perfil, int]] = {
-    Perfil.INVESTIGADOR_INICIAL: 12,
+    Perfil.INVESTIGADOR_INICIAL: 20,
     Perfil.INVESTIGADOR_MICRO: 2,
+    Perfil.INVESTIGADOR_DIRIGIDO: 4,
 }
 
 #: El techo del sistema entero, del que se derivan todos los demás.

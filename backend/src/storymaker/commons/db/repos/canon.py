@@ -45,6 +45,12 @@ async def personajes(db: aiosqlite.Connection, ids: list[int]) -> list[aiosqlite
         return list(await cursor.fetchall())
 
 
+async def nombres_de_personajes(db: aiosqlite.Connection) -> list[str]:
+    """Todos los nombres del canon, en orden de alta."""
+    async with db.execute("SELECT nombre FROM canon_personaje ORDER BY id") as cursor:
+        return [str(f["nombre"]) for f in await cursor.fetchall()]
+
+
 async def escenarios(db: aiosqlite.Connection, ids: list[int]) -> list[aiosqlite.Row]:
     if not ids:
         return []

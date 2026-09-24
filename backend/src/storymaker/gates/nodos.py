@@ -29,7 +29,7 @@ from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.graph.nodos import GATES
 from storymaker.gates.decisiones import DECISIONES
-from storymaker.gates.notifier import Aviso, construir
+from storymaker.gates.notifier import Aviso, avisar_sin_fallar, aviso_de_aparcada, construir
 
 
 async def abrir(estado: EstadoNovela, *, titulo: str, informe: str) -> int:
@@ -160,8 +160,11 @@ async def aparcar(estado: EstadoNovela, gate_id: int) -> EstadoNovela:
     que el arnés ha dejado de esperar despierto.
     """
     deps = actuales()
-    await deps.db.execute(
-        "UPDATE gate SET estado = 'aparcado' WHERE id = ?", (gate_id,)
-    )
+    await deps.db.execute("UPDATE gate SET estado = 'aparcado' WHERE id = ?", (gate_id,))
     await arnes.cerrar_fase_run(deps.db, estado["fase_run_id"], estado="aparcada")
+    # Aparcar sin avisar dejaria al Autor creyendo que la novela sigue esperando despierta.
+    gate = GATES.get(nombre_del_gate(estado), "desconocido")
+    await avisar_sin_fallar(
+        construir(deps.settings), aviso_de_aparcada(Path(estado["novela"]).stem, gate=gate)
+    )
     return {**estado, "gate_id": gate_id}

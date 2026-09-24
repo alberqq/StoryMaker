@@ -102,7 +102,9 @@ async def construir_revision(
         else None
     )
 
-    encomendados = tuple(int(d["id"]) for d in await intake.datos_de_capitulo(db, numero))
+    datos = await intake.datos_de_capitulo(db, numero)
+    encomendados = tuple(int(d["id"]) for d in datos)
+    textos = tuple((int(d["id"]), intake.texto_de_dato(d["valor_json"])) for d in datos)
 
     return CapituloEnRevision(
         numero=numero,
@@ -117,6 +119,7 @@ async def construir_revision(
         hechos_sellados=sellados,
         licencias_declaradas=licencias,
         personalizacion_encomendada=encomendados,
+        personalizacion_textos=textos,
     )
 
 
@@ -130,9 +133,10 @@ def pasada_del_extractor(
 ) -> list[Incidencia]:
     """Lo que se juzga sobre lo que el extractor midió.
 
-    `cobertura_capitulo` **bloquea**: que un elemento obligatorio no aparezca es contable y
-    no opinable. `ejecucion_escaleta` y `arco_ejecutado` **avisan**, porque son el juicio de
-    un modelo sobre si algo narrativo ocurrió, y eso no es una puerta. Abren incidencia de
+    Los tres **avisan**. `ejecucion_escaleta` y `arco_ejecutado`, porque son el juicio de
+    un modelo sobre si algo narrativo ocurrió, y eso no es una puerta; `cobertura_capitulo`,
+    porque mide lo que el extractor reconoció y no el texto, y la cobertura que bloquea es
+    la de la novela entera, antes de publicar. Abren incidencia de
     severidad `aviso`, entran en el informe del gate y viajan al bloque 1 del capítulo
     siguiente, donde el escritor lee qué quedó pendiente y puede recogerlo.
     """
@@ -145,6 +149,7 @@ def pasada_del_extractor(
             rango_palabras=capitulo.rango_palabras,
             personalizacion_encomendada=capitulo.personalizacion_encomendada,
             personalizacion_usada=usados,
+            personalizacion_textos=capitulo.personalizacion_textos,
         )
     ))
 

@@ -1,0 +1,41 @@
+.pares { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: var(--e2) var(--e4); margin: 0; }
+.pares > div { display: contents; }
+.pares dt { color: var(--texto-tenue); font-size: 0.85rem; text-transform: capitalize; }
+.pares dd { margin: 0; }
+.pares .pares { grid-template-columns: minmax(110px, max-content) 1fr; }
+.lista-simple { margin: 0; padding-left: var(--e5); display: flex; flex-direction: column; gap: var(--e2); }
+.bloque-texto { white-space: pre-wrap; background: var(--superficie-2); padding: var(--e3); border-radius: var(--radio-s); font-family: var(--fuente-panel); font-size: 0.9rem; }
+.comentario { margin: var(--e2) 0; padding: var(--e2) var(--e3); border-left: 3px solid var(--borde-fuerte); color: var(--texto-suave); font-size: 0.9rem; }
+.decisiones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e2); }
+
+.metrica-boton { all: unset; cursor: pointer; border-radius: var(--radio); }
+.metrica-boton .metrica { border: 1px solid transparent; }
+.metrica-boton.activa .metrica { border-color: var(--acento); background: var(--acento-suave); }
+.metrica-boton:focus-visible { outline: 2px solid var(--acento); }
+.hechos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e3); }
+.hecho { padding: var(--e3) 0; border-bottom: 1px solid var(--borde); }
+.hecho:last-child { border-bottom: none; }
+.hecho p { margin-bottom: var(--e2); }
+.fuentes { margin: var(--e2) 0 0; padding-left: var(--e5); font-size: 0.85rem; }
+
+.escaleta { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e2); }
+.escaleta > li > details { border: 1px solid var(--borde); border-radius: var(--radio); padding: var(--e3) var(--e4); }
+.escaleta summary { cursor: pointer; }
+.escenas { list-style: none; margin: var(--e3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--e3); }
+.escena { padding: var(--e3); background: var(--superficie-2); border-radius: var(--radio-s); }
+.escena p { margin: var(--e2) 0; }
+.beats { margin: var(--e2) 0; padding-left: var(--e5); font-size: 0.9rem; }
+.anclajes { gap: var(--e1); }
+.rejilla-fichas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--e3); }
+.ficha { padding: var(--e3) var(--e4); border: 1px solid var(--borde); border-radius: var(--radio); }
+.ficha p { margin: var(--e1) 0; font-size: 0.9rem; }
+
+.intentos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e3); }
+.intento { padding: var(--e3); border: 1px solid var(--borde); border-radius: var(--radio); }
+.incidencias-intento { list-style: none; margin: var(--e3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--e2); font-size: 0.88rem; }
+.incidencias-intento p { margin: 2px 0 0; }
+.texto-intento { margin-top: var(--e3); padding: var(--e4) var(--e5); max-width: none; box-shadow: none; }
+
+.criterios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e2); }
+.criterios li { display: grid; grid-template-columns: minmax(180px, 260px) 1fr 32px; align-items: center; gap: var(--e3); font-size: 0.9rem; }
+.rubrica + .rubrica { margin-top: var(--e4); padding-top: var(--e4); border-top: 1px solid var(--borde); }

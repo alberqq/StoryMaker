@@ -53,7 +53,8 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
-| A-23 | Extracción previa y entrevistador que solo pregunta por lo vacío o ambiguo | P-68 | Cubierto |
+| A-122 | Modo exhaustivo de la investigación: ocho sesiones dirigidas en serie, elegido al crear la novela y guardado en el estado | P-153, P-154 | Cubierto |
+| A-23 | Extracción previa y entrevistador que solo pregunta por lo vacío o ambiguo | P-68, P-180 | Cubierto |
 | A-24 | Los tres bloques de campos del `Brief` | P-64 | Cubierto |
 | A-25 | Los diales de la frontera viajan por `canon_obra.estilo_json` hasta el bloque 6 | P-37, P-76 | Cubierto |
 | A-26 | `evento_ancla` opcional y orientativo, contrastado en el `@model_validator` | P-65 | Cubierto |
@@ -88,7 +89,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
-| A-47 | Siete bloques con sus techos, 12.000 en total | P-33, P-34 | Cubierto |
+| A-47 | Siete bloques con sus techos, 12.000 en total | P-33, P-34, P-150, P-151 | Cubierto |
 | A-48 | El bloque 4 lleva el texto íntegro de N−1 | P-36 | Cubierto |
 | A-49 | Bloques 2, 4 y 5 llenados por relevancia semántica, con `k = 8` | P-23, P-35 | Cubierto |
 | A-50 | Truncado por prioridad, con el bloque 3 como último en tocarse | P-38 | Cubierto |
@@ -113,7 +114,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
-| A-62 | `fase_run` con `input_run_id` y las cuatro operaciones sobre un solo camino de código | P-14, P-58 | Cubierto |
+| A-62 | `fase_run` con `input_run_id` y las cuatro operaciones sobre un solo camino de código | P-14, P-58, P-141, P-142 | Cubierto |
 | A-63 | Ramificar es copiar el fichero y escribir `procedencia` | P-102, P-113 | Cubierto |
 | A-64 | La edición humana dispara la maquinaria de la Fase 6, con re-sello y reembedding | P-26, P-101 | Cubierto |
 
@@ -134,14 +135,15 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-70 | `Notifier` con Telegram, solo para avisar; la decisión se toma en el PC | P-105, P-109 | Cubierto |
 | A-71 | Notificaciones informativas, desactivadas por defecto | P-106 | Cubierto |
 | A-72 | El *timeout* aparca; nunca se auto-aprueba | P-107 | Cubierto |
+| A-119 | Tres avisos fuera de gate —parada, final y aparcamiento— que salen siempre, también en batch, y nunca cambian el resultado de la invocación | P-140 | Cubierto |
 | A-73 | `gates.enabled = false` desactiva los cinco para el modo batch | P-02, P-108, P-120 | Cubierto |
 
 ### §11 · Validación
 
 | # | Requisito | Ítems | Estado |
 |---|---|---|---|
-| A-74 | Los once validadores programáticos, cada uno en su punto de ejecución | P-31, P-41, P-42, P-43, P-44, P-80, P-89, P-92 | Cubierto |
-| A-75 | Los cinco validadores semánticos, tres de ellos no bloqueantes, con los avisos que viajan | P-43, P-72, P-88, P-90, P-122 | Cubierto |
+| A-74 | Los once validadores programáticos, cada uno en su punto de ejecución | P-31, P-41, P-42, P-43, P-44, P-80, P-89, P-92, P-143 | Cubierto |
+| A-75 | Los cinco validadores semánticos, tres de ellos no bloqueantes, con los avisos que viajan | P-43, P-72, P-88, P-90, P-122, P-152 | Cubierto |
 | A-76 | Los cuatro invariantes de Lean, verificados por `decide` | P-47, P-49 | Cubierto |
 | A-77 | Lean en tres puntos: escaleta, pasada del extractor y publicación | P-80, P-84, P-91, P-97 | Cubierto |
 | A-78 | TLA+ directo sobre las seis fases, con `Extract` como acción propia, los **cinco invariantes de estado** —incluido `CorpusSelladoNoSeToca`— y `PreviousVersionPreserved` como propiedad temporal | P-61, P-115, P-133 | Cubierto |
@@ -149,7 +151,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-110 | §11 delega en `verification.md` el plan de verificación completo: técnica, clase de confianza y gate por riesgo | P-04, P-05, P-07, P-45, P-49, P-112, P-114 a P-124 | Cubierto |
 | A-112 | §11e `inventario_del_plan`: rutas y símbolos del plan contra el árbol y a la inversa, informando **en dos cubos** | P-129 | Cubierto |
 | A-113 | §11e `registro_de_validadores`: el registro **es el cableado**, con la ruta como cadena, y se comparan **tres tablas por pares** sobre los once de §11a. **Bloquea** | P-131, P-132 | Cubierto |
-| A-114 | §11e `anclas_de_procedencia`: ancla de docstring en las dos direcciones, con la inversa acotada a §3 y §4 de la spec. Informa | P-130 | Cubierto |
+| A-114 | §11e `anclas_de_procedencia`: ancla de docstring en las dos direcciones, con la inversa acotada a §3 y §4 de la spec del backend. Solo el backend: el frontend se traza por el inventario y los requisitos. Informa | P-130 | Cubierto |
 | A-115 | §11e y §9: `identidad_nodo_accion` compara **nombres y aristas**, leyendo la definición `Aristas` que gobierna el `Next`. **Bloquea** | P-62, P-133 | Cubierto |
 
 ### §12 · Presupuesto de contexto
@@ -202,6 +204,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-103 | Dos puntos de entrada sobre un solo camino de código | P-57, P-109, P-113, P-138 | Cubierto |
 | A-104 | La invocación que reanuda un gate corre en el proceso de la CLI que decide | P-109 | Cubierto |
 | A-105 | Cerrojo de fichero por novela; quien llega segundo es rechazado, no encolado | P-59, P-113, P-128 | Cubierto |
+| A-120 | Un capítulo que agotó sus reintentos se reabre con `storymaker reintentar`, sin tocar lo aprobado | P-144 | Cubierto |
 | A-106 | El directorio `proyectos/` es el registro; no hay base de datos global de novelas | P-111 | Cubierto |
 | A-107 | Ningún endpoint reanuda una ejecución, y la API queda abierta por decisión declarada (U-17) | P-109, P-110, P-136, P-138 | Cubierto |
 
@@ -212,6 +215,12 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-108 | Las mitigaciones de §18 que son código: recuento por dimensión, tope de fetch, recuento de afectados, carga comprobada, varianza medida | P-19, P-30, P-73, P-100, P-121 | Cubierto |
 | A-109 | Los valores por defecto de §19, parametrizables y con nombre | P-02, P-03 | Cubierto |
 | A-116 | §18 · «Los documentos pueden ser coherentes y estar equivocados»: la familia §11e comprueba que código y especificación dicen lo mismo, no que lo que dicen sea correcto | P-135 | Cubierto por inspección: el acta de grilling y de revisión es su entregable |
+| A-130 | §16.5 · La API **calcula el estado** de cada novela y de cada fase, del fichero y sin memoria, y sirve panel, gate y salidas | P-160, P-161, P-181, P-183, P-184 | Cubierto |
+| A-131 | §16.5 · **Lo que ejecuta el grafo lo lanza la API como CLI aparte**, desacoplado, con registro y `202` | P-162, P-164, P-182 | Cubierto |
+| A-132 | §16.5 · **Las ediciones de un gate y la petición de cambio las escribe la API** tomando el cerrojo, con la maquinaria de `regeneration/` | P-162, P-166 | Cubierto |
+| A-133 | §16.5 · **Solo se desbloquea un cerrojo cuyo proceso ha muerto** | P-162, P-163 | Cubierto |
+| A-134 | §16.5, U-17 · **Acciones solo locales y en JSON**, sin CORS, con el servidor en `127.0.0.1` | P-162 | Cubierto |
+| A-135 | §10 · **Abortar solo desde el gate de Intake** | P-165 | Cubierto |
 
 ---
 
@@ -292,6 +301,28 @@ Cada ítem del plan, con el requisito del que nace. **Ninguna fila está vacía*
 | | | P-133 | A-65, A-78, A-115 |
 | P-137 | A-111 |
 | P-139 | A-117 |
+| P-140 | A-119 |
+| P-153 | A-122 |
+| P-154 | A-122 |
+| P-141 | A-62 |
+| P-142 | A-62 |
+| P-143 | A-74 |
+| P-144 | A-120 |
+| P-150 | A-47 |
+| P-151 | A-47 |
+| P-152 | A-75 |
+| P-160 | A-130 |
+| P-161 | A-130 |
+| P-162 | A-131, A-132, A-133, A-134 |
+| P-163 | A-133 |
+| P-164 | A-131 |
+| P-165 | A-135 |
+| P-166 | A-132 |
+| P-180 | A-23 |
+| P-181 | A-130 |
+| P-182 | A-131 |
+| P-183 | A-130 |
+| P-184 | A-130 |
 | P-138 | A-103, A-107 |
 | P-134 | A-83 |
 | P-135 | A-116 |
@@ -330,6 +361,17 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | `A-130` suma `P-184` | El PDF por la API |
+| 2026-09-24 | `A-130` suma `P-183` | El nombre corto de los escenarios |
+| 2026-09-24 | Entra `A-122` —el modo exhaustivo de la investigación— con sus ítems `P-153` y `P-154`, y la dirección inversa recoge los dos pares | La arquitectura fijó en §4 el modo exhaustivo. Una matriz que no lo recogiera afirmaría en verde una cobertura que no comprueba entera |
+| 2026-09-24 | `A-131` suma `P-182` | El modo de investigación al encargar |
+| 2026-09-24 | `A-23` suma `P-180` y `A-130` suma `P-181`; la dirección inversa recoge los dos | El encargo por conversación |
+| 2026-09-24 | Entran **A-130 a A-135** (arq. §16.5 y la restricción de abortar en §10) con sus ítems P-160 a P-166 | La matriz se mueve con el documento que cambia. Los números saltan a 130 para no pisar los que otra línea de trabajo numera en paralelo |
+| 2026-09-24 | `A-47` suma `P-150` y `P-151`, y `A-75` suma `P-152`; la dirección inversa recoge los tres pares | La arquitectura amplió en §6 los bloques 3 y 6 y en §11b el juicio de la continuidad |
+| 2026-09-24 | `A-74` suma `P-143` y entra `A-120` —reintentar el capítulo que agotó sus reintentos— con `P-144`; la dirección inversa recoge los dos pares | La arquitectura fijó en §11a que `cobertura_capitulo` avisa y en §16.5 el comando `reintentar` |
+| 2026-09-24 | `A-62` suma `P-141` y `P-142` —una `fase_run` por fase y el consumo contado en el transporte— y la dirección inversa recoge los dos pares | El plan del backend los declara al propagar §9.1 y §9.2 de la spec de ejecución real; §8 de la arquitectura es la decisión que realizan |
+| 2026-09-24 | Entra `A-119` —los tres avisos fuera de gate— con su ítem `P-140`, y la dirección inversa recoge el par | La arquitectura fijó en §10 los avisos de parada, final y aparcamiento. Una matriz que no los recogiera afirmaría en verde una cobertura que no comprueba entera |
+| 2026-09-24 | La descripción de A-114 dice que `anclas_de_procedencia` alcanza solo al backend | §11e de la arquitectura lo fija así; la fila se mueve con el documento que cambia |
 | 2026-09-24 | A-70, A-104 y A-107 se reescriben: Telegram solo avisa, la reanudación de un gate corre en la CLI y ningún endpoint reanuda. P-109 cubre además A-70 | Se propaga la decisión del Autor en §10 y §16.4 de la arquitectura |
 | 2026-09-24 | Entra `A-118` —el contrato de salida viaja con la llamada— con su ítem `P-27`, y la dirección inversa recoge el par | La arquitectura fijó en §5 cómo llega al rol la forma de su salida después de que la primera ejecución real cayera por no mandarla. Una matriz que no lo recogiera afirmaría en verde una cobertura que no comprueba entera |
 | 2026-09-23 | Se propaga la reescritura de §11d —A-10, A-65 y A-78 dejan de hablar de PlusCal y A-78 recoge los cinco invariantes—, `A-83` y `A-102` dejan de estar fuera de alcance con `P-134` y el plan del frontend, y entran `P-134`, `P-135` y `P-136` en el recorrido inverso | La arquitectura resolvió su contradicción y aparecieron dos planes donde había uno. Una matriz que no se mueve con ellos afirma en verde una cobertura que ya no ha comprobado |

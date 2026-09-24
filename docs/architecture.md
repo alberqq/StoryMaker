@@ -27,7 +27,8 @@ Esa decisión de dominio gobierna todo lo demás: justifica una fase de investig
 | Estado | Un único fichero SQLite por novela | Checkpoint del grafo y datos de dominio en la misma transacción. Imposible que se desincronicen. |
 | Versiones | Capítulos inmutables + manifiesto | Conservar la versión anterior es una propiedad de la estructura, no una disciplina. |
 | Ejecuciones de fase | Grafo de `fase_run` inmutables | Rehacer, reanudar, ramificar y regenerar son **la misma operación** con distinto punto de entrada. |
-| Intervención humana | Cinco gates bloqueantes; **Telegram solo avisa y el Autor decide en su PC**, con la CLI | La máquina duerme en disco mientras espera. No hay superficie pública que reanude una ejecución. Desactivables en modo batch. |
+| Intervención humana | Cinco gates bloqueantes; **Telegram solo avisa y el Autor decide en su PC**, en la interfaz o con la CLI | La máquina duerme en disco mientras espera. Nada fuera de la máquina del Autor reanuda una ejecución: la API solo escucha en `127.0.0.1`. Desactivables en modo batch. |
+| Operación del arnés | **La interfaz opera la novela entera** —encargar, lanzar, seguir, decidir cada gate, continuar— **lanzando la CLI como proceso aparte** | La interfaz no ejecuta el grafo: cada acción es un comando de la CLI, el mismo que teclearía el Autor. El servidor no guarda nada en memoria, así que reiniciarlo no mata ninguna ejecución. Ver §16.5. |
 | Validación formal | Lean 4 (la historia) + TLA+ (el arnés) | Lean verifica la cronología concreta; TLC verifica el comportamiento del sistema. |
 | Observabilidad | Langfuse con spans manuales autorizados + OTLP nativo opcional | La semántica que importa (sesión = novela, span = capítulo/rol/intento) la pone el orquestador. |
 | Presupuesto de contexto | 100.000 tokens concurrentes, garantizados por construcción | No se puede medir en vivo, así que se acota *a priori*. Ver §12. |
@@ -61,7 +62,8 @@ Si el editor decidiera cuándo validar, un modelo que se olvida de invocar una h
 graph TD
     H["Humano<br/>comprador / autor"] -->|brief, gates| ORQ
     ORQ -->|solo notificación| TG["Bot de Telegram"]
-    CLI["CLI en el PC del Autor"] -->|decisión de gate| ORQ
+    UI["Interfaz web en el PC del Autor<br/>127.0.0.1"] -->|lanza la CLI| CLI
+    CLI["CLI en el PC del Autor"] -->|arranque, decisión de gate| ORQ
     ORQ["Orquestador LangGraph<br/>estado explícito"] --> DB[("SQLite<br/>una novela = un fichero")]
     ORQ --> PK["Ensamblador de paquetes<br/>código, no agente"]
     ORQ --> VAL["Validadores<br/>Core Domain en Python puro"]
@@ -118,7 +120,7 @@ El sistema arranca de una **premisa inicial** libre que el comprador escribe. Es
 | | `elementos_personalizacion` — lista tipada, cada elemento marcable como obligatorio | Bloque 7 del paquete, `cobertura_personalizacion` |
 | **Mundo** | `periodo` — inicio, fin, denominación historiográfica | Sub-encargos del investigador |
 | | `lugar` | Sub-encargos del investigador |
-| | `evento_ancla`, opcional y orientativo — el acontecimiento del que cuelga la novela | Contradicciones, solo si viene relleno |
+| | `evento_ancla`, opcional y orientativo — el acontecimiento del que cuelga la novela | Contradicciones, solo si viene relleno; si viene, entra como elemento obligatorio y lo cubren `cobertura_anclada` y `cobertura_personalizacion` |
 | | `personajes_historicos` — figuras reales que deben aparecer o que deben evitarse | Plotting, Nota del autor |
 | **Obra y frontera** | `genero` con su subgénero | `canon_obra` |
 | | `tono` | Voz y estilo, contradicciones |
@@ -133,7 +135,7 @@ El sistema arranca de una **premisa inicial** libre que el comprador escribe. Es
 
 Para que lleguen a quien escribe, el arquitecto los copia a `canon_obra.estilo_json` al construir el canon, y de ahí entran en el **bloque 6 del paquete de contexto** junto a la voz, el estilo y el glosario (§6). No se convierten en validador nuevo: `contenido_admisible` en particular no es una palabra prohibida —«sin violencia explícita» no es un término que buscar en `canon_prohibida`—, así que lo juzga el juez con la rúbrica, que es la herramienta adecuada para lo que no se puede calcular.
 
-`evento_ancla` es **opcional y orientativo**, y nadie lo rellena por el comprador. Si viene, el `@model_validator` lo contrasta con la fecha de nacimiento del homenajeado y el arquitecto debe anclarlo en la escaleta; si viene vacío, el arquitecto elige sus anclajes contra el corpus, que es lo que ya hace de todos modos. La comprobación vive en un solo sitio y en una sola fase, en lugar de repetirse en el gate de Plotting sobre un dato aparecido más tarde.
+`evento_ancla` es **opcional y orientativo**, y nadie lo rellena por el comprador. Si viene, el `@model_validator` lo contrasta con la fecha de nacimiento del homenajeado y **entra en `intake_dato` como un elemento obligatorio más**, de modo que el arquitecto lo ve con su clave, `cobertura_anclada` exige que alguna escena lo ancle y `cobertura_personalizacion` que algún capítulo aprobado lo cuente. «Debe anclarlo» deja así de ser una instrucción al arquitecto y pasa a ser una comprobación; si viene vacío, el arquitecto elige sus anclajes contra el corpus, que es lo que ya hace de todos modos. La comprobación vive en un solo sitio y en una sola fase, en lugar de repetirse en el gate de Plotting sobre un dato aparecido más tarde.
 
 **Lo que no entra.** La Premisa, el Tema, la trama, los conflictos, los arcos y la escaleta son obra del arquitecto (Fase 3). Recogerlos en la entrada sería pedirle al comprador que escriba la novela.
 
@@ -141,7 +143,7 @@ Para que lleguen a quien escribe, el arquitecto los copia a `canon_obra.estilo_j
 
 **Contradicciones.** Las detecta un `@model_validator` de Pydantic sobre el brief ya poblado, no un modelo: edad del homenajeado contra el período elegido, fecha de nacimiento contra el evento histórico ancla, tono festivo contra un período de duelo, dato aportado que coincide con una palabra prohibida. El agente captura el `ValueError`, lo traduce a pregunta y obliga a resolverlo antes de cerrar el brief.
 
-**La entrevista pasa por el gate de Intake.** Las preguntas del entrevistador —lo que sigue vacío o ambiguo, y las contradicciones traducidas a pregunta— se guardan en la novela y **el aviso del gate las enseña**, en Telegram y en la CLI. El Autor contesta en su PC con **«rehacer» y su comentario**: `Configure` vuelve a correr con la premisa y **todas las respuestas dadas hasta entonces**, y el entrevistador cierra el `Brief` o pregunta lo que siga faltando. Cada vuelta es un gate más, y no hace falta nodo ni arista nueva: «rehacer» desde el gate de Intake ya devuelve a `Configure`. Repetir `Configure` **no duplica nada**: el texto pegado se extrae una sola vez y un dato del encargo que ya está no se vuelve a escribir. Si el Autor aprueba con preguntas pendientes, se sigue con el brief que haya, como pide el criterio de producto. En modo batch no hay nadie que conteste, así que el encargo tiene que venir completo.
+**La entrevista pasa por el gate de Intake.** Las preguntas del entrevistador —lo que sigue vacío o ambiguo, y las contradicciones traducidas a pregunta— se guardan en la novela y **el gate las enseña**: el aviso de Telegram y de la CLI, y la pantalla del gate en la interfaz, que las presenta como preguntas con su casilla de respuesta. El Autor contesta en su PC con **«rehacer» y su comentario**, que en la interfaz es el conjunto de sus respuestas: `Configure` vuelve a correr con la premisa y **todas las respuestas dadas hasta entonces**, y el entrevistador cierra el `Brief` o pregunta lo que siga faltando. Cada vuelta es un gate más, y no hace falta nodo ni arista nueva: «rehacer» desde el gate de Intake ya devuelve a `Configure`. Repetir `Configure` **no duplica nada**: el texto pegado se extrae una sola vez y un dato del encargo que ya está no se vuelve a escribir. Si el Autor aprueba con preguntas pendientes, se sigue con el brief que haya, como pide el criterio de producto. En modo batch no hay nadie que conteste, así que el encargo tiene que venir completo.
 
 ### Fase 2 · Investigation
 
@@ -151,7 +153,21 @@ La fase tiene dos pasos y dos agentes distintos: uno **rellena** el corpus y otr
 
 El límite lo impone el arnés, no una instrucción del prompt: `allowed_tools` y el contador de invocaciones lo aplican por construcción, y la llamada que sobra no se emite. Y el tope es doble, **tres `WebSearch` y tres `WebFetch`**, porque quien llena la ventana no es la búsqueda sino la página: una búsqueda devuelve una lista de resultados, así que topar solo las búsquedas permitiría abrir doce páginas y reventar el presupuesto igual que antes. Cada fetch va además acotado a 10.000 tokens. Con eso, «tres llamadas a internet» significa literalmente tres páginas leídas.
 
+**Una llamada denegada dice qué hacer.** La que sobra se deniega, pero el mensaje de denegación no se limita a decir que la cuota se agotó: le dice al investigador que no lo intente de nuevo y que entregue ya su respuesta con lo que tenga. Cada intento denegado cuesta un turno, y un investigador que insiste en un período con poca información en la red puede quedarse sin turnos sin haber entregado nada; por eso la sesión única tiene además **veinte turnos**, holgura de sobra para tres búsquedas y tres páginas. Si aun así la sesión termina sin una respuesta válida, **la fase sigue con el corpus que haya** y un aviso en el informe del gate, como una sesión dirigida del modo exhaustivo: un encargo con poca documentación no justifica detener la novela.
+
 Que sea una sesión y no seis tiene una contrapartida que conviene decir en voz alta. A favor: el investigador ve a la vez lo que lleva encontrado para cada dimensión y puede cruzarlo, porque la toponimia y la cultura material de un mismo lugar suelen venir de la misma página. En contra: arrastra en su ventana el material de las tres páginas a la vez, y por eso su techo declarado en §12 es el más alto del sistema y gobierna el peor caso de todo el arnés.
+
+**Modo exhaustivo.** Tres páginas se quedan cortas para una novela que vive dentro de un oficio y alrededor de figuras reales: en la tercera novela real el corpus salió con doce hechos, siete de ellos de cultura material, y los errores que se vieron al leerla —una detención fechada seis meses tarde, el evento ancla sin narrar, la ley de imprenta que era el conflicto de la trama y nadie conocía— no eran del período en general, sino de lo concreto del encargo. Por eso existe un segundo modo de investigación, **elegido por novela al crearla** y desactivado por defecto. En lugar de la sesión única corre **una serie de sesiones dirigidas, una detrás de otra, cada una con una `WebSearch` y un `WebFetch`**:
+
+- **Una por cada una de las seis dimensiones**, con el período, el lugar y esa dimensión como único encargo.
+- **Una sobre los personajes históricos y el evento ancla** del brief: sus fechas, lo que hicieron en el período y lo que ocurrió exactamente en el evento. Se omite si el brief no trae ninguno de los dos.
+- **Una sobre el oficio del homenajeado en la época** —el `rol_epoca` del brief—: cómo se ejercía, qué lo regulaba y qué riesgos tenía.
+
+Las dos últimas **no son dimensiones nuevas**: son dos encargos cuya búsqueda sale del brief y no solo del período, y sus hechos se guardan con la dimensión de la que tratan —una fecha es `cronologia`, una ley es `estructura_social`, una herramienta es `cultura_material`—. La lista de seis sigue cerrada, y el esquema de `mundo_hecho` no cambia. Lo que reciben del brief son nombres de figuras históricas, un acontecimiento y un oficio, que describen la época y no a la persona (§15); **nunca el nombre del homenajeado, su fecha de nacimiento ni sus elementos de personalización**. Como el comprador puede haber escrito cualquiera de ellos donde no tocaba, **la guarda de PII mira cada prompt del investigador ya ensamblado** —la sesión única, las dirigidas y las micro-sesiones de Plotting— contra el nombre, la fecha y los elementos del homenajeado antes de emitirlo, y una sesión que los contenga **no sale**: se salta con un aviso.
+
+Qué se gana: el corpus se construye con **ocho páginas en lugar de tres**, cada dimensión recibe la suya sin que el modelo decida el reparto, y las dos búsquedas dirigidas encuentran lo que ninguna búsqueda por período encuentra. Qué se paga: ocho sesiones en serie tardan más que una, y se pierde el cruce entre dimensiones dentro de una misma ventana. El techo de contexto, en cambio, **baja**: ninguna sesión dirigida lleva más de una página, y su techo en §12 es de 15.000 tokens frente a los 45.000 de la sesión única, que sigue siendo el peor caso del sistema porque el modo estándar existe.
+
+El modo viaja en el **estado del grafo**, no en `Settings`, por la misma razón que `gates_enabled`: una novela empezada en exhaustivo se retoma, se rehace y se ramifica en exhaustivo aunque la instalación diga otra cosa. **No se cambia a mitad de novela**: quien quiera la otra investigación lanza una novela nueva. Se elige con `storymaker nueva --investigacion exhaustiva`, con la casilla del encargo en la interfaz o con el valor por defecto de la instalación; `storymaker evaluar` corre siempre en estándar, para que las evaluaciones sean comparables entre sí. El comentario de «rehacer» desde el gate llega a **las ocho sesiones**, y también a la sesión única del modo estándar. Una sesión dirigida cuya salida no valida tras sus reintentos **se salta con un aviso** en el informe del gate de Investigation, y las demás siguen: que falle la búsqueda del oficio no justifica perder las otras siete. Un error de entorno —el CLI caído, la sesión caducada— detiene la fase como siempre; una sesión que devuelve cero hechos no es un fallo, y si fallan todas se sigue con el corpus que haya, como en el estándar. El informe del gate enseña **una línea por sesión**: su encargo y sus hechos, o por qué se saltó. Los hechos de todas las sesiones pasan por el mismo verificador de respaldo, en lotes de veinte, y cuentan en el mismo `fase_run`. **No se deduplican**: dos sesiones pueden traer el mismo hecho, y el verificador y el arquitecto lo toleran mejor de lo que costaría compararlos por embeddings.
 
 Cada hecho se guarda con su enunciado, su estado epistémico, la fuente de la que sale, la ejecución de fase que lo escribió y la **cita textual** en la que se apoya: el fragmento de la fuente copiado tal cual, **acotado a 300 caracteres**. Ese límite hace dos cosas a la vez —obliga al investigador a señalar el fragmento que sostiene ese enunciado concreto en lugar de volcar media página, y mantiene acotado el contexto del verificador—, y la cita no es adorno: es lo único que hace verificable el paso 2. Las referencias que devuelve `WebSearch` —URL y título— se mapean directamente a la entidad `Fuente`.
 
@@ -283,14 +299,18 @@ El escritor **no tiene herramientas de recuperación**. Un módulo Python puro l
 |---|---|---|---|
 | 1 | **Encargo** | Capítulo N, sus escenas con sus beats, objetivo dramático, extensión objetivo, los hitos de arco que este capítulo debe cubrir y **lo que quedó pendiente en N−1** | 800 |
 | 2 | **Canon relevante** | Fichas de los personajes presentes en esas escenas y de sus escenarios, más los que la búsqueda semántica marque como relevantes. No la biblia entera | 2.500 |
-| 3 | **Continuidad** | Estado estructurado al cierre de N−1: dónde está cada personaje, qué sabe, qué posee, heridas, relaciones, fecha narrativa | 1.500 |
-| 4 | **Memoria** | **Texto íntegro de N−1** + los resúmenes previos más relevantes para este capítulo, ordenados por similitud | 4.000 |
+| 3 | **Continuidad** | Estado estructurado al cierre de N−1: dónde está cada personaje, qué sabe, qué posee, heridas, relaciones, fecha narrativa. Y **lo que ya ha pasado**: los eventos narrativos de los capítulos aprobados anteriores a N−1, uno por línea | 2.500 |
+| 4 | **Memoria** | **Texto íntegro de N−1** + los resúmenes previos más relevantes para este capítulo, ordenados por similitud | 3.000 |
 | 5 | **Anclajes** | Los hechos anclados por la escaleta a las escenas de este capítulo, más los vecinos semánticos del corpus sellado, con estado epistémico y fuente | 1.500 |
-| 6 | **Reglas** | Voz, estilo, glosario de época, palabras prohibidas, y la política de licencia, arcaísmo y contenido admisible | 1.200 |
+| 6 | **Reglas** | Voz, estilo, glosario de época, palabras prohibidas, y la política de licencia, arcaísmo y contenido admisible. Además, las **reglas de escritura** fijas y **lo que la novela ya ha gastado**: las palabras más repetidas hasta N−1 y las frases con las que cerraron los capítulos anteriores | 1.200 |
 | 7 | **Personalización** | Elementos del brief que este capítulo tiene que tocar | 500 |
 | | **Total** | | **12.000** |
 
 El bloque 4 incluye el **texto íntegro** del capítulo anterior y no solo su resumen porque la voz y el gancho se heredan de la prosa, no de un sumario.
+
+**La continuidad lleva la trama, no solo el estado.** El estado al cierre de N−1 dice dónde está cada personaje y qué posee, pero no qué se prometió, qué se entregó ni qué se decidió tres capítulos atrás, y una contradicción con eso no se ve desde el capítulo anterior. Por eso el bloque 3 lleva también los eventos narrativos que el extractor ya escribe en `cronologia_evento` para Lean, de los capítulos aprobados anteriores a N−1, en una línea cada uno y del más reciente al más antiguo. Los de N−1 no hacen falta, porque ese capítulo va entero en el bloque 4. No hay tabla nueva ni rol nuevo: es una lectura más de algo que ya existía. El techo del bloque sube a 2.500 a costa de la memoria, que baja a 3.000; el total no se mueve, y la continuidad sigue siendo lo último que se recorta.
+
+**Las reglas llevan lo que la novela ya ha gastado.** Además de la política del encargo, el bloque 6 lleva cuatro reglas de escritura fijas —narrar en pretérito, entregar solo prosa sin títulos ni encabezados, que ningún personaje sepa ni cuente lo que aún no ha ocurrido en la fecha narrativa de su escena, histórico incluido, y no contradecir lo que el bloque 3 dice que ya pasó— y dos listas calculadas en Python sobre los capítulos aprobados: las palabras y expresiones que más se repiten en la novela hasta N−1, y la última frase de cada capítulo anterior. La repetición de una novela escrita capítulo a capítulo no la ve el escritor, que solo lee N−1; se le dice cuál es.
 
 ### Selección por relevancia
 
@@ -584,7 +604,7 @@ Cinco gates bloqueantes: **Intake, Investigation, Plotting, Writing y Regenerati
 
 ### Mecánica
 
-El nodo del gate llama a `interrupt()` de LangGraph; el checkpointer persiste el estado en el mismo SQLite de la novela y **el proceso termina**. Cuando el autor decide, lo hace **en su PC**: `storymaker decidir` escribe la decisión en `gate` y reanuda el grafo con `Command(resume=...)`.
+El nodo del gate llama a `interrupt()` de LangGraph; el checkpointer persiste el estado en el mismo SQLite de la novela y **el proceso termina**. Cuando el autor decide, lo hace **en su PC**, desde la pantalla del gate en la interfaz o tecleando `storymaker decidir`, que es lo mismo: la interfaz lanza ese comando (§16.5). `decidir` escribe la decisión en `gate` y reanuda el grafo con `Command(resume=...)`.
 
 Tres consecuencias encadenadas: no hay un proceso vivo doce horas, reiniciar el servidor no mata nada porque el estado está en disco y no en memoria, y **la reanudación por gate usa exactamente el mismo mecanismo que la reanudación por fallo** — un solo camino de código.
 
@@ -594,16 +614,24 @@ Tres consecuencias encadenadas: no hay un proceso vivo doce horas, reiniciar el 
 |---|---|
 | **Aprobar** | Avanza a la fase siguiente |
 | **Rehacer con comentario** | El texto libre se inyecta como bloque extra en el prompt de esa fase. Cuenta contra el límite de reintentos |
-| **Editar** | Modificación directa del corpus, canon o escaleta (§8) |
-| **Abortar** | Termina la ejecución con estado de error |
+| **Editar** | Modificación directa del corpus, canon o escaleta (§8), tras la cual la fase se repite. En la interfaz, editar es corregir filas y **después** aprobar o rehacer (§16.5) |
+| **Abortar** | Termina la ejecución con estado de error. **Solo desde el gate de Intake**: es la única arista que declara el modelo TLA+. En los demás gates, no decidir ya deja la novela parada sin coste, y se aparca al agotar el *timeout* |
 
 «Rehacer» a secas hace que el agente vuelva a tirar el dado; el comentario es lo que convierte el reintento en dirigido. Todo comentario y toda edición se guardan como fila, se versionan y van al audit log y a Langfuse — la intervención del autor queda trazada igual que la de un agente, y de paso es parte de la revisión humana que exige el enunciado.
 
 ### Canal
 
-**Telegram, y solo para avisar**, detrás de una interfaz `Notifier`. WhatsApp exige Meta Business, número verificado y aprobación previa de plantillas de mensaje; Telegram es un token en el `.env`. El mensaje de un gate dice qué fase espera, resume su informe y trae **el comando exacto** para decidir, pero no lleva botones: **la decisión se toma en el PC**, donde el informe se lee entero y no en una pantalla de móvil. Esto tiene además una consecuencia de superficie: sin decisiones por Telegram no hace falta webhook, ni URL pública, ni túnel, ni secreto compartido, y **nada fuera de la máquina del Autor puede reanudar una ejecución**. Si el envío falla, se avisa en la salida del proceso y el gate sigue bloqueando igual: se pierde el aviso, no la puerta. La interfaz `Notifier` deja WhatsApp Business como un adaptador futuro.
+**Telegram, y solo para avisar**, detrás de una interfaz `Notifier`. WhatsApp exige Meta Business, número verificado y aprobación previa de plantillas de mensaje; Telegram es un token en el `.env`. El mensaje de un gate dice qué fase espera, resume su informe y trae **el comando exacto** para decidir y la dirección de su pantalla en la interfaz, pero no lleva botones: **la decisión se toma en el PC**, donde el informe se lee entero y no en una pantalla de móvil. Esto tiene además una consecuencia de superficie: sin decisiones por Telegram no hace falta webhook, ni URL pública, ni túnel, ni secreto compartido, y **nada fuera de la máquina del Autor puede reanudar una ejecución**. Si el envío falla, se avisa en la salida del proceso y el gate sigue bloqueando igual: se pierde el aviso, no la puerta. La interfaz `Notifier` deja WhatsApp Business como un adaptador futuro.
 
 Aparte de los gates, y desactivadas por defecto, hay **notificaciones informativas** que no bloquean: «capítulo 6 de 10 aprobado, 0,41 $ acumulados».
+
+Hay además **tres avisos que no son de gate y que salen siempre**, también en batch, porque son justo los momentos en que la novela necesita a alguien y nadie mira la terminal:
+
+- **Parada.** La invocación termina en `Fail`, sea porque un nodo revienta o porque un capítulo agota sus reintentos. El aviso dice el nodo o el capítulo, el motivo y los dos comandos para retomar: `storymaker estado` y `storymaker continuar`.
+- **Final.** La novela llega a `Idle` con una versión publicada. El aviso dice qué versión y cuánto costó la invocación.
+- **Aparcamiento.** Un gate agota su *timeout* y la ejecución se aparca. El aviso recuerda que no se ha aprobado nada y trae el comando para decidir.
+
+Los emite **`invocar`**, al salir del grafo, salvo el de aparcamiento, que lo emite `aparcar`: son los dos únicos sitios que saben cómo terminó la invocación. Ninguno bloquea y ninguno cambia el resultado: un aviso que no se puede enviar se dice en la salida del proceso y la invocación devuelve lo mismo que habría devuelto sin él.
 
 ### Si el autor no contesta
 
@@ -622,13 +650,13 @@ Cinco familias: los **programáticos** de §11a, los **semánticos** de §11b, l
 | Nombre | Comprueba | Punto de ejecución |
 |---|---|---|
 | `schema_guard` | La salida de cada rol cumple su modelo Pydantic | Salida de cada nodo agente |
-| `nombres_exactos` | Destinatario y personajes escritos exactamente como en el canon | Post `WriteChapter` |
+| `nombres_exactos` | Destinatario y personajes escritos exactamente como en el canon; la mayúscula inicial de principio de frase no cuenta como otra grafía | Post `WriteChapter` |
 | `longitud_capitulo` | Palabras dentro del rango del brief | Post `WriteChapter` |
-| `guardrail_prohibidas` | Palabras prohibidas en tres niveles, con normalización | Post `WriteChapter` (hook) |
+| `guardrail_prohibidas` | Palabras prohibidas en tres niveles, con normalización y **derivadas**: un término de una palabra salta también dentro de otra que contenga su raíz («herejía» por «hereje», «arruinada» por «ruina») | Post `WriteChapter` (hook) |
 | `anacronismo_fechado` | Ningún objeto, término o concepto con `fecha_inicio` posterior a la fecha narrativa | Post `WriteChapter` |
 | `anclaje_valido` | Todo anclaje apunta a un hecho del corpus sellado o a una Licencia declarada | Post `WriteChapter` |
 | `cobertura_anclada` | Cada elemento obligatorio del brief está anclado a ≥1 escena de la escaleta, contra `plan_anclaje.dato_id` | Gate de Plotting |
-| `cobertura_capitulo` | Cada elemento obligatorio que la escaleta ancló a una escena de este capítulo aparece en él, contra `intake_uso_dato` | Post `Extract` |
+| `cobertura_capitulo` | Cada elemento obligatorio que la escaleta ancló a una escena de este capítulo aparece en él, contra `intake_uso_dato`. **Avisa, no bloquea** | Post `Extract` |
 | `arco_anclado` | Todo personaje presente en ≥3 escenas tiene fila en `canon_arco`; si su arco es positivo o negativo, ≥2 hitos anclados a escenas de capítulos estrictamente crecientes. El homenajeado no puede tener arco plano y su último hito cae en el tercio final | Gate de Plotting |
 | `cobertura_personalizacion` | Cada elemento obligatorio del brief aparece en ≥1 capítulo, contra `intake_uso_dato` | Gate de Writing |
 | `render_visual` | Índice, ficha de personajes y portada renderizan bien (Playwright MCP) | Dentro de `PublishVersion`, sobre la versión candidata y **antes del `commit`** |
@@ -639,13 +667,15 @@ Cinco familias: los **programáticos** de §11a, los **semánticos** de §11b, l
 
 Lo que evita que esa exigencia se convierta en una puerta atascada es que **el arco plano cuenta**. Al tabernero que sale en cuatro escenas no se le pide una transformación —pedírsela sería mala literatura impuesta por un validador—, se le pide que alguien haya decidido que no la tiene. La única excepción es el homenajeado, a quien sí se le exige arco con hitos y cierre en el tercio final, y se justifica sola: la novela es para él.
 
-**La cobertura se comprueba tres veces, y cada una cuesta menos que la siguiente.** `cobertura_anclada` verifica en el gate de Plotting que cada elemento obligatorio está anclado a alguna escena, y convierte un fallo de diez capítulos escritos y pagados en un fallo de escaleta. `cobertura_capitulo` verifica al escribir el capítulo N que lo que la escaleta le encomendó aparece en él, y convierte un fallo de novela en un reintento de capítulo. `cobertura_personalizacion` se queda en el gate de Writing como red de seguridad, porque las tres miran cosas distintas: anclar no es escribir, y escribir el capítulo N no garantiza que ningún capítulo se quedara sin su parte.
+**La cobertura se comprueba tres veces, y cada una cuesta menos que la siguiente.** `cobertura_anclada` verifica en el gate de Plotting que cada elemento obligatorio está anclado a alguna escena, y convierte un fallo de diez capítulos escritos y pagados en un fallo de escaleta. `cobertura_capitulo` verifica al escribir el capítulo N que lo que la escaleta le encomendó aparece en él, y **avisa**: la incidencia nombra el elemento por su texto, entra en el informe del gate y viaja al encargo del capítulo siguiente, que puede recogerlo. `cobertura_personalizacion` se queda en el gate de Writing y en G5 como la comprobación que sí bloquea, porque las tres miran cosas distintas: anclar no es escribir, y escribir el capítulo N no garantiza que ningún capítulo se quedara sin su parte.
+
+**Por qué la del medio avisa.** `cobertura_capitulo` no mide el texto: mide lo que el extractor dice haber encontrado en él, y un elemento puede estar escrito de forma indirecta sin que el extractor lo reconozca. Cuando bloqueaba, un capítulo correcto podía agotar sus reintentos sin que el editor pudiera hacer nada, porque no hay parche para un juicio que falla sobre un texto que ya cumple. La garantía que importa —que cada obligatorio aparezca en la novela— no se pierde: la da `cobertura_personalizacion` antes de publicar, sobre la novela entera.
 
 ### b) Semánticos
 
 | Nombre | Comprueba | Punto |
 |---|---|---|
-| `juez_rubrica` | Siete criterios 1-10 con justificación: continuidad, arco, coherencia de personajes, ritmo, prosa, naturalidad de la personalización, autenticidad de época | `Judge` |
+| `juez_rubrica` | Siete criterios 1-10 con justificación: continuidad, arco, coherencia de personajes, ritmo, prosa, naturalidad de la personalización, autenticidad de época. Antes de puntuar **enumera las contradicciones** entre capítulos y lo que un personaje sabe antes de que ocurra; la nota de continuidad se topa en Python según cuántas haya | `Judge` |
 | `respaldo_fuente` | Que el fragmento citado por el investigador sostenga el enunciado del hecho | Cierre de Investigation, antes del gate |
 | `ejecucion_escaleta` | Que los beats planificados para las escenas de este capítulo hayan ocurrido | Post `Extract` |
 | `arco_ejecutado` | Que los hitos de arco anclados a escenas de este capítulo hayan ocurrido | Post `Extract` |
@@ -737,7 +767,7 @@ Existe porque en un proyecto dirigido por especificación la spec solo gobierna 
 |---|---|---|
 | `inventario_del_plan` | Que toda ruta y todo símbolo nombrado en la columna «Ficheros y símbolos» de `plan.md` existe en el árbol, y a la inversa | Informa, en dos cubos separados |
 | `registro_de_validadores` | Que el registro de validadores deterministas, la tabla de §11a y la de §7.2 de la spec coinciden por pares: mismo conjunto, mismo punto de ejecución, misma condición de bloqueo | **Bloquea.** Un validador que deja de bloquear en silencio destruye la confianza en todos los demás |
-| `anclas_de_procedencia` | Que toda ancla `spec:` o `arq:` citada en un docstring existe en el documento, y que todo apartado de §3 y §4 de la spec tiene al menos un símbolo que lo cite | Informa |
+| `anclas_de_procedencia` | Que toda ancla `spec:` o `arq:` citada en un docstring del backend existe en el documento, y que todo apartado de §3 y §4 de la spec del backend tiene al menos un símbolo que lo cite | Informa |
 | `identidad_nodo_accion` | Nombres **y aristas** del grafo contra `harness.tla` (§9) | **Bloquea** |
 | `requisitos_declarados` | Sobre la tabla de requisitos de cada spec: que todo ítem de plan citado en la columna «Ítems» exista en el plan de esa mitad, que ningún apartado de §3 y §4 se quede sin ningún requisito que lo cite, y que ningún identificador se repita ni se reutilice | Informa |
 
@@ -756,6 +786,8 @@ Existe porque en un proyecto dirigido por especificación la spec solo gobierna 
 **Cada requisito declara dónde nace y quién lo realiza, en su propia fila.** Los requisitos viven en un apartado propio al final de la spec, en una tabla única, y cada fila lleva el apartado del que se extrae y los ítems del plan que lo materializan. Así la correspondencia requisito↔ítem vive donde vive el requisito y no abre una cuarta lista que mantener: las tres matrices siguen tratando arquitectura↔plan, que es una pregunta distinta. **La clase de confianza y el gate se heredan del apartado citado**, que ya los declara, y un requisito que se compruebe de otra manera lo dice como excepción en su fila.
 
 **El apartado sigue siendo la unidad del docstring.** `anclas_de_procedencia` no cambia: el ancla de un módulo cita `spec: §3.6 · arq: §11a`, no un requisito. Medir la cobertura inversa sobre requisitos sería más fino, pero exigiría que cada uno tuviera ya código que lo citara, y durante la ejecución del plan eso convierte un informe en una lista de ausencias. El requisito es la unidad que se traza contra el plan; el apartado, la que se traza contra el código.
+
+**Las anclas son del backend; el frontend se traza por su plan.** `anclas_de_procedencia` lee los docstrings de los módulos Python y recorre §3 y §4 de la spec del backend, que son sus contratos y sus fases. El frontend queda fuera a propósito, no por olvido. Sus §3 y §4 son el mapa de rutas y las pantallas, y cada pantalla es ya una slice de `pages/` que algún ítem del plan nombra por su ruta. Lo que la cobertura inversa detectaría allí —una pantalla especificada que nadie escribió— lo detecta ya el cubo «declarado y ausente» de `inventario_del_plan`, que lee también el plan del frontend; y `requisitos_declarados` señala el `REQ-FE-nn` que ningún ítem realiza. Extender las anclas pediría una convención de comentario de cabecera en TypeScript y un segundo lector, para obtener una respuesta que ya se tiene.
 
 **Las tablas de validadores de la spec no generan requisitos.** §7.1 y §7.2 de la spec del backend ya son listas con identificador propio —el nombre del validador—, comparadas por pares contra §11a y contra el registro. Duplicarlas con un segundo identificador añadiría cincuenta y siete filas sin añadir ninguna comprobación. Lo que sí se enuncia como requisito es lo que esos apartados afirman alrededor de las tablas: que ningún validador sea una herramienta, que las dos pasadas de `Validate` corran en ese orden, que tres semánticos no bloqueen.
 
@@ -781,6 +813,7 @@ Esa es exactamente la diferencia que hace honesto el método de este apartado: n
 | extractor de intake | 1.500 | texto en cuarentena ≈ 3.000 | 1.500 | 6.000 |
 | investigador (inicial) | 2.000 | 1.000 + 3 × `WebFetch` acotado a 10.000 | 6.000 | 45.000 |
 | investigador (micro, fase 3) | 2.000 | 1.000 + 1 × `WebFetch` acotado a 10.000 | 1.000 | 14.000 |
+| investigador (dirigido, modo exhaustivo) | 2.000 | 1.000 + 1 × `WebFetch` acotado a 10.000 | 2.000 | 15.000 |
 | verificador | 2.000 | hechos con su cita ≈ 8.000 | 2.000 | 12.000 |
 | arquitecto | 2.000 | 15.000 | 8.000 | 25.000 |
 | escritor | 5.000 | 12.000 | 3.000 | 20.000 |
@@ -825,7 +858,7 @@ Nota honesta para la propuesta económica: `total_cost_usd` del SDK es una **est
 
 **Palabras prohibidas**, en `canon_prohibida`, tres niveles: `global` (insultos y términos ofensivos), `novela` (temas que el comprador excluye) y `destinatario` (por ejemplo el nombre de una expareja). La detección **normaliza antes de comparar**: mayúsculas, acentos, plurales y variantes simples. Si hay coincidencia, el capítulo vuelve al escritor con límite de intentos; agotado el límite, la generación se detiene e informa. Cada coincidencia va al `audit_log` y a Langfuse. Hay tests para un caso de cada nivel y un caso de variante con acento o plural.
 
-**Datos personales.** Los datos del homenajeado viven en el fichero de su novela y no salen de él. El texto libre pegado por el comprador nunca llega en bruto a ningún prompt (§4).
+**Datos personales.** Los datos del homenajeado viven en el fichero de su novela y no salen de él. El texto libre pegado por el comprador nunca llega en bruto a ningún prompt (§4). El investigador, único rol con red, recibe el período y el lugar y, en el modo exhaustivo, los personajes históricos, el evento ancla y el rol de época, que describen la época y no a la persona. Lo personal —el nombre del homenajeado, su fecha de nacimiento y sus elementos de personalización— no entra nunca, y se defiende dos veces: una regla de Semgrep impide construir el prompt con esos campos, y la guarda de PII comprueba cada prompt ya ensamblado antes de emitirlo, porque el comprador puede haber escrito un nombre donde no tocaba.
 
 **Audit log.** Toda decisión del policy engine, toda decisión de gate y toda edición humana quedan registradas con actor, momento, objeto y estados antes y después.
 
@@ -856,7 +889,7 @@ Una sola lógica, dos puntos de ejecución. Si divergieran, el producto y el edi
 | Observabilidad | **`langfuse`** |
 | Notificación | **`httpx`** contra la Bot API de Telegram, solo saliente |
 | CLI | **Typer** |
-| Frontend | **React** + Vite, organizado en **Feature-Sliced Design v2.1**, consumiendo la API |
+| Frontend | **React** + Vite, organizado en **Feature-Sliced Design v2.1**, consumiendo la API: lectura, seguimiento y operación del arnés |
 | PDF | **Playwright** `page.pdf()` sobre la propia ruta de lectura de React |
 | Validación visual | **Playwright MCP** desde Claude Code |
 | Formal | **Lake** (Lean 4) por subproceso · **TLC** (`tla2tools.jar`) solo en desarrollo |
@@ -929,7 +962,13 @@ storyMaker/
 ├─ frontend/src/                 Feature-Sliced Design v2.1
 │  ├─ app/                       providers, router, estilos globales y fuentes
 │  ├─ pages/
-│  │  ├─ library/                listado de novelas del directorio proyectos/
+│  │  ├─ library/                el taller: todas las novelas de proyectos/, su estado
+│  │  │                          y su fase, con el acceso a encargar una nueva
+│  │  ├─ commission/             el encargo: rellenar o cargar el brief y lanzar
+│  │  ├─ novel/                  el panel de una novela: fases, actividad, coste
+│  │  │                          y acciones sobre la ejecución
+│  │  ├─ gate/                   el gate que espera: informe, salida y decisión
+│  │  ├─ phase/                  la salida de cada fase, fase a fase
 │  │  ├─ reading/                lector, índice de capítulos, navegación,
 │  │  │                          selección de fragmento y petición de cambio
 │  │  ├─ characters/             fichas de personajes y lugares
@@ -937,6 +976,9 @@ storyMaker/
 │  │  ├─ versions/               historial, diff de manifiestos, novedades
 │  │  └─ print/                  la novela entera en una página, para el PDF
 │  │                             y para `render_visual`
+│  ├─ entities/
+│  │  └─ novela/                 estado y fases de una novela, que enseñan el
+│  │                             taller, el panel y el gate
 │  └─ shared/
 │     ├─ api/                    cliente de la API y tipos de transporte
 │     ├─ ui/                     kit de componentes
@@ -952,7 +994,9 @@ storyMaker/
 
 Cada feature del backend contiene sus nodos de LangGraph, su agente, sus esquemas Pydantic y sus validadores propios. **El grafo que los cablea vive en `commons/graph/`**, porque es justo lo que `commons/` alberga: algo que todas las fases usan y ninguna posee. La dirección de las importaciones queda así en su sitio —el grafo importa los nodos de cada fase, y ninguna fase importa de otra—, y el estado compartido, como el contador de huecos de Plotting, tiene un dueño claro en lugar de acabar definido dentro de la fase que primero lo necesitó. En `commons/validation` viven los dos módulos que el enunciado exige como piezas identificables y que tienen dos consumidores —el grafo y Claude Code—, precisamente porque son transversales a todas las fases.
 
-**El frontend arranca con el juego mínimo de capas: `app/`, `pages/` y `shared/`.** Es FSD válido, y es lo que la propia metodología recomienda. La capa `widgets/` está desaconsejada por la referencia oficial y no se usa. `features/` y `entities/` **no se crean de entrada**, porque la regla de extracción de FSD exige tres condiciones a la vez —uso real en más de un sitio hoy, motivo de cambio independiente de cualquier consumidor, y responsabilidad acotada— y ninguna pantalla las cumple todavía. Crear las carpetas vacías «por si acaso» es justamente el antipatrón que la metodología nombra.
+**El frontend arrancó con el juego mínimo de capas: `app/`, `pages/` y `shared/`.** Es FSD válido, y es lo que la propia metodología recomienda. La capa `widgets/` está desaconsejada por la referencia oficial y no se usa. `features/` y `entities/` **no se crean de entrada**, porque la regla de extracción de FSD exige tres condiciones a la vez —uso real en más de un sitio hoy, motivo de cambio independiente de cualquier consumidor, y responsabilidad acotada— y ninguna pantalla las cumple todavía. Crear las carpetas vacías «por si acaso» es justamente el antipatrón que la metodología nombra.
+
+**`commission/`, `novel/`, `gate/` y `phase/` son la operación del arnés** que decide §16.5: encargar una novela, seguirla, decidir cada gate y consultar lo que cada fase dejó escrito. **`entities/novela/` se crea con ellas** porque ahora sí se cumplen las tres condiciones de extracción: el estado de una novela y su línea de fases los enseñan tres pantallas a la vez —el taller, el panel y el gate—, cambian por un motivo propio —la máquina de estados de §9— y su responsabilidad es acotada.
 
 **`library/` y `print/` completan el juego de pantallas, y cada una nace de una decisión ya tomada.** `library/` existe porque §16.4 decide que **el directorio es el registro**: si listar las novelas es listar `proyectos/`, alguien tiene que enseñar esa lista. `print/` existe porque §16.1 decide que **el PDF se imprime desde la propia ruta de lectura**: el lector recorre la novela capítulo a capítulo y la impresora la necesita entera en un solo documento, así que la misma decisión que evita una segunda maquetación obliga a una segunda ruta. Es la única pantalla que no está hecha para un humano — la abren Playwright y `render_visual`.
 
@@ -977,9 +1021,9 @@ De ahí que haya **dos puntos de entrada y un solo camino de código**:
 | Punto de entrada | Quién lo usa | Qué hace |
 |---|---|---|
 | **CLI (Typer)** | El Autor y las ejecuciones de evaluación | Crea la novela, lanza la invocación, **decide los gates y reanuda**, la reanuda tras un fallo, ramifica y corre los cinco briefs en modo batch |
-| **API (FastAPI)** | El frontend | Sirve la lectura y recibe la petición de cambio del lector |
+| **API (FastAPI)** | La interfaz | Sirve la lectura y el seguimiento, recibe la petición de cambio del lector y las ediciones de un gate, y **para todo lo que ejecuta el grafo lanza la CLI** (§16.5) |
 
-Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de la novela, construye el `StateGraph` con su checkpointer y lo invoca. Un tercer punto de entrada —una cola de trabajos con su worker— añadiría un segundo lugar donde el estado puede vivir, que es justo lo que el §7 evita al meter checkpoint y dominio en la misma transacción.
+Solo la CLI llama a la función de `commons/graph/` que abre el fichero de la novela, construye el `StateGraph` con su checkpointer y lo invoca. La API no la llama nunca: cuando la interfaz pide lanzar, continuar o decidir, lanza el comando de la CLI que lo hace, de modo que una novela operada desde la pantalla y otra operada desde la terminal recorren exactamente el mismo código. Un tercer punto de entrada —una cola de trabajos con su worker— añadiría un segundo lugar donde el estado puede vivir, que es justo lo que el §7 evita al meter checkpoint y dominio en la misma transacción.
 
 **La invocación que reanuda un gate corre en el proceso de la CLI.** `storymaker decidir` escribe la decisión en `gate` y, en el mismo proceso, reanuda la invocación hasta el siguiente gate o el final. Si el proceso cae a mitad no se pierde nada que no se pierda con un fallo cualquiera: la decisión ya está escrita, el último checkpoint está en disco y `continuar` retoma por el camino de siempre. El backend no tiene ninguna tarea de fondo.
 
@@ -989,7 +1033,31 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 **Una novela es un fichero, y el directorio es el registro.** Cada novela vive en **su propia carpeta**, `proyectos/<nombre>/`, y dentro está el fichero que la es, `<nombre>.db`, junto a todo lo que se deriva de él: el cerrojo, los ficheros de trabajo de SQLite, el PDF de cada versión publicada y los capítulos exportados. La carpeta no cambia la decisión, la ordena: la novela sigue siendo **un solo fichero** y lo demás se regenera desde él. Ramificar crea la carpeta del destino con la copia del fichero dentro, tal como describe el §8. **No hay una base de datos global de novelas, y no la va a haber**: si el registro viviera fuera del fichero, copiarlo dejaría de ser ramificar y descargar una novela dejaría de ser copiarla, que son las dos propiedades de las que cuelga aquella decisión. Listar las novelas es listar las carpetas de `proyectos/` que contienen su fichero, y los datos que la lista enseña —título, fase en curso, número de versiones— se leen abriendo cada fichero. El precio es que listar cuesta tantas aperturas como novelas haya; con las decenas que este sistema contempla es instantáneo, y no aspira a miles.
 
-**No hay superficie pública que reanude nada.** Ningún endpoint decide un gate ni reanuda una ejecución: eso solo lo hace la CLI, en la máquina del Autor. La API —lectura y petición de cambio, que no toca nada hasta el gate de Regeneration— no lleva autenticación: es un ejercicio académico que corre en local, y montar usuarios y sesiones costaría más que el riesgo que cubre. Queda anotado como riesgo aceptado U-17 en [`verification.md`](verification.md).
+**Nada fuera de la máquina del Autor reanuda nada.** La API sí opera ya la novela —a través de la CLI—, pero **solo escucha en `127.0.0.1`**, y sus acciones rechazan a quien no llega desde ahí. No lleva autenticación: es un ejercicio académico que corre en local, el Autor es el único usuario, y montar usuarios y sesiones costaría más que el riesgo que cubre. Queda anotado como riesgo aceptado U-17 en [`verification.md`](verification.md), con la condición que lo reabriría.
+
+### 16.5 La interfaz opera el arnés
+
+**La interfaz sirve para operar la novela entera, no solo para leer lo que produce.** Desde ella el Autor encarga una novela —rellenando el brief o cargando uno de `ejemplos/`—, la lanza con gates o en batch, la sigue fase a fase, consulta lo que cada fase dejó escrito, decide cada gate con el informe delante, la continúa tras un fallo, rompe un cerrojo huérfano y pide cambios. La CLI no desaparece: sigue siendo el punto de entrada de las evaluaciones —`storymaker evaluar`— y de las operaciones de mantenimiento raras, como ramificar, que la interfaz no ofrece.
+
+**Cada acción que ejecuta el grafo es un comando de la CLI, lanzado como proceso aparte.** Encargar es `storymaker nueva`, continuar es `storymaker continuar`, decidir es `storymaker decidir` y reintentar un capítulo es `storymaker reintentar`. La API los lanza desacoplados del servidor, con la salida a un fichero de registro dentro de la carpeta de la novela, y responde en el acto sin esperar a que terminen. De ahí salen las tres propiedades que importan:
+
+1. **Un solo camino de código.** La novela operada desde la pantalla recorre la misma función que la tecleada en la terminal, con el mismo cerrojo, los mismos avisos y la misma traza. No hay una segunda implementación de «decidir» que pueda discrepar de la primera.
+2. **El servidor no guarda nada en memoria.** Qué novela está en marcha lo dice su cerrojo; hasta dónde ha llegado, su fichero. Reiniciar el servidor no mata ninguna ejecución, porque el proceso no es suyo, y no pierde ningún seguimiento, porque no lo tenía.
+3. **Nada se encola.** Una acción sobre una novela ocupada se rechaza, como en la CLI. La API comprueba antes de lanzar lo que el comando comprobaría —que haya un gate pendiente para decidir, que no lo haya para continuar, que el cerrojo esté libre— y así el Autor recibe el rechazo en la pantalla y no en un registro.
+
+**Lo que solo escribe una fila no lanza nada.** La petición de cambio del lector y las ediciones de un gate las escribe la API tomando el cerrojo durante la escritura, con la misma maquinaria de `regeneration/` que ya usa la petición: la fila cambia, se reindexa y queda en `edicion_humana` y en `audit_log`. No ejecutan el grafo, así que no hay invocación que delegar.
+
+**En la interfaz, «editar» no es una decisión sino un paso previo a decidir.** Enviar `editar` al grafo repetiría la fase, y el agente podría escribir encima de lo que el Autor acaba de corregir. Por eso la pantalla del gate abre el editor, el Autor corrige las filas que quiera —hechos del corpus, personajes, escenarios y glosario, que son las familias que `regeneration/` ya sabe tocar y reindexar— y después **aprueba** para seguir con sus correcciones o **rehace con comentario**. La decisión `editar` sigue existiendo en la CLI. Y la pantalla solo ofrece **abortar** en el gate de Intake, por lo que dice §10.
+
+**El taller es un tablero por fases, al estilo de Jira.** Cada novela es una tarjeta en la columna de la fase en que está —Encargo, Investigación, Trama, Escritura, Publicación— más una última columna de publicadas, y la tarjeta dice si trabaja, si espera al Autor o si se ha detenido. **Arrastrar a la columna siguiente una tarjeta que espera en un gate es aprobarlo**, y soltarla en su misma columna es rehacerlo. Ninguno de los dos gestos decide solo: al soltar se abre la confirmación con el resumen del informe, el enlace al informe entero y, para rehacer, la casilla del comentario, porque §10 exige que el gate se decida leyendo y un gesto de ratón no es leer. Solo se pueden arrastrar las tarjetas con un gate pendiente, y solo a esas dos columnas: el tablero no mueve una novela a una fase que el grafo no le daría.
+
+**El seguimiento se lee del fichero, no se empuja desde memoria.** La interfaz pregunta cada pocos segundos por el estado de la novela: sus ejecuciones de fase con su coste, el gate que espera, los capítulos y sus intentos, las incidencias. Todo eso ya está en SQLite porque §7 lo exige, así que seguir una ejecución no pide ningún canal nuevo, y lo que la pantalla enseña es la misma verdad que leería `storymaker estado`. El registro del proceso se guarda y se puede consultar, pero **la pantalla enseña una actividad interpretada** —qué fase trabaja, en qué capítulo e intento, cuánto lleva gastado—, no el volcado de la salida.
+
+**Un capítulo que agotó sus reintentos se puede reintentar.** Cuando el bucle de Writing llega a `Fail`, el grafo termina y su checkpoint no tiene nodo siguiente: `continuar` no tiene nada que retomar, y lo único que quedaba era empezar la novela de nuevo. `storymaker reintentar` reabre **ese capítulo**: escribe en el checkpoint el estado de un capítulo recién empezado —contador de intentos a cero y sin versión en curso— como salida de `SealCorpus`, cuya única arista lleva a `WriteChapter`, y reanuda por el camino de siempre. Los capítulos aprobados, el corpus sellado y el canon no se tocan, y los intentos fallidos se quedan como filas de `capitulo_version`, porque nada se borra. Solo se acepta cuando la novela terminó en `Fail` con el corpus sellado y sin gate pendiente; en cualquier otro caso se rechaza sin tocar nada.
+
+**Un cerrojo cuyo proceso ya no vive es una ejecución detenida, y se dice.** El cerrojo guarda el PID; si el fichero existe y el proceso no, la interfaz enseña la novela como detenida y ofrece desbloquearla y continuar, que es lo mismo que haría el Autor en la terminal. Desbloquear no ejecuta el grafo, así que la API rompe el cerrojo ella misma, y **solo si su proceso ha muerto**: un cerrojo vivo no se rompe desde la pantalla, porque romperlo es exactamente lo que el cerrojo existe para impedir.
+
+**Las acciones solo se aceptan desde la propia máquina y como JSON.** El servidor escucha en `127.0.0.1`; además, cada acción rechaza a un cliente que no sea local y exige `Content-Type: application/json`. Lo segundo no es burocracia: una página cualquiera abierta en el navegador del Autor puede enviar un formulario a `127.0.0.1`, pero no un JSON sin el permiso CORS que esta API no concede, y lanzar una novela cuesta dinero.
 
 
 ---
@@ -998,6 +1066,10 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Decisión | Opciones consideradas | Criterio | Elección |
 |---|---|---|---|
+| Cómo recuerda el escritor la trama anterior a N−1 | Resúmenes por relevancia, como hasta ahora · una tabla nueva de hechos de trama escrita por el extractor · los eventos narrativos que el extractor ya escribe para Lean | Los resúmenes entran por similitud y no traen lo que no se parece a este capítulo; una tabla nueva duplica lo que `cronologia_evento` ya guarda. Los eventos existen, están acotados por capítulo aprobado y cuestan una consulta | Los eventos narrativos, en el bloque 3 |
+| Cómo pesa una contradicción en la nota del juez | Confiar en la nota que el juez da a continuidad · pedirle que liste las contradicciones y topar la nota en Python | En la cuarta novela real el juez puso un 8 en continuidad a una novela con cinco contradicciones. Contarlas es lo que puede hacer bien; decidir cuánto pesan es lo que no debe decidir él | Listar y topar en Python |
+| Severidad de `cobertura_capitulo` | Bloquear, como hasta ahora · avisar y dejar el bloqueo a `cobertura_personalizacion` · bloquear solo si el elemento no aparece en ningún capítulo previo | La puerta mide el testimonio del extractor, no el texto, y un capítulo correcto puede agotar sus reintentos sin que el editor tenga nada que corregir. El proyecto prefiere que la novela corra: la garantía de cobertura se conserva en G5 | Avisar |
+| Qué hacer tras un `Fail` de capítulo | Relanzar la novela entera · ramificar y editar a mano · reabrir el capítulo en el checkpoint con un comando | Relanzar repite cinco fases pagadas; ramificar no reanuda nada. Reabrir el capítulo reutiliza el mecanismo de reanudación que ya existe y no toca nada aprobado | `storymaker reintentar` |
 | Dominio | Histórica personalizada · contemporánea personalizada · género configurable | Materia real para investigación y validación formal; diferenciación comercial | Histórica |
 | Motor | LangGraph · máquina de estados propia · Claude Agent SDK solo · Temporal | Correspondencia con TLA+ sin renunciar a checkpointing y vocabulario estándar | LangGraph con estado explícito |
 | Invocación de agentes | Agent SDK · `claude -p` con `stream-json` | Control de modelo, herramientas y turnos por llamada; uso y coste estructurados | Agent SDK |
@@ -1011,11 +1083,14 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Ramificación | Copia de fichero · columna de rama | Simplicidad de consulta y ausencia de contaminación cruzada | Copia de fichero |
 | Sello del corpus | Al cerrar Investigation · al cerrar Plotting | Permitir micro-investigación del arquitecto y hacer comparables las ramas | Al cerrar Plotting |
 | Forma de la investigación inicial | Una micro-sesión por dimensión · una sesión con tres búsquedas · búsqueda libre | Coste y latencia acotados de antemano, y poder cruzar dimensiones que vienen de la misma página | Una sesión, tres búsquedas, seis dimensiones |
+| Investigación más profunda | Subir el tope de la sesión única · añadir dimensiones a la lista · un modo opcional de sesiones dirigidas | Más corpus y más fiel al encargo sin subir el peor caso de §12 ni migrar el esquema de las novelas existentes | Modo exhaustivo opcional: seis sesiones por dimensión y dos dirigidas por el brief, una búsqueda y una página cada una; sus hechos se guardan en las seis dimensiones de siempre |
 | Verificación del corpus | No verificar · agente que relee la URL · agente que lee la cita guardada | Comprobar el respaldo sin abrir una segunda puerta a internet ni pagar los fetches dos veces | Agente sobre la cita guardada |
 | Efecto de un hecho sin respaldo | Borrarlo · bloquear el gate · degradar su estado epistémico | No detener una novela de regalo por una cita floja, sin perder la señal | Degradar a `inferido` e informar al Autor |
 | Hueco que el investigador no encuentra | Reintentar · bloquear la escaleta · autorizar la invención | Que Plotting no se atasque por un detalle de cultura material | Invención autorizada, registrada como hecho `inferido` |
 | Canal de notificación | Telegram · WhatsApp · ambos | Coste de puesta en marcha | Telegram tras interfaz `Notifier` |
-| Dónde se decide un gate | Botones inline en Telegram con webhook · CLI en el PC · pantalla del frontend | Leer el informe entero antes de decidir, y no abrir una superficie pública que reanude ejecuciones | CLI en el PC; Telegram solo avisa |
+| Dónde se decide un gate | Botones inline en Telegram con webhook · CLI en el PC · pantalla de la interfaz en el PC | Leer el informe entero antes de decidir, y no abrir una superficie fuera de la máquina del Autor que reanude ejecuciones | Interfaz o CLI en el PC, con la API solo en `127.0.0.1`; Telegram solo avisa |
+| Cómo ejecuta la interfaz | El grafo dentro del proceso de FastAPI · una tarea de fondo con cola y worker · lanzar la CLI como proceso aparte | Que reiniciar el servidor no mate ninguna ejecución, que no haya un segundo lugar donde viva el estado y que pantalla y terminal recorran el mismo código | La CLI como proceso aparte |
+| Seguimiento en vivo | Sondear el fichero de la novela · eventos empujados desde memoria (SSE o WebSocket) · leer la salida del proceso | Que el servidor no guarde nada en memoria y que la pantalla diga lo mismo que `storymaker estado` | Sondear el fichero cada pocos segundos; la salida del proceso se guarda y se consulta, no se interpreta |
 | Sin respuesta en un gate | Auto-aprobar · aparcar · esperar indefinidamente | No convertir un gate de calidad en un temporizador | Aparcar, y gates desactivables en batch |
 | Alcance de Lean | 2 invariantes · 4 · teoremas generales | Maximizar detección sin atascarse en demostraciones | 4 sobre cronología concreta |
 | Alcance de TLA+ | Solo el bucle · las seis fases · grafo completo con ramas | Que los invariantes interesantes queden dentro sin que TLC explote | Seis fases, rama como reanudación |
@@ -1044,6 +1119,7 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Qué bloquea de la familia §11e | Todo · solo lo que sostiene una puerta · nada, todo informa | No convertir la forma de una carpeta en una parada, sin dejar sin puerta lo que sostiene G3 | Bloquean el registro y la identidad; informan el inventario y las anclas |
 | Alcance de la identidad nodo↔acción | Solo nombres · nombres y aristas · refinamiento demostrado | Cubrir el cableado, que es lo que TLC explora, sin pagar una demostración de refinamiento | Nombres y aristas |
 | Cobertura inversa spec→código | No comprobarla · anclas de procedencia en los docstrings · índice de trazabilidad aparte | Detectar el apartado que nadie implementó sin mantener un tercer documento que también se queda atrás | Anclas en el código, que viven donde vive el código |
+| Alcance de `anclas_de_procedencia` | Backend y frontend · solo el backend · el frontend solo en la dirección directa | Detectar la pantalla especificada y no escrita sin duplicar lo que el inventario del plan ya ve | Solo el backend; el frontend se traza por `inventario_del_plan` y `requisitos_declarados` |
 | Requisitos de la spec | No enumerarlos, dejándolos en prosa · importarlos de `REQUIREMENTS.md` · derivarlos del propio documento | Que la spec se lea como una lista de compromisos comprobables sin atarla a un documento que no la gobierna ni duplicar el encargo | Derivados del propio documento, con identificador propio |
 | Forma del registro de validadores | Lista mantenida aparte · el registro **es** el cableado del que grafo y hook se sirven | Que no pueda existir un validador vivo fuera del registro, en vez de comprobar que dos listas coinciden | El cableado |
 | Contra qué compara el registro | Solo §7.2 de la spec · solo §11a · las tres por pares | Que §11a no pueda derivar en silencio siendo la fuente de verdad | Las tres, sobre el subconjunto determinista |
@@ -1058,8 +1134,9 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 - **Varianza del juez en Haiku.** Mitigación: se mide y se publica; si excede la tolerancia, se sube solo ese rol.
 - **`WebFetch` sin restricción de dominios documentada en el SDK.** Mitigación: tres búsquedas como máximo y cada fetch acotado a 10.000 tokens, de modo que el peor caso de la sesión sea una suma conocida de antemano.
 - **Cita fabricada.** El verificador comprueba que el fragmento guardado sostenga el hecho, no que el fragmento esté realmente en la URL: un investigador que invente la cita y el hecho a la vez pasa el control. Mitigación: la fuente queda registrada con su URL y el Autor la tiene a un clic en el informe del gate. Se acepta porque cerrarlo exigiría releer las páginas y duplicar el coste de la fase.
-- **Seis dimensiones en tres búsquedas.** El reparto lo decide el modelo, así que una dimensión puede quedar mucho más pobre que las otras. Mitigación: el informe del gate muestra el recuento de hechos por dimensión, y «rehacer con comentario» permite dirigir la segunda pasada a lo que falte.
+- **Seis dimensiones en tres búsquedas.** El reparto lo decide el modelo, así que una dimensión puede quedar mucho más pobre que las otras. Mitigación: el modo exhaustivo de §4 da a cada dimensión su propia búsqueda; en el estándar, el informe del gate muestra el recuento de hechos por dimensión, y «rehacer con comentario» permite dirigir la segunda pasada a lo que falte.
 - **`sqlite-vec` es una extensión nativa.** Se carga en tiempo de ejecución con `enable_load_extension`, y un intérprete de Python compilado sin soporte de extensiones no puede abrirla. Es la única dependencia de la pila que puede fallar por cómo esté construido el intérprete y no por el código. Mitigación: la carga se comprueba al abrir la base y el arranque se detiene con un mensaje explícito, en vez de degradar en silencio a un sistema sin búsqueda semántica.
+- **La API opera novelas sin autenticación.** Desde §16.5 un endpoint puede lanzar una novela o decidir un gate, y cada invocación cuesta dinero. Mitigación: el servidor solo escucha en `127.0.0.1`, las acciones rechazan a clientes no locales y exigen JSON, que una web ajena no puede enviar sin CORS. Queda como U-17, y se reabre si el servidor se expone fuera de la máquina.
 - **Trazas OTLP en beta.** Mitigación: la observabilidad autorizada son los spans manuales; OTLP es opcional.
 - **Corpus insuficiente para la escaleta.** Mitigación: micro-sesiones del arquitecto antes del sello.
 - **Regeneración en cascada patológica.** Un cambio que toque un hecho usado en nueve capítulos cuesta nueve regeneraciones. Es correcto, pero caro; el gate de Regeneration permite abortar antes de pagarlo.
@@ -1079,6 +1156,8 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 | Rúbrica del juez | 7 criterios, escala 1-10 con justificación |
 | Búsquedas de la investigación inicial | 3 `WebSearch` + 3 `WebFetch`, impuestas por el arnés |
 | Dimensiones del período histórico | 6 |
+| Modo de investigación | Estándar; exhaustivo por novela, al crearla |
+| Sesiones del modo exhaustivo | 6 por dimensión + 1 de personajes y evento ancla + 1 del oficio, en serie; 1 `WebSearch` + 1 `WebFetch` cada una |
 | Techo por `WebFetch` | 10.000 tokens |
 | Longitud máxima de la cita | 300 caracteres |
 | Hechos por lote del verificador | 20 |
@@ -1109,6 +1188,16 @@ Los dos llaman a la misma función de `commons/graph/`, que abre el fichero de l
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §4: la denegación de una llamada del investigador le dice que entregue ya su respuesta, la sesión única tiene veinte turnos, y una sesión única sin respuesta válida deja un aviso en el gate en lugar de detener la fase | Una novela del siglo II en Cáceres se detuvo en Research sin un solo hecho: el investigador gastó sus doce turnos intentando búsquedas denegadas y no llegó a entregar el JSON, y el reintento repitió lo mismo |
+| 2026-09-24 | Tras el grilling del modo exhaustivo: §15 admite en el investigador los personajes históricos, el evento ancla y el rol de época, y la guarda de PII pasa a comprobar todo prompt del investigador antes de emitirlo; §4 fija que el modo no cambia a mitad de novela, cómo se elige, que el comentario de rehacer llega a todas las sesiones, qué es un fallo de sesión, una línea del informe por sesión y que los hechos no se deduplican | El grilling encontró que la guarda de PII estaba escrita y probada pero no la llamaba nadie, y que la sesión del oficio necesitaba un campo que §15 trataba como personal. El Autor decidió ampliar lo que el investigador recibe en lugar de renunciar a las búsquedas dirigidas |
+| 2026-09-24 | §4 gana el **modo exhaustivo** de la investigación: ocho sesiones dirigidas en serie —seis por dimensión, una de personajes y evento ancla, una del oficio—, con una búsqueda y una página cada una, elegido por novela y guardado en el estado. §12 gana su techo, §17 su fila, §18 mitiga con él el reparto de las seis dimensiones y §19 fija sus valores | Decisión del Autor. La tercera novela real salió con doce hechos, siete de una sola dimensión, y sus errores históricos venían de lo concreto del encargo —las figuras reales, el evento ancla, el oficio—, que ninguna búsqueda por período encuentra |
+| 2026-09-24 | §4: el `evento_ancla`, si viene, entra como elemento obligatorio del encargo. §11a: `guardrail_prohibidas` detecta derivadas por la raíz del término | La tercera novela real no llegó a narrar su evento ancla —el regreso de fray Luis a la cátedra—, porque anclarlo era una instrucción sin comprobación. Y dejó pasar «herejía» y «arruinada» con «hereje» y «ruina» prohibidas: la comparación por palabra completa solo veía la forma exacta, el plural y los acentos |
+| 2026-09-24 | §11a: `nombres_exactos` admite la mayúscula inicial de principio de frase | Un nombre canónico que empieza en minúscula —«fray Luis de León»— se escribe con mayúscula al abrir frase, y eso es ortografía del castellano, no otra grafía. El validador comparaba carácter a carácter y tumbaba capítulos correctos |
+| 2026-09-24 | §6: el bloque 3 lleva **lo que ya ha pasado** —los eventos narrativos de los capítulos aprobados anteriores a N−1— y sube a 2.500 a costa de la memoria, que baja a 3.000; el bloque 6 lleva **reglas de escritura** y **lo que la novela ya ha gastado**. §11b: el juez **enumera las contradicciones** y la nota de continuidad se topa en Python. Dos filas nuevas en §17 | La cuarta novela real salió con la firma del mapa contradicha en cinco capítulos, la navaja entregada dos veces, Magallanes recordando un viaje que no había hecho, «precisión» 63 veces, dos capítulos con el mismo párrafo de cierre y un cambio de tiempo verbal a mitad; el juez le dio un 8 en continuidad |
+| 2026-09-24 | §11a: **`cobertura_capitulo` avisa en lugar de bloquear**, y su incidencia nombra el elemento por su texto; `cobertura_personalizacion` queda como la comprobación de cobertura que bloquea. §16.5: **`storymaker reintentar`** reabre el capítulo que agotó sus reintentos. Dos filas nuevas en §17 | La cuarta novela real se detuvo en el capítulo 8 de 10. El elemento estaba escrito de forma indirecta, el extractor no lo reconoció y la incidencia lo nombraba solo por su identificador: el editor devolvió el mismo texto en los tres intentos y la novela no tenía forma de seguir |
+| 2026-09-24 | **La interfaz opera el arnés**: encargar, lanzar, seguir, consultar la salida de cada fase, decidir los gates y continuar. Cada acción que ejecuta el grafo lanza la CLI como proceso aparte, el servidor no guarda nada en memoria y la API solo escucha en `127.0.0.1`. Nuevo §16.5; §1, §3, §10, §16.1, §16.3, §16.4, §17 y §18 se reescriben en consecuencia, y `entities/novela/` entra en el árbol. Tras el grilling, §10 restringe **abortar al gate de Intake**, la única arista que el modelo TLA+ declara —el código ya reventaba en los demás—, y en la interfaz **editar pasa a ser corregir filas antes de aprobar o rehacer**. A petición del Autor, **el taller es un tablero por fases tipo Jira**, donde arrastrar una tarjeta aprueba o rehace su gate tras una confirmación con el informe | Decisión del Autor: la interfaz de solo lectura no servía para trabajar con el sistema, y quiere seguir y operar la novela entera desde ella. Contradecía la decisión de que solo la CLI reanuda, y se resolvió conservando su razón de ser —un solo camino de código y nada operable desde fuera de la máquina— en lugar de su letra |
+| 2026-09-24 | §10 añade **tres avisos fuera de gate** —parada, final y aparcamiento— que salen siempre, también en batch, emitidos por `invocar` y por `aparcar` | En batch no hay gates, así que Telegram no avisaba de nada: una novela que se detenía de madrugada por un fallo de entorno o por reintentos agotados no se sabía hasta que alguien miraba la terminal. Las paradas que necesitan a una persona pasaban todas por el mismo sitio, el `Fail` de la invocación |
+| 2026-09-24 | §11e fija que **`anclas_de_procedencia` alcanza solo al backend**: sus docstrings y §3 y §4 de su spec. El frontend se traza por `inventario_del_plan` y `requisitos_declarados`, y §17 gana la fila del alcance | La tercera pasada de trazabilidad del frontend dejó anotada la ambigüedad: §11e hablaba de «docstrings» y de «la spec» sin decir de cuál. Extenderla a TypeScript habría pedido una convención y un lector nuevos para detectar lo que el inventario del plan ya detecta |
 | 2026-09-24 | §17 gana la fila «Entorno y dependencias del backend», con las alternativas a uv que no se habían escrito | §16.1 fijó uv y su motivo quedó en este registro, pero sin fila de trade-offs: la elección estaba hecha y lo que se descartó no constaba en ningún sitio |
 | 2026-09-24 | El árbol de §16.3 declara la configuración de Playwright MCP en **`.mcp.json` de la raíz** y no en `.claude/mcp.json`, y la topología de §3 lo nombra | Es donde está el fichero y el único sitio del que Claude Code lee los servidores MCP de un proyecto: un `.claude/mcp.json` no lo cargaría nadie. Lo destapó la tercera pasada de trazabilidad del frontend, con `inventario_del_plan` a punto de señalar como ausente un fichero que nunca iba a existir |
 | 2026-09-24 | §16.4: **cada novela vive en su propia carpeta**, `proyectos/<nombre>/<nombre>.db`, con sus derivados al lado; listar es listar esas carpetas y ramificar crea la del destino | Decisión del Autor: con el cerrojo, los ficheros de SQLite, los PDF y los capítulos exportados, `proyectos/` mezclaba varias novelas en una sola carpeta. La novela sigue siendo un solo fichero, así que copiar sigue siendo ramificar |

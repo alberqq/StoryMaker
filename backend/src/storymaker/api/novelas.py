@@ -56,9 +56,7 @@ async def ficha(ruta: Path) -> FichaDeNovela:
         async with db.execute("SELECT COUNT(*) AS n FROM version_novela") as cursor:
             fila = await cursor.fetchone()
         versiones = int(fila["n"]) if fila is not None else 0
-        async with db.execute(
-            "SELECT fase FROM fase_run ORDER BY id DESC LIMIT 1"
-        ) as cursor:
+        async with db.execute("SELECT fase FROM fase_run ORDER BY id DESC LIMIT 1") as cursor:
             ultima = await cursor.fetchone()
         async with db.execute(
             "SELECT id FROM gate WHERE estado = 'pendiente' ORDER BY id DESC LIMIT 1"

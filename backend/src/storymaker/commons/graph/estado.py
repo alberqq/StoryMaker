@@ -43,6 +43,12 @@ class EstadoNovela(TypedDict):
     #: La ejecución de fase en curso. Todo lo que se escriba lleva este identificador.
     fase_run_id: int
 
+    #: La ejecución de Investigation, que es la que identifica el corpus. Se lleva aparte
+    #: porque cada fase abre su `fase_run`, y el corpus se verifica, se completa en
+    #: Plotting y se sella bajo el identificador que lo escribió, no bajo el de la fase en
+    #: curso. `None` hasta que Investigation empieza.
+    corpus_run_id: int | None
+
     #: El capítulo que se está escribiendo, de 1 a `n_capitulos`.
     capitulo: int
     n_capitulos: int
@@ -94,6 +100,11 @@ class EstadoNovela(TypedDict):
     #: Los gates están activos. En modo batch se apagan enteros.
     gates_enabled: bool
 
+    #: El modo de la investigación: `estandar` o `exhaustiva`. Viaja aquí y no en
+    #: `Settings` por la misma razón que `gates_enabled`: la novela se retoma, se rehace
+    #: y se ramifica en el modo con que nació.
+    investigacion: str
+
     #: Incidencias bloqueantes del intento en curso. Es el booleano que leen las aristas
     #: condicionales: la transición depende de un valor calculado en Python, nunca de la
     #: salida de un modelo.
@@ -116,6 +127,7 @@ def estado_inicial(
     huecos: int,
     gates_enabled: bool,
     max_rechazos_juez: int = 2,
+    investigacion: str = "estandar",
 ) -> EstadoNovela:
     """El estado con el que arranca una novela nueva.
 
@@ -129,6 +141,7 @@ def estado_inicial(
         texto_pegado=texto_pegado,
         pc="Configure",
         fase_run_id=fase_run_id,
+        corpus_run_id=None,
         capitulo=1,
         n_capitulos=n_capitulos,
         intentos=0,
@@ -146,6 +159,7 @@ def estado_inicial(
         gate_id=None,
         capitulo_version_id=None,
         gates_enabled=gates_enabled,
+        investigacion=investigacion,
         hay_bloqueantes=False,
         tokens_in=0,
         tokens_out=0,

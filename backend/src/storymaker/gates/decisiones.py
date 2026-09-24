@@ -94,6 +94,15 @@ async def registrar(
     )
 
 
+async def _fase_del_gate(db: aiosqlite.Connection, gate_id: int) -> str | None:
+    async with db.execute(
+        "SELECT f.fase FROM gate g JOIN fase_run f ON f.id = g.fase_run_id WHERE g.id = ?",
+        (gate_id,),
+    ) as cursor:
+        fila = await cursor.fetchone()
+    return str(fila["fase"]) if fila is not None else None
+
+
 async def aplicar(
     db: aiosqlite.Connection,
     observador: Observador,
@@ -113,6 +122,12 @@ async def aplicar(
     pendiente = await arnes.gate_pendiente(db)
     if pendiente is None:
         raise DecisionInvalida("La novela no tiene ningun gate esperando decision.")
+    fase = await _fase_del_gate(db, int(pendiente["id"]))
+    if decision == Decision.ABORTAR.value and fase != "intake":
+        raise DecisionInvalida(
+            "Abortar solo cabe en el gate de Intake, que es la unica arista que declara el "
+            "modelo TLA+. En los demas gates, no decidir ya deja la novela parada sin coste."
+        )
     tomada = DecisionTomada(
         gate_id=int(pendiente["id"]), decision=Decision(decision), comentario=comentario or None
     )

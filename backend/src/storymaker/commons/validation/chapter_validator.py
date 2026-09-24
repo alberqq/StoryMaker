@@ -33,11 +33,14 @@ def nombres_exactos(capitulo: CapituloEnRevision) -> list[Incidencia]:
     Es el validador más humilde del sistema y el que más importa para el producto: la
     novela es un regalo, y un nombre mal escrito la estropea entera por muy buena que sea
     la prosa.
+
+    La mayúscula inicial no cuenta como otra grafía: «fray Luis de León» se escribe
+    «Fray Luis de León» a principio de frase, y eso es ortografía, no un nombre mal escrito.
     """
     incidencias = []
     normalizado = normalizar(capitulo.texto)
     for nombre in capitulo.nombres_canonicos:
-        if nombre in capitulo.texto:
+        if nombre in capitulo.texto or nombre[:1].upper() + nombre[1:] in capitulo.texto:
             continue
         if normalizar(nombre) in normalizado:
             incidencias.append(
@@ -144,8 +147,12 @@ def cobertura_capitulo(capitulo: CapituloEnRevision) -> list[Incidencia]:
     usaron es un agente independiente, porque si lo declarase el escritor la cobertura se
     mediría sobre el testimonio de quien tiene interés en decir que lo cubrió todo.
 
-    Convierte un fallo de novela en un reintento de capítulo, que es la segunda de las tres
-    comprobaciones de cobertura y la del medio en coste.
+    Es la segunda de las tres comprobaciones de cobertura, y **avisa**: mide el testimonio
+    del extractor y no el texto, y un elemento escrito de forma indirecta puede no ser
+    reconocido. Cuando bloqueaba, un capítulo correcto agotaba sus reintentos sin que el
+    editor tuviera nada que corregir. La cobertura que bloquea es `cobertura_personalizacion`,
+    antes de publicar. El aviso nombra cada elemento por su texto, que es lo que el
+    capítulo siguiente necesita para recogerlo.
     """
     faltan = [
         dato
@@ -154,13 +161,15 @@ def cobertura_capitulo(capitulo: CapituloEnRevision) -> list[Incidencia]:
     ]
     if not faltan:
         return []
+    textos = dict(capitulo.personalizacion_textos)
+    nombrados = "; ".join(f"«{textos[d]}»" if d in textos else f"elemento {d}" for d in faltan)
     return [
         Incidencia(
             validador="cobertura_capitulo",
-            severidad=Severidad.BLOQUEANTE,
+            severidad=Severidad.AVISO,
             mensaje=(
                 f"La escaleta encomendo a este capitulo {len(faltan)} elemento(s) de "
-                f"personalizacion que no aparecen: {faltan}."
+                f"personalizacion que el extractor no encontro: {nombrados}."
             ),
         )
     ]

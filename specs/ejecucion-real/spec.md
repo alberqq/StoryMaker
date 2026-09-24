@@ -18,6 +18,7 @@
 - Los tres puntos de Lean, la escaleta anclada y el reparto de identificadores a los roles que los devuelven.
 - La Fase 5 tal como corre sin gates: juez, publicación y PDF.
 - La contabilidad de la invocación: consumo, `fase_run` y manifiesto.
+- Los avisos que salen fuera de los gates: parada, final y aparcamiento.
 - El aparato de verificación fuera de la ejecución: evaluaciones, varianza del juez, revisión humana y aserciones sobre la traza.
 - Las condiciones de entorno de la máquina del Autor.
 
@@ -156,6 +157,8 @@ Todo cabe en los 6.000 tokens de contexto que §12 ya le reserva.
 
 **El catálogo es el dominio.** `schema_guard` valida la salida con ese catálogo como contexto: un `hecho_id`, `dato_id`, `personaje_id`, `escenario_id`, participante de evento o hito que no esté en él hace la salida inválida, y el reintento de esquema inyecta el error con la lista de valores admitidos. **Ninguna escritura del volcado ve nunca un identificador fuera de dominio.**
 
+*Tampoco uno que el volcado se invente.* Los eventos de la cronología narrativa se escriben con `INSERT OR IGNORE` sobre una clave `cap<N>-<clave>`, así que un segundo intento del mismo capítulo repite claves ya escritas por el primero y su `INSERT` se ignora. En ese caso **no hay evento nuevo y sus participantes no se escriben**: si hubo fila lo dice `rowcount`, no `lastrowid`, que tras un `INSERT` ignorado conserva el último id insertado en la conexión, de cualquier tabla.
+
 *Por qué no basta la clave foránea.* En la segunda novela real, el extractor del capítulo 5 —sin catálogo, adivinando— devolvió un identificador que no existía. La clave foránea hizo su trabajo y abortó la transacción, pero en el peor sitio: con el capítulo ya escrito y validado, la invocación entera se detuvo y hubo que retomarla con `continuar`. Los cuatro capítulos anteriores habían dejado **una** fila en `uso_hecho` y **una** en `intake_uso_dato`, que es lo que da un modelo que acierta por casualidad los identificadores bajos. La clave foránea detecta el defecto; el catálogo lo evita, y el reintento lo corrige donde todavía es barato.
 
 *Clase: **T** (un capítulo con anclaje no puede aprobarse sin que el extractor lo declare usado). Gate: G1 y G3.*
@@ -192,16 +195,33 @@ Todo cabe en los 6.000 tokens de contexto que §12 ya le reserva.
 
 **Contrato.** Lo que una invocación hizo queda escrito, aunque se interrumpa.
 
-**9.1 Cada fase abre su `fase_run`.** Hoy solo la abre Intake, y `storymaker estado` enseña «Fase: intake» a una novela publicada. Cada fase la abre al entrar y la cierra al salir con su estado —`completada`, `fallida` o `esperando_gate`— y su consumo.
+**9.1 Cada fase abre su `fase_run`.** Una fase que empieza abre su fila al entrar, y la fila se cierra con su estado y su consumo. `storymaker estado` enseña la fase de la última fila abierta, de modo que una novela detenida en el gate de Plotting dice «plotting» y una publicada dice «publication».
 
-*Dos costuras que hay que cerrar antes de implementarlo.* Las encontró la segunda novela real, al ir a escribirlo:
+*Quién la abre.* No la abre cada fase por su cuenta, sino **un envoltorio común a los veinticuatro nodos**, puesto al cablear el grafo. Cada nodo tiene una fase declarada en una tabla junto a `NODOS`. Los cuatro gates y los tres nodos de reposo o término —`Idle`, `Fail` y `Branch`— no tienen fase propia y heredan la de la fila abierta. Antes de ejecutar un nodo con fase, el envoltorio mira la fila abierta y abre una nueva en dos casos:
 
-- **El corpus se identifica por su `fase_run`.** Seis consultas de `commons/db/repos/mundo.py` filtran `mundo_hecho` por `fase_run_id`, y hoy funcionan porque todas las fases comparten la de Intake. En cuanto Plotting abra la suya, `sellar_corpus` y la lectura de hechos buscarían el corpus bajo un identificador que no lo tiene. El estado tiene que llevar **aparte el `fase_run` de Investigation** —`corpus_run_id`— y esas consultas leer de él.
-- **`interrumpida` no está en el `CHECK` de `fase_run.estado`.** Los valores del esquema son `en_curso`, `esperando_gate`, `completada`, `fallida`, `aparcada` y `abortada`. Este apartado usa los del esquema en lugar de añadir uno: una fase que se detiene en un gate está `esperando_gate`, y una que revienta está `fallida`.
+- **La fase del nodo es otra.** La fila anterior se cierra como `completada`, y la nueva apunta a ella por `input_run_id`.
+- **La fila abierta ya no está `en_curso`.** Es lo que pasa tras un gate: la invocación anterior dejó la fila `esperando_gate`, y si la decisión fue «rehacer», el primer nodo es de la misma fase. Rehacer es una ejecución nueva, como fija la arquitectura en §8, y no una continuación de la anterior.
 
-Hoy, además, una invocación retomada con `continuar` no marca nada si falla, porque `invocar` solo conoce la `fase_run` de un `Arranque`. Con cada fase abriendo la suya, la fila abierta es la de la fase en curso, y es esa la que se cierra como `fallida`.
+Que el envoltorio sea uno y no una llamada por fase es lo que hace que ninguna fase pueda olvidarse de abrir su fila: la cobertura se garantiza por construcción y no por disciplina.
 
-**9.2 El consumo se acumula en el estado.** Todo nodo agente suma el consumo de su `Resultado` al estado del grafo, incluido el juez. `storymaker estado` y el `ResultadoInvocacion` enseñan la suma. Una novela entera no puede costar cero.
+*Cómo se cierra.* Se usan los valores del `CHECK` de `fase_run.estado`, sin añadir ninguno. `invocar` cierra la fila abierta al salir del grafo según cómo terminó:
+
+| Final de la invocación | Estado de la fila abierta |
+|---|---|
+| Se detiene en un gate | `esperando_gate` |
+| Llega a `Idle` | `completada` |
+| Llega a `Fail` o revienta un nodo | `fallida` |
+| `aparcar` agota el *timeout* | `aparcada`, como ya hace `gates/nodos.py` |
+
+Una invocación retomada con `continuar` o con `decidir` cierra también su fila, porque la fila abierta se busca en la base y no en la entrada de la invocación. Antes solo se cerraba la de un `Arranque`, y un fallo tras reanudar no dejaba rastro.
+
+*El corpus se identifica por su `fase_run`.* Cuatro nodos escriben o filtran `mundo_hecho` por la ejecución que lo escribió: `Research`, que lo escribe; `VerifyCorpus`, que verifica su respaldo; `FillGap`, que añade los huecos, y `SealCorpus`, que calcula el sello. Con una fila por fase, los dos de Plotting buscarían el corpus bajo el identificador de Plotting, que no lo tiene. Por eso el estado lleva aparte **`corpus_run_id`**, el `fase_run` de Investigation, que el envoltorio fija al abrir esa fase. Los hechos de `FillGap` se escriben con él, y no con el de Plotting, porque pertenecen al mismo corpus que se va a sellar. Una novela que empezó antes de este cambio no trae el campo en su checkpoint; ahí todas las fases compartían una fila, y esa fila es su corpus.
+
+**9.2 El consumo se acumula en el estado y en la fila.** El consumo no lo suma cada nodo agente. Lo cuenta **el transporte**: `invocar` envuelve el de producción, o el doble de la suite, en un contador que acumula lo que devuelve cada `pedir`. El envoltorio del nodo toma la diferencia entre antes y después del nodo y la suma a `tokens_in`, `tokens_out` y `coste_usd` del estado y a los de la fila abierta.
+
+Contarlo ahí tiene dos ventajas sobre sumar el `Resultado` en cada nodo. La primera es que no depende de que ningún nodo se acuerde, incluido el juez. La segunda es que cuenta también los intentos que `invocar_rol` descarta por esquema inválido, que se pagan igual y que un `Resultado` que no llega a devolverse nunca enseñaría. `storymaker estado` enseña la suma de las filas; el `ResultadoInvocacion`, la de la invocación. Una novela entera no puede costar cero.
+
+*Clase de §9.1 y §9.2: **A** (el envoltorio se pone al cablear, así que ningún nodo queda fuera) **+ T** (una novela con agente falso deja una fila por fase con su consumo, y rehacer desde un gate abre una fila nueva sin mezclar el corpus). Gate: G1.*
 
 **9.3 El manifiesto está completo.** Lleva cuatro cosas, y ningún campo sale vacío por omisión:
 
@@ -214,7 +234,19 @@ La versión guarda además la nota del juez en `judge_score_json`.
 
 **9.4 La observabilidad no tumba un nodo.** Si Langfuse está configurado, el observador usa la API de la versión instalada, la 4: `start_span` y `create_score`. Un fallo al enviar una traza o un score degrada a aviso. Perder una traza no puede costar una novela.
 
-*Clase: **T**. Gate: G1 y G6.*
+**9.5 Lo que termina una invocación se avisa.** La arquitectura (§10) fija tres avisos fuera de gate que salen siempre, también en batch. En batch no hay gates, así que sin ellos Telegram callaría durante toda la novela, justo cuando nadie mira la terminal.
+
+| Aviso | Cuándo | Quién lo emite | Qué dice |
+|---|---|---|---|
+| **Parada** | La invocación termina en `Fail`: un nodo revienta o un capítulo agota sus reintentos | `invocar`, al salir del grafo | El nodo donde reventó —el último marco de la traza que cae en un `nodos.py`— o el capítulo en curso, el motivo, y `storymaker estado` y `storymaker continuar` con el nombre de la novela |
+| **Final** | La invocación llega a `Idle` sin gate pendiente | `invocar`, al salir del grafo | El número de la versión publicada, leído de `version_novela`, y el coste de la invocación |
+| **Aparcamiento** | Un gate agota su *timeout* | `aparcar` | Qué gate, que no se ha aprobado nada y `storymaker decidir <novela> aprobar` |
+
+Una invocación que se detiene en un gate **no** emite aviso de parada: el gate ya avisa desde su nodo, con su informe, y parar en un gate no es un fallo.
+
+Los tres pasan por `avisar_sin_fallar`, que atrapa cualquier excepción del `Notifier` y la escribe en la salida. **Un aviso nunca cambia el `ResultadoInvocacion`**: la invocación devuelve lo mismo con Telegram, sin él y con Telegram caído. `invocar` y `reanudar` aceptan un `notifier` inyectable, igual que el transporte y el vectorizador; sin él, construyen el que diga `Settings`, que es el nulo si falta el token o el chat.
+
+*Clase: **T** (con `NotifierNulo`: parada en un fallo, silencio en un gate, final con su versión, y un notifier que revienta sin tumbar nada). Gate: G1 y G6.*
 
 ---
 
@@ -261,15 +293,20 @@ La versión guarda además la nota del juez en `judge_score_json`.
 | REQ-ER-31 | La ficha del homenajeado en el canon lleva `nombre_homenajeado` del `Brief`, no el nombre del arquitecto | §7.4 | P-75 |
 | REQ-ER-19 | El extractor de capítulo recibe las escenas de su capítulo con sus beats y el catálogo de §7.3 —personajes y escenarios del canon, hechos que vio el escritor, elementos del encargo e hitos del capítulo—, dentro de su techo | §7.3 | P-83, P-85 |
 | REQ-ER-30 | `schema_guard` valida la salida del extractor contra ese catálogo; un identificador fuera de dominio es salida inválida y se reintenta con el error, y nunca llega al volcado | §7.3 | P-31, P-83 |
+| REQ-ER-35 | Un evento narrativo cuya clave ya escribió un intento anterior no se duplica, y sus participantes no se atan a ningún otro evento | §7.3 | P-83 |
 | REQ-ER-20 | El juez recibe la rúbrica, la política del encargo y los elementos de personalización antes de la novela | §8.1 | P-90 |
 | REQ-ER-21 | El esquema del juez exige exactamente siete puntuaciones, una por criterio | §8.1 | P-90 |
 | REQ-ER-22 | En batch, una media del juez por debajo del umbral se registra y no impide publicar | §8.2 | P-90 |
 | REQ-ER-23 | El PDF se imprime tras publicar, junto al fichero de la novela, y su fallo es aviso | §8.3 | P-94 |
 | REQ-ER-24 | `render_visual` comprueba índice, ficha no vacía y portada con título; la interceptación con navegador es riesgo aceptado con fila en `verification.md` §5 | §8.4 | P-92 |
-| REQ-ER-25 | Cada fase abre y cierra su `fase_run` con estado y consumo | §9.1 | P-60 |
-| REQ-ER-26 | Todo nodo agente, juez incluido, suma su consumo al estado | §9.2 | P-57 |
+| REQ-ER-25 | Cada fase abre su `fase_run` desde un envoltorio común a todos los nodos, y la invocación la cierra como `esperando_gate`, `completada` o `fallida`, también tras reanudar | §9.1 | P-141 |
+| REQ-ER-36 | Rehacer una fase desde su gate abre una `fase_run` nueva, y el corpus se lee y se sella por `corpus_run_id`, no por la fila en curso | §9.1 | P-141 |
+| REQ-ER-26 | El consumo de toda llamada al modelo, reintentos de esquema incluidos, se suma al estado y a la `fase_run` abierta | §9.2 | P-142 |
 | REQ-ER-27 | El manifiesto lleva `prompts_json`, `sdk_version`, `gates_enabled` del estado y el resultado de Lean; la versión guarda la nota del juez | §9.3 | P-93 |
 | REQ-ER-28 | El observador de Langfuse usa la API de la versión instalada, y un fallo de envío degrada a aviso | §9.4 | P-50, P-51 |
+| REQ-ER-32 | Una invocación que termina en `Fail` avisa de la parada, también en batch, con el nodo o el capítulo, el motivo y los comandos para retomar; una que se detiene en un gate no | §9.5 | P-140 |
+| REQ-ER-33 | Una invocación que llega a `Idle` avisa del final con la versión publicada y el coste; `aparcar` avisa del gate aparcado sin aprobar nada | §9.5 | P-107, P-140 |
+| REQ-ER-34 | Un aviso que no se puede enviar se escribe en la salida y no cambia el resultado de la invocación | §9.5 | P-105, P-140 |
 | REQ-ER-29 | Las cinco comprobaciones de §10 se ejecutan en el orden declarado y dejan su resultado escrito | §10 | P-120, P-121, P-122, P-123, P-124 |
 
 ---
@@ -285,7 +322,7 @@ La versión guarda además la nota del juez en `judge_score_json`.
 | Lean en sus tres puntos | A + T | G3, G5 |
 | Escaleta anclada e identificadores | T | G1, G3 |
 | Fase 5 sin gates | T + D | G5 |
-| Contabilidad | T | G1, G6 |
+| Contabilidad y avisos de fin de invocación | T | G1, G6 |
 | Aparato de verificación | D + I + T | G2, G6 |
 
 Ninguna pieza introduce un camino que publique una versión sin validar. Las dos que ablandan una puerta —el umbral del juez en batch y Lean sin entorno— lo hacen **dejándolo escrito en el manifiesto**, de modo que la versión publicada dice cómo se publicó.
@@ -304,6 +341,9 @@ Ninguna pieza introduce un camino que publique una versión sin validar. Las dos
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | §9.1 y §9.2 pasan de describir el defecto a fijar el contrato: la `fase_run` la abre un envoltorio común a los nodos, se cierra según cómo termina la invocación, el corpus se lee por `corpus_run_id` y el consumo lo cuenta el transporte; REQ-ER-25 y REQ-ER-26 se reescriben hacia P-141 y P-142 y entra REQ-ER-36 | La cuarta novela real llegó al gate de Plotting con una sola `fase_run`, la de Intake, todavía `en_curso` y con cero tokens: `storymaker estado` decía «intake» y cero dólares con el corpus ya investigado y la escaleta escrita |
+| 2026-09-24 | §7.3 fija que un evento narrativo con clave ya escrita no se duplica ni cuelga sus participantes de otro evento; entra REQ-ER-35 | La tercera novela real se detuvo dos veces, en el intento 2 de dos capítulos distintos, por una clave foránea de `cronologia_participante`: el volcado tomaba `lastrowid` como id del evento aunque el `INSERT` se hubiera ignorado |
+| 2026-09-24 | Entra §9.5, los tres avisos fuera de gate —parada, final y aparcamiento—, con REQ-ER-32 a REQ-ER-34; el alcance los nombra | Se propaga la decisión de la arquitectura §10. En batch no hay gates y Telegram no avisaba de nada: la tercera novela real se detuvo dos veces en la extracción de un capítulo y solo se supo mirando la terminal |
 | 2026-09-24 | §7.2 añade los elementos del encargo con clave al contexto del arquitecto, acepta clave o texto y hace del anclaje sin resolver un **aviso** del gate; entra §7.4 con REQ-ER-31 y queda anotada para el Autor la presencia del nombre completo | La segunda novela real salió con `plan_anclaje` vacía, como la primera, y con la homenajeada abreviada en el canon: el nombre completo no apareció en ninguno de los diez capítulos |
 | 2026-09-24 | §9.1 cambia `interrumpida` por los estados que el esquema admite y declara dos costuras previas: el corpus identificado por su `fase_run` y el fallo de una invocación retomada | Al ir a implementarlo apareció que seis consultas de `mundo` dependen de que todas las fases compartan una `fase_run`: abrir una por fase sin separar el corpus rompería el sello |
 | 2026-09-24 | §7.3 fija el **catálogo** del extractor —canon entero, hechos que vio el escritor, encargo entero e hitos del capítulo— y lo convierte en dominio de `schema_guard`; entra REQ-ER-30 | La segunda novela real se detuvo en el capítulo 5 por una clave foránea: el extractor adivinaba identificadores. Restringir el catálogo a lo anclado habría dejado sin dominio la continuidad de quien no interviene y la cobertura de un obligatorio fuera de su capítulo |

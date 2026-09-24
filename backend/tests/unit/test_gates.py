@@ -15,7 +15,15 @@ import pytest
 from storymaker.commons.db.repos import arnes
 from storymaker.commons.obs.trazas import ObservadorNulo
 from storymaker.gates.decisiones import DECISIONES, Decision, DecisionInvalida, aplicar
-from storymaker.gates.notifier import Aviso, texto_de
+from storymaker.gates.notifier import (
+    Aviso,
+    NotifierNulo,
+    avisar_sin_fallar,
+    aviso_de_aparcada,
+    aviso_de_parada,
+    aviso_de_terminada,
+    texto_de,
+)
 
 
 class TestAviso:
@@ -36,11 +44,39 @@ class TestAviso:
         texto = texto_de(Aviso(titulo="Capitulo 6 de 10 aprobado", cuerpo="0,41 $"))
         assert "decidir" not in texto
 
+    def test_el_aviso_de_parada_dice_donde_y_como_retomar(self) -> None:
+        aviso = aviso_de_parada("salamanca", nodo="extract", motivo="FOREIGN KEY constraint failed")
+        texto = texto_de(aviso)
+        assert not aviso.bloquea, "una parada informa: no hay gate que decidir"
+        assert "extract" in texto and "FOREIGN KEY" in texto
+        assert "storymaker continuar salamanca" in texto
+        assert "storymaker estado salamanca" in texto
+
+    def test_el_aviso_de_final_trae_version_y_coste(self) -> None:
+        texto = texto_de(aviso_de_terminada("salamanca", version=1, coste_usd=0.4123))
+        assert "Version 1" in texto and "0.4123" in texto
+        assert "decidir" not in texto
+
+    def test_el_aviso_de_aparcada_recuerda_que_no_se_aprobo_nada(self) -> None:
+        texto = texto_de(aviso_de_aparcada("salamanca", gate="Plotting"))
+        assert "Plotting" in texto and "No se ha aprobado nada" in texto
+        assert "storymaker decidir salamanca aprobar" in texto
+
+    async def test_un_notifier_que_revienta_no_sube_el_fallo(self) -> None:
+        class Roto:
+            async def enviar(self, aviso: Aviso) -> None:
+                raise RuntimeError("sin red")
+
+        await avisar_sin_fallar(Roto(), aviso_de_terminada("x", version=1, coste_usd=0.0))
+
+    async def test_el_nulo_recuerda_lo_que_se_le_pidio(self) -> None:
+        nulo = NotifierNulo()
+        await avisar_sin_fallar(nulo, aviso_de_parada("x", nodo="n", motivo="m"))
+        assert len(nulo.enviados) == 1
+
 
 class TestAplicar:
-    async def test_decide_el_gate_pendiente(
-        self, db: aiosqlite.Connection, fase_run: int
-    ) -> None:
+    async def test_decide_el_gate_pendiente(self, db: aiosqlite.Connection, fase_run: int) -> None:
         gate_id = await arnes.abrir_gate(db, fase_run)
         tomada = await aplicar(db, ObservadorNulo(), "rehacer", "mas detalle de epoca")
         assert tomada.gate_id == gate_id

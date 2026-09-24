@@ -36,7 +36,7 @@ from storymaker.commons.obs.trazas import Span, nombre_de_span
 from storymaker.commons.validation.modelos import Incidencia
 from storymaker.publication import manifiesto, render
 from storymaker.publication.candidata import componer
-from storymaker.publication.esquemas import UMBRAL_DE_PUBLICACION, SalidaJuez
+from storymaker.publication.esquemas import UMBRAL_DE_PUBLICACION, Criterio, SalidaJuez
 
 
 class PublicacionRechazada(ErrorDeStoryMaker):
@@ -94,8 +94,32 @@ def _rubrica() -> str:
         f"- **{c['nombre']}**: {c['pregunta']}" for c in datos.get("criterios", [])
     )
     return (
-        "Puntua esta novela del 1 al 10 en cada uno de los siete criterios de la rubrica, "
-        "con una justificacion por criterio.\n\n# Rubrica\n\n" + preguntas
+        "Antes de puntuar, lee la novela entera buscando **contradicciones** y enumeralas en "
+        "`contradicciones`, una por entrada y citando los capitulos: lo que un capitulo "
+        "afirma y otro desmiente (un objeto que se entrega dos veces, una promesa que luego "
+        "se niega, un dato que cambia), y lo que un personaje sabe o cuenta antes de que "
+        "ocurra en la fecha narrativa. Si no hay ninguna, deja la lista vacia.\n\n"
+        "Despues puntua esta novela del 1 al 10 en cada uno de los siete criterios de la "
+        "rubrica, con una justificacion por criterio.\n\n# Rubrica\n\n" + preguntas
+    )
+
+
+def topar_continuidad(notas: SalidaJuez) -> SalidaJuez:
+    """La nota de continuidad no pasa de `10 - 2n` con `n` contradicciones, ni baja de 1.
+
+    El juez cuenta; cuánto pesa cada contradicción no lo decide él. En la cuarta novela real
+    puso un 8 en continuidad a una novela con cinco contradicciones que él mismo podía ver.
+    """
+    techo = max(1, 10 - 2 * len(notas.contradicciones))
+    return notas.model_copy(
+        update={
+            "puntuaciones": [
+                p.model_copy(update={"valor": min(p.valor, techo)})
+                if p.criterio is Criterio.CONTINUIDAD
+                else p
+                for p in notas.puntuaciones
+            ]
+        }
     )
 
 
@@ -213,7 +237,7 @@ async def judge(estado: EstadoNovela) -> EstadoNovela:
     if not textos:
         return {**estado, "pc": "Judge", "hay_bloqueantes": True}
 
-    notas = await juzgar(capitulos=textos)
+    notas = topar_continuidad(await juzgar(capitulos=textos))
     await registrar(
         deps.db,
         deps.observador,
@@ -221,7 +245,7 @@ async def judge(estado: EstadoNovela) -> EstadoNovela:
         valor=notas.media,
         objeto_tipo="novela",
         objeto_id=1,
-        detalle=notas.por_criterio(),
+        detalle={**notas.por_criterio(), "contradicciones": notas.contradicciones},
     )
     supera = supera_el_umbral(notas)
     if not supera and not estado["gates_enabled"]:

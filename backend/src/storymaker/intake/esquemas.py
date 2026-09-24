@@ -150,6 +150,24 @@ class Brief(BaseModel):
         return [e for e in self.elementos_personalizacion if e.obligatorio]
 
     @property
+    def elementos_a_cubrir(self) -> list[ElementoPersonalizacion]:
+        """Los elementos del encargo más el evento ancla, que entra como obligatorio.
+
+        Así el evento recorre la misma maquinaria que un elemento del comprador: el
+        arquitecto lo ve con su `#id`, `cobertura_anclada` exige que alguna escena lo ancle
+        y `cobertura_personalizacion` que algún capítulo aprobado lo cuente. Si fuera solo
+        prosa del encargo, el arquitecto podría —y lo hizo— dejarlo fuera de la novela.
+        """
+        if not self.evento_ancla:
+            return list(self.elementos_personalizacion)
+        evento = ElementoPersonalizacion(
+            tipo=TipoDeDato.ANECDOTA,
+            valor=f"evento ancla: {self.evento_ancla}",
+            obligatorio=True,
+        )
+        return [*self.elementos_personalizacion, evento]
+
+    @property
     def diales(self) -> dict[str, str]:
         """Lo que el arquitecto copia a `canon_obra.estilo_json` y llega al bloque 6."""
         return {

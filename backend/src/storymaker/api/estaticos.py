@@ -1,68 +1,62 @@
-"""spec: §5 · arq: §16.1, §16.3
+"""spec: §5 · arq: §16.1, §16.4
 
-La ruta de lectura: **la misma que el navegador lee y desde la que se imprime el PDF**.
+**FastAPI sirve el frontend construido**, y por eso hay un solo origen.
 
-Es la contrapartida de elegir React. Si el PDF se maquetara aparte, web y PDF divergirían,
-y la divergencia aparecería el día de la demo. Imprimiendo esta misma ruta con Playwright el
-PDF es literalmente lo que se ve, y conserva los enlaces internos que necesitan el índice
-navegable y la página de novedades.
+La URL que abre `render_visual`, la que imprime el PDF y la que teclea el lector son la
+misma. La alternativa —dejar el servidor de Vite levantado al lado— ataría la publicación a
+un segundo proceso vivo y obligaría al navegador que conduce `render_visual` a conocer dos
+orígenes.
 
-Aquí se sirve el HTML que el backend renderiza contra un manifiesto. Cuando el frontend de
-React exista, sustituirá a este render y **seguirá siendo la ruta que se imprime**: lo que
-no puede haber es una segunda maquetación que mantener.
+La aplicación es de una sola página: `/novelas/x/v/2/capitulos/3` no es un fichero, es una
+ruta que resuelve el router de React. Por eso el *fallback* a `index.html` va en el manejador
+de `404` y no en una ruta comodín: una ruta `GET` que lo capturara todo convertiría un `POST`
+a una dirección inexistente en un `405`, y la API dejaría de decir «eso no existe». La API
+vive bajo `/api` y nunca cae en el *fallback*: un endpoint que no existe es un `404` en JSON,
+no la portada de la aplicación.
+
+**Sin `dist/` el servidor levanta igual.** El `build` del frontend es requisito de la
+publicación, no del arranque: la API responde y solo la ruta de la aplicación falla.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
-
-from storymaker.api import novelas
 from storymaker.commons.config import Settings
-from storymaker.commons.db.apertura import abrir_novela
-from storymaker.commons.errores import NovelaNoEncontrada
-from storymaker.publication import render
 
-router = APIRouter(prefix="/lectura", tags=["lectura"])
+#: Prefijos que nunca son rutas de la aplicación: lo que no exista ahí es un 404 de verdad.
+PREFIJOS_DE_SERVIDOR = ("/api/", "/salud", "/docs", "/redoc", "/openapi.json")
 
 
-def _settings(peticion: Request) -> Settings:
-    return peticion.app.state.settings  # type: ignore[no-any-return]
+def _fichero_dentro(dist: Path, ruta: str) -> Path | None:
+    """El fichero estático que pide la URL, sin salirse de `dist/`."""
+    candidato = (dist / ruta.lstrip("/")).resolve()
+    if candidato.is_file() and candidato.is_relative_to(dist.resolve()):
+        return candidato
+    return None
 
 
-@router.get("/{nombre}/{numero}", response_class=HTMLResponse)
-async def leer(nombre: str, numero: int, peticion: Request) -> Any:
-    """La novela entera, renderizada contra el manifiesto de esa versión.
+def montar_frontend(app: Any, settings: Settings) -> None:
+    """Instala el *fallback* de la aplicación de una sola página sobre el `404`."""
+    from fastapi import Request
+    from fastapi.exception_handlers import http_exception_handler
+    from fastapi.responses import FileResponse
+    from starlette.exceptions import HTTPException
 
-    Se sirve **por versión** y no «la última»: un capítulo regenerado tiene texto distinto en
-    cada una, y servir la última sin decirlo haría que un enlace compartido cambiara de
-    contenido bajo los pies de quien lo abrió.
-    """
-    ruta = await novelas.exigir(nombre, _settings(peticion))
+    dist = settings.frontend_dist
 
-    async with abrir_novela(ruta) as db:
-        async with db.execute(
-            "SELECT id FROM version_novela WHERE numero = ?", (numero,)
-        ) as cursor:
-            fila = await cursor.fetchone()
-        if fila is None:
-            raise NovelaNoEncontrada(f"La novela {nombre} no tiene version {numero}")
-        lectura = await render.construir_lectura(db, int(fila["id"]))
+    async def servir_o_404(peticion: Request, error: HTTPException) -> Any:
+        ruta = peticion.url.path
+        es_de_la_aplicacion = (
+            error.status_code == 404
+            and peticion.method in ("GET", "HEAD")
+            and not ruta.startswith(PREFIJOS_DE_SERVIDOR)
+            and (dist / "index.html").is_file()
+        )
+        if not es_de_la_aplicacion:
+            return await http_exception_handler(peticion, error)
+        fichero = _fichero_dentro(dist, ruta) if ruta != "/" else None
+        return FileResponse(fichero or dist / "index.html")
 
-    return HTMLResponse(content=lectura.como_html())
-
-
-@router.get("/{nombre}", response_class=HTMLResponse)
-async def leer_la_ultima(nombre: str, peticion: Request) -> Any:
-    """Atajo a la última versión publicada, con su número visible en la URL final."""
-    ruta = await novelas.exigir(nombre, _settings(peticion))
-    async with abrir_novela(ruta) as db:
-        async with db.execute(
-            "SELECT numero FROM version_novela ORDER BY numero DESC LIMIT 1"
-        ) as cursor:
-            fila = await cursor.fetchone()
-    if fila is None:
-        raise NovelaNoEncontrada(f"La novela {nombre} no tiene ninguna version publicada")
-    return await leer(nombre, int(fila["numero"]), peticion)
+    app.add_exception_handler(HTTPException, servir_o_404)

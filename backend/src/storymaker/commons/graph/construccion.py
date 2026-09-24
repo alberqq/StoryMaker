@@ -28,6 +28,7 @@ from storymaker.commons.graph.aristas import (
     tras_plan,
     tras_validate,
 )
+from storymaker.commons.graph.contabilidad import contabilizado
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.graph.nodos import GATES, NODOS, TERMINALES
 
@@ -79,14 +80,19 @@ def _bautizado(nodo: Nodo, gate: str) -> Nodo:
 
 
 def nodos_resueltos() -> dict[str, Nodo]:
-    """Los veinticuatro nodos, con un sustituto ruidoso para los que faltan."""
+    """Los veinticuatro nodos, con un sustituto ruidoso para los que faltan.
+
+    Todos salen **contabilizados**: el envoltorio abre la `fase_run` de cada fase y suma el
+    consumo de cada nodo (spec de ejecución real §9.1 y §9.2). Se pone aquí, al cablear,
+    para que ningún nodo pueda quedarse fuera.
+    """
     resueltos = {
         nombre: resolver(ruta) or _pendiente(nombre, ruta) for nombre, ruta in NODOS.items()
     }
     for gate in GATES:
         if resolver(NODOS[gate]) is not None:
             resueltos[gate] = _bautizado(resueltos[gate], gate)
-    return resueltos
+    return {nombre: contabilizado(nombre, nodo) for nombre, nodo in resueltos.items()}
 
 
 def nodos_pendientes() -> list[str]:

@@ -72,6 +72,69 @@ De cada hecho guarda:
 """
 
 
+#: Lo que cada hecho tiene que llevar, igual en la sesión única y en las dirigidas.
+_COMO_SE_GUARDA_UN_HECHO = f"""De cada hecho guarda:
+  - el enunciado, concreto y comprobable;
+  - su estado epistemico: verificado, debatido, inferido o desconocido;
+  - la dimension de la que trata, una de estas seis: {", ".join(d.value for d in Dimension)};
+  - **la cita textual de la fuente que lo sostiene**, copiada tal cual y de
+    {Defaults.LONGITUD_MAXIMA_CITA} caracteres como mucho. Otro agente va a leer ese
+    fragmento y decidir si dice lo que tu afirmas.
+"""
+
+
+def _encargo_dirigido(periodo: str, lugar: str, foco: str, comentarios: str) -> str:
+    """El marco común de las sesiones dirigidas: una búsqueda, una página, un foco."""
+    extra = (
+        f"\nEl Autor pidio al rehacer la investigacion:\n{comentarios}\n" if comentarios else ""
+    )
+    return f"""Investiga un unico encargo de este periodo historico.
+
+Periodo: {periodo}
+Lugar: {lugar}
+
+Encargo: {foco}
+
+Tienes **una busqueda y una pagina**, y el arnes las impone: la segunda no se emite.
+Elige la busqueda que mejor sirva a este encargo y extrae de esa pagina todos los hechos
+concretos que encuentres sobre el.
+{extra}
+{_COMO_SE_GUARDA_UN_HECHO}"""
+
+
+def prompt_de_dimension(periodo: str, lugar: str, dimension: Dimension, comentarios: str) -> str:
+    """Una sesión del modo exhaustivo por cada dimensión del período."""
+    return _encargo_dirigido(periodo, lugar, DIMENSIONES_EXPLICADAS[dimension], comentarios)
+
+
+def prompt_de_personajes(
+    periodo: str, lugar: str, personajes: list[str], evento: str, comentarios: str
+) -> str:
+    """La sesión dirigida a las figuras reales y al evento ancla del brief.
+
+    Recibe nombres de figuras históricas y un acontecimiento, **nunca** el del homenajeado:
+    la guarda de PII se aplica sobre este prompt antes de emitirlo.
+    """
+    partes = []
+    if personajes:
+        partes.append(
+            "las figuras historicas " + ", ".join(personajes)
+            + ": sus fechas y lo que hicieron en este periodo y lugar"
+        )
+    if evento:
+        partes.append(f"el acontecimiento «{evento}»: cuando fue y que ocurrio exactamente")
+    return _encargo_dirigido(periodo, lugar, "; y ".join(partes), comentarios)
+
+
+def prompt_de_oficio(periodo: str, lugar: str, oficio: str, comentarios: str) -> str:
+    """La sesión dirigida al oficio del homenajeado en la época."""
+    foco = (
+        f"el oficio de «{oficio}» en esta epoca y lugar: como se ejercia, que leyes o "
+        "gremios lo regulaban y que riesgos tenia"
+    )
+    return _encargo_dirigido(periodo, lugar, foco, comentarios)
+
+
 def prompt_de_verificacion(pares: list[tuple[int, str, str]]) -> str:
     """El lote del verificador: identificador, enunciado y cita.
 

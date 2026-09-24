@@ -58,14 +58,19 @@ class TestSalidaDelEscritor:
 
 
 class TestPasadaDelExtractor:
-    def test_la_cobertura_bloquea_y_la_ejecucion_avisa(self) -> None:
-        """Lo contable bloquea; el juicio de un modelo sobre si algo narrativo ocurrio, no."""
+    def test_la_cobertura_y_la_ejecucion_avisan(self) -> None:
+        """Ninguna de las dos detiene el capitulo: la cobertura que bloquea es la de G5.
+
+        La cobertura mide lo que el extractor reconocio, no el texto. Cuando bloqueaba, un
+        capitulo que ya cumplia agotaba sus reintentos sin que el editor tuviera que corregir.
+        """
         revision = CapituloEnRevision(
             numero=2,
             texto="texto",
             palabras=1200,
             rango_palabras=(1000, 1500),
             personalizacion_encomendada=(7,),
+            personalizacion_textos=((7, "colecciona cartas nauticas antiguas"),),
         )
         salida = SalidaExtractorDeCapitulo(
             resumen="un resumen",
@@ -73,8 +78,10 @@ class TestPasadaDelExtractor:
         )
         incidencias = validacion.pasada_del_extractor(revision, salida)
         por_validador = {i.validador: i.severidad for i in incidencias}
-        assert por_validador["cobertura_capitulo"] is Severidad.BLOQUEANTE
+        assert por_validador["cobertura_capitulo"] is Severidad.AVISO
         assert por_validador["ejecucion_escaleta"] is Severidad.AVISO
+        cobertura = next(i for i in incidencias if i.validador == "cobertura_capitulo")
+        assert "colecciona cartas nauticas antiguas" in cobertura.mensaje
 
     def test_un_hito_pendiente_avisa_y_no_detiene(self) -> None:
         revision = CapituloEnRevision(
@@ -190,6 +197,57 @@ class TestVolcadoDelExtractor:
             filas = list(await cursor.fetchall())
         assert len(filas) == 1
         assert filas[0]["capitulo_version_id"] == version
+
+    async def test_el_titulo_markdown_del_modelo_no_se_guarda(
+        self, db: aiosqlite.Connection, novela: NovelaDePrueba
+    ) -> None:
+        """El título vive en la escaleta: dejarlo en el texto lo duplicaba en la página."""
+        version = await texto.insertar_capitulo_version(
+            db, capitulo_id=novela.capitulo_2, fase_run_id=novela.fase_run,
+            texto=(
+                "# Capítulo 2: El roble\n\n## Escena 1: El trato\n\nManuel cerro el trato.\n\n"
+                "## Escena 2: La carga\n\nLa carga llego al alba. El #3 del muelle no."
+            ),
+        )
+        async with db.execute(
+            "SELECT texto, palabras FROM capitulo_version WHERE id = ?", (version,)
+        ) as cursor:
+            fila = await cursor.fetchone()
+        assert fila["texto"] == (
+            "Manuel cerro el trato.\n\nLa carga llego al alba. El #3 del muelle no."
+        )
+        assert fila["palabras"] == 14
+
+    async def test_un_segundo_intento_con_las_mismas_claves_no_rompe_la_clave_foranea(
+        self, db: aiosqlite.Connection, novela: NovelaDePrueba
+    ) -> None:
+        """El `INSERT OR IGNORE` ignorado deja `lastrowid` apuntando a otra tabla.
+
+        Entre intento e intento se insertan filas en otras tablas —la versión nueva, su
+        continuidad—, así que colgar los participantes de `lastrowid` los ataba a un evento
+        inexistente. Detuvo dos veces una novela real en el intento 2 de un capítulo.
+        """
+        evento = EventoNarrativo(
+            clave="manuel-compra-roble",
+            descripcion="Manuel cierra el trato",
+            momento="1805-04-11",
+            escena=1,
+            participantes=[novela.homenajeado],
+        )
+        salida = SalidaExtractorDeCapitulo(
+            resumen="r",
+            continuidad=[EstadoDeContinuidad(personaje_id=novela.homenajeado)],
+            eventos=[evento],
+        )
+        for intento in (1, 2):
+            version = await texto.insertar_capitulo_version(
+                db, capitulo_id=novela.capitulo_2, fase_run_id=novela.fase_run,
+                texto=f"intento {intento}", intento=intento,
+            )
+            await extraccion.volcar(db, salida, capitulo_version_id=version, numero=2)
+
+        async with db.execute("PRAGMA foreign_key_check") as cursor:
+            assert list(await cursor.fetchall()) == []
 
     async def test_el_resumen_se_guarda_sin_tocar_el_texto(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba

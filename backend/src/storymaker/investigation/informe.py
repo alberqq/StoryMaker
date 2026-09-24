@@ -23,7 +23,7 @@ from dataclasses import dataclass
 
 import aiosqlite
 
-from storymaker.commons.db.repos import mundo
+from storymaker.commons.db.repos import arnes, mundo
 from storymaker.investigation.esquemas import Dimension
 
 
@@ -39,6 +39,8 @@ class InformeDeInvestigacion:
     total: int
     por_dimension: dict[str, int]
     sin_respaldo: tuple[HechoDudoso, ...] = ()
+    #: Una línea por sesión del modo exhaustivo; vacío en el estándar.
+    sesiones_dirigidas: tuple[str, ...] = ()
 
     @property
     def dimensiones_vacias(self) -> tuple[str, ...]:
@@ -46,6 +48,9 @@ class InformeDeInvestigacion:
 
     def como_texto(self) -> str:
         lineas = [f"Corpus: {self.total} hechos."]
+        if self.sesiones_dirigidas:
+            lineas.append("Investigacion exhaustiva:")
+            lineas.extend(f"  - {linea}" for linea in self.sesiones_dirigidas)
         for dimension in Dimension:
             cuantos = self.por_dimension.get(dimension.value, 0)
             marca = "  " if cuantos else "! "
@@ -97,4 +102,7 @@ async def construir(db: aiosqlite.Connection, fase_run_id: int) -> InformeDeInve
         total=len(hechos),
         por_dimension=await mundo.hechos_por_dimension(db, fase_run_id),
         sin_respaldo=tuple(detalles),
+        sesiones_dirigidas=tuple(
+            await arnes.incidencias_sin_capitulo(db, "investigacion_dirigida")
+        ),
     )

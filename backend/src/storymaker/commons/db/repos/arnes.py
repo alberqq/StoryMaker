@@ -71,6 +71,56 @@ async def cerrar_fase_run(
     )
 
 
+async def fase_run_abierta(db: aiosqlite.Connection) -> aiosqlite.Row | None:
+    """La última `fase_run` de la novela, que es la de la invocación en curso.
+
+    Es la última de la base y no la que apunta el estado: una novela admite una sola
+    invocación a la vez, y la Fase 6 abre su fila desde la API antes de que corra ningún
+    nodo.
+    """
+    async with db.execute("SELECT * FROM fase_run ORDER BY id DESC LIMIT 1") as cursor:
+        return await cursor.fetchone()
+
+
+async def sumar_consumo(
+    db: aiosqlite.Connection,
+    fase_run_id: int,
+    *,
+    tokens_in: int,
+    tokens_out: int,
+    coste_usd: float,
+) -> None:
+    """Suma a la fila lo que costó un nodo. Se acumula nodo a nodo, no se sobrescribe."""
+    await db.execute(
+        """
+        UPDATE fase_run
+           SET tokens_in = tokens_in + ?, tokens_out = tokens_out + ?,
+               coste_usd = coste_usd + ?
+         WHERE id = ?
+        """,
+        (tokens_in, tokens_out, coste_usd, fase_run_id),
+    )
+
+
+async def cerrar_abierta(
+    db: aiosqlite.Connection, estado: str, *, desde: tuple[str, ...] = ("en_curso",)
+) -> None:
+    """Cierra la última fila si está en uno de los estados `desde`, **sin tocar su consumo**.
+
+    Lo usan `invocar` al salir del grafo y el envoltorio de contabilidad al cambiar de
+    fase. `cerrar_fase_run` escribe el consumo entero, y aquí ya está acumulado por
+    `sumar_consumo`. Una fila en otro estado —aparcada, fallida— no se toca.
+    """
+    marcas = ", ".join("?" for _ in desde)
+    await db.execute(
+        f"""
+        UPDATE fase_run SET estado = ?, fin = datetime('now')
+         WHERE id = (SELECT MAX(id) FROM fase_run) AND estado IN ({marcas})
+        """,  # noqa: S608 - las marcas son placeholders, los valores van como parámetros
+        (estado, *desde),
+    )
+
+
 async def abrir_gate(db: aiosqlite.Connection, fase_run_id: int) -> int:
     """Deja el gate pendiente. A partir de aquí la máquina duerme en disco."""
     cursor = await db.execute(

@@ -1,0 +1,17 @@
+.contenido-encargo { max-width: 920px; }
+.partir-de { min-width: 260px; }
+.elementos { margin-top: var(--e4); }
+.elemento { flex-wrap: nowrap; }
+.elemento .entrada { flex: 1; }
+.modo { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--e2); }
+.opcion { display: flex; gap: var(--e3); align-items: flex-start; padding: var(--e3); border: 1px solid var(--borde); border-radius: var(--radio); cursor: pointer; }
+.opcion > span { display: flex; flex-direction: column; gap: 2px; }
+.opcion.elegida { border-color: var(--acento); background: var(--acento-suave); }
+.lanzar { margin-top: var(--e5); }
+.partir-de { max-width: 320px; margin-bottom: var(--e4); }
+.selector-modo { display: inline-flex; padding: 3px; gap: 2px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio); }
+.selector-modo button { border: none; background: transparent; padding: var(--e2) var(--e4); border-radius: var(--radio-s); font-weight: 600; color: var(--texto-suave); cursor: pointer; }
+.selector-modo button.activo { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra-1); }
+.descripcion-encargo { min-height: 200px !important; font-size: 1rem; }
+.conversacion-encargo .campo { max-width: none; }
+.casilla-exhaustiva { margin: var(--e3) 0; }

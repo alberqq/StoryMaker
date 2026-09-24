@@ -46,6 +46,13 @@ def brief(**cambios: object) -> Brief:
 
 
 class TestBrief:
+    def test_el_evento_ancla_entra_como_obligatorio(self) -> None:
+        """Si fuera solo prosa, el arquitecto podia dejarlo fuera; y lo dejo."""
+        con = brief(evento_ancla="el regreso de fray Luis a su catedra")
+        evento = con.elementos_a_cubrir[-1]
+        assert evento.obligatorio and "fray Luis" in evento.valor
+        assert brief().elementos_a_cubrir == []
+
     def test_recoge_los_tres_bloques(self) -> None:
         b = brief()
         assert b.nombre_homenajeado and b.rol_epoca  # homenajeado

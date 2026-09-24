@@ -143,6 +143,25 @@ class TestValidadoresDeCapitulo:
         assert incidencias[0].propuesta == "Manuel Ferrer"
         assert incidencias[0].bloquea
 
+    def test_nombres_exactos_admite_la_mayuscula_de_principio_de_frase(self) -> None:
+        """«fray Luis de León» abre frase como «Fray Luis de León»: es ortografía."""
+        incidencias = nombres_exactos(
+            capitulo(
+                texto="Fray Luis de León volvio a su catedra.",
+                nombres_canonicos=("fray Luis de León",),
+            )
+        )
+        assert incidencias == []
+
+    def test_nombres_exactos_sigue_saltando_si_cambia_algo_mas_que_la_inicial(self) -> None:
+        incidencias = nombres_exactos(
+            capitulo(
+                texto="Fray luis de León volvio a su catedra.",
+                nombres_canonicos=("fray Luis de León",),
+            )
+        )
+        assert len(incidencias) == 1
+
     def test_longitud_dentro_del_rango(self) -> None:
         assert longitud_capitulo(capitulo(palabras=1200)) == []
 
@@ -242,6 +261,21 @@ class TestPolicy:
             )
         )
         assert incidencias == []
+
+    @pytest.mark.parametrize(
+        ("termino", "texto"),
+        [
+            ("hereje", "Un aprendiz implicado en herejia habria mentido."),
+            ("ruina", "Toda la tirada, casi arruinada."),
+            ("hoguera", "Temian las hogueras de la plaza."),
+        ],
+    )
+    def test_prohibida_en_una_derivada(self, termino: str, texto: str) -> None:
+        """«herejía» por «hereje» y «arruinada» por «ruina» pasaban en una novela real."""
+        incidencias = guardrail_prohibidas(
+            capitulo(texto=texto, prohibidas=(TerminoProhibido("novela", termino, termino),))
+        )
+        assert len(incidencias) == 1
 
     def test_texto_en_cuarentena_que_llega_al_prompt(self) -> None:
         crudo = "Mi padre siempre decia que el mar no perdona a los impacientes"
@@ -374,9 +408,15 @@ class TestRegistro:
             "render_visual",
         }
 
-    def test_los_once_bloquean(self) -> None:
-        """Los que no bloquean son los semanticos, y esos no tienen fila aqui."""
-        assert len(bloqueantes()) == 11
+    def test_bloquean_todos_menos_la_cobertura_de_capitulo(self) -> None:
+        """De los once, solo `cobertura_capitulo` avisa: mide al extractor, no el texto.
+
+        La cobertura que bloquea es `cobertura_personalizacion`, antes de publicar (arq. §11a).
+        """
+        nombres = set(bloqueantes())
+        assert len(nombres) == 10
+        assert "cobertura_capitulo" not in nombres
+        assert "cobertura_personalizacion" in nombres
 
     def test_la_pasada_determinista_sale_del_registro(self) -> None:
         """Nadie compone una pasada con una lista propia: se filtra el cableado."""

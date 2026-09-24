@@ -7,9 +7,10 @@ rules:
     severity: ERROR
     message: >-
       El prompt del investigador no se construye con campos personales del Brief. Recibe
-      periodo y lugar, y nada mas: es el unico rol con red (arq. §15, spec §4.2).
+      periodo, lugar y, en el modo exhaustivo, personajes historicos, evento ancla y rol de
+      epoca, que describen la epoca y no a la persona: es el unico rol con red (arq. §15).
     paths:
       include:
         - "backend/src/storymaker/investigation/**"
     pattern-regex: >-
-      (brief|self\.brief)\.(nombre_homenajeado|fecha_nacimiento|ocasion|elementos_personalizacion|palabras_prohibidas|rol_epoca)
+      (brief|self\.brief)\.(nombre_homenajeado|fecha_nacimiento|ocasion|elementos_personalizacion|palabras_prohibidas)

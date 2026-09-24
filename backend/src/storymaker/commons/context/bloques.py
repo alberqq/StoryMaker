@@ -23,6 +23,7 @@ from typing import Any
 import aiosqlite
 
 from storymaker.commons.config import Defaults, Settings
+from storymaker.commons.context import repeticion
 from storymaker.commons.context.paquete import Bloque
 from storymaker.commons.db.repos import arnes, canon, intake, mundo, plan, texto
 from storymaker.commons.embeddings import indice
@@ -176,32 +177,54 @@ async def canon_relevante(
     return Bloque(2, tuple(fragmentos), fijos=fijos)
 
 
+#: Largo máximo de cada evento de «lo que ya ha pasado», en caracteres.
+LARGO_DE_EVENTO = 160
+
+
 async def continuidad(db: aiosqlite.Connection, numero: int) -> Bloque:
-    """Bloque 3. El estado al cierre de N-1: dónde está cada quien, qué sabe, qué posee.
+    """Bloque 3. El estado al cierre de N-1, y lo que ya ha pasado antes de N-1.
 
     Es **el último bloque que se recorta**. Perder memoria produce un capítulo más pobre;
     perder continuidad produce uno que contradice lo que ya ocurrió, y eso no se arregla
     leyendo mejor.
+
+    El estado dice dónde está cada quien y qué posee, pero no qué se prometió o se entregó
+    tres capítulos atrás. Eso lo dicen los eventos narrativos que el extractor escribe para
+    Lean, y entran aquí los de los capítulos 1 a N-2: N-1 ya va entero en el bloque 4. Van
+    del más reciente al más antiguo, para que el recorte suelte primero lo más lejano.
     """
     if numero <= 1:
         return Bloque(3)
-    anterior = await plan.capitulo_por_numero(db, numero - 1)
-    if anterior is None:
-        return Bloque(3)
-    version = await texto.capitulo_aprobado(db, int(anterior["id"]))
-    if version is None:
-        return Bloque(3)
 
     fragmentos = []
-    for fila in await texto.continuidad_de(db, int(version["id"])):
+    anterior = await plan.capitulo_por_numero(db, numero - 1)
+    version = (
+        await texto.capitulo_aprobado(db, int(anterior["id"])) if anterior is not None else None
+    )
+    if version is not None:
+        for fila in await texto.continuidad_de(db, int(version["id"])):
+            fragmentos.append(
+                f"{_valor(fila, 'personaje')}: en {_valor(fila, 'escenario', 'lugar sin fijar')} "
+                f"el {_valor(fila, 'fecha_narrativa', 'sin fecha')}; "
+                f"sabe {_valor(fila, 'conocimiento_json', '[]')}; "
+                f"posee {_valor(fila, 'posesiones_json', '[]')}; "
+                f"estado {_valor(fila, 'estado_json', '{}')}"
+            )
+    fijos = len(fragmentos)
+
+    eventos = await texto.eventos_anteriores(db, numero - 1)
+    if eventos:
         fragmentos.append(
-            f"{_valor(fila, 'personaje')}: en {_valor(fila, 'escenario', 'lugar sin fijar')} "
-            f"el {_valor(fila, 'fecha_narrativa', 'sin fecha')}; "
-            f"sabe {_valor(fila, 'conocimiento_json', '[]')}; "
-            f"posee {_valor(fila, 'posesiones_json', '[]')}; "
-            f"estado {_valor(fila, 'estado_json', '{}')}"
+            "Lo que ya ha pasado en la novela (no lo contradigas ni lo repitas como nuevo):"
         )
-    return Bloque(3, tuple(fragmentos), fijos=len(fragmentos))
+        fijos += 1
+        for evento in eventos:
+            descripcion = _valor(evento, "descripcion")
+            if len(descripcion) > LARGO_DE_EVENTO:
+                descripcion = descripcion[: LARGO_DE_EVENTO - 1].rstrip() + "…"
+            fragmentos.append(f"Capitulo {evento['numero']}: {descripcion}")
+
+    return Bloque(3, tuple(fragmentos), fijos=fijos)
 
 
 async def memoria(
@@ -280,18 +303,37 @@ async def anclajes(
     return Bloque(5, tuple(fragmentos), fijos=fijos)
 
 
-async def reglas(db: aiosqlite.Connection) -> Bloque:
-    """Bloque 6. Voz, estilo, glosario, prohibidas y la política de la frontera.
+#: Las cuatro reglas de escritura fijas del bloque 6 (arq. §6). Cada una responde a un
+#: defecto que una novela real enseñó: el cambio de tiempo verbal a mitad de novela, los
+#: encabezados de escena colados en la prosa, un personaje histórico que recuerda lo que
+#: aún no ha ocurrido y un objeto que se entrega dos veces.
+REGLAS_DE_ESCRITURA = (
+    "Narra en preterito, como el resto de la novela.",
+    "Entrega solo prosa: sin titulo del capitulo, sin encabezados de escena y sin markdown.",
+    "Ningun personaje, historico incluido, sabe ni cuenta lo que aun no ha ocurrido en la "
+    "fecha narrativa de su escena.",
+    "No contradigas lo que la continuidad dice que ya paso: lo entregado, prometido o "
+    "decidido sigue asi.",
+)
+
+
+async def reglas(db: aiosqlite.Connection, numero: int = 1) -> Bloque:
+    """Bloque 6. Voz, estilo, reglas de escritura, glosario, prohibidas y lo ya gastado.
 
     Aquí llegan `grado_licencia`, `arcaismo` y `contenido_admisible`, que ningún validador
     lee por sí solo y que aun así son obligatorios: sin declararlos, esa política existiría
     igualmente pero la pondría el modelo, que es justo lo que este arnés evita en todo lo
     demás.
+
+    Al final van **las palabras que la novela más repite hasta N-1 y las frases con que
+    cerró cada capítulo**. El escritor solo lee N-1 y no puede ver la repetición de la
+    novela entera; se le dice cuál es. Son lo primero que se recorta.
     """
     fragmentos: list[str] = []
     obra = await canon.obra(db)
     if obra is not None:
         fragmentos.append(f"Voz: {_valor(obra, 'voz')}")
+    fragmentos.append("Reglas de escritura:\n- " + "\n- ".join(REGLAS_DE_ESCRITURA))
 
     estilo: dict[str, Any] = await canon.estilo(db)
     if estilo:
@@ -313,8 +355,24 @@ async def reglas(db: aiosqlite.Connection) -> Bloque:
             "Glosario de epoca: "
             + "; ".join(f"{_valor(g, 'termino')} = {_valor(g, 'significado')}" for g in glosario)
         )
+    fijos = min(3, len(fragmentos))
 
-    return Bloque(6, tuple(fragmentos), fijos=min(2, len(fragmentos)))
+    anteriores = await texto.textos_aprobados(db, numero) if numero > 1 else []
+    if anteriores:
+        nombres = await canon.nombres_de_personajes(db)
+        palabras, expresiones = repeticion.mas_repetidas(anteriores, excluir=nombres)
+        if palabras or expresiones:
+            fragmentos.append(
+                "Ya muy repetido en la novela; usalo lo menos posible y busca otras formas: "
+                + repeticion.como_lista([*palabras, *expresiones])
+            )
+        cierres = [repeticion.ultima_frase(t) for t in anteriores]
+        fragmentos.append(
+            "Frases con las que ya cerraron capitulos anteriores; no las repitas ni cierres "
+            "con la misma idea:\n- " + "\n- ".join(c for c in cierres if c)
+        )
+
+    return Bloque(6, tuple(fragmentos), fijos=fijos)
 
 
 async def personalizacion(db: aiosqlite.Connection, numero: int) -> Bloque:

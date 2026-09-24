@@ -29,6 +29,7 @@ from storymaker.commons.agents.techos import Perfil
 from storymaker.commons.config import Defaults
 from storymaker.commons.db.repos import arnes, intake, mundo
 from storymaker.commons.db.repos import plan as repo_plan
+from storymaker.commons.graph.contabilidad import corpus_de
 from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.obs.prompts import RepositorioDePrompts
@@ -255,7 +256,7 @@ async def fill_gap(estado: EstadoNovela) -> EstadoNovela:
             pendientes.pop(0),
             periodo=periodo,
             lugar=lugar,
-            fase_run_id=estado["fase_run_id"],
+            fase_run_id=corpus_de(estado),
             dimension=Dimension.CULTURA_MATERIAL,
         )
     return {
@@ -277,5 +278,5 @@ async def seal(estado: EstadoNovela) -> EstadoNovela:
     dos corpus idénticos den el mismo hash aunque se escribieran en otro orden.
     """
     deps = actuales()
-    await mundo.sellar_corpus(deps.db, estado["fase_run_id"])
+    await mundo.sellar_corpus(deps.db, corpus_de(estado))
     return {**estado, "pc": "WriteChapter", "sellado": True}

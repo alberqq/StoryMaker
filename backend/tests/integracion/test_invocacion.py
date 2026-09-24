@@ -27,6 +27,7 @@ from storymaker.commons.graph import cerrojo
 from storymaker.commons.graph.branch import ramificar
 from storymaker.commons.graph.run import Arranque, invocar
 from storymaker.commons.obs.trazas import ObservadorNulo
+from storymaker.gates.notifier import NotifierNulo
 
 
 @pytest.fixture
@@ -119,9 +120,39 @@ class TestInvocacion:
         await invocar(novela, Arranque(n_capitulos=3), settings=ajustes)
         assert not cerrojo.esta_tomado(novela), "un cerrojo huerfano por cada fallo seria peor"
 
-    async def test_quien_llega_segundo_es_rechazado(
+    async def test_una_invocacion_que_revienta_avisa_de_la_parada(
         self, novela: Path, ajustes: Settings
     ) -> None:
+        """Sin guion, el entrevistador no tiene respuesta y el grafo revienta en `Configure`.
+
+        El aviso sale aunque nadie mire la terminal, y trae el comando para retomar.
+        """
+        nulo = NotifierNulo()
+        resultado = await invocar(
+            novela,
+            Arranque(n_capitulos=3),
+            settings=ajustes,
+            transporte=TransporteFalso(),
+            vectorizador=VectorizadorFalso(),
+            observador=ObservadorNulo(),
+            notifier=nulo,
+        )
+        assert resultado.nodo_final == "Fail"
+        assert [a.titulo for a in nulo.enviados] == [f"StoryMaker · {novela.stem} · se ha detenido"]
+        assert f"storymaker continuar {novela.stem}" in nulo.enviados[0].cuerpo
+
+    async def test_parar_en_un_gate_no_manda_aviso_de_parada(
+        self, novela: Path, ajustes: Settings, dobles: dict[str, Any]
+    ) -> None:
+        """El gate avisa desde su nodo; `invocar` no duplica el mensaje ni lo llama fallo."""
+        nulo = NotifierNulo()
+        resultado = await invocar(
+            novela, Arranque(n_capitulos=3), settings=ajustes, notifier=nulo, **dobles
+        )
+        assert resultado.gate_abierto is not None
+        assert nulo.enviados == []
+
+    async def test_quien_llega_segundo_es_rechazado(self, novela: Path, ajustes: Settings) -> None:
         """Dos invocaciones a la vez podrian duplicar un capitulo: es `ResumeIsExactlyOnce`."""
         with cerrojo.tomar(novela), pytest.raises(NovelaOcupada):
             await invocar(novela, Arranque(n_capitulos=3), settings=ajustes)

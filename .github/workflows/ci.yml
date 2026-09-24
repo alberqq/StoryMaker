@@ -64,3 +64,32 @@ jobs:
         # y, si encuentra una violacion, devuelve el contraejemplo. Corre en desarrollo, no
         # en cada generacion.
         run: java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -config formal/tla/harness.cfg formal/tla/harness.tla
+
+  # IMP-04 e IMP-28. Las pruebas y la construcción bloquean, como el resto de G1; Steiger
+  # informa y no bloquea (spec del frontend §8): la forma de una carpeta no pone en riesgo lo
+  # que G3 y G5 protegen, y el cliente único —que sí lo pone— lo comprueba una prueba.
+  frontend-estructura:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: tsc y construcción
+        run: npm run build
+      - name: Pruebas de pantalla y de estructura (MSW)
+        run: npm test
+      - name: Steiger (informa)
+        continue-on-error: true
+        run: npx steiger ./src | tee steiger.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: informe-steiger
+          path: frontend/steiger.txt

@@ -1,0 +1,35 @@
+/* El registro de libro (spec §8): lector, portada, personajes, historial e impresión. */
+
+.libro {
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente-libro);
+  font-size: 1.2rem;
+  line-height: 1.65;
+  border: 1px solid var(--linea-libro);
+  border-radius: var(--radio-l);
+  padding: var(--e6) clamp(var(--e4), 6vw, var(--e7));
+  max-width: 46rem;
+  margin: 0 auto;
+  box-shadow: var(--sombra-1);
+}
+.libro h1 { font-size: 2.1rem; font-weight: 700; margin: var(--e2) 0 var(--e4); letter-spacing: 0; }
+.libro h2 { font-size: 1.35rem; margin: var(--e5) 0 var(--e3); letter-spacing: 0; }
+.libro a { color: var(--acento-libro); }
+.libro .nota { color: var(--tinta-suave); }
+.libro blockquote { margin: var(--e4) 0; padding: var(--e1) var(--e4); border-left: 3px solid var(--acento-libro); font-style: italic; }
+.libro textarea { font-family: var(--fuente-panel); font-size: 0.95rem; }
+.libro .tarjeta { background: var(--papel-claro); border-color: var(--linea-libro); }
+.libro .tabla th, .libro .tabla td { border-color: var(--linea-libro); }
+
+.navegacion-libro { display: flex; flex-wrap: wrap; gap: var(--e4); justify-content: center; font-family: var(--fuente-panel); font-size: 0.9rem; margin-bottom: var(--e5); }
+
+.texto-capitulo p { text-indent: 1.5em; margin: 0 0 var(--e1); text-align: justify; hyphens: auto; }
+.texto-capitulo p:first-child { text-indent: 0; }
+.texto-capitulo p:first-child::first-letter { font-size: 3.1em; float: left; line-height: 0.85; padding: 0.08em 0.08em 0 0; color: var(--acento-libro); }
+.navegacion-capitulo { display: flex; justify-content: space-between; gap: var(--e4); margin: var(--e6) 0; font-family: var(--fuente-panel); font-size: 0.95rem; }
+.lista-capitulos { padding-left: 0; list-style: none; margin: 0; }
+.lista-capitulos li { padding: var(--e2) 0; border-bottom: 1px dotted var(--linea-libro); }
+.portada { text-align: center; padding: var(--e7) 0; }
+.portada .titulo-obra { font-size: 2.8rem; font-variant: small-caps; letter-spacing: 0.03em; line-height: 1.1; }
+.dedicatoria { font-style: italic; margin: var(--e7) auto; max-width: 28rem; }

@@ -47,6 +47,9 @@ class SalidaJuez(BaseModel):
     """La rúbrica entera. Sin ningún campo por el que pudiera devolver texto de la novela."""
 
     puntuaciones: list[Puntuacion] = Field(min_length=1)
+    #: Lo que un capitulo afirma y otro desmiente, y lo que un personaje sabe o cuenta antes
+    #: de que ocurra. Las enumera el juez antes de puntuar; cuanto pesan lo decide Python.
+    contradicciones: list[str] = Field(default_factory=list, max_length=20)
 
     @property
     def media(self) -> float:

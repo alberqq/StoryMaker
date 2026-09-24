@@ -227,9 +227,13 @@ async def volcar_cronologia(
                 capitulo_version_id,
             ),
         )
-        evento_id = cursor.lastrowid
-        if not evento_id:
+        # Si el INSERT se ignora —la clave ya la escribió un intento anterior del mismo
+        # capítulo—, `lastrowid` no vuelve a cero: conserva el último id insertado en la
+        # conexión, sea de la tabla que sea, y los participantes colgarían de un evento
+        # que no existe. Lo que dice si hubo fila es `rowcount`.
+        if cursor.rowcount == 0 or not cursor.lastrowid:
             continue
+        evento_id = cursor.lastrowid
         identificadores.append(int(evento_id))
         for personaje_id in evento.participantes:
             await db.execute(

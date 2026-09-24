@@ -63,6 +63,65 @@ def texto_de(aviso: Aviso) -> str:
     return "\n".join(partes)
 
 
+def aviso_de_parada(novela: str, *, nodo: str, motivo: str) -> Aviso:
+    """La invocación terminó en `Fail`. Es la parada que más necesita a alguien.
+
+    Sale también en batch, que es justo cuando nadie mira la terminal: un fallo que solo
+    se escribe en la salida de un proceso desatendido no lo lee nadie hasta horas después.
+    """
+    return Aviso(
+        titulo=f"StoryMaker · {novela} · se ha detenido",
+        cuerpo="\n".join(
+            [
+                f"Nodo: {nodo}",
+                f"Motivo: {motivo or 'sin detalle'}",
+                "",
+                "El ultimo checkpoint queda intacto.",
+                f"  storymaker estado {novela}",
+                f"  storymaker continuar {novela}",
+            ]
+        ),
+        novela=novela,
+    )
+
+
+def aviso_de_terminada(novela: str, *, version: int | None, coste_usd: float) -> Aviso:
+    """La novela llegó a `Idle`: hay una versión publicada que leer."""
+    publicada = f"Version {version} publicada." if version else "Version publicada."
+    return Aviso(
+        titulo=f"StoryMaker · {novela} · terminada",
+        cuerpo=f"{publicada}\nCoste de esta invocacion: {coste_usd:.4f} $",
+        novela=novela,
+    )
+
+
+def aviso_de_aparcada(novela: str, *, gate: str) -> Aviso:
+    """El gate agotó su *timeout* y la ejecución se aparcó. Sigue esperando la decisión."""
+    return Aviso(
+        titulo=f"StoryMaker · {novela} · gate de {gate} aparcado",
+        cuerpo="\n".join(
+            [
+                "Nadie decidio a tiempo y la ejecucion se ha aparcado.",
+                "No se ha aprobado nada: el gate sigue esperando.",
+                "",
+                f"  storymaker decidir {novela} aprobar",
+            ]
+        ),
+        novela=novela,
+    )
+
+
+async def avisar_sin_fallar(notifier: Notifier, aviso: Aviso) -> None:
+    """Envía un aviso informativo sin que nada de lo que falle al enviarlo suba.
+
+    Un aviso perdido no puede convertir en error una invocación que ya ha terminado.
+    """
+    try:
+        await notifier.enviar(aviso)
+    except Exception as fallo:
+        print(f"Aviso: no se pudo notificar: {fallo}", file=sys.stderr)
+
+
 class NotifierTelegram:
     """La implementación real, contra la Bot API. **Solo envía**: no recibe nada."""
 

@@ -72,3 +72,45 @@ def romper(novela: Path) -> bool:
         return False
     cerrojo.unlink()
     return True
+
+
+def pid_del_cerrojo(novela: Path) -> int | None:
+    """El PID que escribió quien tomó el cerrojo, o `None` si no hay cerrojo o no se lee."""
+    try:
+        return int(ruta_del_cerrojo(novela).read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+
+
+def proceso_vivo(pid: int) -> bool:
+    """Si un proceso sigue vivo, **sin tocarlo**.
+
+    En Windows no vale `os.kill(pid, 0)`: allí cualquier señal que no sea de consola termina
+    el proceso con `TerminateProcess`, de modo que preguntar si vive lo mataría. Se pregunta
+    con `OpenProcess` y `GetExitCodeProcess`, que solo leen.
+    """
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+
+        acceso = 0x1000  # PROCESS_QUERY_LIMITED_INFORMATION
+        sigue_activo = 259  # STILL_ACTIVE
+        kernel32 = ctypes.windll.kernel32
+        manejador = kernel32.OpenProcess(acceso, False, pid)
+        if not manejador:
+            return False
+        try:
+            codigo = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(manejador, ctypes.byref(codigo)):
+                return False
+            return codigo.value == sigue_activo
+        finally:
+            kernel32.CloseHandle(manejador)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True

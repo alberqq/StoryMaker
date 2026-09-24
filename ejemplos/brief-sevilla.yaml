@@ -1,0 +1,60 @@
+# Cuarto brief de prueba — Sevilla, la Casa de Contratación y la armada de Magallanes (1517-1519)
+#
+# Mismos tres bloques que brief-ejemplo.yaml. Lleva la novela a los primeros años del
+# siglo XVI, a un puerto de río y a un oficio de precisión —el dibujo de cartas de marear—,
+# para probar al investigador con la cosmografía de la época y al escritor con un
+# vocabulario técnico que cambia deprisa: lo que aún no se sabe del mundo no puede
+# aparecer en el texto.
+#
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/brief-sevilla.yaml --nombre sevilla
+#   uv run storymaker estado sevilla
+
+homenajeado:
+  nombre_homenajeado: Inés Carvajal Montoro
+  fecha_nacimiento: 1966-04-21
+  rol_epoca: dibujante de cartas de marear en un taller de Triana que trabaja para la Casa de Contratación
+  ocasion: jubilación tras treinta años como delineante
+
+  elementos_personalizacion:
+    - texto: aprendió a dibujar copiando los mapas que guardaba su padre
+      obligatorio: true
+    - texto: nunca ha subido a un barco, pero conoce todas las costas de memoria
+      obligatorio: true
+    - texto: afila sus propias plumas con navaja
+      obligatorio: false
+
+mundo:
+  periodo:
+    inicio: 1517
+    fin: 1519
+    denominacion: reinado de Carlos I
+  lugar: Sevilla
+
+  evento_ancla: la partida de la armada de Magallanes desde Sevilla en agosto de 1519
+
+  personajes_historicos:
+    aparecen:
+      - Fernando de Magallanes
+    se_evitan:
+      - Carlos I
+
+obra:
+  genero:
+    principal: histórica
+    subgenero: de oficio
+  tono: luminoso y minucioso, con nostalgia por lo que se queda en tierra
+  punto_de_vista: tercera persona con focalización en la homenajeada
+  grado_licencia: moderado
+  arcaismo: moderado
+  contenido_admisible: apto para todos los públicos
+
+  palabras_prohibidas:
+    novela:
+      - satélite
+      - GPS
+    destinatario:
+      - naufragio
+
+  n_capitulos: 10
+  palabras_por_capitulo: 1200

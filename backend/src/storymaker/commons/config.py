@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -109,9 +109,18 @@ class Settings(BaseSettings):
     # Rutas - el directorio es el registro de novelas (arq. §16.4)
     directorio_proyectos: Path = Path("proyectos")
 
+    # Frontend - FastAPI sirve el `dist/` construido, y así lectura, PDF y `render_visual`
+    # comparten origen (arq. §16.4). Sin `dist/` el servidor levanta igual: el build es
+    # requisito de la publicación, no del arranque.
+    frontend_dist: Path = Path(__file__).resolve().parents[4] / "frontend" / "dist"
+    frontend_base_url: str = "http://127.0.0.1:8000"
+
     # Modelos
     modelo_por_rol: dict[Rol, str] = Field(default_factory=_todos_en_haiku)
     sdk_version: str | None = None
+
+    # Investigación: `estandar` (una sesión, tres páginas) o `exhaustiva` (arq. §4)
+    investigacion: Literal["estandar", "exhaustiva"] = "estandar"
 
     # Gates
     gates_enabled: bool = True

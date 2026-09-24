@@ -100,6 +100,9 @@ class CapituloEnRevision:
     personalizacion_encomendada: tuple[int, ...] = ()
     #: Los que el extractor dice haber encontrado en el texto.
     personalizacion_usada: frozenset[int] = frozenset()
+    #: El texto de cada elemento encomendado, por identificador. Es lo que la incidencia
+    #: enseña: con el número solo, el editor no sabe qué falta.
+    personalizacion_textos: tuple[tuple[int, str], ...] = ()
 
 
 @dataclass(frozen=True)

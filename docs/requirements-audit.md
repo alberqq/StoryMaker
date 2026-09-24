@@ -1,300 +1,154 @@
 # Auditoría de requisitos — StoryMaker
 
-Auditoría de este repositorio contra [`REQUIREMENTS.md`](../REQUIREMENTS.md). **No se ha modificado código**: esta auditoría solo lee, ejecuta comprobaciones y escribe este fichero.
+Auditoría de este repositorio contra [`REQUIREMENTS.md`](../REQUIREMENTS.md), requisito a requisito. **No se ha modificado código**: la auditoría lee, ejecuta comprobaciones y escribe solo este fichero. Sustituye entera a la auditoría anterior (commit `89cf09a`, estado H1), que ya no describía el árbol: daba por vacíos `commons/validation/`, `commons/formal/` e `intake/`, y hoy tienen código.
 
-Fecha: 2026-09-23 · Rama: `zero` · Último commit: `89cf09a`
+Fecha: 2026-09-24 · Rama: `zero` · Commit auditado: `bb6355f` (con `docs/architecture.md` modificado en el árbol de trabajo, cambio ajeno a esta auditoría).
 
-## Estado del repositorio en el momento de auditar
+> **Aviso sobre la estabilidad del árbol.** Otro proceso modificó el repositorio mientras esta auditoría corría. A las 09:23 apareció `ejemplos/brief-sevilla.yaml`, y a las 09:33:26 cambiaron `backend/src/storymaker/api/` (`app.py`, `cambios.py`, `estaticos.py`, `lectura.py`, `novelas.py`), `commons/config.py`, `commons/graph/run.py`, `gates/`, varios tests, `docs/verification.md`, `specs/frontend/` y las matrices de trazabilidad. También nació `frontend/`, con 19 ficheros sin versionar (Vite, FSD). Toda la evidencia de la tabla se leyó **antes** de esos cambios, sobre `bb6355f`. Las filas que más probablemente han envejecido son LEC-01..10 (la nota «`frontend/` vacía» ya no es cierta, y las líneas de `api/` pueden haberse desplazado), HAR-07 y HAR-08 (`config.py`) y MEM-06 (`run.py`).
 
-El repositorio ha pasado el tramo **H1 del plan de implementación**: andamiaje, puertas estáticas, configuración tipada y **persistencia** existen y se prueban. Las seis fases, los nueve agentes, el frontend y los artefactos de entrega —presentación, novela de muestra, vídeo— no existen todavía.
-
-> **Aviso sobre la estabilidad del árbol.** `backend/` cambió cuatro veces mientras esta auditoría corría, porque otro proceso lo estaba construyendo en paralelo: la primera pasada encontró diecinueve `__init__.py` vacíos, la segunda contó cero ficheros, la tercera encontró H0 y la cuarta H1 completo con nueve ficheros de esquema SQL. Todas las evidencias corresponden a la **última pasada**. Si `backend/` vuelve a moverse, esta auditoría envejece con él.
-
-Lo que hay, comprobado:
+## Qué se ejecutó
 
 ```
-$ cd backend && .venv/Scripts/python.exe -m pytest -q
-........................................................................ [ 92%]
-......                                                                   [100%]
-78 passed in 3.31s
+$ cd backend && .venv/Scripts/python.exe -m pytest -q -p no:cacheprovider
+678 passed, 1 skipped in 117.38s
+SKIPPED tests/unit/test_formal.py:177: sin `lake` el error salta antes, y eso lo cubre la otra prueba
 
-$ find backend/src backend/tests -name "*.py" | grep -v __pycache__ | wc -l
-48
-$ ls backend/src/storymaker/commons/db/esquema/
-arnes.sql  canon.sql  cronologia.sql  inmutabilidad.sql  intake.sql
-mundo.sql  plan.sql   texto.sql       vec.sql
-$ ls README.md .env.example .mcp.json ejemplos/brief-ejemplo.yaml
-(los cuatro existen)
-$ ls formal/tla/harness.tla formal/tla/harness.cfg formal/lean/lakefile.toml
-(los tres existen)
-$ ls evals/briefs/ | wc -l
-5
-$ find semgrep -type f | wc -l
-6
+$ cd formal/lean && lake build
+bash: lake: command not found            (exit 127; tampoco hay elan ni lean en el PATH)
+
+$ cd formal/tla && java -cp tla2tools.jar tlc2.TLC -workers auto -metadir <scratchpad> -config harness.cfg harness.tla
+Starting... (2026-09-24 09:07:43)
+Progress(24493) at 2026-09-24 09:34:49: 5,294,367 states generated, 3,334,197 distinct states found, 152 states left on queue.
+(detenido a mano a los 27 min: 0 violaciones, pero sin terminar; JRE portátil y tla2tools.jar fuera del repositorio)
+
+$ git log -p --all | grep -E '^\+' | grep -iE "sk-|api_key|secret"
+Solo nombres de variable, documentación y un test; ninguna credencial (detalle en ENT-08)
+
+$ backend/.venv/Scripts/python.exe -c "from langfuse import Langfuse as L; print(hasattr(L,'trace'), hasattr(L,'score'))"
+langfuse 4.15.4 -> trace: False, score: False (sí existe create_score)
 ```
 
-Lo que no hay, comprobado:
+El MCP de Playwright está configurado en [`.mcp.json`](../.mcp.json), pero en esta sesión no conectó (`CONNECTION_CLOSED`), de modo que los requisitos marcados «browser MCP» se han comprobado leyendo el código y sus tests, no inspeccionando una página.
 
-```
-$ ls presentacion/
-(no existe)
-$ find . -path ./.git -prune -o -name "*.pdf" -print
-(sin resultados: ni novela de muestra ni deck ni anexos)
-$ ls -a .claude/
-.  ..  skills                   (sin hooks/, commands/ ni agents/)
-$ find frontend -type f | wc -l
-0
-$ ls evals/resultados/
-(no existe: ninguna eval se ha ejecutado)
-```
+## Lo más importante
 
-Y lo que **el entorno impide comprobar**, que es una categoría distinta y conviene no mezclar con la anterior:
+- **Lean no está en el flujo.** El generador y el runner existen y se prueban, pero ningún nodo llama a `verificar` ni a `cronologia_completa`, y `lake` no está instalado. Arrastra MEM-04, LEAN-03 y LEAN-04.
+- **La observabilidad no llegaría a Langfuse.** `ObservadorLangfuse` llama a `cliente.trace(...)` y `cliente.score(...)`, que no existen en la versión fijada (4.15.4); `abrir_sesion` no se llama desde `src`; y `registrar_veredicto` no se llama desde ningún validador. Arrastra OBS-01..05, VAL-10 y GR-05.
+- **TLC no termina.** Tras 27 minutos y 3,3 millones de estados no había violado ningún invariante, pero el espacio no se agota porque `versiones` crece sin cota; la liveness `Termina` sigue sin verificar.
+- **Faltan los entregables de presentación.** No existen `presentacion/` ni `ejemplos/novela-ejemplo.pdf`, ni hay enlace a un vídeo o al repo MyFactory.
+- **La regeneración por cambio del lector no se puede recorrer de punta a punta.** El grafo entra siempre por `Configure` (`commons/graph/construccion.py:111`) e `Idle` va a `END` (`:157-158`); los nodos de Regeneration existen, pero nada arranca una invocación en `RequestChange`.
 
-```
-$ lake build
-bash: lake: command not found          (tampoco hay elan)
-$ java -version
-bash: java: command not found          (resuelto: JRE portátil en el scratchpad,
-                                        con el que TLC ya ha corrido)
-$ command -v npx
-                                       (sin Node: el MCP no se puede levantar)
-```
-
-De ahí el reparto de estados, que se lee en tres montones. Lo que **está hecho y comprobado** va a `CUMPLE`. Lo que **está escrito pero no se ha podido ejecutar por falta de herramienta** —el proyecto Lean sin `lake`, el servidor MCP sin Node— va a `PARCIAL`, nunca a `CUMPLE`: un fichero en el árbol no es una verificación, y llamarlo así sería el único error que una auditoría no puede permitirse.
-
-TLA+ estaba en ese montón y ha salido de él. Se descargó un JRE portátil y `tla2tools.jar` al directorio temporal, y **TLC corrió de verdad**: encontró tres violaciones, las tres reales y ninguna cosmética, incluida una —que la liveness necesita equidad *fuerte* y no *débil*— que corrige una afirmación de §11d de la arquitectura. Vale la pena decirlo porque es la mejor defensa del método que hay en este repositorio: la especificación llevaba horas escrita y revisada, y los tres defectos seguían ahí. Lo que **depende de las fases o de generar una novela** sigue en `NO_CUMPLE`, con la evidencia apuntando al lugar donde la capacidad está *especificada*.
-
-Los marcados `[M]` en `REQUIREMENTS.md` se registran como `MANUAL`, y los `OPT-*` como `NO_APLICA`.
-
----
-
-## ENT — Entregables y estructura de repos
+## Tabla
 
 | ID | Estado | Evidencia | Notas |
 |---|---|---|---|
-| ENT-01 | CUMPLE | Los cinco existen: código (`backend/src/storymaker/`, 48 ficheros `.py`), [`README.md`](../README.md), brief de ejemplo en [`ejemplos/brief-ejemplo.yaml`](../ejemplos/brief-ejemplo.yaml), [`.env.example`](../.env.example) en la raíz y `/docs` con doce documentos | Que el brief sea *reproducible* no se ha podido comprobar: exige generar la novela, que es ENT-06 |
-| ENT-02 | MANUAL | Repositorio externo, no presente en este árbol de trabajo | No verificable desde aquí; requiere comprobación humana en GitHub |
-| ENT-03 | NO_CUMPLE | `ls presentacion/` → el directorio no existe | — |
-| ENT-04 | NO_CUMPLE | `find . -path ./.git -prune -o -name "*.pdf" -print` → sin resultados; no hay directorio de anexos | — |
-| ENT-05 | NO_CUMPLE | `ls presentacion/README.md` → no existe | Depende de ENT-03 |
-| ENT-06 | NO_CUMPLE | La entrada existe —[`ejemplos/brief-ejemplo.yaml`](../ejemplos/brief-ejemplo.yaml), el mismo brief que cita el README— pero la salida no: `find . -name "*.pdf"` → sin resultados. Y no hay con qué generarla: de las seis fases solo hay carpetas vacías bajo `backend/src/storymaker/` | Desbloqueado a medias: ya hay brief que reproducir, falta el arnés que lo ejecute |
-| ENT-07 | NO_CUMPLE | No hay `presentacion/` ni vídeo en el árbol, y [`README.md`](../README.md) no enlaza ninguno | De los tres artefactos de entrega que quedan, el único que no depende del código |
-| ENT-08 | CUMPLE | `git log -p --all` filtrado por `sk-[a-zA-Z0-9]{20}`, `api_key =`, `secret =` y `ANTHROPIC_API_KEY =` → 4 coincidencias, las cuatro de prueba: dos `export SM_WEB_API_KEY=...` (placeholder literal) y dos con un valor dummy dentro de un test que **afirma que ese valor no aparece** en la salida. `backend/.env.example:6-13` declara los secretos de Telegram y Langfuse con el valor vacío. Además hay gitleaks en las dos puertas: `.pre-commit-config.yaml:12-14` (G0) y `.github/workflows/ci.yml:36-40` (G1) | Ninguna credencial real en el árbol ni en el historial, y dos barreras para que siga así |
-| ENT-09 | MANUAL | Acción del Autor fuera del repositorio | `[M]` en `REQUIREMENTS.md` |
-
-## CFG — Configuración (agente entrevistador)
-
-La fase de Intake está especificada con detalle en `docs/architecture.md` §4 · Fase 1, y su carpeta `backend/src/storymaker/intake/` sigue conteniendo solo un `__init__.py` vacío: ni H0 ni H1 la implementan. Las tablas que la sostendrán sí existen ya (`commons/db/esquema/intake.sql`), lo que convierte a esta familia en la primera que se cerrará cuando empiece H4.
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| CFG-01 | NO_CUMPLE | Especificado en `docs/architecture.md:108-129` (tabla del `Brief`: `nombre_homenajeado`, `fecha_nacimiento`, `rol_epoca`, `genero`, `tono`, `n_capitulos`/`palabras_por_capitulo`). Sin código: `backend/src/storymaker/intake/__init__.py` está vacío | El diseño cubre todos los campos exigidos, incluidos rasgos (`rol_epoca`) y recuerdos (`elementos_personalizacion`) |
-| CFG-02 | NO_CUMPLE | Especificado en `docs/architecture.md:127` (`palabras_prohibidas`, niveles `novela` y `destinatario`). Sin código | — |
-| CFG-03 | NO_CUMPLE | Especificado en `docs/architecture.md:106` («el entrevistador solo pregunta por lo que sigue vacío o ambiguo»). Sin código ni test: los 78 tests que pasan son de configuración, persistencia y dobles, ninguno de intake | — |
-| CFG-04 | NO_CUMPLE | Especificado en `docs/architecture.md:140`: un `@model_validator` de Pydantic con cuatro contradicciones (edad contra período, nacimiento contra evento ancla, tono festivo contra duelo, dato que coincide con palabra prohibida). No existe el modelo `Brief` ni test que lo cubra | El requisito pide un tipo de contradicción; el diseño declara cuatro |
-| CFG-05 | NO_CUMPLE | Especificado en `docs/architecture.md:138` (tabla de cuarentena más extractor a hechos tipados). Sin código | — |
-| CFG-06 | NO_CUMPLE | Especificado en `docs/architecture.md:138`: defensa estructural, el texto en bruto no llega al prompt del escritor. Sin test de injection en `backend/tests/` | El enfoque documentado es más fuerte que el exigido: aislamiento por esquema, no instrucción al modelo |
-| CFG-07 | NO_CUMPLE | Especificado en `docs/architecture.md:106` (esquema `Brief` de Pydantic) y `specs/backend/spec.md:72` (§3, contratos de `commons/`). El único modelo Pydantic que existe es `Settings` (`backend/src/storymaker/commons/config.py:94`), que no es el brief | — |
-
-## LEC — Lectura interactiva (web o PDF)
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| LEC-01 | CUMPLE | `docs/architecture.md:827-834`: se eligen **ambos**, web en React y PDF impreso con `page.pdf()` de Playwright sobre la misma ruta de lectura, con la razón escrita (si el PDF se maquetara aparte, web y PDF divergirían) | Requisito `[E]` de documentación, cubierto |
-| LEC-02 | NO_CUMPLE | Especificado en `docs/architecture.md:215`. No hay frontend: `find frontend -type f` → 0. Nada que inspeccionar con browser MCP | — |
-| LEC-03 | NO_CUMPLE | Especificado en `docs/architecture.md:215` y `specs/backend/plan.md:217` (tarea P-94, tramo H6). `backend/src/storymaker/publication/__init__.py` está vacío | — |
-| LEC-04 | NO_CUMPLE | Especificado en `docs/architecture.md:215` («ficha de personajes y lugares enlazada a sus capítulos»). Sin artefacto que abrir | — |
-| LEC-05 | NO_CUMPLE | Especificado en `docs/architecture.md:215` y `docs/architecture.md:902` (`cover/`, portada y dedicatoria). Sin artefacto | — |
-| LEC-06 | NO_CUMPLE | Especificado en `docs/architecture.md:221` (§4 · Fase 6 Regeneration). `backend/src/storymaker/regeneration/__init__.py` está vacío | — |
-| LEC-07 | NO_CUMPLE | Especificado en `docs/architecture.md:201`: índice hecho→capítulo construido por el extractor sobre la tabla `uso_hecho`. Sin esquema ni base de datos | La tabla de hechos que el requisito pide está diseñada |
-| LEC-08 | NO_CUMPLE | Especificado en `docs/architecture.md:221-232`. Sin código de regeneración | — |
-| LEC-09 | NO_CUMPLE | Especificado en `docs/architecture.md:232` («página de novedades en el PDF, distintivo en el índice web», por `JOIN` de dos manifiestos). Sin artefacto | — |
-| LEC-10 | PARCIAL | Garantizado por estructura: `commons/db/esquema/inmutabilidad.sql` instala triggers que abortan cualquier `UPDATE` sobre el texto, el intento o la procedencia de un `capitulo_version`, y `texto.sql:31` (`version_capitulo`) es el manifiesto. Falta la regeneración que produzca una segunda versión: `regeneration/` está vacío | El cerrojo está puesto antes que aquello que encierra, que es el orden correcto |
-
-## HAR — Harness
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| HAR-01 | PARCIAL | Los nueve roles existen como dominio tipado: `backend/src/storymaker/commons/config.py:25-36` (`class Rol(StrEnum)` con `ENTREVISTADOR` … `JUEZ`), probados en `backend/tests/unit/test_config.py:66` (`test_son_nueve`) y `:69` (`test_estan_los_que_declara_la_arquitectura`), dentro de los 22 tests que pasan. Ningún agente está implementado: las carpetas de las seis fases contienen solo `__init__.py` vacíos | El requisito pide tres roles; hay nueve declarados y cero implementados. El enum no es el rol, pero sí el contrato que los nombra |
-| HAR-02 | MANUAL | `CLAUDE.md` existe en la raíz; su contenido completo es una línea, `@AGENTS.md`, que importa `AGENTS.md` (6.020 bytes: rama de trabajo, mapa de documentos, flujo spec-driven, verificación y operación) | `[E][M]`: el fichero existe; si está «cuidado y legible» lo juzga una persona. La indirección vía `AGENTS.md` es deliberada |
-| HAR-03 | CUMPLE | `git ls-files .claude` → 48 ficheros; doce skills bajo `.claude/skills/`, cada una con su origen y su propósito en `.claude/skills/PROCEDENCIA.md:11-24` | Todas son de terceros, instaladas por copia; ninguna es propia del proyecto. El requisito pide «reutilizable», no «creada aquí» |
-| HAR-04 | NO_CUMPLE | `ls -a .claude/` → solo `skills`; no hay `hooks/` ni `settings.json`. Los hooks que sí existen, en `.pre-commit-config.yaml`, validan Python (ruff, mypy, gitleaks), no capítulos. El hook de capítulo está especificado en `docs/architecture.md:804` | Hay hooks de repositorio, pero ninguno es el hook de validación de capítulo que pide el requisito |
-| HAR-05 | PARCIAL | El policy engine no existe como hook, pero sus reglas sí se aplican estáticamente: `semgrep/` contiene seis reglas propias del arnés —`validador-no-es-tool.yaml`, `core-domain-puro.yaml`, `no-update-inmutables.yaml`, `pii-fuera-del-investigador.yaml`, `sin-red-fuera-del-investigador.yaml`, `indice-solo-por-embeddings.yaml`— ejecutadas en `.github/workflows/ci.yml:41-42`. El policy engine en ejecución está especificado en `docs/architecture.md:791` (§15) y no está implementado | La policy está vigilada en CI, no en el bucle de generación. Media puerta |
-| HAR-06 | NO_CUMPLE | Especificado en `docs/architecture.md:614` (`schema_guard`: la salida de cada rol cumple su modelo Pydantic, en la salida de cada nodo agente). No existen tools ni nodos: `backend/src/storymaker/commons/validation/__init__.py` está vacío | — |
-| HAR-07 | PARCIAL | La constante configurable existe y está probada: `backend/src/storymaker/commons/config.py:66` (`REINTENTOS_POR_CAPITULO: Final = 2`) y `:132` (`reintentos_por_capitulo: int = Field(default=…, ge=0)`), con `backend/tests/unit/test_config.py:89` y `:130` (`test_un_limite_fuera_de_rango_no_se_acepta`). El bucle que la consume no existe: está especificado en `docs/architecture.md:197` y `:509-513` (`Validate --> Fail : reintentos agotados`) | El límite está declarado y validado; no hay retry que limitar todavía |
-| HAR-08 | PARCIAL | El límite está en código como constante con nombre: `backend/src/storymaker/commons/config.py:76` (`TOKENS_CONCURRENTES_MAXIMOS: Final = 100_000`), probado en `backend/tests/unit/test_config.py:52` (`test_presupuesto_de_contexto`). La guarda que lo **aplica** —techo por rol y rechazo de la llamada antes de emitirla— está especificada en `docs/architecture.md:739` y no implementada: `commons/context/` está vacío, y ninguno de los 78 tests toca el paso de contexto | Declarado sí, aplicado no. El diseño explica por qué no se vigila en vivo: el Agent SDK no expone el consumo de la sesión |
-
-## MEM — Memoria
-
-El tramo H1 cerró la mitad de esta familia. El esquema existe y se prueba —nueve ficheros en `commons/db/esquema/`, con `apertura.py` y `transaccion.py`—, así que lo que es **estructura** está en `CUMPLE`. Lo que necesita las fases para poblarse o consumirse sigue en `NO_CUMPLE`.
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| MEM-01 | CUMPLE | Nueve ficheros de esquema en `backend/src/storymaker/commons/db/esquema/` —`intake`, `mundo`, `canon`, `plan`, `texto`, `cronologia`, `arnes`, `vec` e `inmutabilidad`—, con `apertura.py` y `transaccion.py`. `cd backend && pytest -q` → `78 passed` | Las siete familias de §7 más los triggers de inmutabilidad |
-| MEM-02 | CUMPLE | `commons/db/esquema/texto.sql:39` (`uso_hecho`) y `:48` (`uso_hito`), a granularidad de escena y agregables a capítulo | Es el índice del que dependen la regeneración selectiva de LEC-07 y LEC-08 |
-| MEM-03 | CUMPLE | `commons/db/esquema/cronologia.sql:6` (`cronologia_evento`, con momento, lugar y origen) y `:19` (`cronologia_participante`) | Mezcla a propósito eventos históricos y narrativos: es en la mezcla donde aparece lo que Lean detecta |
-| MEM-04 | NO_CUMPLE | Las tablas de origen existen (`cronologia.sql:6,19`) y el formato de destino también (`formal/lean/Cronologia/Generado.lean`), pero no hay nada que las una: `commons/formal/__init__.py` está vacío | Es exactamente LEAN-01 visto desde el otro lado |
-| MEM-05 | NO_CUMPLE | Especificado en `docs/architecture.md:268` (§6, paso de contexto en siete bloques) y `:449` (`vec_resumen` con filtro `vigente = 1`, para no arrastrar resúmenes de intentos rechazados). `commons/context/` está vacío | — |
-| MEM-06 | NO_CUMPLE | Especificado en `docs/architecture.md:27` y `:199`: checkpoint en la misma transacción que el capítulo. El esquema y la transacción ya existen (`commons/db/transaccion.py`), pero no hay grafo que checkpointear ni test de fallo simulado: `commons/graph/__init__.py` está vacío | — |
-
-## VAL — Validadores
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| VAL-01 | NO_CUMPLE | Once validadores deterministas especificados en la tabla `docs/architecture.md:612-624`. Ninguno implementado: `backend/src/storymaker/commons/validation/__init__.py` está vacío | Diseño muy por encima del mínimo de tres; implementación nula |
-| VAL-02 | NO_CUMPLE | `schema_guard` en `docs/architecture.md:614`; contratos en `specs/backend/spec.md:378` (§7). El único esquema validado hoy es `Settings` (`config.py:94`), que no es ni el brief ni la salida de un rol | — |
-| VAL-03 | NO_CUMPLE | `nombres_exactos` en `docs/architecture.md:615`, con punto de ejecución post `WriteChapter`. Sin código ni test | — |
-| VAL-04 | NO_CUMPLE | El rango existe como constante —`backend/src/storymaker/commons/config.py:52` (`RANGO_PALABRAS: Final = (1000, 1500)`), probado en `backend/tests/unit/test_config.py:21`— pero el validador `longitud_capitulo` de `docs/architecture.md:616` no está implementado | La constante coincide exactamente con el 1.000–1.500 del enunciado; falta quien la comprueba |
-| VAL-05 | NO_CUMPLE | Tres validadores de cobertura contra SQLite en `docs/architecture.md:620-622`: `cobertura_anclada`, `cobertura_capitulo` y `cobertura_personalizacion`. Sin código ni base de datos | — |
-| VAL-06 | PARCIAL | Documentado: `docs/architecture.md:624` (`render_visual` con Playwright MCP, dentro de `PublishVersion` y antes del `commit`) y `:828`. Playwright está declarado como extra en `backend/pyproject.toml:24`. El servidor ya está configurado en [`.mcp.json`](../.mcp.json), pero no se ha podido levantar (sin Node) y el validador no existe: `commons/validation/` está vacío | La parte `[E] docs` está cubierta; la parte `[C]` no |
-| VAL-07 | NO_CUMPLE | Especificado en `docs/architecture.md:215` («rúbrica de siete criterios», salida solo como esquema de puntuaciones) y `:634` (§11b). El número de criterios ya es constante —`config.py:87` (`CRITERIOS_RUBRICA: Final = 7`)— pero el juez no existe | La rúbrica documentada excede los cuatro criterios exigidos |
-| VAL-08 | MANUAL | `docs/architecture.md:260` reserva a la revisión humana «exactamente el asiento del juez», con la misma rúbrica y sin poder editar. No hay novela que revisar ni acta de revisión en el repo | `[E][M]`: requiere que una persona revise una novela, y ninguna existe todavía |
-| VAL-09 | CUMPLE | Tabla en `docs/architecture.md:612-624`: una fila por validador con nombre, qué comprueba y punto de ejecución (salida de nodo agente, post `WriteChapter`, hook, gate de Plotting, gate de Writing, dentro de `PublishVersion`) | Requisito `[E]` de documentación, cubierto |
-| VAL-10 | NO_CUMPLE | Especificado en `docs/architecture.md:80` y `:776` (§14). `langfuse` está en `backend/pyproject.toml:14` y las claves en `backend/.env.example:10-12`, pero `commons/obs/__init__.py` está vacío: no hay emisión de scores | Dependencia y configuración listas; instrumentación ausente |
-
-## LEAN — Validador formal de la historia
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| LEAN-01 | NO_CUMPLE | El formato de destino existe y está ejemplificado en [`formal/lean/Cronologia/Generado.lean`](../formal/lean/Cronologia/Generado.lean), con personas, objetos fechados, eventos, momento, lugar y participantes. El **generador** que lo emite desde SQLite no: `backend/src/storymaker/commons/formal/__init__.py` sigue vacío | Las tablas de origen ya existen (`commons/db/esquema/cronologia.sql:6,19`) |
-| LEAN-02 | CUMPLE | Cuatro, no dos, en [`formal/lean/Cronologia/Basico.lean`](../formal/lean/Cronologia/Basico.lean): `I1_NadieAntesDeNacer`, `I2_NadieDespuesDeMorir`, `I3_NoEnDosLugares` e `I4_SinAnacronismos`, compuestos en `Coherente` | I3 compara igualdad exacta de momento y no solape de intervalos; la limitación queda declarada en el código y en el README, no omitida |
-| LEAN-03 | NO_CUMPLE | `lake build` → `bash: lake: command not found`; tampoco hay `elan`. El proyecto está escrito (`lakefile.toml`, `lean-toolchain`, `Verificar.lean`) pero no compilado, y `.github/workflows/ci.yml` no tiene paso de Lean | Bloqueado por el entorno: no hay toolchain de Lean en la máquina |
-| LEAN-04 | NO_CUMPLE | El contrato está definido —`lake exe verificar` sale 0 o 1, y el código de salida es lo que el nodo lee (`formal/lean/Verificar.lean`)— pero nadie lo invoca: `commons/formal/` está vacío y `publication/` también | Especificado y sin implementar |
-| LEAN-05 | CUMPLE | `formal/lean/README.md`, apartado «El caso que solo Lean ve»: Gravina muere el 09-03-1806 y el tono del brief empuja el desenlace a 1808. Se razona por qué no lo ven los once validadores deterministas, ni el juez, ni el Autor en el gate | El requisito admite «caso real **o** justificación». Como no hay novela generada, es la justificación, y se dice así |
-
-## TLA — Validador formal del sistema
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| TLA-01 | CUMPLE | [`formal/tla/harness.tla`](../formal/tla/harness.tla): las seis fases, de `Configure` a `PublishVersion`, más `Idle`, `RequestChange`, `Invalidate` y `RegenerateAffected`. Los 24 estados en la definición `Estados` | Escrita en TLA+ directo y no en PlusCal; la desviación está razonada en `formal/tla/README.md` y en el registro de iteraciones |
-| TLA-02 | CUMPLE | Reintentos: `Repair` con sus dos aristas de entrada, desde `Validate` y desde `Extract`, compartiendo el contador `intentos`. Reanudación: la acción `Checkpoint`. Regeneración: `RequestChange`, `Invalidate` y `RegenerateAffected`, las tres declaradas en `Aristas` (`formal/tla/harness.tla`) | Los tres elementos que el requisito nombra, cada uno con su acción propia |
-| TLA-03 | CUMPLE | Cinco, no tres: `NoPublishUnvalidated`, `ResumeIsExactlyOnce`, `RetriesBounded` y `CorpusSelladoNoSeToca`, más `TypeOK`; los cinco declarados en `formal/tla/harness.cfg` bajo `INVARIANTS` | `PublishVersion` no lleva guarda de validación a propósito, para que `NoPublishUnvalidated` interrogue al grafo y no a sí mismo |
-| TLA-04 | CUMPLE | `Termina`, al final de `formal/tla/harness.tla`: toda ejecución alcanza `Idle`, `Fail` o `Branch`. Declarada en `harness.cfg` bajo `PROPERTIES` | Vale bajo la equidad débil que `Spec` declara sobre `AutorAprueba`: si el Autor acaba respondiendo, toda generación termina |
-| TLA-05 | CUMPLE | [`formal/tla/harness.cfg`](../formal/tla/harness.cfg) fija el modelo pequeño (`NCapitulos = 5`, `MaxIntentos = 2`, `MaxRechazosJuez = 2`) y **TLC se ha ejecutado sobre él**: `java -cp tla2tools.jar tlc2.TLC -config harness.cfg harness.tla` → `93794 states generated, 59236 distinct states found`. Encontró tres violaciones reales, las tres corregidas | El JDK 21 y `tla2tools.jar` se descargaron al scratchpad y **no están en el repositorio**: reproducirlo exige bajarlos. La reverificación final con equidad fuerte es más cara y quedó corriendo |
-| TLA-06 | CUMPLE | [`README.md`](../README.md) mapea las 21 acciones de la especificación a su nodo de LangGraph y a su efecto en SQLite, una fila por acción | Los nodos todavía no existen: la tabla mapea contra el código previsto. La prueba `identidad_nodo_accion` que la comprobará vive en el tramo H3 del plan |
-| TLA-07 | CUMPLE | Tres contraejemplos en la tabla de [`formal/tla/README.md`](../formal/tla/README.md), cada uno con su traza y el cambio que provocó: `ResumeIsExactlyOnce` (el rehacer del gate de Writing se trataba como pasada inicial → acción `RehacerWriting`), `Termina` (nada acotaba los rechazos del juez → `rechazosJuez` y arista `Judge → Fail`), y `Termina` otra vez (la equidad débil no bastaba → equidad fuerte) | Ninguno se corrigió debilitando la propiedad: los tres se arreglaron en el modelo o añadiendo el tope que faltaba |
-
-## EVAL — Evaluación del sistema
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| EVAL-01 | CUMPLE | Cinco en [`evals/briefs/`](../evals/briefs/): `01-caso-base`, `02-injection`, `03-incoherencia-temporal`, `04-prohibidas-dificiles` y `05-cobertura-imposible`, cada uno con su bloque `esperado` | Elegidos por incómodos, no por representativos: tres de los cinco esperan fallar |
-| EVAL-02 | CUMPLE | [`evals/briefs/02-injection.yaml`](../evals/briefs/02-injection.yaml): cinco cargas en el texto libre —cambio de idioma, anulación de prohibidas, cadena centinela, capítulo extra e instrucción disfrazada de anécdota— con las comprobaciones de que ninguna se ejecuta | La quinta prueba el hallazgo RT-01 del red-team log, que predice que es la que puede sobrevivir |
-| EVAL-03 | CUMPLE | [`evals/briefs/03-incoherencia-temporal.yaml`](../evals/briefs/03-incoherencia-temporal.yaml): nacimiento en 1831 contra período 1803-1806, Gravina muerto en 1806 contra un desenlace posterior, y un telégrafo eléctrico en 1805 | Mide **dónde** se detecta, no si se detecta: espera parada en el gate de Intake con cero tokens gastados en investigación |
-| EVAL-04 | NO_CUMPLE | `evals/README.md` fija qué se anota por ejecución —validadores, intentos, rúbrica de siete criterios, coste— y `evals/resultados/` no existe: no ha habido ejecución | El arnés no corre de punta a punta todavía. No se rellena con números inventados |
-| EVAL-05 | NO_CUMPLE | Sin ejecuciones no hay antes ni después. Los prompts versionados en Langfuse que vincularían el tuning con sus resultados están especificados en `docs/architecture.md:785` y no implementados | Depende de EVAL-04 |
-
-## OBS — Observabilidad (Langfuse)
-
-La dependencia (`backend/pyproject.toml:14`) y las claves de `.env.example` están puestas; `backend/src/storymaker/commons/obs/__init__.py` sigue vacío, así que no hay instrumentación que auditar. H1 no tocó esta familia.
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| OBS-01 | NO_CUMPLE | Especificado en `docs/architecture.md:32` (sesión = novela, span = capítulo/rol/intento). Sin código en `commons/obs/` | — |
-| OBS-02 | NO_CUMPLE | Especificado en `docs/architecture.md:32` y `:776` (§14). El dominio de roles existe (`config.py:25`) pero ningún span lo usa | — |
-| OBS-03 | NO_CUMPLE | Especificado en `docs/architecture.md:776` (§14) y en `specs/backend/trace-matrix.md`. Sin código | — |
-| OBS-04 | NO_CUMPLE | Especificado en `docs/architecture.md:80` («Langfuse: trazas, scores, prompts») y `:215` (el juez solo emite puntuaciones, que se inyectan como scores). Sin validadores que puntúen y sin emisión | — |
-| OBS-05 | NO_CUMPLE | Especificado en `docs/architecture.md:785`: los prompts de rol viven en Langfuse como fuente de verdad y el id de versión viaja en el span. Sin código y sin resultados de tuning a los que vincularlos (ver EVAL-05) | — |
-
-## GR — Guardrails
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| GR-01 | NO_CUMPLE | `guardrail_prohibidas` especificado en `docs/architecture.md:617`, post `WriteChapter` y expuesto también como hook. Sin código en `commons/validation/` | — |
-| GR-02 | CUMPLE | `commons/db/esquema/canon.sql:83` (`canon_prohibida`, con columna `nivel`) y `:93` (índice sobre `normalizado`). Los tres niveles son `global`, `novela` y `destinatario` | El requisito pide global y por novela; el esquema añade `destinatario`, que es el que no admite fallo |
-| GR-03 | NO_CUMPLE | La columna `normalizado` de `docs/architecture.md:352` y «tres niveles, con normalización» en `:617` lo prevén. Sin código ni test | — |
-| GR-04 | NO_CUMPLE | Especificado en `docs/architecture.md:197` (parche del editor con límite de reintentos) y `:513` (`Validate --> Fail : reintentos agotados`). El límite existe como constante (`config.py:66`), pero no hay reescritura ni parada que limitar | — |
-| GR-05 | NO_CUMPLE | Especificado en `docs/architecture.md:791` (§15) y `:80`. Sin audit log y sin emisión a Langfuse | — |
-| GR-06 | NO_CUMPLE | `cd backend && .venv/Scripts/python.exe -m pytest -q` → `22 passed in 0.25s`, pero los 22 son de `test_config.py` (defaults, roles y `Settings`) y `test_agente_falso.py` (el doble de agente). Ninguno cubre niveles de guardrail ni variantes con acento o plural | Hay suite, y verde; no hay estos casos en ella |
-| GR-07 | NO_CUMPLE | Especificado en `docs/architecture.md:791` (§15) y `:799` (Core Domain único, sin implementación duplicada). La pureza de ese Core Domain ya tiene guardia estática en `semgrep/core-domain-puro.yaml`, pero el audit log no existe | — |
-
-## DOC — Documentación de proceso (/docs)
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| DOC-01 | CUMPLE | `docs/architecture.md` (1.063 líneas), `specs/backend/spec.md:1` y `specs/backend/plan.md:1` preceden al código: lo único implementado es H0, el primer tramo de `specs/backend/plan.md:28`, y cada módulo cita su origen en la cabecera (`backend/src/storymaker/commons/config.py:1` → `"""spec: §2.2 · arq: §19`) | El orden exigido se cumple, y además queda trazado desde el propio código |
-| DOC-02 | CUMPLE | `docs/architecture.md:954` (§17 Trade-offs registrados) y la tabla de decisiones fijadas de `:17-36`, con opción elegida y consecuencia principal en cada fila | — |
-| DOC-03 | CUMPLE | Ocho explainers en [`docs/explainers/`](explainers/), uno por concepto del curso aplicado: harness y orquestación, memoria y contexto, validadores, verificación formal, guardrails y policy, observabilidad, evals, y MCP con skills y hooks | Con índice en `docs/explainers/README.md` |
-| DOC-04 | CUMPLE | Los cuatro, reunidos en [`docs/diagramas.md`](diagramas.md): arquitectura (`architecture.md:59`), máquina de estados (`architecture.md:488`), tabla de validadores (`architecture.md:612`) y el **esquema SQLite**, que faltaba y se dibuja aquí como diagrama entidad-relación | El de SQLite vivía solo en prosa y DDL suelto |
-| DOC-05 | CUMPLE | [`docs/iteraciones.md`](iteraciones.md), con cinco iteraciones en formato causa → qué se hizo → efecto medido → deuda, incluida una que declara que su efecto **no** se midió y por qué | Es distinto del registro de cambios de cada documento, que anota el qué y no el porqué |
-| DOC-06 | CUMPLE | [`docs/red-team.md`](red-team.md), con seis ataques (RT-01 a RT-06), su clase de evidencia, veredicto y mitigación aplicada o candidata, más un apartado explícito de lo que esta ronda **no** ha mirado | Los hallazgos son de análisis de la especificación y están marcados como clase `A`, no como ejecutados |
-| DOC-07 | NO_CUMPLE | Las menciones a browser MCP son de diseño, no de uso: `docs/architecture.md:624`, `:828` y `:876`. No hay registro de qué se inspeccionó, qué se detectó ni qué se cambió | Sin `.mcp.json` y sin frontend, no ha podido haber uso real |
-| DOC-08 | CUMPLE | [`docs/skills.md`](skills.md) inventaría las trece skills agrupadas por la parte del sistema a la que sirven, enlaza la procedencia exacta de `.claude/skills/PROCEDENCIA.md` y declara la skill propia que falta (`continuity-check`, §19) | Documenta además por qué no hay subagentes ni comandos propios, que es lo que pide DOC-09 |
-| DOC-09 | CUMPLE | `ls -a .claude/` → solo `skills`; no existen `.claude/agents/` ni `.claude/commands/`. El requisito aplica «si existen», y no existen, luego no hay nada que documentar | Cumplido por ausencia del supuesto |
-
-## CC — Uso de Claude Code
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| CC-01 | PARCIAL | `git ls-files .claude` → 48 ficheros commiteados, todos bajo `.claude/skills/`. No hay memoria ni comandos: `ls -a .claude/` → solo `skills` | La carpeta está commiteada, pero le faltan las dos cosas que el requisito nombra |
-| CC-02 | PARCIAL | [`.mcp.json`](../.mcp.json) en la raíz declara el servidor `playwright` con `npx -y @playwright/mcp@latest`. No se ha podido levantar: `npx` no está en el entorno (`command -v npx` → nada) | Configurado, no verificado. Sin Node no hay forma de confirmar que arranca |
-
-## PRE — Presentación
-
-Los ocho son `[M]` en `REQUIREMENTS.md`, y además no existe `presentacion/` (`ls presentacion/` → el directorio no existe), de modo que tampoco hay material que juzgar todavía.
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| PRE-01 | MANUAL | `[M]`; `ls presentacion/` → el directorio no existe | Juicio humano sobre material que aún no existe |
-| PRE-02 | MANUAL | `[M]`; no hay deck en el repo | — |
-| PRE-03 | MANUAL | `[M]`; no hay deck en el repo | — |
-| PRE-04 | MANUAL | `[M]`; sin coste real que citar, porque no hay instrumentación de Langfuse (ver OBS-03) | — |
-| PRE-05 | MANUAL | `[M]`; no hay deck en el repo | — |
-| PRE-06 | MANUAL | `[M]`; no hay deck en el repo | — |
-| PRE-07 | MANUAL | `[M]`; no hay deck en el repo | — |
-| PRE-08 | MANUAL | `[M]`; las tres evidencias que pide dependen de EVAL-04, OBS-03 y LEC-08, los tres en `NO_CUMPLE` | — |
-
-## OPT — Opcionales
-
-Ninguno implementado; `REQUIREMENTS.md` permite marcarlos `NO_APLICA` y no bloquean.
-
-| ID | Estado | Evidencia | Notas |
-|---|---|---|---|
-| OPT-01 | NO_APLICA | No hay servidor MCP en el repo | — |
-| OPT-02 | NO_APLICA | No hay tools MCP | — |
-| OPT-03 | NO_APLICA | No hay linters de prosa | — |
-| OPT-04 | NO_APLICA | El linter de edición manual está previsto en `docs/architecture.md:804` como skill y hook de `.claude/`, pero no implementado | Cuando se implemente, cae bajo HAR-04 |
-| OPT-05 | NO_APLICA | No hay proyecto Lean (ver LEAN-01) | — |
-| OPT-06 | NO_APLICA | No hay especificación TLA+ (ver TLA-01) | — |
-| OPT-07 | NO_APLICA | No hay autenticación | — |
+| ENT-01 | CUMPLE | `README.md` (puesta en marcha y brief de ejemplo, `README.md:106`); `ejemplos/brief-ejemplo.yaml`; `.env.example:1-37`; `docs/` con 11 documentos y `docs/explainers/` | Hay además dos briefs de ejemplo más: `ejemplos/brief-exposicion.yaml` y `ejemplos/brief-salamanca.yaml` |
+| ENT-02 | NO_CUMPLE | `grep -rniE myfactory --include=*.md .` → solo `REQUIREMENTS.md`. Ningún enlace ni submódulo | Si el repo existe fuera, falta enlazarlo desde el README para que sea verificable |
+| ENT-03 | NO_CUMPLE | `ls presentacion` → no existe; `git ls-files` filtrado por `pdf, pptx, key, odp` → 0 resultados | — |
+| ENT-04 | NO_CUMPLE | `ls presentacion` → no existe; no hay anexos en ningún otro directorio | — |
+| ENT-05 | NO_CUMPLE | `ls presentacion/README.md` → no existe | — |
+| ENT-06 | NO_CUMPLE | `ls ejemplos/novela-ejemplo.pdf` → no existe; `find proyectos -name "*.pdf"` → 0 (y `proyectos/` está en `.gitignore:8`) | `docs/iteraciones.md` It-17 afirma que una novela real llegó a imprimir PDF, pero no se commiteó (ítem P-124 de `remaining.md`) |
+| ENT-07 | NO_CUMPLE | `grep -niE "video\|vídeo"` sobre `README.md` → 0 coincidencias; `git ls-files` filtrado por `mp4, webm, mov` → 0 | — |
+| ENT-08 | CUMPLE | `git log -p --all` (31 commits), líneas añadidas filtradas por `sk-, api_key, secret` → solo nombres de variable y prosa. Con patrones de clave real (`sk-...{20,}`, `pk-lf-`, token de bot) → 4 coincidencias: 2 son la URL `nist.gov/.../ai-risk-management-framework` (commit `1b9ca26`) y 2 un valor de `api_key` con marcador «prueba» en un test que afirma que no aparece en la salida (commit `525f1f6`). Barreras: gitleaks en `.pre-commit-config.yaml:13-16` (G0) y `.github/workflows/ci.yml:42-43` (G1); `.env.example:31-35` deja los secretos vacíos | Ninguna credencial real en el árbol ni en el historial |
+| ENT-09 | MANUAL | Requisito [M]: el email de entrega está fuera del repositorio | Revisión humana |
+| CFG-01 | PARCIAL | `backend/src/storymaker/intake/esquemas.py:123-146` — `Brief` (`nombre_homenajeado`, `fecha_nacimiento`, `elementos_personalizacion`, `genero`, `tono`, `n_capitulos`, `palabras_por_capitulo`); edad derivada en `intake/contradicciones.py:29` `edad_en`. Test: `backend/tests/unit/test_intake.py:49` `test_recoge_los_tres_bloques` | No hay campo de rasgos del homenajeado (`rasgos_json` de `canon.sql:25` es del arquitecto); los recuerdos solo existen como `TipoDeDato.ANECDOTA` (`esquemas.py:40`) |
+| CFG-02 | CUMPLE | `intake/esquemas.py:109-111` `TerminoProhibido`, `:144` `palabras_prohibidas`, `:55-60` `NivelDeProhibicion`; `intake/encargo.py:181-189` `redactar` | Se recogen en los niveles novela y destinatario |
+| CFG-03 | PARCIAL | `intake/esquemas.py:164-185` `PreguntaAlComprador`, `RespuestaEntrevistador`; `intake/nodos.py:149-156` las guarda como incidencias; `gates/nodos.py:145-149` las enseña en el gate. Test: `test_intake.py:223` `test_un_encargo_cerrado_lo_dice` | Qué falta lo decide el modelo; la comprobación determinista `intake/informe.py:62-74` `construir` solo se llama desde tests. Ningún test cubre preguntas no vacías |
+| CFG-04 | CUMPLE | `intake/contradicciones.py:34-46` `revisar` con cuatro tipos: `_edad_contra_periodo` (`:49`), `_nacimiento_contra_evento_ancla` (`:73`), `_tono_contra_periodo` (`:93`), `_datos_contra_prohibidas` (`:108`); invocado en `intake/nodos.py:158-168`. Tests: `test_intake.py:97` `test_el_homenajeado_nace_despues_del_periodo`, `:121` `test_tono_festivo_sobre_periodo_de_duelo` (pasan en la ejecución de pytest) | El gate solo enseña `pregunta_del_entrevistador` (`gates/nodos.py:144-149`): las contradicciones se guardan, pero el Autor no las ve |
+| CFG-05 | CUMPLE | `intake/nodos.py:46-81` `extraer_texto_libre` (salida `SalidaExtractorDeIntake`, `esquemas.py:188-202`), llamado en `configure` (`:143-145`); entrada en `intake/encargo.py:220`; volcado en `intake/cuarentena.py:34-50` `volcar_extraidos`. Test: `test_intake.py:157` `test_el_texto_pegado_entra_y_no_sale` | Ningún test ejecuta el extractor con un transporte falso |
+| CFG-06 | CUMPLE | Delimitado con `---` e instrucción en `intake/nodos.py:56-59`; prompt de sistema en `commons/obs/prompts.py:33-35`; cuarentena `intake/cuarentena.py:25` `ORIGEN_CUARENTENA` con `CHECK` en `commons/db/esquema/intake.sql:28-31`. Tests: `backend/tests/adversarias/test_adversario.py:45` `test_la_inyeccion_no_sobrevive_al_tipado`, `:63` `test_el_crudo_se_queda_en_la_cuarentena` (pasan) | La defensa es por construcción (extracción tipada + cuarentena). El test de inyección construye el `DatoExtraido` a mano, así que prueba el tipado y no al extractor |
+| CFG-07 | CUMPLE | `intake/esquemas.py:114` `Brief` (Pydantic), validado en `commons/agents/invocacion.py:146` vía `commons/agents/schema_guard.py:55` `validar`; persistido en `intake/nodos.py:113-128` `cerrar_brief`. Tests: `test_intake.py:75` `test_un_periodo_al_reves_no_se_acepta`; `backend/tests/unit/test_agentes.py:197`, `:212` | — |
+| LEC-01 | CUMPLE | `docs/architecture.md:862-869` (web y PDF desde la misma ruta, con la razón); `README.md:106` | El README promete React y `frontend/` está vacío: la lectura web la sirve HTML generado en el backend |
+| LEC-02 | CUMPLE | `backend/src/storymaker/publication/render.py:81-83` `construir_lectura` (índice con `<a href="#capitulo-n">`); `render.py:144-163` `imprimir_pdf`; `api/estaticos.py:35` `leer`. Test: `backend/tests/unit/test_publicacion.py:108` (pasa) | No se ha podido abrir con browser MCP (no conectó) ni hay test de los enlaces dentro del PDF |
+| LEC-03 | PARCIAL | `publication/render.py:85-91` (solo `canon_personaje`: nombre y estatus); `api/lectura.py:124` `personajes` | Faltan los lugares: `canon_escenario` no se renderiza |
+| LEC-04 | PARCIAL | `api/lectura.py:131-149` (`GROUP_CONCAT` de capítulos por personaje, en JSON) | La API da los números de capítulo, pero ni el HTML ni el PDF enlazan la ficha con el capítulo |
+| LEC-05 | NO_CUMPLE | `publication/render.py:95` (portada = `<h1>` con el título); `grep -rni dedicatoria backend/src` → solo el comentario `render.py:30` | La dedicatoria está en la arquitectura, no en el código |
+| LEC-06 | PARCIAL | `api/cambios.py:35` `pedir_cambio` (POST); `cli/comandos.py:208-221` `cambiar` | La CLI solo lista candidatos, y nada conecta la petición con el nodo `RequestChange` (entrada fija en `commons/graph/construccion.py:111`) |
+| LEC-07 | CUMPLE | `commons/db/repos/texto.py:105-122` `capitulos_afectados` (sobre `uso_hecho`); `regeneration/nodos.py:37-60` `calcular_alcance`. Test: `test_publicacion.py:169` (pasa) | Para escenario y glosario el alcance devuelve lista vacía |
+| LEC-08 | PARCIAL | `regeneration/nodos.py:161` `invalidate`, `:182` `regenerate`; `commons/graph/construccion.py:124-126` | Los nodos existen pero el flujo no se alcanza, y `publication/nodos.py:167-171` rechaza publicar capítulos invalidados; el trigger `corpus_sellado_update` (`commons/db/esquema/inmutabilidad.sql:84-89`) abortaría un cambio de HECHO tras el sello |
+| LEC-09 | PARCIAL | `regeneration/diff.py:62` `entre`; `api/lectura.py:155` `diferencias`. Test: `test_publicacion.py:298` | El diff solo existe como JSON: `render.py` no genera página de novedades ni marca capítulos |
+| LEC-10 | CUMPLE | `commons/db/esquema/inmutabilidad.sql:55-77` (triggers append-only); `commons/db/repos/texto.py:71` `publicar_version`; `publication/nodos.py:249` (PDF `.v{n}.pdf`). Test: `test_publicacion.py:316` (pasa) | Se conserva por construcción |
+| HAR-01 | CUMPLE | `backend/src/storymaker/commons/config.py:25-36` `Rol` (ARQUITECTO, ESCRITOR, EDITOR, JUEZ entre nueve); `plotting/nodos.py:133-134` `planificar`; `writing/nodos.py:53-54` `escribir_capitulo`, `:195-196` `reparar`; `publication/nodos.py:67-68` `juzgar`. Test: `backend/tests/unit/test_agentes.py:61` `test_los_diez_perfiles_tienen_techo` | planner = arquitecto, writer = escritor, editor = editor, critic = juez |
+| HAR-02 | CUMPLE | `CLAUDE.md:1` (`@AGENTS.md`); `AGENTS.md:1-72` | La parte [M] —que sea cuidado y legible— queda a juicio humano; el contenido vive en `AGENTS.md` |
+| HAR-03 | CUMPLE | `.claude/skills/continuity-check/SKILL.md:1-34` (propia; no figura en `.claude/skills/PROCEDENCIA.md:10-26`) | Las demás skills de `.claude/skills/` son de terceros |
+| HAR-04 | PARCIAL | `.claude/settings.json:3-10` (PostToolUse `Write, Edit` → `cli_hook "$CLAUDE_FILE_PATH"`); `backend/src/storymaker/commons/validation/cli_hook.py:16-30` `main`; nodo `writing/nodos.py:256` `validate`. Test: `backend/tests/contratos/test_nodo_vs_hook.py:79` `test_el_mismo_capitulo_da_el_mismo_veredicto_por_los_dos_caminos` | Claude Code entrega la ruta por stdin en JSON, no en `$CLAUDE_FILE_PATH`; el hook salta con cualquier fichero. El test prueba `revisar_fichero`, no el hook real |
+| HAR-05 | PARCIAL | `commons/validation/policy_checker.py:31` `guardrail_prohibidas` (usado en `writing/validacion.py:125`); `commons/agents/hooks.py:51` `CuotaDeHerramientas.decidir` (deny), conectado en `commons/agents/transporte_sdk.py:73`. Tests: `test_agentes.py:99`, `tests/adversarias/test_adversario.py:152` | `pii_en_prompt_de_investigacion` (`policy_checker.py:100`) y `texto_libre_no_filtrado` (`:72`) solo se usan en tests |
+| HAR-06 | PARCIAL | `commons/agents/schema_guard.py:55` `validar`; `commons/agents/invocacion.py:86` `contrato_de_salida`, `:107` `invocar_rol`. Tests: `test_agentes.py:148` `TestSchemaGuard` | Se valida con Pydantic la salida de cada rol, pero no hay tools propias (`grep "@tool, create_sdk_mcp_server, input_schema"` → 0); `semgrep/validador-no-es-tool.yaml` prohíbe que un validador sea tool |
+| HAR-07 | CUMPLE | `commons/config.py:66` `REINTENTOS_POR_CAPITULO = 2`, `:131` `Settings.reintentos_por_capitulo`; `commons/graph/aristas.py:89` `tras_validate`, `:103` `tras_extract`. Tests: `backend/tests/unit/test_grafo.py:75` `test_agotados_los_reintentos_va_a_fail`, `backend/tests/propiedades/test_invariantes.py:62` `test_nunca_se_repara_pasado_el_limite` (pasan) | El reintento de esquema (`invocacion.py:115`) es un parámetro con valor por defecto, fuera de `Settings` |
+| HAR-08 | PARCIAL | `commons/config.py:76` `TOKENS_CONCURRENTES_MAXIMOS = 100_000`; `commons/agents/techos.py:58` `TECHOS`, `:101` `PEOR_CASO_DEL_SISTEMA`; `commons/agents/presupuesto.py:48` `guarda_techo`. Test: `backend/tests/propiedades/test_sesiones_en_serie.py:40` `test_en_serie_siempre_cabe` | Garantizado por construcción (grafo en serie + techo por rol), no comprobado en ejecución; la estimación es `len/3.5` y no se fija máximo de salida en el SDK |
+| MEM-01 | CUMPLE | `backend/src/storymaker/commons/db/esquema/canon.sql:6-89` (`canon_obra`, `canon_personaje`, `canon_arco`, `canon_prohibida`…); `commons/db/apertura.py:104` `abrir_novela`. Test: `backend/tests/unit/test_persistencia.py:45` | Un fichero SQLite por novela |
+| MEM-02 | CUMPLE | `commons/db/esquema/texto.sql:39` `uso_hecho` (capítulo, escena, hecho), `:48` `uso_hito`; rellenado en `writing/extraccion.py:138`. Test: `test_publicacion.py:173` | — |
+| MEM-03 | CUMPLE | `commons/db/esquema/cronologia.sql:6-17` `cronologia_evento` (descripción, momento, `lugar_entidad_id`), `:19` `cronologia_participante` | El extractor no rellena el lugar (`writing/extraccion.py:219-221`) |
+| MEM-04 | PARCIAL | `commons/formal/generador.py:139` `generar`; `plotting/gate.py:89` `cronologia_de_la_escaleta`; `publication/nodos.py:102` `cronologia_completa`. Tests: `backend/tests/unit/test_formal.py:121`, `backend/tests/unit/test_plotting.py:125` | `grep -rn "cronologia_completa\|verificar("` en `src` → solo sus definiciones: la cronología no llega a Lean en el flujo real |
+| MEM-05 | CUMPLE | `writing/extraccion.py:249` `guardar_resumen`; `writing/nodos.py:214` `aprobar`; `commons/context/bloques.py:207-237` `memoria` (bloque 4); `commons/embeddings/indice.py:174` `buscar_resumenes`. Tests: `backend/tests/integracion/test_extremo_a_extremo.py:139`, `backend/tests/unit/test_ensamblador.py:121` | Resúmenes vigentes de capítulos anteriores más el texto íntegro de N-1 |
+| MEM-06 | PARCIAL | `writing/nodos.py:315` `checkpoint`; `commons/graph/run.py:156` `AsyncSqliteSaver`, `:185` `Command(resume=...)`. Tests: `backend/tests/integracion/test_invocacion.py:81` (reanudar tras gate), `test_persistencia.py:352` `test_lo_que_falla_a_mitad_no_deja_rastro` | Ningún test simula una caída a mitad de Writing y reanuda desde el último capítulo; It-17 de `docs/iteraciones.md` lo describe como hecho en una ejecución real |
+| VAL-01 | CUMPLE | `backend/src/storymaker/commons/validation/registro.py:54-124` `REGISTRO` (11 validadores); `commons/validation/chapter_validator.py:30, 57, 84, 111, 140`; ejecutados en `writing/validacion.py:123` `pasada_determinista`. Test: `backend/tests/unit/test_core_domain.py:361` `test_estan_los_once_validadores_de_la_arquitectura` | — |
+| VAL-02 | CUMPLE | `intake/esquemas.py:114` `Brief`; `writing/esquemas.py:24, 36, 133` `SalidaEscritor`, `SalidaEditor`, `SalidaExtractorDeCapitulo`; `publication/esquemas.py:46` `SalidaJuez`; `commons/agents/schema_guard.py:55` `validar`. Test: `test_agentes.py:154` `test_rechaza_lo_que_no_cumple_el_esquema` | — |
+| VAL-03 | CUMPLE | `commons/validation/chapter_validator.py:30` `nombres_exactos`, con los nombres leídos de SQLite en `writing/validacion.py:54`. Test: `test_core_domain.py:137` `test_nombres_exactos_salta_con_otra_grafia` | Solo mira los personajes de las escenas del capítulo |
+| VAL-04 | PARCIAL | `chapter_validator.py:57` `longitud_capitulo`; el grafo usa `writing/validacion.py:181` → `(objetivo*0.83, objetivo*1.25)` = (996, 1500) con 1200; el hook usa `commons/config.py:52` `RANGO_PALABRAS = (1000, 1500)`. Tests: `test_core_domain.py:146, 149` | El grafo acepta desde 996 palabras, y los dos caminos no usan el mismo rango |
+| VAL-05 | PARCIAL | `chapter_validator.py:140` `cobertura_capitulo` (activo en `writing/nodos.py:155`); `cobertura_anclada` y `cobertura_personalizacion` en `escaleta.py:25, 145` con datos de SQLite en `plotting/gate.py:73-74`. Tests: `backend/tests/unit/test_plotting.py:61`, `backend/tests/unit/test_writing.py:294` | Ningún nodo llama a `plotting/gate.py:156` `comprobar` ni a `writing/gate.py:80` `construir`; It-18 documenta que la cobertura aprobó con `plan_anclaje` vacía |
+| VAL-06 | NO_CUMPLE | `publication/render.py:102` `render_visual` compara cadenas del HTML generado (`:44`); `publication/nodos.py:180-185` lanza `PublicacionRechazada` | No usa navegador ni MCP (Playwright solo imprime el PDF, `render.py:144`), y el error no vuelve a ningún rol |
+| VAL-07 | PARCIAL | `publication/esquemas.py:22-63` `Criterio`, `Puntuacion` (valor y `justificacion`); `publication/rubrica.yaml:10-47`; `publication/nodos.py:58` `juzgar`, `:196` `judge`. Tests: `test_publicacion.py:58, 68` | No hay criterio explícito de tono; a Langfuse solo van los valores, sin justificación |
+| VAL-08 | NO_CUMPLE | `docs/revision-humana.md:93-116` (plantilla de la rúbrica), `:118-120` («Ninguna todavía») | Hay protocolo, pero ninguna novela revisada ni comparada con el juez |
+| VAL-09 | CUMPLE | `docs/architecture.md:620-634` (tabla §11a: nombre y punto de ejecución), `:646-652` (§11b), `:681-685` (Lean); `docs/diagramas.md:10` la enlaza; `commons/validation/registro.py:26` `Punto`. Test: `backend/tests/correspondencia/test_registro.py:91, 103` | — |
+| VAL-10 | PARCIAL | Solo puntúan `juez_rubrica` (`publication/nodos.py:217`) y la decisión de gate (`gates/decisiones.py:87`); `commons/obs/scores.py:53` `registrar_veredicto` → `grep -rn registrar_veredicto backend/src` solo da su definición | Los deterministas escriben en `incidencia` (`writing/nodos.py:98-107`) y no emiten score; además `cliente.score` no existe en langfuse 4.15.4 (`commons/obs/trazas.py:151`) |
+| LEAN-01 | CUMPLE | `backend/src/storymaker/commons/formal/generador.py:139` `generar` (eventos, momento, lugar, participantes, nacimiento y muerte), leyendo de SQLite en `plotting/gate.py:89`. Tests: `backend/tests/unit/test_formal.py:82, 121`, `test_plotting.py:101, 109, 125` (pasan) | `cronologia_completa` pone `lugar=0` y no vuelca objetos, de modo que I3 e I4 no pueden saltar al publicar |
+| LEAN-02 | CUMPLE | `formal/lean/Cronologia/Basico.lean:104` `I1_NadieAntesDeNacer`, `:120` `I2_NadieDespuesDeMorir`, `:139` `I3_NoEnDosLugares`, `:155` `I4_SinAnacronismos`, `:162` `Coherente` | `docs/architecture.md:672-675` enumera otros cuatro invariantes: documento y código no coinciden |
+| LEAN-03 | PARCIAL | `commons/formal/runner.py:108` `verificar`, `:131-138` (`lake exe verificar` como subproceso); `formal/lean/Verificar.lean:26` `main`. Ejecutado: `cd formal/lean && lake build` → `bash: lake: command not found`, exit 127; pytest salta `test_formal.py:177` por lo mismo | `verificar` no se llama desde ningún nodo ni gate, y no hay paso de Lean en `.github/workflows/` |
+| LEAN-04 | NO_CUMPLE | `publication/nodos.py:153` `publicar` y `:239` `publish` no invocan Lean; `commons/formal/runner.py:56` `interpretar` genera incidencias `lean_cronologia` que nadie consume | En batch, `judge` fuerza además la publicación (`publication/nodos.py:227-230`) |
+| LEAN-05 | CUMPLE | `formal/lean/README.md:47-61` («El caso que solo Lean ve»: I2 sobre `evals/briefs/03-incoherencia-temporal.yaml`); datos en `formal/lean/Cronologia/Generado.lean:25-44` | Es justificación, no caso real detectado, y el README lo dice así; el requisito admite ambas |
+| TLA-01 | CUMPLE | `formal/tla/harness.tla:63-111` `Aristas`; `:160` Configure, `:237` Plan, `:267-339` Writing, `:272` Validate, `:375` PublishVersion | TLA+ directo en lugar de PlusCal, razonado en `formal/tla/README.md:107` y en It-05 |
+| TLA-02 | PARCIAL | Reintentos: `harness.tla:305` `Repair`; regeneración: `:391-419`; reanudación solo implícita en `:324` `Checkpoint` y el invariante `:523` `ResumeIsExactlyOnce` | No hay acción explícita de caída ni de reanudación desde checkpoint |
+| TLA-03 | CUMPLE | `formal/tla/harness.tla:513` `NoPublishUnvalidated`, `:523` `ResumeIsExactlyOnce`, `:528` `RetriesBounded`, `:532` `CorpusSelladoNoSeToca`, `:131` `TypeOK`; declarados en `formal/tla/harness.cfg:19-24` | TLC: 0 violaciones de los cinco invariantes en 3.334.197 estados distintos, sin agotar el espacio. `CorpusSelladoNoSeToca` solo comprueba el `pc` |
+| TLA-04 | CUMPLE | `formal/tla/harness.tla:550` `Termina`, con `:504` `Spec` y `SF_vars`; declarada en `formal/tla/harness.cfg:26-28` | Definida, pero **no verificada**: TLC no terminó (ver TLA-05), como ya advierte `formal/tla/README.md:23` |
+| TLA-05 | PARCIAL | `formal/tla/harness.cfg:14-17` (`NCapitulos = 5`, `MaxIntentos = 2`, `MaxRechazosJuez = 2`). Ejecutado: `tlc2.TLC -workers auto -config harness.cfg harness.tla` → a los 27 min, 3.334.197 estados distintos, profundidad 24.493, 152 en cola, 0 violaciones; detenido sin terminar | El modelo no es finito: `versiones` (`formal/tla/harness.tla:41`) es una secuencia append-only que crece con cada regeneración, y no hay `CONSTRAINT` en `harness.tla` ni en `harness.cfg` (la profundidad crece en línea recta con la cola estable). `tla2tools.jar` y la JVM no están en el repo; `formal/tla/states/` está commiteado |
+| TLA-06 | PARCIAL | `README.md:114-136` (tabla acción ↔ nodo ↔ efecto en SQLite; `formal/tla/README.md:81` remite a ella); test de aristas `backend/tests/contratos/test_identidad_nodos.py:87` | La tabla nombra `HumanDecide` y `ResumeFromCheckpoint`, que no existen en la spec, y omite `RehacerWriting`, `IdleRequest`, `Abortar` y los `Gate*` |
+| TLA-07 | CUMPLE | `formal/tla/README.md:87-91`; `docs/iteraciones.md:83-111` (It-09, It-10, It-11), con el cambio en `backend/src/storymaker/commons/graph/aristas.py:142-153` `tras_judge` y `commons/graph/estado.py:85` `max_rechazos_juez` | It-06 (`docs/iteraciones.md:134`) aún dice que TLA-07 no se cumple: está obsoleto |
+| EVAL-01 | CUMPLE | `evals/briefs/01-caso-base.yaml` … `05-cobertura-imposible.yaml` (5 ficheros); `evals/README.md:20-26` | — |
+| EVAL-02 | CUMPLE | `evals/briefs/02-injection.yaml`; `evals/README.md:23` | — |
+| EVAL-03 | CUMPLE | `evals/briefs/03-incoherencia-temporal.yaml`; `evals/README.md:24` | — |
+| EVAL-04 | NO_CUMPLE | `evals/README.md:20-26` solo tiene el resultado esperado; `ls evals/resultados` → no existe | Ninguna eval se ha ejecutado (P-120 de `remaining.md`) |
+| EVAL-05 | NO_CUMPLE | `docs/iteraciones.md` (It-12 a It-18) documenta correcciones con efecto medido, pero ninguna iteración de tuning sobre los briefs de eval con números antes y después | Depende de EVAL-04 |
+| OBS-01 | NO_CUMPLE | `backend/src/storymaker/commons/obs/trazas.py:142-145` `registrar_span` crea una traza por span con `cliente.trace(...)`; `abrir_sesion` (`:139`) no se llama desde `src` | Con langfuse 4.15.4, `hasattr(Langfuse, "trace")` → False: la llamada fallaría |
+| OBS-02 | PARCIAL | `commons/obs/trazas.py:27` `nombre_de_span`; spans en `intake/nodos.py:69`, `plotting/nodos.py:141`, `writing/nodos.py:61, 138, 203`, `publication/nodos.py:75`. Test: `backend/tests/unit/test_observabilidad.py:37` | Hay un span por rol pero ninguno por tool (WebSearch, WebFetch) |
+| OBS-03 | PARCIAL | `commons/agents/invocacion.py:34` `Consumo`; `commons/agents/transporte_sdk.py:131` `_consumo_de`; `commons/obs/trazas.py:54-68` `como_payload`; `commons/db/esquema/arnes.sql:14-16` | Tokens y coste por llamada, sin latencia; los totales por capítulo y novela no se acumulan (It-18: la novela consta como 0 tokens y 0 $) |
+| OBS-04 | PARCIAL | `commons/obs/scores.py:26` `registrar`; único uso en producción `publication/nodos.py:217` (`juez_rubrica`). Test: `backend/tests/traza/test_g6.py:146` sobre una traza sintética | Los programáticos y Lean no puntúan; el semántico sí, pero con una API que la versión instalada no tiene |
+| OBS-05 | PARCIAL | `commons/obs/prompts.py:112-121` `RepositorioDePrompts.para` (`get_prompt`); `commons/obs/trazas.py:50` `Span.prompt_version`; `publication/manifiesto.py:35` `prompts` | La versión del prompt no llega a ningún span y no hay tuning al que vincularla |
+| GR-01 | CUMPLE | `backend/src/storymaker/commons/validation/policy_checker.py:31` `guardrail_prohibidas`; `writing/validacion.py:123-125` `pasada_determinista`; `writing/nodos.py:256-271` `validate`, antes de `approve` (`:305`); `commons/validation/registro.py:75-80`. Test: `backend/tests/contratos/test_nodo_vs_hook.py:79` | — |
+| GR-02 | CUMPLE | `commons/db/esquema/canon.sql:83-89` `canon_prohibida` (`nivel` con CHECK global, novela, destinatario; columna `normalizado`), `:93` índice; rellenada en `plotting/canon.py:126-134` `volcar_prohibidas` | «Por novela» es por fichero: cada novela tiene su SQLite |
+| GR-03 | CUMPLE | `commons/validation/puras.py:23-43` `normalizar` (NFKD, minúsculas, puntuación), `:46-71` `_singular`; `policy_checker.py:56-69` `_aparece`. Tests: `backend/tests/unit/test_core_domain.py:74, 79, 226` `test_prohibida_con_variantes` (pasan) | Plurales por heurística, no lematizador; la paráfrasis es riesgo aceptado U-4 |
+| GR-04 | PARCIAL | Reescritura en `writing/nodos.py:174-211` `reparar`, `:288-302` `repair`; límite en `commons/graph/aristas.py:89-115`; parada en `commons/graph/nodos.py:86-93` `fail`. Test: `test_grafo.py:75` `test_agotados_los_reintentos_va_a_fail` | Se detiene, pero el informe se reduce a «terminó en Fail» (`cli/salida.py:43`); ningún test recorre prohibida → Repair → Fail |
+| GR-05 | NO_CUMPLE | Las coincidencias van a `incidencia` (`writing/nodos.py:98-107`), no a `audit_log`; `commons/obs/scores.py:53` `registrar_veredicto` no se llama desde `src` | — |
+| GR-06 | PARCIAL | `test_core_domain.py:216` `test_prohibida_exacta`, `:226` (nivel destinatario y acento), `:236` (nivel global); `tests/adversarias/test_adversario.py:151, 165` | Falta el caso del nivel novela; el plural solo se prueba en `normalizar` (`:74`) |
+| GR-07 | NO_CUMPLE | Tabla `commons/db/esquema/arnes.sql:52-60` `audit_log` y `commons/db/repos/arnes.py:163-185` `registrar_audit`, llamados solo desde gates y regeneración (`commons/obs/scores.py:94`, `regeneration/nodos.py:171`) | Ninguna decisión del policy engine se audita |
+| DOC-01 | CUMPLE | `specs/backend/spec.md` se añadió en `89cf09a` («previa implementación», 2026-09-23); el primer `backend/src/*.py`, en `6928e7c`, posterior (`git log --reverse --diff-filter=A`) | — |
+| DOC-02 | CUMPLE | `docs/architecture.md:999-1001` §17 «Trade-offs registrados» (Decisión · Opciones consideradas · Criterio · Elección) | — |
+| DOC-03 | CUMPLE | `docs/explainers/README.md:7-16`: ocho explainers, uno por concepto (harness, memoria, validadores, verificación formal, guardrails, observabilidad, evals, MCP) | — |
+| DOC-04 | CUMPLE | `docs/diagramas.md:5-10` (índice de los cuatro); arquitectura `docs/architecture.md:61` (`graph TD`); máquina de estados `:499` (`stateDiagram-v2`); esquema SQLite `docs/diagramas.md:23` (`erDiagram`); validadores `docs/architecture.md:620-634` | — |
+| DOC-05 | CUMPLE | `docs/iteraciones.md` (It-03 a It-18, cada una con Causa, Qué se hizo y Efecto medido; p. ej. `:13-19`) | — |
+| DOC-06 | CUMPLE | `docs/red-team.md:11-100` (RT-01 a RT-06 y lo no mirado) | — |
+| DOC-07 | NO_CUMPLE | `grep -rniE "playwright\|browser MCP"` sobre `docs/` → solo planes en `docs/architecture.md:634, 863`; `grep "inspección\|captura\|screenshot"` → 0 | No hay registro de un uso real del browser MCP |
+| DOC-08 | CUMPLE | `docs/skills.md:11-58` inventaría las skills; `.claude/skills/PROCEDENCIA.md`; `continuity-check` citada en `docs/skills.md:62` | `docs/skills.md:60-66` dice que `continuity-check` no existe, y ya existe: está obsoleto |
+| DOC-09 | CUMPLE | `docs/skills.md:68-74` «Subagentes y comandos propios»: no hay, y explica por qué | Cumplido por ausencia del supuesto, que el requisito admite («si existen») |
+| CC-01 | PARCIAL | `git ls-files .claude` → 51 ficheros: `.claude/settings.json` (hook) y `.claude/skills/` | No hay memoria ni comandos commiteados |
+| CC-02 | CUMPLE | `.mcp.json:1-8` (servidor `playwright`, `@playwright/mcp`) | En esta sesión el servidor no conectó (`CONNECTION_CLOSED`) |
+| PRE-01 | MANUAL | Requisito [M]; además `ls presentacion` → no existe | Revisión humana |
+| PRE-02 | MANUAL | Requisito [M]; `ls presentacion` → no existe | Revisión humana |
+| PRE-03 | MANUAL | Requisito [M]; `ls presentacion` → no existe | Revisión humana |
+| PRE-04 | MANUAL | Requisito [M]; `ls presentacion` → no existe | El coste real de Langfuse no existe todavía (OBS-03) |
+| PRE-05 | MANUAL | Requisito [M]; `ls presentacion` → no existe | Revisión humana |
+| PRE-06 | MANUAL | Requisito [M]; `ls presentacion` → no existe | Revisión humana |
+| PRE-07 | MANUAL | Requisito [M]; `ls presentacion` → no existe | Revisión humana |
+| PRE-08 | MANUAL | Requisito [M]; `ls presentacion` → no existe | La tabla de evals no existe (EVAL-04) |
+| OPT-01 | NO_APLICA | `grep -rnE "list_novels, get_chapter, fastmcp, mcp.server"` → solo `REQUIREMENTS.md`; `.mcp.json` solo configura Playwright | — |
+| OPT-02 | NO_APLICA | Igual que OPT-01: no hay servidor MCP propio | — |
+| OPT-03 | NO_APLICA | `commons/validation/registro.py:54-123`: solo los once validadores base | — |
+| OPT-04 | PARCIAL | `.claude/skills/continuity-check/SKILL.md:1-3`; `commons/validation/cli_hook.py:16` `main`; `commons/validation/entrada_manual.py:110` `revisar`; `.claude/settings.json:3-10`. Test: `backend/tests/contratos/test_nodo_vs_hook.py:79` | Aplica canon y prohibidas, pero los lee de un `.contexto.json` escrito a mano, no de la story bible |
+| OPT-05 | NO_APLICA | `formal/lean/Cronologia/Basico.lean:104, 120, 139, 155`: I1–I4 como `def … : Bool`, sin `theorem` | Los cuatro cubren LEAN-02; no son adicionales |
+| OPT-06 | NO_APLICA | `formal/tla/harness.tla`: un único `pc`, sin procesos concurrentes | — |
+| OPT-07 | NO_APLICA | `grep -rnE "bcrypt, jwt, passlib" backend/src` → 0; `api/lectura.py:5-8` (sin autenticación, riesgo U-17) | — |
 | OPT-08 | NO_APLICA | `ls docs/security-report.md` → no existe | — |
 
----
+## Recuento
 
-## Lectura de conjunto
-
-La segunda pasada de esta auditoría cambió el retrato. La primera describía un proyecto que había construido **el suelo y las barandillas antes que la casa**: documentación densa, dos puertas estáticas reales, y seis fases que eran carpetas vacías. Sigue siendo cierto, pero la casa ha empezado.
-
-Lo que se movió, y por qué importa que se moviera en ese orden:
-
-- **La persistencia entera** (H1), con los triggers de `inmutabilidad.sql` que abortan cualquier `UPDATE` sobre el texto de un capítulo. El cerrojo está puesto **antes** que aquello que encierra, que es el único orden en que un invariante de este tipo llega a existir: puesto después, siempre hay una excepción que ya se coló.
-- **Las dos especificaciones formales**, TLA+ y Lean, que llevaban meses descritas en la arquitectura y nunca escritas.
-- **Los entregables que no dependían de nadie** —README, brief de ejemplo, `.mcp.json`— y que estaban bloqueando requisitos más caros: sin brief no había novela de muestra que reproducir.
-
-### El patrón que sigue gobernando el resto
-
-Los nueve `PARCIAL` no son medias tintas repartidas al azar. Responden a dos patrones, y conviene distinguirlos porque se cierran de formas distintas:
-
-**«La constante existe y quien la aplica no.»** `HAR-07` tiene `REINTENTOS_POR_CAPITULO` y no el bucle; `HAR-08` tiene `TOKENS_CONCURRENTES_MAXIMOS` y no la guarda que rechaza la llamada; `VAL-04` tiene `RANGO_PALABRAS` y no el validador; `HAR-01` tiene los nueve roles como `StrEnum` y ningún agente detrás; `LEC-10` tiene los triggers de inmutabilidad y ninguna regeneración que produzca una segunda versión. Estos cinco se cierran solos cuando lleguen los tramos H2 a H7 del plan. **No hay que hacer nada con ellos ahora.**
-
-**«Está escrito y el entorno no deja ejecutarlo.»** `TLA-05` necesita una JVM; `LEAN-03` necesita `lake`; `CC-02` necesita Node. Los tres están completos en lo que depende del repositorio y bloqueados en lo que depende de la máquina. **No se cierran trabajando más, se cierran instalando tres herramientas.** Esa distinción es la información más accionable de todo el documento, y es la razón de que ninguno esté marcado `CUMPLE`: una especificación TLA+ que nadie ha pasado por TLC no es una verificación, por muy bien escrita que esté.
-
-### Lo que queda, en tres montones
-
-**1 · Un `lake`, un JDK y un Node.** Cierran `TLA-05`, `LEAN-03` y `CC-02`, y desbloquean `TLA-07` —los contraejemplos de TLC, que hoy no existen porque no ha habido ejecución que los produzca—. Es el trabajo de menor coste y mayor rendimiento que queda en la lista.
-
-**2 · Las fases, H2 a H7.** Arrastran las familias CFG, LEC, MEM parcial, VAL, GR y OBS: unos cincuenta requisitos que se mueven todos juntos porque dependen de lo mismo. Y arrastran también `EVAL-04` y `EVAL-05`, porque los cinco briefs están escritos y **ninguno se ha ejecutado**: hay casos de prueba, no evaluación.
-
-**3 · Los artefactos de entrega.** La presentación (`ENT-03`, `ENT-04`, `ENT-05` y las ocho `PRE-*`), la novela de muestra (`ENT-06`) y el vídeo (`ENT-07`). No dependen del código sino de generar y montar, y son los únicos que ninguna cantidad de ingeniería cierra sola.
-
-### Dos avisos sobre las herramientas del enunciado
-
-`check_requirements.py` vive en la raíz y no en `scripts/`, pese a lo que dice su propio docstring: el comando real es `python check_requirements.py`.
-
-Y en modo `--strict` esta auditoría **falla, y debe fallar**. `--strict` exige que ningún requisito obligatorio esté en `NO_CUMPLE` o `PARCIAL`, lo que equivale a exigir que el proyecto esté terminado. El modo de auditoría, que es el que corresponde a este documento, pide otra cosa: que cada uno de los 106 IDs tenga fila, estado válido y evidencia reproducible. Eso sí se cumple.
-
-### Sobre la honestidad de este documento
-
-Tres requisitos podrían haberse marcado `CUMPLE` con una interpretación generosa, y no se han marcado: `TLA-05` (el modelo está, TLC no ha corrido), `LEAN-03` (el proyecto está, `lake` no existe) y `CC-02` (el MCP está configurado, nunca se ha levantado). Y `TLA-07` se queda vacío en lugar de rellenarse con contraejemplos plausibles.
-
-Se dice explícitamente porque una auditoría cuyo autor tiene un incentivo en que salga verde solo vale si se sabe dónde estuvo la tentación.
+Lo imprime `python check_requirements.py` al final de la auditoría. El enunciado del objetivo lo nombraba `scripts/check_requirements.py`, pero el script vive en la raíz del repositorio y no existe `scripts/`; se ejecuta desde la raíz, que es donde resuelve sus rutas relativas.

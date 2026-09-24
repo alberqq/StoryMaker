@@ -60,9 +60,13 @@ class TestJuez:
         assert rubrica().completa
 
     def test_no_tiene_donde_devolver_texto(self) -> None:
-        """Si pudiera editar, el mismo agente optimizaria la metrica que produce."""
+        """Si pudiera editar, el mismo agente optimizaria la metrica que produce.
+
+        `contradicciones` describe defectos, no trae prosa de reemplazo: solo se guarda en el
+        detalle del score y topa la nota de continuidad, y ningun camino la lleva al texto.
+        """
         campos = set(SalidaJuez.model_fields)
-        assert campos == {"puntuaciones"}
+        assert campos == {"puntuaciones", "contradicciones"}
         assert not (campos & {"texto", "correcciones", "parche"})
 
     def test_cada_criterio_exige_justificacion(self) -> None:
