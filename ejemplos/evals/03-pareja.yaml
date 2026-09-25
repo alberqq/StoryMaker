@@ -1,0 +1,72 @@
+# EVAL 03 · Regalo a la pareja · período con densidad documental baja
+#
+# Ocasión: diez años juntos. La novela se sitúa en la Compostela del siglo XII, cuando el
+# maestro Mateo levanta el Pórtico de la Gloria.
+#
+# Eje que cubre (verification.md §4.2): un período con poca documentación. El investigador
+# encuentra pocas fuentes, el corpus es corto y el arquitecto tiene que tirar de huecos y
+# de Licencias declaradas. Es el contraste con el 01, donde sobran fechas.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/03-pareja.yaml --nombre eval-03-pareja --batch
+
+espera:
+  termina: publicada
+  validadores_que_deben_pasar:
+    - schema_guard
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - anclaje_valido
+    - cobertura_personalizacion
+    - lean_cronologia
+    - render_visual
+  juez: autenticidad de época >= 6 aunque el corpus sea corto
+  notas: >
+    Aquí se espera un corpus más pequeño que en el 01 y más huecos cubiertos en Plotting
+    por micro-investigación. Si el corpus sale igual de grande, el eje no discrimina.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Aurora Castiñeira Loureiro
+    fecha_nacimiento: 1990-07-25
+    rol_epoca: cerera que abastece de velas a la catedral
+    ocasion: diez años con su pareja
+    elementos_personalizacion:
+      - texto: conoció a su pareja haciendo el Camino de Santiago bajo la lluvia
+        obligatorio: true
+      - texto: canta en voz baja cuando está nerviosa
+        obligatorio: true
+      - texto: le encanta el olor a cera y a incienso
+        obligatorio: false
+
+  mundo:
+    periodo:
+      inicio: 1180
+      fin: 1188
+      denominacion: reino de León, siglo XII
+    lugar: Santiago de Compostela
+    evento_ancla: la colocación de los dinteles del Pórtico de la Gloria en 1188
+    personajes_historicos:
+      aparecen:
+        - Maestro Mateo
+      se_evitan:
+        - Fernando II de León
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: romántica
+    tono: tierno y romántico, con humor suave
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: moderado
+    arcaismo: moderado
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - milagro
+      destinatario:
+        - ruptura
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

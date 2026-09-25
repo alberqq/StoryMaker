@@ -73,6 +73,20 @@ class TestListado:
         assert tarjeta["estado"] == "esperando_autor"
         assert tarjeta["gate"]["fase"] == "writing"
 
+    async def test_una_publicada_que_se_reescribe_esta_en_escritura(
+        self, publicada: Path, cliente: Any
+    ) -> None:
+        """La reescritura de la Fase 6 corre en Writing con Publication ya trabajada."""
+        async with abrir_novela(publicada) as db:
+            await db.execute("UPDATE fase_run SET estado = 'completada', fin = datetime('now')")
+            await db.commit()
+        assert cliente.get("/api/novelas").json()[0]["fase"] == "publication"
+
+        async with abrir_novela(publicada) as db:
+            await arnes.abrir_fase_run(db, "writing")
+            await db.commit()
+        assert cliente.get("/api/novelas").json()[0]["fase"] == "writing"
+
     def test_un_cerrojo_vivo_es_en_marcha(self, publicada: Path, cliente: Any) -> None:
         cerrojo.ruta_del_cerrojo(publicada).write_text(str(os.getpid()), encoding="utf-8")
         assert cliente.get("/api/novelas").json()[0]["estado"] == "en_marcha"

@@ -1,0 +1,64 @@
+# EVAL 02 · Regalo a un hijo · homenajeado con datos escasos
+#
+# Ocasión: los dieciocho años de un hijo. El comprador da lo mínimo: nombre, fecha, un
+# oficio de época y un único recuerdo. Sin evento ancla y sin personajes históricos.
+#
+# Eje que cubre (verification.md §4.2): un homenajeado con datos escasos. Mide si el
+# arquitecto construye una novela entera sin inventarle una biografía al homenajeado, y
+# si la personalización sigue sintiéndose suya con un solo elemento obligatorio.
+#
+# La fecha de nacimiento es la real (2008) y cae después del período: el Intake lo anota
+# y el arquitecto le da a su personaje una fecha de la época. No es una contradicción.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/02-hijo.yaml --nombre eval-02-hijo --batch
+
+espera:
+  termina: publicada
+  validadores_que_deben_pasar:
+    - schema_guard
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - cobertura_personalizacion
+    - lean_cronologia
+    - render_visual
+  juez: la naturalidad de la personalización no baja de 6 pese a tener un solo elemento
+  notas: >
+    El riesgo es el contrario al de las demás: con tan poco material, el escritor repite
+    el único recuerdo en todos los capítulos. El juez debería castigarlo en naturalidad.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Hugo Ballesteros Rey
+    fecha_nacimiento: 2008-02-11
+    rol_epoca: aprendiz de relojero en un taller de la Puerta del Sol
+    ocasion: dieciocho cumpleaños
+    elementos_personalizacion:
+      - texto: desmonta todo mecanismo que cae en sus manos para ver cómo funciona
+        obligatorio: true
+
+  mundo:
+    periodo:
+      inicio: 1787
+      fin: 1789
+      denominacion: reinado de Carlos III
+    lugar: Madrid
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: aventura
+    tono: aventurero y luminoso
+    punto_de_vista: tercera persona con focalización en el homenajeado
+    grado_licencia: moderado
+    arcaismo: minimo
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - videojuego
+      destinatario:
+        - suspenso
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

@@ -14,17 +14,70 @@ Langfuse, y que `gitleaks` no tenga que buscar nada más.
 
 Lo que sí sale del SDK es la contabilidad: el `ResultMessage` trae el uso desglosado
 —entrada, salida, creación y lectura de caché— y un `total_cost_usd` que es una
-**estimación en cliente**, no facturación (U-7).
+**estimación en cliente**, no facturación (U-7). Del mismo flujo salen la duración y las
+llamadas a herramientas que la traza enseña como observaciones propias (arq. §14).
 """
 
 from __future__ import annotations
 
-from typing import Any
+import json
+import time
+from dataclasses import replace
+from typing import Any, Final
 
+from storymaker.commons.agents.herramientas import SERVIDOR, es_propia, servidor_mcp
 from storymaker.commons.agents.hooks import CuotaDeHerramientas, truncar_salida
-from storymaker.commons.agents.invocacion import Consumo, RespuestaBruta
+from storymaker.commons.agents.invocacion import Consumo, LlamadaAHerramienta, RespuestaBruta
 from storymaker.commons.agents.techos import Perfil
 from storymaker.commons.config import Defaults
+
+#: Lo que se guarda de la entrada de una herramienta. Una consulta cabe de sobra; un
+#: `Write` entero no hace falta para saber qué se pidió.
+MAX_ENTRADA: Final = 500
+
+
+def recortar(entrada: object) -> str:
+    """La entrada de una herramienta en JSON, recortada a `MAX_ENTRADA` caracteres."""
+    try:
+        texto = json.dumps(entrada, ensure_ascii=False, default=str)
+    except (TypeError, ValueError):
+        texto = str(entrada)
+    return texto if len(texto) <= MAX_ENTRADA else texto[: MAX_ENTRADA - 1] + "…"
+
+
+class RegistroDeHerramientas:
+    """Empareja cada `ToolUseBlock` con su `ToolResultBlock` por el `id` de la llamada.
+
+    Se lee del flujo de mensajes y no de los hooks de cuota: los hooks ya deciden y recortan,
+    y mezclar ahí la telemetría acoplaría dos cosas que fallan distinto (arq. §17).
+    """
+
+    def __init__(self) -> None:
+        self._abiertas: dict[str, tuple[str, str, float]] = {}
+        self.llamadas: list[LlamadaAHerramienta] = []
+
+    def ver(self, bloque: object) -> None:
+        tipo = type(bloque).__name__
+        if tipo == "ToolUseBlock":
+            ident = str(getattr(bloque, "id", ""))
+            nombre = str(getattr(bloque, "name", "?"))
+            self._abiertas[ident] = (nombre, recortar(getattr(bloque, "input", {})), time.time())
+        elif tipo == "ToolResultBlock":
+            abierta = self._abiertas.pop(str(getattr(bloque, "tool_use_id", "")), None)
+            if abierta is not None:
+                nombre, entrada, inicio = abierta
+                error = bool(getattr(bloque, "is_error", False))
+                self.llamadas.append(
+                    LlamadaAHerramienta(nombre, entrada, inicio, time.time(), error)
+                )
+
+    def cerrar(self) -> tuple[LlamadaAHerramienta, ...]:
+        """Las llamadas, con las que nunca recibieron resultado cerradas como error."""
+        ahora = time.time()
+        for nombre, entrada, inicio in self._abiertas.values():
+            self.llamadas.append(LlamadaAHerramienta(nombre, entrada, inicio, ahora, True))
+        self._abiertas.clear()
+        return tuple(self.llamadas)
 
 
 class TransporteAgentSDK:
@@ -89,14 +142,19 @@ class TransporteAgentSDK:
         # ensamblador y el Core Domain se pueden usar y probar sin él instalado.
         from claude_agent_sdk import ClaudeAgentOptions, query
 
+        # Las propias no son de Claude Code: llegan por un servidor MCP en proceso, y
+        # `tools` solo acepta las integradas.
+        propias = tuple(h for h in herramientas if es_propia(h))
+        integradas = [h for h in herramientas if not es_propia(h)]
         opciones = ClaudeAgentOptions(
             model=modelo,
             system_prompt=sistema or None,
             # `allowed_tools` solo aprueba sin preguntar; `tools` es lo que el rol **ve**.
             # Sin él, un rol sin herramientas intentaba usar las de Claude Code, el hook se
             # las denegaba y el único turno se gastaba sin respuesta.
-            tools=list(herramientas),
+            tools=integradas,
             allowed_tools=list(herramientas),
+            mcp_servers={SERVIDOR: servidor_mcp(propias)} if propias else {},
             max_turns=max_turns,
             hooks=self._hooks(cuota),
             # Claude Code difiere `WebSearch` y `WebFetch` tras `ToolSearch`, y cargarlas
@@ -108,9 +166,12 @@ class TransporteAgentSDK:
         partes: list[str] = []
         final = ""
         consumo = Consumo()
+        registro = RegistroDeHerramientas()
         try:
             async for mensaje in query(prompt=prompt, options=opciones):
-                for bloque in getattr(mensaje, "content", []) or []:
+                contenido = getattr(mensaje, "content", []) or []
+                for bloque in contenido if isinstance(contenido, list) else []:
+                    registro.ver(bloque)
                     if isinstance(getattr(bloque, "text", None), str):
                         partes.append(bloque.text)
                 if type(mensaje).__name__ == "ResultMessage":
@@ -125,6 +186,7 @@ class TransporteAgentSDK:
             if "maximum number of turns" not in str(fallo):
                 raise
 
+        consumo = replace(consumo, herramientas=registro.cerrar())
         return RespuestaBruta(final or "\n".join(partes), consumo)
 
 
@@ -144,4 +206,5 @@ def _consumo_de(mensaje: object) -> Consumo:
         tokens_in=entrada,
         tokens_out=int(leer("output_tokens", 0) or 0),
         coste_usd=float(getattr(mensaje, "total_cost_usd", 0.0) or 0.0),
+        duracion_ms=int(getattr(mensaje, "duration_ms", 0) or 0),
     )

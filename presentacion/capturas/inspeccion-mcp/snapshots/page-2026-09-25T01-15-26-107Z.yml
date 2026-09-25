@@ -1,0 +1,68 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e432]:
+      - generic [ref=e433]:
+        - navigation [ref=e434]:
+          - link "Índice" [ref=e435] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e437] [cursor=pointer]:
+          - generic [ref=e438]: A
+          - generic [ref=e439]: a
+      - heading "Capítulo 7. La reconstrucción" [level=1] [ref=e440]
+      - article [ref=e441]:
+        - paragraph [ref=e442]: Noviembre llegó a Cádiz con el silencio de los puertos que han perdido. Las aguas de la bahía seguían moviéndose como siempre, pero en los muelles y despachos, el aire había adquirido esa densidad que precede a decisiones irrevocables. Los papeles se acumulaban en la oficina de Ramón como arena después de una tormenta, cartas de mercancías que nunca llegarían, facturas de pólizas de seguros cuya validez nadie podía garantizar.
+        - paragraph [ref=e443]: "Por la ventana, veía moverse el puerto, pero era dispersión: hombres vendiendo activos, buscando embarcaciones que los llevaran a Madrid o América. Un armador que Ramón conocía desde hacía años fue el primero en ofrecerle comprar sus navíos dañados. La Esperanza, La Rosa Dorada, La Santa Magdalena —naves que había tardado décadas en reunir— estaban en los astilleros con velas quemadas, cascos agrietados. La oferta era casi un insulto, mitad de lo que valían tres semanas atrás."
+        - paragraph [ref=e444]: "\"Es la realidad del mercado,\" escuchó Ramón. \"Los barcos están dañados. Los seguros no pagarán porque la Armada los perdió en acción de guerra. Recibir algo es mejor que nada cuando los ingleses patrullan nuestras rutas.\""
+        - paragraph [ref=e445]: Ramón escuchó en silencio. Una parte de él comprendía la lógica. Podría haber cortado pérdidas, buscado inversiones en tierras, en algo que no dependiera del mar.
+        - paragraph [ref=e446]: "Esa noche, cuando regresó a su casa, encontró a [NOMBRE_ANONIMIZADO] esperándolo. Ella no lo preguntó directamente, sino simplemente:"
+        - paragraph [ref=e447]: "\"¿Nos vamos?\""
+        - paragraph [ref=e448]: "Fue la pregunta más simple y profunda que se podía hacer en ese momento: partir o quedarse. Buscar seguridad donde el nombre Iriarte Sologaray significaría poco, o permanecer en este puerto que se vaciaba."
+        - paragraph [ref=e449]: "Ramón miró a [NOMBRE_ANONIMIZADO]. En sus ojos vio algo que lo sorprendió: no miedo, sino una esperanza que dependía completamente de su respuesta. Ella conocía este puerto tanto como él. Cádiz no era solo donde ganaban dinero, era donde existían."
+        - paragraph [ref=e450]: "\"Este puerto nos alimentó durante treinta años,\" respondió Ramón. \"Alimentó a nuestros padres, a los suyos. Ahora pasa mal. Nos toca alimentarlo a nosotros. Es la única forma que tiene sentido.\""
+        - paragraph [ref=e451]: "[NOMBRE_ANONIMIZADO] tomó su mano. Al día siguiente, Ramón visitó a los maestros que conocía desde hacía años. Iba a quedarse. Iba a invertir en reparar sus barcos."
+        - paragraph [ref=e452]: En enero, cuando la niebla del Atlántico se pegaba a la ropa, Ramón estaba en los astilleros cada mañana. Trabajaba junto a los obreros, no solo supervisando sino con las manos en el casco de La Esperanza, sacando maderas quemadas, posicionando las nuevas traídas del norte cuando conseguía que algún barco las transportara.
+        - paragraph [ref=e453]: El maestro carpintero, sesenta años, que había reparado navíos toda su vida, movía la cabeza con expresión que no era exactamente pesimismo. "Señor Ramón," le dijo un día, "reparar esto es más caro que construir nuevo. No tiene sentido económico."
+        - paragraph [ref=e454]: "Ramón pasó la mano por la madera carbonizada. Podía sentir bajo sus dedos la historia de ese barco: cada viaje, cada tormenta, cada carga que había transportado. Había invertido casi toda su vida en esa embarcación."
+        - paragraph [ref=e455]: "\"Entonces reparemos caro,\" respondió. \"Si el costo es el problema, es el precio que pagamos por lealtad.\""
+        - paragraph [ref=e456]: El maestro asintió y continuó trabajando. Los obreros, al principio lentos en sus movimientos, lentamente ganaron propósito. Tal vez porque Ramón estaba allí, haciendo trabajo que podría haber dejado a otros. O porque reparar algo, intentar salvar lo que se había dañado, tenía significado que iba más allá del dinero.
+        - paragraph [ref=e457]: Una mañana de finales de enero, cuando el cielo estaba limpio y el viento venía del noreste con claridad, los obreros izaron la primera vela nueva en la proa de La Esperanza. Cuando se hinchó con el viento, la embarcación pareció respirar por primera vez en meses. Los hombres vitorearon. Era un sonido pequeño, apenas un puñado de voces en un puerto que antes había conocido miles, pero era el sonido más importante desde las noticias de Trafalgar.
+        - paragraph [ref=e458]: Ramón subió al casco y colocó su mano en la madera recién restaurada. Podía sentir el pulso del barco despertando. La Esperanza portaba las cicatrices de su reconstrucción. Pero estaba viva. Podría navegar de nuevo.
+        - paragraph [ref=e459]: En marzo, cuando la primavera transformaba el aire de Cádiz con aromas de azahar y sal marina, la iglesia de Santa María —donde había contraído matrimonio, donde había sido bendecido como armador— convocó misa especial de acción de gracias. No era por victoria. Era por los que habían caído en Trafalgar y por los que permanecían.
+        - paragraph [ref=e460]: El párroco, anciano, que conocía a la mayoría de los hombres del puerto, se acercó al púlpito con lentitud que reflejaba el peso de las muertes que debía nombrar.
+        - paragraph [ref=e461]: "\"Hemos perdido barcos. Hemos perdido hombres que navegaban desde este puerto. Pero,\" hizo pausa casi silenciosa, \"no hemos perdido el espíritu de Cádiz. Los barcos se pueden reconstruir. Los hombres no. Honramos a los que no regresaron, y encontramos fuerza en aquellos que permanecemos.\""
+        - paragraph [ref=e462]: Leyó entonces los nombres. Marineros que Ramón había conocido, algunos de sus astilleres, otros que pasaban por los muelles cada día. Cada nombre era recibido con silencio como una respiración colectiva, como si el puerto entero contuviera el aire.
+        - paragraph [ref=e463]: "El párroco oró por los vivos: \"Que aquellos que permanecemos encontremos en nuestro trabajo la fuerza que nos falta. Que reconstruyamos lo que se perdió, no porque seamos fuertes, sino porque es lo único que podemos hacer.\""
+        - paragraph [ref=e464]: "[NOMBRE_ANONIMIZADO] estaba de pie junto a Ramón. Cuando sus manos se tocaron, ninguno se movió. Permanecieron conectados en ese silencio compartido, sintiendo la presencia de todos aquellos que ya no estaban, de los hombres que no regresarían a este puerto."
+        - paragraph [ref=e465]: Cuando salieron de la iglesia, el cielo de Cádiz estaba despejado, casi insolentemente hermoso. En los pasos del templo, Ramón vio a otros armadores que como él se habían quedado. No se hablaron. No fue necesario. Había en sus rostros una conexión silenciosa, la de quienes comprenden que quedarse en Cádiz cuando era posible marcharse no era decisión económica sino acto de fe en algo que no se podía medir en reales ni en pesos.
+        - paragraph [ref=e466]: Ramón tocó la mano de [NOMBRE_ANONIMIZADO], y ambos comenzaron el camino de regreso a casa, hacia una ciudad herida pero que no había muerto, hacia un puerto que continuaba siendo, en su lentitud obstinada, el corazón del Atlántico español.
+        - paragraph [ref=e467]: "---"
+        - paragraph [ref=e468]: "Nota de Privacidad: Para cumplir con nuestras políticas de protección de datos (RGPD), se ha anonimizado la información personal en mi respuesta. Te recuerdo que debes minimizar el uso de datos personales reales en tus consultas a la Inteligencia Artificial."
+      - navigation "Navegación entre capítulos" [ref=e469]:
+        - link "← Capítulo anterior" [ref=e471] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/6
+        - link "Índice" [ref=e472] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e474] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/8
+      - generic [ref=e475]:
+        - heading "Pedir un cambio" [level=2] [ref=e476]
+        - generic [ref=e477]:
+          - paragraph [ref=e478]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e479]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e480]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e481]

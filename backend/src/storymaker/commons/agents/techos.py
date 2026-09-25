@@ -84,7 +84,18 @@ TECHOS: Final[dict[Perfil, Techo]] = {
         cuota_de_herramientas=(("WebSearch", 1), ("WebFetch", 1)),
     ),
     Perfil.VERIFICADOR: Techo(Rol.VERIFICADOR, 2_000, 8_000, 2_000, 12_000),
-    Perfil.ARQUITECTO: Techo(Rol.ARQUITECTO, 2_000, 15_000, 8_000, 25_000),
+    # La cuota de las herramientas de fechas no mueve el techo: cada respuesta es una línea.
+    Perfil.ARQUITECTO: Techo(
+        Rol.ARQUITECTO,
+        2_000,
+        15_000,
+        8_000,
+        25_000,
+        cuota_de_herramientas=(
+            ("mcp__storymaker__sumar_dias", 4),
+            ("mcp__storymaker__edad_en_fecha", 4),
+        ),
+    ),
     Perfil.ESCRITOR: Techo(Rol.ESCRITOR, 5_000, 12_000, 3_000, 20_000),
     Perfil.EDITOR: Techo(Rol.EDITOR, 5_000, 12_000, 3_000, 20_000),
     Perfil.EXTRACTOR_CAPITULO: Techo(Rol.EXTRACTOR_CAPITULO, 2_000, 8_000, 2_000, 12_000),
@@ -100,12 +111,22 @@ HERRAMIENTAS: Final[dict[Perfil, tuple[str, ...]]] = {
     Perfil.INVESTIGADOR_DIRIGIDO: ("WebSearch", "WebFetch"),
 }
 
+#: Las herramientas propias del arnés (`herramientas.py`), aparte de las de Claude Code
+#: porque no salen a la red: son cálculo puro en proceso. Las pruebas y la regla Semgrep que
+#: vigilan la red miran la tabla de arriba, y esta no la toca.
+PROPIAS: Final[dict[Perfil, tuple[str, ...]]] = {
+    Perfil.ARQUITECTO: ("mcp__storymaker__sumar_dias", "mcp__storymaker__edad_en_fecha"),
+}
+
 #: `max_turns` por perfil. La micro-sesión del arquitecto es de uno o dos turnos: busca
 #: una cosa concreta y vuelve.
 TURNOS: Final[dict[Perfil, int]] = {
     Perfil.INVESTIGADOR_INICIAL: 20,
     Perfil.INVESTIGADOR_MICRO: 2,
     Perfil.INVESTIGADOR_DIRIGIDO: 4,
+    # Las ocho llamadas de su cuota caben en pocos turnos porque el modelo las agrupa, y
+    # el último es para la respuesta. Si se agotan, `schema_guard` recibe lo que haya.
+    Perfil.ARQUITECTO: 6,
 }
 
 #: El techo del sistema entero, del que se derivan todos los demás.
@@ -113,7 +134,13 @@ PEOR_CASO_DEL_SISTEMA: Final = max(techo.total for techo in TECHOS.values())
 
 
 def herramientas_de(perfil: Perfil) -> tuple[str, ...]:
+    """Las herramientas de Claude Code concedidas al perfil: las que salen a la red."""
     return HERRAMIENTAS.get(perfil, ())
+
+
+def propias_de(perfil: Perfil) -> tuple[str, ...]:
+    """Las herramientas propias del arnés concedidas al perfil."""
+    return PROPIAS.get(perfil, ())
 
 
 def turnos_de(perfil: Perfil) -> int:

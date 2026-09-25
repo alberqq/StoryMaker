@@ -1,0 +1,39 @@
+# FASE 1 · Intake · faltan datos
+#
+# Se queda parada en: el gate de Intake, con las preguntas del entrevistador.
+#
+# El comprador escribe cuatro líneas y poco más: quién es, un par de recuerdos y la idea
+# de la época. No dice cuándo nació, qué oficio tendría en la novela, en qué años ni con
+# qué tono. El entrevistador rellena lo que puede deducir y **solo pregunta por lo que
+# sigue vacío**; las preguntas quedan como incidencias `pregunta_del_entrevistador` y el
+# gate las enseña.
+#
+# Qué se enseña en la presentación: la pantalla del gate de Intake con las preguntas, y
+# que contestarlas es «rehacer» con el comentario:
+#   uv run storymaker decidir fase-1a-intake rehacer --comentario "nació en 1970; es tejedora; entre 1780 y 1785; tono cálido"
+#
+# Reproducir (se detiene sola en el gate):
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/fases/f1a-intake-faltan-datos.yaml --nombre fase-1a-intake
+
+fase:
+  se_detiene_en: gate de Intake
+  se_ve: las preguntas del entrevistador por los campos que faltan
+
+brief:
+  descripcion: >
+    Quiero regalarle una novela a mi hermana Nuria por su cumpleaños. Le encanta la
+    Real Fábrica de Tapices de Madrid y siempre dice que en otra vida habría sido
+    tejedora allí, en la época de Goya.
+  homenajeado:
+    nombre_homenajeado: Nuria Garrido Solana
+    elementos_personalizacion:
+      - texto: de pequeña deshacía los jerséis para aprender cómo estaban tejidos
+        obligatorio: true
+      - texto: tiene un gato que se llama Tapiz
+        obligatorio: false
+  mundo:
+    lugar: Madrid
+  obra:
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

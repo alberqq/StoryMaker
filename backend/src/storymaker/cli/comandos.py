@@ -151,16 +151,28 @@ def decidir(
     settings = _ajustes()
     ruta = _ruta(nombre, settings)
 
-    async def escribir() -> str:
+    async def escribir() -> tuple[str, str | None]:
         from storymaker.commons.obs.trazas import construir as construir_observador
         from storymaker.gates.decisiones import aplicar
 
         async with abrir_novela(ruta) as db:
-            tomada = await aplicar(db, construir_observador(settings), decision, comentario)
+            observador = construir_observador(settings, novela=ruta.stem)
+            tomada = await aplicar(db, observador, decision, comentario)
             await db.commit()
-        return tomada.decision.value
+            observador.cerrar()
+        return tomada.decision.value, tomada.fase
 
-    valor = _ejecutar(escribir())
+    valor, fase = _ejecutar(escribir())
+    if fase == "regeneration":
+        # El gate de Regeneración lo abrió la API, no un `interrupt()`: no hay nada que
+        # reanudar, y aprobar es entrar en la Fase 6 desde `Idle`.
+        from storymaker.commons.graph.run import regenerar
+
+        salida.aviso(f"Decision registrada: {valor}. Entrando en la Regeneracion...")
+        salida.resultado(
+            _ejecutar(regenerar(ruta, settings=settings, aprobada=valor == "aprobar"))
+        )
+        return
     salida.aviso(f"Decision registrada: {valor}. Reanudando...")
     resultado = _ejecutar(
         reanudar(ruta, settings=settings, decision=valor, comentario=comentario or None)
@@ -257,6 +269,72 @@ def reintentar(nombre: str) -> None:
 
     salida.aviso("Reabriendo el capitulo que agoto sus reintentos...")
     salida.resultado(_ejecutar(reintentar_capitulo(ruta, settings=settings)))
+
+revision = typer.Typer(help="La revision humana de una novela con la rubrica del juez.")
+app.add_typer(revision, name="revision")
+
+
+@revision.command("hoja")
+def revision_hoja(
+    nombre: str,
+    version: int = typer.Option(0, help="version publicada; por defecto, la ultima"),
+    destino: Path = typer.Option(Path(""), help="donde escribir la hoja; por defecto, al lado"),
+) -> None:
+    """Escribe la hoja en blanco para puntuar una versión publicada."""
+    settings = _ajustes()
+    ruta = _ruta(nombre, settings)
+    from storymaker.publication import revision_humana
+
+    async def ultima() -> int:
+        async with abrir_novela(ruta) as db:
+            async with db.execute("SELECT COALESCE(MAX(numero), 0) AS n FROM version_novela") as c:
+                fila = await c.fetchone()
+        return int(fila["n"]) if fila is not None else 0
+
+    numero = version or _ejecutar(ultima())
+    if not numero:
+        salida.error("La novela no tiene ninguna version publicada que revisar.")
+        raise typer.Exit(code=1)
+    fichero = destino if str(destino) not in ("", ".") else ruta.with_suffix(
+        f".v{numero}.revision.yaml"
+    )
+    fichero.write_text(revision_humana.hoja(ruta.stem, numero), encoding="utf-8")
+    salida.aviso(
+        f"Hoja escrita en {fichero}. Lee la novela entera, puntua desde "
+        f"{revision_humana.RUBRICA.name} y registrala con `storymaker revision registrar`."
+    )
+
+
+@revision.command("registrar")
+def revision_registrar(
+    nombre: str,
+    hoja: Path = typer.Argument(..., help="la hoja rellena"),
+    acta: Path = typer.Option(Path(""), help="donde escribir el acta en Markdown"),
+) -> None:
+    """Registra la hoja rellena como score y escribe el acta comparada con el juez."""
+    settings = _ajustes()
+    ruta = _ruta(nombre, settings)
+    from storymaker.commons.obs.trazas import construir as construir_observador
+    from storymaker.publication import revision_humana
+
+    async def registrar() -> revision_humana.Acta:
+        async with abrir_novela(ruta) as db:
+            observador = construir_observador(settings, novela=ruta.stem)
+            resultado = await revision_humana.registrar_revision(
+                db, observador, hoja.read_text(encoding="utf-8")
+            )
+            await db.commit()
+            observador.cerrar()
+        return resultado
+
+    comparada = _ejecutar(registrar())
+    texto = comparada.como_markdown()
+    if str(acta) not in ("", "."):
+        acta.write_text(texto, encoding="utf-8")
+        salida.aviso(f"Acta escrita en {acta}. Anadela a docs/revision-humana.md §5.")
+    else:
+        print(texto)
+
 
 @app.command()
 def evaluar(

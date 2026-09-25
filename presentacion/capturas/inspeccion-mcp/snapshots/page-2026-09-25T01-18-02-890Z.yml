@@ -1,0 +1,31 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e270]:
+      - generic [ref=f3e271]:
+        - navigation [ref=f3e272]:
+          - link "Portada" [ref=f3e273] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3/portada
+          - link "Personajes y lugares" [ref=f3e274] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3/personajes
+          - link "Historial" [ref=f3e275] [cursor=pointer]:
+            - /url: /novelas/lozoya/versiones
+          - link "Descargar PDF" [ref=f3e276] [cursor=pointer]:
+            - /url: /api/novelas/lozoya/versiones/3/pdf
+        - button "Ajustes de lectura" [ref=f3e278] [cursor=pointer]:
+          - generic [ref=f3e279]: A
+          - generic [ref=f3e280]: a
+      - heading "Índice" [level=1] [ref=f3e281]
+      - status [ref=f3e282]: Cargando el índice…

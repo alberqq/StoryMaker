@@ -68,13 +68,14 @@ async def investigar(
         )
         return []
     try:
+        de_rol = RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_INICIAL)
         resultado = await invocar_rol(
             Perfil.INVESTIGADOR_INICIAL,
             prompt,
             SalidaInvestigador,
             transporte=deps.transporte,
             settings=deps.settings,
-            sistema=RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_INICIAL).texto,
+            sistema=de_rol.texto,
         )
     except SalidaInvalida as fallo:
         # Una investigación sin resultado no detiene la novela: se sigue con el corpus
@@ -91,6 +92,8 @@ async def investigar(
             nombre=nombre_de_span(capitulo=None, rol="investigador"),
             rol="investigador",
             consumo=resultado.consumo,
+            prompt_version=de_rol.version,
+            prompt_nombre=de_rol.nombre,
         )
     )
     return await corpus.escribir_lote(
@@ -160,19 +163,22 @@ async def _pedir_veredictos(
     """Una llamada al verificador sobre un lote de pares enunciado-cita."""
     deps = actuales()
     pares = [(int(f["id"]), str(f["enunciado"]), str(f["cita"] or "")) for f in filas]
+    de_rol = RepositorioDePrompts(deps.settings).para(Perfil.VERIFICADOR)
     resultado = await invocar_rol(
         Perfil.VERIFICADOR,
         prompts.prompt_de_verificacion(pares),
         SalidaVerificador,
         transporte=deps.transporte,
         settings=deps.settings,
-        sistema=RepositorioDePrompts(deps.settings).para(Perfil.VERIFICADOR).texto,
+        sistema=de_rol.texto,
     )
     deps.observador.registrar_span(
         Span(
             nombre=nombre_de_span(capitulo=None, rol="verificador", intento=intento),
             rol="verificador",
             consumo=resultado.consumo,
+            prompt_version=de_rol.version,
+            prompt_nombre=de_rol.nombre,
         )
     )
     return list(resultado.valor.veredictos)
@@ -211,13 +217,14 @@ async def resolver_hueco(pregunta: str, periodo: str, lugar: str) -> HuecoResuel
     if pii_en_prompt_de_investigacion(prompt, await datos_personales(deps.db)):
         return HuecoResuelto(encontrado=False, motivo="la pregunta contenia un dato personal")
     try:
+        de_rol = RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_MICRO)
         resultado = await invocar_rol(
             Perfil.INVESTIGADOR_MICRO,
             prompt,
             HuecoResuelto,
             transporte=deps.transporte,
             settings=deps.settings,
-            sistema=RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_MICRO).texto,
+            sistema=de_rol.texto,
         )
     except PresupuestoExcedido:
         raise
@@ -228,6 +235,8 @@ async def resolver_hueco(pregunta: str, periodo: str, lugar: str) -> HuecoResuel
             nombre=nombre_de_span(capitulo=None, rol="investigador_micro"),
             rol="investigador",
             consumo=resultado.consumo,
+            prompt_version=de_rol.version,
+            prompt_nombre=de_rol.nombre,
         )
     )
     return resultado.valor
@@ -336,15 +345,14 @@ async def investigar_exhaustiva(
             )
             continue
         try:
+            de_rol = RepositorioDePrompts(deps.settings).para(Perfil.INVESTIGADOR_DIRIGIDO)
             resultado = await invocar_rol(
                 Perfil.INVESTIGADOR_DIRIGIDO,
                 encargo.prompt,
                 SalidaInvestigador,
                 transporte=deps.transporte,
                 settings=deps.settings,
-                sistema=RepositorioDePrompts(deps.settings)
-                .para(Perfil.INVESTIGADOR_DIRIGIDO)
-                .texto,
+                sistema=de_rol.texto,
             )
         except (PresupuestoExcedido, ErrorDeEntorno):
             raise
@@ -356,6 +364,8 @@ async def investigar_exhaustiva(
                 nombre=nombre_de_span(capitulo=None, rol="investigador", intento=numero),
                 rol="investigador",
                 consumo=resultado.consumo,
+                prompt_version=de_rol.version,
+                prompt_nombre=de_rol.nombre,
             )
         )
         nuevos = await corpus.escribir_lote(

@@ -10,7 +10,7 @@ Cada reparación aplicada queda anotada en `PROCEDENCIA.md` con lo que se tocó 
 
 ## Las quince instaladas
 
-Agrupadas por la parte del sistema a la que sirven.
+`.claude/skills/` tiene diecisiete carpetas: **quince instaladas de terceros**, que son las que inventaría `PROCEDENCIA.md`, y **dos propias**, `continuity-check` e `inspeccion-visual`, que se cuentan más abajo. Las quince, agrupadas por la parte del sistema a la que sirven.
 
 ### El motor de orquestación
 
@@ -57,21 +57,63 @@ Agrupadas por la parte del sistema a la que sirven.
 | `pytest-code-review` | La técnica 5 del plan de verificación |
 | `review-verification-protocol` | No se usa sola: las dos anteriores y `fastapi-code-review` la referencian por ruta relativa, y sin ella quedan rotas |
 
-## La skill propia que falta
+## Las dos skills propias
 
-§19 de la arquitectura declara `continuity-check` como **la skill reutilizable del proyecto**, y hoy no existe. Es la única prevista como creación propia y no como instalación: expondría a Claude Code la misma validación de continuidad que corre dentro del grafo, para que una persona que edita un capítulo a mano en el disco pueda comprobar que su edición no ha roto los guardrails ni la continuidad antes de commitear o de regenerar el PDF.
+No se instalan desde ninguna fuente, así que no figuran en `PROCEDENCIA.md` y el criterio de no editarlas a mano no se les aplica: se mantienen aquí, como el resto del código del proyecto.
 
-El punto importante de su diseño es que **no es una segunda implementación**. §15 lo dice con todas las letras: la validación vive en el Core Domain, y tanto el nodo del grafo como el hook de `.claude/` la invocan. Una skill que reimplementara la comprobación sería la forma más rápida de que la edición manual y la generación empezaran a discrepar.
+### `continuity-check`, la skill reutilizable
 
-Queda pendiente del tramo del plan que implemente `commons/validation/`.
+§19 de la arquitectura la declara **la skill reutilizable del proyecto**, y existe en [`.claude/skills/continuity-check/SKILL.md`](../.claude/skills/continuity-check/SKILL.md). Sirve a quien edita a mano un capítulo en el disco: antes de commitear o de regenerar el PDF, comprueba que la edición no ha roto los guardrails ni la continuidad, con los validadores deterministas del arnés —longitud, nombres exactos del canon, anacronismos fechados, anclajes y términos prohibidos—.
 
-## Subagentes y comandos propios
+Se invoca con `/continuity-check`, o Claude Code la carga sola cuando se edita un fichero de capítulo. Lo que ejecuta es un módulo del backend, con la ruta del capítulo como argumento:
 
-**No hay.** `ls -a .claude/` devuelve solo `skills`: no existen `.claude/agents/` ni `.claude/commands/`.
+```bash
+cd backend && uv run python -m storymaker.commons.validation.cli_hook <capitulo.md>
+```
 
-Es deliberado y conviene decir por qué, porque la ausencia se lee mal. Los nueve roles de este sistema **no son subagentes de Claude Code**: son invocaciones del Claude Agent SDK desde el orquestador, con su modelo, sus herramientas y su techo de turnos fijados por invocación. Definirlos además como subagentes de `.claude/` crearía dos definiciones del mismo rol —una que el arnés usa en producción y otra que solo existe cuando el Autor trabaja en el repositorio— y la segunda derivaría de la primera sin que nada lo detectara.
+El contexto —nombres del canon, prohibidas, entidades fechadas, fecha narrativa y rango de palabras— lo lee de un `<capitulo>.contexto.json` al lado del fichero; sin él, valida solo las reglas que no lo necesitan. Cada incidencia sale como **BLOQUEA** (en producción el capítulo volvería al editor) o como **aviso** (viajaría al encargo del capítulo siguiente).
 
-Si en algún momento se añaden, este apartado deja de estar vacío y pasa a ser su inventario.
+El punto importante de su diseño es que **no es una segunda implementación**. §15 lo dice con todas las letras: la validación vive en el Core Domain, y tanto el nodo del grafo como la skill y los hooks la invocan. `cli_hook` llama a `commons/validation/entrada_manual.py`, que a su vez llama a `validar_capitulo` de `chapter_validator.py` y a `guardrail_prohibidas` de `policy_checker.py`: los mismos objetos que el grafo ejecuta como nodos. Una prueba de contrato, `backend/tests/contratos/test_nodo_vs_hook.py`, comprueba capítulo a capítulo que el nodo y el hook dan el mismo veredicto.
+
+Lo que **no** comprueba es lo que necesita la base de datos o un modelo: la cobertura de personalización, la ejecución de la escaleta y el arco, y los invariantes de Lean sobre la cronología acumulada.
+
+La acompañan los dos hooks de `.claude/settings.json`, que corren las mismas reglas sin que nadie las pida y solo sobre ficheros de capítulo: el `PreToolUse` de policy (`commons/validation/cli_policy.py`) deniega un `Write`, `Edit` o `MultiEdit` que introduzca un término prohibido, y el `PostToolUse` de validación (`cli_hook.py`) pasa el capítulo entero por los validadores y devuelve el informe al agente si algo bloquea.
+
+### `inspeccion-visual`
+
+[`.claude/skills/inspeccion-visual/SKILL.md`](../.claude/skills/inspeccion-visual/SKILL.md) recorre en el navegador la lectura de una versión publicada como lo haría un lector: índice, cada capítulo entrando por su enlace, portada, fichas de personajes y lugares y errores de consola. Usa el MCP de Playwright que declara `.mcp.json`, y se invoca con `/inspeccion-visual` después de publicar una versión o de tocar la interfaz de lectura o la maqueta del render.
+
+**No es un validador del grafo.** El que decide si una versión se publica es `render_visual`, un nodo que conduce Chromium desde Python sin agente de por medio (arq. §11a). La inspección es exploratoria y mira lo que `render_visual` no puede, porque este juzga la versión candidata antes de que la interfaz pueda servirla. Cada inspección se anota en [`inspeccion-visual.md`](inspeccion-visual.md) con lo que se inspeccionó, lo que se detectó y el cambio que provocó. La primera, del 2026-09-25, se hizo con la librería de Playwright porque el MCP no conectó en esa sesión, y es la que llevó a `resolver_escenario`.
+
+## Comandos propios
+
+Viven en `.claude/commands/` y son *slash commands* de Claude Code: un Markdown con su `description` en el frontmatter, que Claude Code ofrece como `/<nombre>` y que recibe lo que se escriba detrás en `$ARGUMENTS`. Los cuatro recogen operaciones que se repetían a mano durante el desarrollo, y los cuatro dicen expresamente que no reinician el servidor de la interfaz.
+
+| Comando | Para qué | Qué hace |
+|---|---|---|
+| `/tlc` | Comprobar que el modelo del arnés sigue pasando | Corre TLC desde `formal/tla/` sobre `harness.cfg` y `harness_batch.cfg` (o solo uno, con `interactivo` o `batch`) mediante el envoltorio de la skill `tlaplus`, y resume por modelo el veredicto, los estados generados y distintos y la profundidad, comparándolos con la tabla de `formal/tla/README.md`. Un contraejemplo se cuenta al Autor; no toca el modelo para que pase |
+| `/lean` | Comprobar que el validador formal de la historia compila y decide | `lake build` y `lake exe verificar` en `formal/lean/`, buscando `lake` también en `~/.elan/bin`, e interpreta el código de salida, que es el contrato: `0` coherente, `1` incoherente. Sobre el ejemplo versionado lo esperado es `1` |
+| `/estado-novelas` | Saber qué está pasando sin tocar nada | Lee `GET /api/novelas` (o el panel de una novela) si la interfaz está levantada, y si no `storymaker estado <novela>`, y resume fase, estado, gate, capítulos, versiones y coste. Señala las Ejecuciones vivas, que son las que impiden reiniciar el servidor |
+| `/evaluar` | Generar los briefs de evaluación | Lanza `storymaker evaluar --briefs ../ejemplos/evals` en modo batch. Pasa la ruta explícita porque el valor por defecto de la opción apunta a `evals/briefs`, que ya no existe. Avisa de que son ejecuciones reales y de pago, y **no lanza nada sin confirmación expresa del Autor** |
+
+## Subagentes
+
+**No hay `.claude/agents/`, y es deliberado.** Los nueve roles de este sistema **no son subagentes de Claude Code**: son invocaciones del Claude Agent SDK desde el orquestador, con su modelo, sus herramientas y su techo de turnos fijados por invocación. Definirlos además como subagentes de `.claude/` crearía dos definiciones del mismo rol —una que el arnés usa en producción y otra que solo existe cuando el Autor trabaja en el repositorio— y la segunda derivaría de la primera sin que nada lo detectara.
+
+Otra cosa es cómo se ha **desarrollado** el repositorio. Durante el desarrollo se usaron los subagentes que Claude Code trae de serie, sin definición propia: `Explore` para las búsquedas amplias por el código y `general-purpose` para tareas de varios pasos, como auditorías del repositorio contra el enunciado o pasadas de documentación hechas en paralelo con otras sesiones. Esta misma revisión de `docs/skills.md`, de `CLAUDE.md` y de `.claude/commands/` la hizo un subagente `general-purpose`. No dejan artefacto propio: lo que producen es un cambio en los documentos o en el código, y su rastro está en esos ficheros y en `docs/iteraciones.md`.
+
+La skill que más se ha usado es `grilling`, porque `AGENTS.md` la exige al cerrar la arquitectura, la spec y el plan. `docs/iteraciones.md` recoge lo que dio en varias iteraciones —It-24, It-27, It-32 e It-37, entre otras— y también dónde se saltó: It-36 se implementó sin grilling a petición del Autor, y su spec y su plan se escribieron después.
+
+## La memoria del proyecto
+
+En Claude Code, la memoria de proyecto que se versiona son los ficheros `CLAUDE.md`, que Claude Code carga al abrir el repositorio junto con los ficheros que importan con `@ruta`. Aquí son dos:
+
+- [`CLAUDE.md`](../CLAUDE.md), en la raíz: la orientación de quien abre el repositorio —qué es el arnés, los nueve roles y su equivalencia con los del enunciado, las fases y los gates, dónde está cada cosa, cómo se corren las pruebas, Lean y TLC, las tools, los hooks, las skills y los comandos— y las reglas operativas que no se pueden olvidar. Termina importando `AGENTS.md`.
+- [`AGENTS.md`](../AGENTS.md): el proceso de trabajo —la rama, dónde vive cada decisión, el flujo dirigido por especificación con su grilling en cada paso, la verificación, la documentación, el criterio de producto y las reglas de operación—. Es el que manda, y es también lo que leería cualquier otro agente que no fuera Claude Code.
+
+Las lecciones que el Autor ha ido corrigiendo en el camino —no reiniciar el servidor con Ejecuciones vivas, no rescatar del historial lo que se ha borrado— están escritas en `AGENTS.md`, y por eso no hay un mecanismo de memoria aparte en `.claude/`: Claude Code no leería uno inventado.
+
+La **memoria automática de usuario** de Claude Code vive fuera del repositorio, en `~/.claude/` (la del proyecto, en `~/.claude/projects/<proyecto>/memory/`). Es personal de cada máquina, no se versiona y el arnés no depende de ella.
 
 ## Lo que este documento no cubre
 

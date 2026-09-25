@@ -27,7 +27,13 @@ from storymaker.commons.db.apertura import abrir_novela, crear_novela
 from storymaker.commons.graph.contabilidad import corpus_de
 from storymaker.commons.graph.estado import estado_inicial
 from storymaker.commons.graph.nodos import FASE_DE_NODO, GATES, NODOS, TERMINALES
-from storymaker.commons.graph.run import Arranque, ResultadoInvocacion, invocar, reanudar
+from storymaker.commons.graph.run import (
+    Arranque,
+    ResultadoInvocacion,
+    invocar,
+    reanudar,
+    version_objetivo,
+)
 from storymaker.commons.obs.trazas import ObservadorNulo
 from storymaker.gates.decisiones import aplicar
 from storymaker.gates.notifier import NotifierNulo
@@ -159,6 +165,50 @@ class TestUnaFilaPorFase:
         assert resultado.consumo.tokens_in == sum(f["tokens_in"] for f in filas)
         for anterior, siguiente in pairwise(filas):
             assert siguiente["input_run_id"] == anterior["id"]
+
+    async def test_la_sesion_de_la_traza_es_la_novela(self, tmp_path: Path) -> None:
+        """Es lo que deja a Langfuse sumar el coste por novela (spec final §5)."""
+        ajustes = Settings(_env_file=None, gates_enabled=False, reintentos_por_capitulo=2)
+        ruta = tmp_path / "proyectos" / "sesion.db"
+        await crear_novela(ruta)
+        observador = ObservadorNulo()
+        await invocar(
+            ruta,
+            Arranque(n_capitulos=CAPITULOS),
+            settings=ajustes,
+            transporte=_guion(),
+            vectorizador=VectorizadorFalso(),
+            observador=observador,
+            notifier=NotifierNulo(),
+        )
+        assert observador.sesion == "sesion"
+        assert observador.spans, "sin spans no hay nada que sumar"
+        assert all(s.como_payload()["usage_details"]["input"] >= 0 for s in observador.spans)
+        # La traza es la generación de la versión 1; publicada esta, la siguiente es la 2.
+        assert observador.generacion == 1
+        async with abrir_novela(ruta) as db:
+            assert await version_objetivo(db) == 2
+
+    async def test_los_spans_llevan_su_prompt(self, tmp_path: Path) -> None:
+        """Sin esto, la iteración de tuning no puede decir qué versión produjo cada cosa."""
+        ajustes = Settings(_env_file=None, gates_enabled=False, reintentos_por_capitulo=2)
+        ruta = tmp_path / "proyectos" / "prompts.db"
+        await crear_novela(ruta)
+        observador = ObservadorNulo()
+        await invocar(
+            ruta,
+            Arranque(n_capitulos=CAPITULOS),
+            settings=ajustes,
+            transporte=_guion(),
+            vectorizador=VectorizadorFalso(),
+            observador=observador,
+            notifier=NotifierNulo(),
+        )
+        # El juez lo emite publication/nodos.py, que queda fuera de este cambio (spec §6).
+        spans = [s for s in observador.spans if s.rol != "juez"]
+        assert spans
+        assert {s.prompt_version for s in spans} == {"local"}
+        assert all(s.prompt_nombre for s in spans)
 
     async def test_el_corpus_se_sella_bajo_la_fila_de_investigation(self, tmp_path: Path) -> None:
         ajustes = Settings(_env_file=None, gates_enabled=False, reintentos_por_capitulo=2)
@@ -316,7 +366,14 @@ class TestReintentar:
                 "SELECT COUNT(*) FROM capitulo_version WHERE capitulo_id = 1"
             ) as cursor:
                 intentos = await cursor.fetchone()
-        assert intentos is not None and intentos[0] >= 4, "los intentos fallidos no se borran"
+            async with db.execute(
+                "SELECT COUNT(*) FROM incidencia WHERE validador = 'reparacion_sin_cambios'"
+            ) as cursor:
+                sin_cambios = await cursor.fetchone()
+        # El editor de la caída devuelve el mismo texto: no se guarda como intento y se corta
+        # al primero (specs/escritura §2.2). El intento fallido sigue ahí tras reintentar.
+        assert intentos is not None and intentos[0] >= 2, "los intentos fallidos no se borran"
+        assert sin_cambios is not None and sin_cambios[0] == 1
         filas = await _filas(ruta)
         assert [f["fase"] for f in filas][-2:] == ["writing", "publication"]
         assert filas[-3]["estado"] == "fallida"

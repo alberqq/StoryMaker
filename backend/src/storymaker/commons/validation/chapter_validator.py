@@ -34,13 +34,19 @@ def nombres_exactos(capitulo: CapituloEnRevision) -> list[Incidencia]:
     novela es un regalo, y un nombre mal escrito la estropea entera por muy buena que sea
     la prosa.
 
-    La mayúscula inicial no cuenta como otra grafía: «fray Luis de León» se escribe
-    «Fray Luis de León» a principio de frase, y eso es ortografía, no un nombre mal escrito.
+    **La inicial no cuenta como otra grafía, en las dos direcciones.** «fray Luis de León»
+    se escribe «Fray Luis de León» a principio de frase, y un personaje que el canon llama
+    «Padre de Julia» es «el padre de Julia» en mitad de una frase: la primera palabra de un
+    nombre de varias puede ir en minúscula. El resto no: «manuel ferrer» o «Manuel ferrer»
+    siguen siendo otra grafía, igual que una letra cambiada o una tilde de menos.
     """
     incidencias = []
     normalizado = normalizar(capitulo.texto)
     for nombre in capitulo.nombres_canonicos:
-        if nombre in capitulo.texto or nombre[:1].upper() + nombre[1:] in capitulo.texto:
+        variantes = {nombre, nombre[:1].upper() + nombre[1:]}
+        if " " in nombre.strip():
+            variantes.add(nombre[:1].lower() + nombre[1:])
+        if any(v in capitulo.texto for v in variantes):
             continue
         if normalizar(nombre) in normalizado:
             incidencias.append(

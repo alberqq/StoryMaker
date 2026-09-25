@@ -1,0 +1,308 @@
+/* Sistema visual de los anexos de Qapítulo («Cada persona merece su capítulo»).
+   Paleta, tipografía y rejilla del «Prompt 0» de presentacion/prompts-claude-design.md.
+   Página de anexo: 1280 × 720 px (16:9), texto mínimo 15 px (≈ 11,25 pt en el PDF). */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=block');
+
+:root {
+  --tinta: #1C2433;
+  --pergamino: #F5EFE3;
+  --lacre: #B23A2B;
+  --oro: #C9A34E;
+  --salvia: #5E8C6A;
+  --piedra: #7D7869;
+
+  /* Tintes planos de la paleta (sin degradados). */
+  --salvia-15: rgba(94, 140, 106, 0.15);
+  --lacre-12: rgba(178, 58, 43, 0.12);
+  --oro-18: rgba(201, 163, 78, 0.18);
+  --oro-30: rgba(201, 163, 78, 0.30);
+  --tinta-06: rgba(28, 36, 51, 0.06);
+  --tinta-12: rgba(28, 36, 51, 0.12);
+  --piedra-40: rgba(125, 120, 105, 0.40);
+
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+}
+
+@page { size: 1280px 720px; margin: 0; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--piedra-40);
+}
+
+body {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.38;
+  color: var(--tinta);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-feature-settings: 'tnum' 0;
+}
+
+/* ---------- La página ---------- */
+
+.pagina {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  overflow: hidden;
+  background: var(--pergamino);
+  margin: 0 auto 24px auto;
+  page-break-after: always;
+  break-after: page;
+}
+.pagina:last-child { page-break-after: auto; break-after: auto; }
+
+@media print {
+  html, body { background: var(--pergamino); }
+  .pagina { margin: 0; }
+}
+
+/* ---------- Cabecera ---------- */
+
+.cab {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 26px;
+}
+.kicker {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  font-variant-caps: all-small-caps;
+  font-variant: all-small-caps;
+  color: var(--piedra);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kicker .anexo { color: var(--tinta); }
+.kicker .sep {
+  width: 28px;
+  height: 0;
+  border-top: 1.5px solid var(--oro);
+  display: inline-block;
+}
+.cab h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 29px;
+  line-height: 1.15;
+  font-variation-settings: 'opsz' 72;
+  margin: 6px 0 0 0;
+  color: var(--tinta);
+  letter-spacing: -0.005em;
+}
+
+/* ---------- Cuerpo ---------- */
+
+.cuerpo {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 104px;
+  bottom: 60px;
+}
+.cuerpo.ancho { left: 40px; right: 40px; }
+
+p { margin: 0 0 8px 0; }
+.lead { font-size: 16px; color: var(--tinta); }
+.sec { color: var(--piedra); }
+.mono, code { font-family: var(--mono); font-weight: 500; font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0; }
+code { font-size: 0.94em; }
+b, strong { font-weight: 600; }
+
+h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0 0 8px 0;
+  color: var(--tinta);
+  font-variation-settings: 'opsz' 36;
+}
+h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  font-variant: all-small-caps;
+  color: var(--piedra);
+  margin: 0 0 6px 0;
+}
+
+.fila { display: flex; gap: 28px; }
+.col { flex: 1 1 0; min-width: 0; }
+
+/* ---------- Tablas ---------- */
+
+table.t {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.3;
+}
+table.t th {
+  background: var(--tinta);
+  color: var(--pergamino);
+  font-weight: 600;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 15px;
+}
+table.t td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--tinta-12);
+  vertical-align: top;
+}
+table.t tr.total td {
+  background: var(--tinta);
+  color: var(--pergamino);
+  font-weight: 600;
+  border-bottom: none;
+}
+table.t tr.dest td { background: var(--oro-18); }
+table.t td.num, table.t th.num { text-align: right; font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+table.t th.num { font-family: var(--sans); font-weight: 600; }
+table.t td.nom { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+table.t td.c, table.t th.c { text-align: center; }
+table.t.compacta td { padding: 4px 10px; }
+
+/* ---------- Chips de estado ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 9px 4px 8px;
+  border-radius: 8px;
+  color: var(--tinta);
+  white-space: nowrap;
+  border: 1.5px solid transparent;
+}
+.chip::before { font-weight: 700; }
+.chip.pasa { background: var(--salvia-15); border-color: var(--salvia); }
+.chip.pasa::before { content: '✓'; color: var(--salvia); }
+.chip.falla { background: var(--lacre-12); border-color: var(--lacre); color: var(--lacre); }
+.chip.falla::before { content: '✕'; }
+.chip.aviso { background: var(--oro-18); border-color: var(--oro); }
+.chip.aviso::before { content: '!'; color: var(--tinta); }
+.chip.pend { background: transparent; border: 1.5px dashed var(--piedra); color: var(--piedra); }
+.chip.neutro { background: var(--tinta-06); border-color: var(--tinta-12); }
+.chip.solo::before { content: none; }
+
+/* ---------- Recuadros ---------- */
+
+.caja {
+  border: 1.5px solid var(--tinta);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: transparent;
+}
+.caja.oro { border-color: var(--oro); background: var(--oro-18); }
+.caja.lacre { border-color: var(--lacre); }
+.caja.salvia { border-color: var(--salvia); }
+.caja.tinta { background: var(--tinta); color: var(--pergamino); border-color: var(--tinta); }
+.caja.tinta code { color: var(--oro); }
+.caja.fina { border-width: 1px; border-color: var(--piedra-40); }
+.caja h2, .caja h3 { margin-top: 0; }
+
+.franja {
+  background: var(--tinta);
+  color: var(--pergamino);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
+}
+.franja code { color: var(--oro); }
+
+/* ---------- Código ---------- */
+
+pre.codigo {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.32;
+  background: var(--tinta);
+  color: var(--pergamino);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0;
+  white-space: pre;
+  overflow: hidden;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+pre.codigo .k { color: var(--oro); }                     /* operadores y palabras clave */
+pre.codigo .c { color: rgba(245, 239, 227, 0.66); font-weight: 400; font-style: italic; } /* comentarios */
+pre.codigo .s { color: var(--pergamino); }               /* cadenas */
+pre.codigo .n { color: var(--pergamino); font-weight: 700; } /* nombre que se define */
+
+/* ---------- Pie ---------- */
+
+.pie {
+  position: absolute;
+  left: 40px;
+  right: 40px;
+  bottom: 14px;
+  height: 40px;
+}
+.pie .linea { position: absolute; left: 0; right: 0; top: 0; height: 8px; }
+.pie .linea svg { display: block; width: 100%; height: 8px; }
+.pie .fila-pie {
+  position: absolute;
+  left: 0; right: 0; top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 15px;
+  color: var(--piedra);
+}
+.pie .marca {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--tinta);
+  white-space: nowrap;
+}
+.pie .marca svg { width: 20px; height: 22px; }
+.pie .fuente {
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pie .fuente code { font-size: 14.5px; color: var(--piedra); }
+.pie .num { font-family: var(--mono); font-weight: 500; color: var(--tinta); white-space: nowrap; }
+
+/* ---------- Diagramas SVG ---------- */
+
+svg.diag { display: block; overflow: visible; }
+svg.diag text { font-family: var(--sans); font-size: 15px; }
+svg.diag .mono { font-family: var(--mono); font-weight: 500; font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0; }
+svg.diag .serif { font-family: var(--serif); font-weight: 600; }
+svg.diag .b { font-weight: 600; }
+
+/* ---------- Utilidades ---------- */
+
+.pequeno { font-size: 15px; color: var(--piedra); }
+.nota { font-size: 15px; color: var(--piedra); }
+.nota b { color: var(--tinta); }
+.lista { margin: 0; padding-left: 18px; }
+.lista li { margin: 0 0 5px 0; }
+.num-grande { font-family: var(--serif); font-weight: 600; font-size: 40px; line-height: 1; color: var(--tinta); }
+.cifra { font-family: var(--mono); font-weight: 500; }
+.punto-oro { display: inline-block; width: 12px; height: 12px; border-radius: 6px; background: var(--oro); }
+.abs { position: absolute; }

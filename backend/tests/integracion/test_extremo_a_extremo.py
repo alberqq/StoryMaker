@@ -198,5 +198,47 @@ class TestNovelaCompleta:
         assert error is None, error
 
         assert transporte.veces(Perfil.ARQUITECTO) == 1
+
+
+class TestGuardrailEnElGrafo:
+    """Un insulto de la lista global en el primer intento: se detecta, se audita, se puntúa
+    y el editor lo repara sin que la novela deje de publicarse."""
+
+    async def test_la_coincidencia_queda_en_audit_log_y_en_score(
+        self, tmp_path: Path, ajustes: Settings, transporte: TransporteFalso
+    ) -> None:
+        from storymaker.commons.validation.policy_checker import PROHIBIDAS_GLOBALES
+        from storymaker.writing.esquemas import SalidaEscritor
+
+        limpio = guion.capitulo(1).texto
+        sucio = SalidaEscritor(texto=limpio.replace("palabra0", "Subnormales", 1))
+        transporte.respuestas[Perfil.ESCRITOR][0] = sucio
+
+        ruta = tmp_path / "proyectos" / "guardrail.db"
+        nodo, error = await _recorrer(ruta, ajustes, transporte)
+        assert error is None, error
+        assert nodo != "Fail"
+
+        async with abrir_novela(ruta) as db:
+            globales = await _contar(
+                db, "SELECT COUNT(*) FROM canon_prohibida WHERE nivel = 'global'"
+            )
+            assert globales == len(PROHIBIDAS_GLOBALES)
+            auditadas = await _contar(
+                db,
+                "SELECT COUNT(*) FROM audit_log "
+                "WHERE actor = 'policy' AND accion = 'guardrail:prohibida'",
+            )
+            assert auditadas == 1
+            fallidos = await _contar(
+                db,
+                "SELECT COUNT(*) FROM score WHERE validador = 'guardrail_prohibidas' AND valor = 0",
+            )
+            assert fallidos == 1
+            limpios = await _contar(
+                db,
+                "SELECT COUNT(*) FROM score WHERE validador = 'guardrail_prohibidas' AND valor = 1",
+            )
+            assert limpios >= CAPITULOS
         assert transporte.veces(Perfil.ENTREVISTADOR) == 1
         assert transporte.veces(Perfil.ESCRITOR) == CAPITULOS

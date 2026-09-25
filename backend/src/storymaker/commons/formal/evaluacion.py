@@ -4,11 +4,11 @@ Detalla `specs/trama-rehacible/spec.md` §3.3.
 
 Los invariantes de `Cronologia.Basico` evaluados en Python, **para cuando Lean no está**.
 
-En el gate de Plotting la cronología se comprueba antes de haber escrito nada, y es la
-comprobación más barata de las tres. Pero exige `lake`, y en una instalación sin él la
-comprobación no corría en absoluto. Esta evaluación la sustituye allí, y solo allí: es un
-aviso para el Autor, no la puerta G5 de publicar, que sigue siendo Lean y sigue sin admitir
-excepción.
+Lean exige `lake`, y en una instalación sin él la cronología no se comprobaba en ninguna
+de sus tres paradas. Esta evaluación lo sustituye en las tres —el gate de Plotting, la
+pasada del extractor y la publicación— a través de `cronologia.verificar_cronologia`, que
+decide la severidad según el sitio: aviso en la escaleta, bloqueo en las otras dos. Que
+bloquee con Python es lo que U-1 admite y vigila.
 
 Se evalúa sobre el mismo `NovelaLean` que el generador vuelca, con las mismas definiciones
 —igualdad exacta de día en I3, `None` como ausencia de restricción—, de modo que las dos

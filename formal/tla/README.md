@@ -1,6 +1,6 @@
 # Verificación formal del arnés — TLA+ / TLC
 
-[`harness.tla`](harness.tla) especifica **cómo se comporta el arnés**, no qué escribe. Modela las seis fases, la reanudación desde checkpoint y la regeneración por cambio del lector, y declara **cinco invariantes de estado** —`TypeOK`, `NoPublishUnvalidated`, `ResumeIsExactlyOnce`, `RetriesBounded` y `CorpusSelladoNoSeToca`— y **dos propiedades temporales** —`PreviousVersionPreserved` y la liveness `Termina`— que TLC comprueba explorando exhaustivamente los estados alcanzables de un modelo pequeño.
+[`harness.tla`](harness.tla) especifica **cómo se comporta el arnés**, no qué escribe. Modela las seis fases, la caída del proceso y la reanudación desde checkpoint, el reintento manual de un capítulo, el rechazo de la publicación y la regeneración por cambio del lector, y declara **cinco invariantes de estado** —`TypeOK`, `NoPublishUnvalidated`, `ResumeIsExactlyOnce`, `RetriesBounded` y `CorpusSelladoNoSeToca`— y **dos propiedades temporales** —`PreviousVersionPreserved` y la liveness `Termina`— que TLC comprueba explorando exhaustivamente los estados alcanzables de un modelo pequeño.
 
 Verifica una superficie de riesgo distinta a la de Lean. Lean comprueba que **la historia** es coherente —que nadie nace después de morir—; TLC comprueba que **el sistema** lo es: que no hay ningún entrelazado de reintentos, gates y regeneraciones que acabe publicando una versión sin validar o perdiendo un capítulo al reanudar.
 
@@ -10,28 +10,45 @@ TLC necesita una JVM y `tla2tools.jar`, que no están en el repositorio.
 
 ```bash
 # Con la JVM y tla2tools.jar disponibles:
-java -cp tla2tools.jar tlc2.TLC -config harness.cfg harness.tla
+java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -workers auto -config harness.cfg harness.tla
+java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -workers auto -config harness_batch.cfg harness.tla
 
 # O con la skill `tlaplus` de .claude/skills/, que envuelve lo anterior:
 .claude/skills/tlaplus/scripts/tlc.sh formal/tla/harness.tla
 ```
 
-> **Estado en este entorno.** Ejecutado, y con resultado. La máquina del Autor no tiene JVM, así que se usó un JRE portátil y `tla2tools.jar` descargados a un directorio temporal — **no están en el repositorio**, y reproducir esto exige bajarlos.
->
-> TLC encontró **tres violaciones reales**, las tres corregidas y documentadas en la tabla de contraejemplos de más abajo. Con `WF` sobre la respuesta del Autor, el modelo se explora entero en unos segundos (59.236 estados distintos) y los cinco invariantes de estado se sostienen.
->
-> **Lo que falta.** La reverificación con `SF` —la hipótesis correcta, ver más abajo— no ha terminado: el espacio de estados pasa de 59 K a más de 1,7 M y la ejecución se cortó con estados todavía en cola. De modo que `Termina` **bajo equidad fuerte no está verificada**: está razonada. Los invariantes de estado sí lo están; la liveness, no.
+**Resultado.** Con TLC 2026.09.23 sobre un JRE 21 portátil, las dos configuraciones agotan su espacio de estados sin ninguna violación de los cinco invariantes ni de las dos propiedades temporales:
 
-### Cómo terminar la verificación pendiente
+| Configuración | Modo | Estados generados | Distintos | Profundidad | Tiempo |
+|---|---|---|---|---|---|
+| `harness.cfg` | Interactivo, equidad fuerte sobre el Autor | 22.349 | 12.650 | 71 | 1 s |
+| `harness_batch.cfg` | Batch | 7.029 | 4.425 | 66 | 1 s |
 
-El coste está en comprobar liveness con `SF`, no en los invariantes. Dos formas de cerrarlo, de menos a más trabajo:
+**La comprobación de `Termina` no es vacía.** Cambiando en una copia `SF_vars(AutorAprueba)` por `WF_vars(AutorAprueba)`, TLC viola `Termina` con la traza ya conocida: el Autor rehace Writing, se reescriben los capítulos, se vuelve al gate y se rehace otra vez. Es la mutación que confirma que la equidad fuerte es la que sostiene la propiedad, y no una configuración que no llega a explorar nada.
 
-1. **Bajar el modelo** a `NCapitulos = 3` y `MaxRechazosJuez = 1` en `harness.cfg`. La liveness no depende del número de capítulos —depende de que existan los ciclos gate↔escritura y juez↔gate—, así que tres capítulos bastan para explorarla y el espacio cae en un orden de magnitud.
-2. **Separar las dos ejecuciones**: un `.cfg` solo con `INVARIANTS` sobre el modelo de cinco capítulos, y otro solo con `PROPERTIES` sobre el de tres. Es lo que se hace normalmente cuando la liveness domina el coste, y deja las dos comprobaciones en tiempos manejables.
+**Por qué ahora termina y antes no.** El modelo anterior no era finito: `versiones` es una secuencia *append-only* y el lector podía pedir cambios sin límite, así que cada regeneración abría un estado nuevo y TLC corría con la cola estable y la profundidad creciendo. La cota `MaxCambiosLector` lo hace finito, y con ella la liveness cabe también en el modelo de cinco capítulos: no hace falta separarla en otro más pequeño.
 
 ## El modelo
 
-`harness.cfg` fija **5 capítulos y 2 reintentos**. Es pequeño a propósito: lo que se verifica no depende del tamaño —que `Repair` tenga dos aristas de entrada compartiendo un único contador de intentos se ve igual con cinco capítulos que con diez— y el espacio de estados crece deprisa con `NCapitulos`.
+`harness.cfg` fija **5 capítulos y 2 reintentos**, con una caída del proceso, un reintento manual y un cambio del lector. Es pequeño a propósito: lo que se verifica no depende del tamaño —que `Repair` tenga dos aristas de entrada compartiendo un único contador de intentos se ve igual con cinco capítulos que con diez— y el espacio de estados crece deprisa con `NCapitulos`.
+
+### El entorno, acotado
+
+Además del Autor, tres cosas que no son del arnés mueven el modelo, y cada una lleva su constante:
+
+| Acción | Qué es en el código | Constante |
+|---|---|---|
+| `Caida` y `ResumeFromCheckpoint` | El proceso muere en cualquier nodo que no sea un reposo, y `storymaker continuar` lo reanuda con `Command(resume=...)`. Mientras está muerto, `Mueve` no deja pasar nada. Reanudar no toca más que `vivo`: el checkpoint se escribe en la misma transacción que las filas de dominio, así que lo no confirmado no existe | `MaxCaidas` |
+| `Reintentar` | `storymaker reintentar`: reabre el capítulo que agotó sus reintentos escribiendo el checkpoint *como salida de `SealCorpus`*. Por eso exige la arista `SealCorpus → WriteChapter` y no una `Fail → WriteChapter`, que no existe. Solo cabe si el capítulo en curso no está validado | `MaxReintentos` |
+| `IdleRequest` | Una petición del lector, que `regenerar` escribe como salida de `Idle`. Pone a cero los rechazos | `MaxCambiosLector` |
+
+Lo que TLC comprueba con ellas es que una caída en cualquier punto —a mitad de un capítulo, entre reintentos, dentro de una regeneración— y un reintento manual dejan intactos los invariantes, en particular `ResumeIsExactlyOnce`.
+
+### El rechazo de la publicación
+
+`PublishVersion` tiene tres ramas: publica y va a `Idle`; rechaza, con rechazos disponibles, y vuelve a `AwaitApproval4`; o rechaza sin ellos y va a `Fail`. El rechazo no añade nada a `versiones`, y comparte contador con el juez. `RehacerWriting` elige un capítulo aprobado —en el código, los que citan las incidencias— y lo saca de `validados`, de modo que `NoPublishUnvalidated` notaría cualquier camino que publicara la versión nueva sin pasar por `Extract`.
+
+### Los dos modos
 
 `GatesActivos` distingue los dos modos. En **interactivo** el Autor se modela como un proceso de entorno no determinista que en cada gate puede aprobar, pedir que se rehaga o abortar. En **batch** (`GatesActivos = FALSE`, que es `gates.enabled = false` en el código) no hay a quién esperar.
 
@@ -89,6 +106,8 @@ Cuando TLC se ejecute, cada contraejemplo que encuentre se anota aquí con la tr
 | 2026-09-23 | `ResumeIsExactlyOnce` | 35 estados. Se escriben y aprueban los 5 capítulos, se llega a `AwaitApproval4`, y el Autor pide **rehacer**. La ejecución vuelve a `WriteChapter` con `aprobados = {1..5}` y `capitulo = 5`, cuando la pasada inicial exige `aprobados = 1..capitulo-1` | **El modelo, no el invariante.** El *rehacer* del gate de Writing se trataba como pasada inicial, y §8 dice que «rehacer, reanudar, ramificar y regenerar son la misma operación». Se separa en la acción `RehacerWriting`, que entra en modo regeneración |
 | 2026-09-23 | `Termina` (1ª vez) | El ciclo `Judge → AwaitApproval4 → Judge`, indefinido: el Autor aprueba cada vez y el juez vuelve a rechazar | **Un tope que faltaba en el sistema.** Nada acotaba los rechazos del juez, mientras `intentos` y `huecos` sí lo estaban. Se añade `rechazosJuez` con su `MaxRechazosJuez`, y la arista `Judge → Fail` cuando se agotan |
 | 2026-09-23 | `Termina` (2ª vez) | El ciclo `AwaitApproval4 → RehacerWriting → WriteChapter → … → Checkpoint → AwaitApproval4`: el Autor rehace Writing para siempre | **La hipótesis de equidad estaba mal elegida.** Ver abajo |
+
+Con el modelo ampliado —caída, reanudación, reintento manual, rechazo de la publicación y entorno acotado— TLC no ha encontrado ningún contraejemplo nuevo. Lo que sí cambió al ampliarlo fue la finitud del modelo, que se cuenta arriba en «Por qué ahora termina».
 
 ### La corrección que más enseña: débil no basta
 

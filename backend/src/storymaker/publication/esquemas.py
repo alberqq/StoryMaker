@@ -7,7 +7,7 @@ ningún campo donde pudiera devolver prosa corregida. Si lo tuviera, el mismo ag
 produce la métrica podría optimizarla, y los *scores* dejarían de significar nada. Esa es
 la misma razón por la que el editor y el juez son dos agentes distintos y no uno.
 
-La rúbrica son **siete criterios del 1 al 10 con justificación**, y la justificación no es
+La rúbrica son **ocho criterios del 1 al 10 con justificación**, y la justificación no es
 adorno: es lo que permite comparar el juicio del modelo con el de una persona, porque
 `revision_humana` usa exactamente el mismo fichero de rúbrica.
 """
@@ -20,12 +20,13 @@ from pydantic import BaseModel, Field
 
 
 class Criterio(StrEnum):
-    """Los siete de §11b. La lista es cerrada: puntuar otra cosa no es esta rúbrica."""
+    """Los ocho de §11b. La lista es cerrada: puntuar otra cosa no es esta rúbrica."""
 
     CONTINUIDAD = "continuidad"
     ARCO = "arco"
     COHERENCIA_DE_PERSONAJES = "coherencia_de_personajes"
     RITMO = "ritmo"
+    TONO = "tono"
     PROSA = "prosa"
     NATURALIDAD_DE_LA_PERSONALIZACION = "naturalidad_de_la_personalizacion"
     AUTENTICIDAD_DE_EPOCA = "autenticidad_de_epoca"

@@ -1,0 +1,72 @@
+# EVAL 01 · Jubilación · caso base
+#
+# Ocasión: la jubilación de un padre. Es, campo a campo, el brief del README
+# (ejemplos/brief-ejemplo.yaml), y su versión publicada es ejemplos/novela-ejemplo.pdf.
+#
+# Eje que cubre (verification.md §4.2): un período con eventos históricos duros y
+# fechables. Trafalgar tiene día —21 de octubre de 1805— y Gravina tiene fecha de muerte,
+# así que la cronología y `anacronismo_fechado` tienen algo firme contra lo que medir.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/01-jubilacion.yaml --nombre eval-01-jubilacion --batch
+
+espera:
+  termina: publicada
+  validadores_que_deben_pasar:
+    - schema_guard
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - anacronismo_fechado
+    - cobertura_personalizacion
+    - lean_cronologia
+    - render_visual
+  juez: media >= 7 y ningún criterio por debajo de 5
+  notas: >
+    Es la novela de referencia. Si esta no publica, las demás no significan nada.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Ramón Iriarte Sologaray
+    fecha_nacimiento: 1958-03-14
+    rol_epoca: armador de navío mercante
+    ocasion: jubilación tras cuarenta años en el puerto
+    elementos_personalizacion:
+      - texto: aprendió a navegar con su abuelo en una txalupa
+        obligatorio: true
+      - texto: le perdió el miedo al mar a los once años
+        obligatorio: true
+      - texto: colecciona cartas náuticas antiguas
+        obligatorio: false
+
+  mundo:
+    periodo:
+      inicio: 1803
+      fin: 1806
+      denominacion: Guerras Napoleónicas
+    lugar: Cádiz
+    evento_ancla: la batalla de Trafalgar
+    personajes_historicos:
+      aparecen:
+        - Federico Gravina
+      se_evitan:
+        - Napoleón Bonaparte
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: marítima
+    tono: elegíaco con final luminoso
+    punto_de_vista: tercera persona con focalización en el homenajeado
+    grado_licencia: moderado
+    arcaismo: moderado
+    contenido_admisible: sin violencia explícita
+    palabras_prohibidas:
+      novela:
+        - pirata
+        - tesoro
+      destinatario:
+        - naufragio
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

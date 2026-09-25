@@ -1,0 +1,199 @@
+/* Deck de Qapítulo para Relicario. Parte del sistema visual de los anexos (../anexos/marca.css)
+   y añade lo propio de una slide de 10 minutos: títulos más grandes, más aire y el pie con
+   número «03 / 22».
+
+   Las fuentes se sirven desde fuentes/ (instancias estáticas de Google Fonts): el PDF y el
+   PPTX usan exactamente los mismos ficheros, así que el texto ocupa lo mismo en los dos.
+   Todo lo que se pinta es texto real o una caja CSS: construir.py convierte cada caja en una
+   forma de PowerPoint y cada texto en un cuadro de texto editable. Por eso aquí no hay
+   ::before con contenido, ni small-caps, ni opacidades: nada que PowerPoint no sepa pintar. */
+
+@font-face { font-family: 'QFraunces'; src: url('fuentes/Fraunces-400.ttf'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'QFraunces'; src: url('fuentes/Fraunces-600.ttf'); font-weight: 600; font-style: normal; }
+@font-face { font-family: 'QFraunces'; src: url('fuentes/Fraunces-500i.ttf'); font-weight: 500; font-style: italic; }
+@font-face { font-family: 'QFraunces'; src: url('fuentes/Fraunces-600i.ttf'); font-weight: 600; font-style: italic; }
+@font-face { font-family: 'QInter'; src: url('fuentes/Inter-400.ttf'); font-weight: 400; }
+@font-face { font-family: 'QInter'; src: url('fuentes/Inter-500.ttf'); font-weight: 500; }
+@font-face { font-family: 'QInter'; src: url('fuentes/Inter-600.ttf'); font-weight: 600; }
+@font-face { font-family: 'QInter'; src: url('fuentes/Inter-700.ttf'); font-weight: 700; }
+@font-face { font-family: 'QMono'; src: url('fuentes/JetBrainsMono-400.ttf'); font-weight: 400; }
+@font-face { font-family: 'QMono'; src: url('fuentes/JetBrainsMono-500.ttf'); font-weight: 500; }
+@font-face { font-family: 'QMono'; src: url('fuentes/JetBrainsMono-700.ttf'); font-weight: 700; }
+
+:root {
+  --serif: 'QFraunces', Georgia, serif;
+  --sans: 'QInter', 'Segoe UI', Arial, sans-serif;
+  --mono: 'QMono', Consolas, monospace;
+  /* Tintes de la paleta ya mezclados sobre Pergamino, sin transparencias. */
+  --salvia-t: #DDE3D5;
+  --lacre-t: #EDD9CC;
+  --oro-t: #EEE0C0;
+  --oro-t2: #E6D3A8;
+  --tinta-t: #E8E3D8;
+  --linea: #D9D2C3;
+  --perg-80: #CFCCC6;   /* Pergamino al 80 % sobre Tinta */
+  --perg-60: #A5A5A3;
+  --tinta-2: #2A3344;   /* Tinta un punto más clara, para cajas sobre fondo Tinta */
+}
+
+@page { size: 1280px 720px; margin: 0; }
+html, body { background: #9E998C; }
+body { font-family: var(--sans); font-size: 18px; line-height: 1.35; color: var(--tinta); margin: 0; }
+b, strong { font-weight: 600; }
+code, .mono { font-family: var(--mono); font-weight: 500; font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0; }
+code { font-size: 0.92em; }
+em { font-style: normal; font-weight: 600; }
+p { margin: 0 0 8px 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+section.slide {
+  position: relative;
+  width: 1280px; height: 720px;
+  overflow: hidden;
+  background: var(--pergamino);
+  margin: 0 auto 24px auto;
+  break-after: page; page-break-after: always;
+}
+section.slide:last-child { break-after: auto; page-break-after: auto; }
+section.slide.oscura { background: var(--tinta); color: var(--pergamino); }
+@media print { html, body { background: var(--pergamino); } section.slide { margin: 0; } }
+
+/* ---------- Cabecera ---------- */
+.cab { position: absolute; left: 64px; right: 64px; top: 34px; }
+.kicker {
+  font-family: var(--sans); font-weight: 600; font-size: 12.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; font-variant: normal; font-variant-caps: normal; color: var(--piedra); display: flex; align-items: center; gap: 12px;
+  line-height: 16px;
+}
+.kicker .cap { color: var(--tinta); }
+.oscura .kicker { color: var(--perg-60); }
+.oscura .kicker .cap { color: var(--oro); }
+.kicker .sep { width: 28px; height: 0; border-top: 1.5px solid var(--oro); display: inline-block; }
+.cab h1 {
+  font-family: var(--serif); font-weight: 600; font-size: 36px; line-height: 42px;
+  margin: 10px 0 0 0; color: var(--tinta); letter-spacing: -0.01em;
+}
+.cab h1.l2 { font-size: 33px; line-height: 39px; }
+.oscura .cab h1 { color: var(--pergamino); }
+
+.cuerpo { position: absolute; left: 64px; right: 64px; top: 160px; bottom: 76px; }
+.cuerpo.alto { top: 132px; }
+.cuerpo.medio { top: 146px; }
+
+/* ---------- Pie ---------- */
+.pie { position: absolute; left: 40px; right: 40px; bottom: 14px; height: 40px; }
+.pie .linea { position: absolute; left: 0; right: 0; top: 0; height: 8px; }
+.pie .linea svg { display: block; width: 1200px; height: 8px; }
+.pie .fila-pie {
+  position: absolute; left: 0; right: 0; top: 15px; height: 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  font-size: 13px; color: var(--piedra);
+}
+.pie .marca { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.pie .marca svg { width: 18px; height: 20px; display: block; }
+.pie .marca .nombre { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--tinta); }
+.pie .marca .ini { font-family: var(--sans); font-weight: 400; font-size: 13px; color: var(--piedra); }
+.pie .centro { flex: 1 1 auto; text-align: center; white-space: nowrap; }
+.pie .num { font-family: var(--mono); font-weight: 500; font-size: 14px; color: var(--tinta); white-space: nowrap; }
+.oscura .pie .marca .nombre, .oscura .pie .num { color: var(--pergamino); }
+.oscura .pie .fila-pie, .oscura .pie .marca .ini { color: var(--perg-60); }
+
+/* ---------- Piezas comunes ---------- */
+.fila { display: flex; gap: 28px; }
+.col { flex: 1 1 0; min-width: 0; }
+.abs { position: absolute; }
+.caja { border: 1.5px solid var(--tinta); border-radius: 8px; padding: 14px 16px; }
+.caja.fina { border: 1px solid var(--linea); }
+.caja.oro { border-color: var(--oro); background: var(--oro-t); }
+.caja.lacre { border-color: var(--lacre); }
+.caja.salvia { border-color: var(--salvia); }
+.caja.tinta { background: var(--tinta); color: var(--pergamino); border-color: var(--tinta); }
+.caja.tinta code { color: var(--oro); }
+.caja.clara { background: #FBF8F1; border: 1px solid var(--linea); }
+.franja {
+  background: var(--tinta); color: var(--pergamino); border-radius: 8px;
+  padding: 12px 18px; font-size: 17px; line-height: 1.35;
+}
+.franja code, .franja b { color: var(--oro); }
+.oscura .franja { background: var(--tinta-2); }
+.etq { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--piedra); line-height: 16px; margin-bottom: 8px; }
+.h2 { font-family: var(--serif); font-weight: 600; font-size: 21px; line-height: 26px; margin: 0 0 8px 0; }
+.sec { color: var(--piedra); }
+.nota { font-size: 14px; line-height: 19px; color: var(--piedra); }
+.nota b { color: var(--tinta); }
+.pq { font-size: 15px; line-height: 20px; }
+.gran { font-family: var(--serif); font-weight: 600; font-size: 54px; line-height: 58px; color: var(--oro); }
+.gran.salvia { color: var(--salvia); }
+.gran.tinta { color: var(--tinta); }
+.cifra { font-family: var(--mono); font-weight: 500; }
+
+/* ---------- Chips (el signo va como texto, no como ::before) ---------- */
+.chip {
+  display: inline-block;
+  font-family: var(--sans); font-weight: 600; font-size: 14px; line-height: 16px;
+  padding: 4px 8px; border-radius: 7px; white-space: nowrap;
+  border: 1.5px solid transparent; color: var(--tinta);
+}
+.chip.pasa { background: var(--salvia-t); border-color: var(--salvia); }
+.chip.pasa .g { color: var(--salvia); }
+.chip.falla { background: var(--lacre-t); border-color: var(--lacre); color: var(--lacre); }
+.chip.rep { background: var(--lacre-t); border-color: var(--lacre); color: var(--lacre); }
+.chip.rep .ok { color: var(--salvia); }
+.chip.aviso { background: var(--oro-t); border-color: var(--oro); }
+.chip.pend { background: transparent; border: 1.5px dashed var(--piedra); color: var(--piedra); }
+.chip.neutro { background: var(--tinta-t); border-color: var(--linea); }
+.chip.grande { font-size: 16px; line-height: 18px; padding: 5px 10px; }
+.chip::before { content: none !important; }
+/* Chip con texto mixto (negritas, código): en línea, sin flex, para que el texto no se trocee */
+.chip.txt { display: inline-block; }
+
+/* ---------- Tablas ---------- */
+table.t { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 20px; }
+table.t th { background: var(--tinta); color: var(--pergamino); font-weight: 600; text-align: left; padding: 8px 10px; font-size: 15px; line-height: 18px; }
+table.t td { padding: 7px 10px; border-bottom: 1px solid var(--linea); vertical-align: middle; }
+table.t tr.total td { background: var(--tinta); color: var(--pergamino); font-weight: 600; border-bottom: none; }
+table.t tr.dest td { background: var(--oro-t); }
+table.t td.num, table.t th.num { text-align: right; white-space: nowrap; }
+table.t td.num { font-family: var(--mono); font-weight: 500; }
+table.t td.c, table.t th.c { text-align: center; }
+
+/* ---------- Código ---------- */
+pre.codigo {
+  font-family: var(--mono); font-weight: 500; font-size: 15px; line-height: 21px;
+  background: var(--tinta); color: var(--pergamino); border-radius: 8px;
+  padding: 14px 18px; margin: 0; white-space: pre; overflow: hidden;
+  font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0;
+}
+pre.codigo .k { color: var(--oro); }
+pre.codigo .c { color: var(--perg-60); font-weight: 400; }
+
+/* ---------- Diagramas ---------- */
+svg.diag { position: absolute; left: 0; top: 0; overflow: visible; }
+svg.diag text { font-family: var(--sans); font-size: 14px; }
+svg.diag .mono { font-family: var(--mono); font-weight: 500; }
+.nodo {
+  position: absolute; border: 2px solid var(--tinta); border-radius: 8px; background: var(--pergamino);
+  padding: 8px 12px; font-size: 16px; line-height: 20px;
+}
+.cap-mono {
+  position: absolute; border: 2px solid var(--tinta); border-radius: 20px; background: #FBF8F1;
+  font-family: var(--mono); font-weight: 500; font-size: 15px; line-height: 18px;
+  padding: 9px 14px; white-space: nowrap; text-align: center;
+}
+.num-circ {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 13px; background: var(--oro); color: var(--tinta);
+  font-family: var(--mono); font-weight: 700; font-size: 14px; line-height: 16px; flex: 0 0 26px;
+}
+.marco-img { position: absolute; border: 1.5px solid var(--tinta); border-radius: 8px; background: #FBF8F1; overflow: hidden; }
+.marco-img img { position: absolute; display: block; }
+.marco-pend {
+  position: absolute; border: 2px dashed var(--piedra); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  color: var(--piedra); font-size: 15px; padding: 16px;
+}
+.icono { display: block; }
+
+/* Lista con marca de Oro viejo, sin viñeta de navegador */
+.lista li { position: relative; padding-left: 22px; margin: 0 0 9px 0; }
+.lista li .m { position: absolute; left: 0; top: 0; color: var(--oro); font-weight: 700; }

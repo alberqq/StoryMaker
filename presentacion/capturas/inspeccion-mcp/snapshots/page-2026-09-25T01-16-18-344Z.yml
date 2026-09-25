@@ -1,0 +1,74 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e713]:
+      - generic [ref=e714]:
+        - navigation [ref=e715]:
+          - link "Índice" [ref=e716] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e718] [cursor=pointer]:
+          - generic [ref=e719]: A
+          - generic [ref=e720]: a
+      - heading "Capítulo 2. El día que perdió el miedo" [level=1] [ref=e721]
+      - article [ref=e722]:
+        - paragraph [ref=e723]: Ramón tenía once años cuando supo que el pánico era una mentira que el cuerpo contaba.
+        - paragraph [ref=e724]: "Tres inviernos habían pasado desde aquel primer viaje donde el agua había dejado de ser amenaza para convertirse en lenguaje. En ese tiempo, el niño había acompañado a su abuelo en docenas de salidas por la bahía de Cádiz: tardes de cabotaje lento, mañanas donde el agua era un espejo que reflejaba el cielo, noches donde las estrellas parecían rebaños de ovejas que el viento pastoreaba de una orilla a otra. El abuelo había enseñado a Ramón a leer las velas, a sentir el cambio de la presión en el aire, a reconocer dónde habitaban los vientos y cómo se anunciaban. Pero todas esas lecciones habían ocurrido bajo la benevolencia de un mar que respetaba a quien lo respetaba, que ofrecía sus caminos invisibles con la generosidad de un mercader que conoce de antemano que le pagarán."
+        - paragraph [ref=e725]: "Ese día de marzo, el abuelo observaba el cielo hacia el este mientras los primeros marineros del muelle de Santa María descargaban sus redes del amanecer. Las nubes se amontonaban sobre el horizonte con la densidad de una montaña invertida, y su color no era el gris familiar de una lluvia pasajera, sino algo más profundo, casi negro. El abuelo estudiaba esas nubes como un comerciante estudia una partida de mercancía cuyo valor es incierto: con atención, sin prisa, ponderando cada detalle."
+        - paragraph [ref=e726]: —No saldrías hoy si tuvieras seso —dijo Pascual, marinero viejo que reparaba sus redes con nudos que parecían rituales antiguos. Su voz llevaba la autoridad de quien ha visto el mar en sus formas más turbulentas.
+        - paragraph [ref=e727]: —Precisamente porque tengo seso, saldremos —respondió el abuelo, sin apartar la vista del cielo.
+        - paragraph [ref=e728]: "Otros marineros movieron la cabeza en desacuerdo. Los murmullos circularon entre ellos como agua subterránea: tontos, arrogante, sabe más que el cielo. Ramón escuchaba estos susurros desde el banco donde esperaba, cerca de la txalupa que reposaba en el agua con la paciencia de quien ya conoce lo que vendrá. El niño sintió que algo cálido y desagradable se removía en su vientre, una sensación que no era exactamente pánico sino su hermana menor."
+        - paragraph [ref=e729]: El abuelo se acercó a Ramón entonces, y le extendió la mano para ayudarlo a levantarse.
+        - paragraph [ref=e730]: —¿Tienes aprensión, muchacho?
+        - paragraph [ref=e731]: "La pregunta no era permisiva. No decía \"es natural si tienes aprensión\". Decía: tienes aprensión, es un hecho, ahora qué harás con ello."
+        - paragraph [ref=e732]: —No, abuelo —respondió Ramón, aunque el nudo en su estómago latía como un corazón independiente.
+        - paragraph [ref=e733]: El abuelo asintió, como si acabara de recibir confirmación de algo que ya sabía. Subieron a la txalupa juntos, el abuelo primero, Ramón detrás, con los movimientos que tres años de práctica habían inscrito en los músculos del niño. La madera del banco de remos recibió a Ramón como había recibido su cuerpo decenas de veces, pero hoy esa familiaridad no lo tranquilizaba. Hoy parecía frágil, una promesa que el mar podría romper cuando le placiera.
+        - paragraph [ref=e734]: El abuelo comenzó a preparar la vela con los movimientos decididos de quien no se cuestiona lo que hace, solo lo hace. Las cuerdas pasaron por sus brazos curtidos con rapidez, cada nudo amarrado con la seguridad de quien sabe que una cuerda floja es una cuerda que mata. Izó la vela lentamente, y cuando el lino se desplegó frente al cielo amenazante, parecía lo más frágil del mundo, una piel desnuda enfrentándose a un predador. La txalupa se inclinó suavemente, y el agua comenzó a llenarla de movimiento.
+        - paragraph [ref=e735]: Los primeros minutos fueron calma. El abuelo dirigía la pequeña nave hacia aguas más abiertas de la bahía, y Ramón observaba cómo el puerto se hacía pequeño detrás de ellos, cómo la línea de casas que formaba Cádiz se redibujaba desde esta perspectiva, menos sólida, más vulnerable. El mar respiraba bajo ellos, un aliento regular que el niño había aprendido a reconocer como normalidad.
+        - paragraph [ref=e736]: Entonces el viento cambió.
+        - paragraph [ref=e737]: No fue un cambio gradual. Fue como si alguien hubiera abierto una puerta invisible, y todo lo que habitaba al otro lado de esa puerta hubiera salido corriendo. La vela se infló de repente, peligrosamente, como si quisiera desprenderse del mástil y volar hacia un cielo que no era ya azul sino una masa de agua invertida. La txalupa se inclinó tan bruscamente que Ramón gritó, un sonido que no reconoció como suyo. Sus brazos buscaban algo para aferrarse, pero solo encontraban aire y la rugosidad de la madera mojada.
+        - paragraph [ref=e738]: —¡Sujeta! —gritó el abuelo, pero su voz no portaba urgencia, portaba autoridad, como la voz de alguien que está en su casa incluso cuando su casa intenta asesinarlo.
+        - paragraph [ref=e739]: El muchacho intentó sujetarse, pero su cuerpo había desertado. Estaba solo, Ramón, con once años y la inutilidad de sus propios músculos. Las olas golpeaban la txalupa, no con regularidad sino con la cólera de algo que había estado esperando este momento, esperando para enfrentarse nuevamente a aquel niño que se atrevía a aprender su lenguaje.
+        - paragraph [ref=e740]: El abuelo dejó suelta la vela brevemente y se acercó a Ramón. Cuando lo agarró de los hombros, Ramón sintió que el agua estaba en sus ojos, en su boca. Estaba sollozando, aunque no lo sabía. Los dedos del abuelo eran las únicas cosas reales en el mundo, dos anclas de bronce que lo mantenían en la vida.
+        - paragraph [ref=e741]: —Tira de la cuerda —dijo el abuelo—. Ahora. Con todo lo que tengas.
+        - paragraph [ref=e742]: —¡No puedo! —gritó Ramón, pero el abuelo ni siquiera parpadeó.
+        - paragraph [ref=e743]: —Tira.
+        - paragraph [ref=e744]: Y Ramón tiró.
+        - paragraph [ref=e745]: "No fue un acto de voluntad consciente. Fue un acto de obediencia más profunda que la voluntad, un obedecimiento que se originaba en una parte de sí mismo que él aún no había descubierto, una parte que reconocía la autoridad del abuelo no como un viejo marinero sino como una verdad. Sus brazos, entonces, obraron. Sus dedos encontraron la cuerda, áspera y viva, y la tiraron con la desesperación de quien quiere vivir. La vela se controló. No fue un milagro: fue el resultado mecánico, físico, de la acción. La txalupa recuperó su equilibrio como si despertara de un sueño violento, y el agua, aunque seguía golpeando, recuperó su ritmo, sus caminos invisibles."
+        - paragraph [ref=e746]: Mientras las olas aún sacudían la pequeña nave, el abuelo soltó a Ramón y colocó la mano en la cabeza del niño. El gesto era simple, paternal, casi casual. Pero sus palabras quedaron en Ramón como cicatrices que nunca cicatrizarían.
+        - paragraph [ref=e747]: —Ahora has hablado con el agua —dijo.
+        - paragraph [ref=e748]: "La tormenta duró lo que duran las tormentas: tiempo suficiente para que Ramón comprendiera que la acción era lo contrario de la parálisis, que hacer algo, cualquier cosa, era más fuerte que sucumbir. La tormenta duró lo que duran todas las cosas violentas: menos tiempo del que parecía mientras ocurría. Y cuando el cielo comenzó a aclararse, cuando la bahía volvió a respirar con normalidad, la txalupa regresaba hacia el puerto, tocada pero íntegra."
+        - paragraph [ref=e749]: Los gritos comenzaron cuando la txalupa se acercó al muelle. Marineros que habían dado por perdidos al abuelo y al niño gritaban ahora, sus voces confundidas entre la alegría y el alivio. Los aplausos llegaron mientras la pequeña nave se acoplaba al muelle, mientras el abuelo saltaba en tierra firme con la agilidad de quien no ha envejecido porque nunca ha dejado de existir en el presente.
+        - paragraph [ref=e750]: "Ramón bajó después. El cuerpo del niño cambiaba. Sucedía así: se movía diferente, más erguido, como si la columna vertebral hubiera sido realineada por aquella hora de tormenta. Sus ojos ya no buscaban el suelo sino el horizonte. No había cobardía en ellos, pero tampoco había arrogancia: había algo más profundo, la serenidad de quien ha estado donde debía haber pánico y encontró, en su lugar, un lenguaje."
+        - paragraph [ref=e751]: —¿Has conocido el terror? —preguntó Agustín, marinero veterano que había navegado bajo banderas que Ramón aún no comprendía que existían.
+        - paragraph [ref=e752]: Ramón asintió. Su voz salió tranquila, como si hablara desde un lugar profundo dentro de sí mismo.
+        - paragraph [ref=e753]: —Sí. Lo conocí bien. Pero decidí no obedecerle.
+        - paragraph [ref=e754]: El abuelo sonrió entonces, una sonrisa que ocupaba todo su rostro, que lo rejuvenecía. Esa noche, Ramón tendría derecho a sentarse con los hombres del puerto cuando se reunieran alrededor del brasero, a escuchar sus historias, a formar parte de esa comunidad de personas que habían hablado con el agua y vivido para contarlo.
+        - paragraph [ref=e755]: "Ramón miró hacia la bahía aún revuelta, ahora bajo un cielo que recuperaba su luz. Sintió algo en el pecho que no era alivio sino pertenencia. No era heredero solamente de una promesa de agua. Era marinero. Pertenecía a ese mundo de incertidumbre y poder, a esa bahía que rodeaba Cádiz y la mantenía suspendida entre cielo y profundidad, entre la seguridad de la tierra y la honestidad del mar que no perdona sino enseña. Había perdido el pánico a los once años, pero había ganado algo infinitamente más valioso: la certeza de que el lenguaje del agua no era una metáfora, sino un modo de estar vivo."
+      - navigation "Navegación entre capítulos" [ref=e756]:
+        - link "← Capítulo anterior" [ref=e758] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/1
+        - link "Índice" [ref=e759] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e761] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/3
+      - generic [ref=e762]:
+        - heading "Pedir un cambio" [level=2] [ref=e763]
+        - generic [ref=e764]:
+          - paragraph [ref=e765]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e766]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e767]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e768]

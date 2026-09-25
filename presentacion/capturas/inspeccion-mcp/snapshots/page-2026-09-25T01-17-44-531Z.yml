@@ -1,0 +1,60 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e167]:
+      - generic [ref=f3e168]:
+        - navigation [ref=f3e169]:
+          - link "Índice" [ref=f3e170] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f3e172] [cursor=pointer]:
+          - generic [ref=f3e173]: A
+          - generic [ref=f3e174]: a
+      - heading "Capítulo 3. La Última Ruta" [level=1] [ref=f3e175]
+      - article [ref=f3e176]:
+        - paragraph [ref=f3e177]: "La madrugada llega en Lavapiés como un secreto entre el cielo y las piedras. Tomás estaba en la fuente pública cuando aún faltaban horas para que la ciudad despertara, llenando botijos uno tras otro con el mismo ritual que había ejecutado durante veinticuatro años. El agua fría manaba clara, sin prisa, mientras sus manos realizaban los movimientos que su cuerpo ya no necesitaba pensar. Ritual. Eso era lo que quedaba cuando la necesidad se disolvía: el ritual mismo, puro y perfecto. Eligió sus recipientes con cuidado esa mañana de primavera, como hacía todos los días, pero con una atención que parecía nuevamente adolescente. Cada uno tenía su peso, su inclinación, su forma de asentarse en la angarilla. Vasijas que su abuelo no había modelado, pero que eran hermanos de los que Jacinto creara con las manos."
+        - paragraph [ref=f3e178]: Sus primeras paradas fueron las de siempre. En casa de Doña Martina, la encontró sentada en un taburete junto a la ventana, como si lo estuviera esperando, aunque Tomás llegara a la misma hora de cada día desde hacía años. Estaba enferma hacía semanas, algo en el pecho que la hacía respirar como quien carga un peso invisible. Cuando Tomás entró, dejó la tinaja en su lugar habitual y ella simplemente lo miró con los ojos que tienen los ancianos cuando entienden que algo se termina.
+        - paragraph [ref=f3e179]: "\"Gracias, Tomás\", dijo, y en esa frase había gratitud no solo por el agua, sino por ser visto, por ser recordado en su enfermedad, por la persistencia de un hombre que llega con agua fresca cada mañana sin que ella tenga que pedirlo."
+        - paragraph [ref=f3e180]: En el taller del sastre, Tomás humedeció los lienzos como el maestro le pidiera. El agua que llevaba servía para alisar linos, para preparar paños para el corte. Necesidad mutua. El sastre no podía trabajar sin agua, Tomás no era nadie sin clientes que la pidieran. Palabras breves, gesto de pago, confirmación tácita de que mañana volvería.
+        - paragraph [ref=f3e181]: En la fonda donde comían los jornaleros, el posadero lo esperaba. Cuando Tomás entregó sus vasijas, el hombre levantó su vaso en un gesto que parecía más ritual que celebración, brindando por los viejos tiempos, por cuando el agua de fuente era un lujo, por cuando un aguador como Tomás recorría las calles con la dignidad de quien provee lo más necesario. "Por los viejos tiempos", murmuró, y otros levantaron sus vasos en silencio.
+        - paragraph [ref=f3e182]: Una viuda que vivía en la tercera parada lo esperaba con historias, como hacía cada mañana. Mientras Tomás llenaba su tinaja, ella hablaba de su marido, de cómo había sido cantero, de cómo conoció al aguador cuando era apenas un muchacho. La compañía del silencio matutino, el sonido de su voz contando lo que ya había contado cien veces, pero que Tomás escuchaba como si fuera la primera. Era la única forma que ella tenía de no estar sola, y él lo sabía.
+        - paragraph [ref=f3e183]: "El taller del alfarero vino después. El maestro, un hombre de edad similar a Tomás, quizá algo mayor, salió cuando lo escuchó llegar. No fue una transacción de agua por dinero: fue un saludo entre oficios hermanos. El ceramista y el aguador, ambos proveedores de lo necesario en formas que la ciudad estaba olvidando. Se miraron con una comprensión que no precisaba palabras. El maestro asintió, como quien reconoce a un colega, y Tomás llenó lo que era preciso llenar."
+        - paragraph [ref=f3e184]: Al caer la tarde, en la iglesia de San Andrés, Tomás dejó agua en la pila para la limpieza ritual. El cura lo bendijo, como hacía siempre, reconociendo en ese gesto la continuidad de una tradición que se remontaba a siglos. Agua para los ritos, agua para las palmas que rezaban, agua para lo sagrado. Era su contribución a algo que trascendía lo mundano.
+        - paragraph [ref=f3e185]: Esa noche, Pepino llegó al cuarto donde Tomás guardaba sus vasijas de barro. El muchacho tenía dieciséis años y había pedido aprender el oficio hace apenas semanas, cuando ya los rumores sobre el agua corriente eran tan fuertes que parecían el único aire que se respiraba en el barrio. Tomás no había planeado tomar aprendiz, pero el muchachito había insistido, y algo en su mirada le recordó al adolescente que una vez se escondiera debajo de la mesa del taller de su abuelo para no tener que hacer otras cosas.
+        - paragraph [ref=f3e186]: "\"Primero debes saber elegir\", le dijo Tomás, mostrándole los recipientes. Pepino aprendió a sentir el peso, reconocer las grietas que hacían de un botijo algo digno de carga y algo frágil. Luego, Tomás le enseñó a llenar sin derramar, arte que parecía simple pero que contenía toda una filosofía de equilibrio y respeto por lo que se llevaba."
+        - paragraph [ref=f3e187]: Las rutas vinieron después. Tomás caminó con Pepino por las calles de Lavapiés, enseñándole dónde estaban los clientes leales, cuáles necesitaban agua fría y cuáles agua más tibia, en qué casas el pago era seguro y en cuáles había que tener paciencia. Le enseñó también a hablar con respeto, con la dignidad de quien sabe que provee algo que otros necesitan.
+        - paragraph [ref=f3e188]: "Cuando llegaron a la iglesia, Pepino preguntó lo inevitable: \"¿Desaparecerá pronto, don Tomás? Lo del agua en grifos, quiero decir. ¿Vale la pena aprender esto?\""
+        - paragraph [ref=f3e189]: "Tomás se detuvo. Miró al muchacho a los ojos y respondió con la claridad de quien ha pensado en esa pregunta cada día: \"Mientras exista, debe hacerse bien. Eso es todo lo que importa\"."
+        - paragraph [ref=f3e190]: "Algo en su garganta se movió, y sin pensar, comenzó a silbar. La copla volvía sola, como un rezo involuntario: \"Que vueltas da la rueda, / que vueltas da la fortuna, / que hoy eres luz y mañana / no eres ni sombra ninguna\". Pepino lo escuchaba sin interrumpir, comprendiendo en esa música algo que las palabras no podían contener."
+        - paragraph [ref=f3e191]: "La noche anterior a la inauguración, Tomás no dormía. Limpiaba sus botijos uno por uno, los que tantas veces había tocado antes, cuyas superficies porosas guardaban el polvo del barrio y las historias de sus habitantes. Cada recipiente tenía una memoria: este lo había llenado para Doña Martina cuando su marido aún vivía; ese otro había ido a la casa de la viuda en los primeros días de su soledad; otro más había acompañado rondas junto a Amancio hace quince años, cuando ambos eran jóvenes y la ciudad parecía infinita."
+        - paragraph [ref=f3e192]: Recordaba a su abuelo modelando arcilla, la paciencia de quien construye algo que durará más que él. Recordaba sus primeras rutas siendo un muchacho torpe, aprendiendo de clientes cuáles eran las casas correctas, cuál era el peso justo del vasija, cuánta agua cabía en el alma de la ciudad. Recordaba la mesa del taller donde se había escondido, pequeño y silencioso, observando las manos de su abuelo crear la forma que después contendría la vida.
+        - paragraph [ref=f3e193]: Miró por la ventana hacia Madrid. La ciudad dormía bajo las estrellas, ignorante de que mañana algo cambiaría. No explosiones, no dramas. Solo el silencio de una necesidad que dejaba de existir, sustituida por tuberías de hierro y grifos de cobre.
+        - paragraph [ref=f3e194]: "Se preguntó qué sería después: para el oficio, para Pepino, para Doña Martina cuando no hubiera más agua de fuente. Los grifos fluirían, eso era cierto. Pero también era cierto que el miedo y la paz podían habitar simultáneamente en el pecho de un hombre que ha hecho bien su trabajo hasta el final. Que la impermanencia no invalidaba el valor de lo que una vez fue necesario."
+        - paragraph [ref=f3e195]: Tomás se acostó entre sus botijos, escuchando la respiración de la ciudad, y se durmió con la tranquilidad de quien ha cumplido.
+      - navigation "Navegación entre capítulos" [ref=f3e196]:
+        - link "← Capítulo anterior" [ref=f3e198] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/2
+        - link "Índice" [ref=f3e199] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3
+        - link "Capítulo siguiente →" [ref=f3e201] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/4
+      - generic [ref=f3e202]:
+        - heading "Pedir un cambio" [level=2] [ref=f3e203]
+        - generic [ref=f3e204]:
+          - paragraph [ref=f3e205]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f3e206]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f3e207]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f3e208]

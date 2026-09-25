@@ -1,0 +1,52 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e625]:
+      - generic [ref=e626]:
+        - navigation [ref=e627]:
+          - link "Índice" [ref=e628] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e630] [cursor=pointer]:
+          - generic [ref=e631]: A
+          - generic [ref=e632]: a
+      - heading "Capítulo 10. El nuevo horizonte" [level=1] [ref=e633]
+      - article [ref=e634]:
+        - paragraph [ref=e635]: "Ramón Iriarte Sologaray entró a la oficina el primero de octubre de mil ochocientos cuarenta y cinco, cuando la luz de la mañana apenas tocaba las vidrieras que daban al puerto. Desde hacía cuarenta años, ese espacio había sido su mundo: el escritorio de madera oscura donde había trazado rutas, confirmado cargamentos, autorizado partidas; las paredes donde colgaban las cartas que sus manos habían rectificado durante décadas; la ventana por la que había visto zarpar y regresar cientos de navíos. Hoy era el último."
+        - paragraph [ref=e636]: Tomás llegó poco después, silencioso como siempre, trayendo una caja de cartón. Su lealtad había sido un pilar más sólido que cualquier cifra en los libros. Juntos, sin necesidad de muchas palabras, comenzaron. El reloj de pared que había medido los horarios del puerto fue el primero en bajar. Ramón lo sostuvo entre las manos, sintiendo el peso de cuatro décadas de ticstacs regulares, cada pulsada una orden dada, un viaje aprobado, una familia que viajaba o regresaba según lo marcado en ese dial.
+        - paragraph [ref=e637]: "La estatua de navegante, pequeña, de bronce verdoso por los años, que un capitán le había traído de América. Ramón la limpió con la manga antes de envolverla. Luego la pluma: la misma con la que había firmado cada autorización, cada promesa, cada responsabilidad. El mango de hueso, deshilachado en los bordes por el uso constante. La punta gastada por la presión de hombres que aprendieron a leer las decisiones a través de la inclinación de esas letras."
+        - paragraph [ref=e638]: Mientras colocaba cada objeto en la caja, Ramón acariciaba cada uno como quien dice adiós. No eran cosas. Eran los testigos de su vida en forma de materia. Tomás lo observaba desde la otra esquina del escritorio, respetando ese ritual de despedida sin interrumpir.
+        - paragraph [ref=e639]: "Luego llegó el momento que Ramón había estado reservando. Abrió el cajón más profundo y extrajo una carta náutica que nadie en Cádiz había navegado jamás. La había trazado hacía un año, cuando aún dudaba si este día llegaría realmente. La ruta iba más allá de lo conocido, hacia aguas que solo existían en su imaginación y en lo que sus ojos aún podían leer en los testimonios de otros navegantes. Era un mapa de lo posible. La colocó cuidadosamente en la caja, encima de todo lo demás. \"Ya está,\" dijo a Tomás. Luego, después de un silencio: \"Gracias. Por todo.\" Tomás asintió. No necesitaba más."
+        - paragraph [ref=e640]: "Al atardecer, cuando el cielo de Cádiz comenzaba a arder en tonos de ocre y rosa, los marineros y comerciantes se reunieron en el muelle de Santa María. La noticia había circulado: el último día de Ramón Iriarte. No era convocatoria formal, pero era inevitable. Los hombres que había entrenado, los que habían crecido a la sombra de sus decisiones, vinieron sin necesidad de cartas ni avisos."
+        - paragraph [ref=e641]: Andrés, ahora joven armador con responsabilidades que antes no imaginaba, se acercó a su padre cuando los últimos rayos iluminaban el agua. Tomó la palabra, y su voz llevaba la precisión que Ramón le había enseñado años atrás en esos libros de cuentas que guardaban vidas, no solo números. "Mi padre," dijo Andrés, "navegó cuarenta años. No siempre con fortuna. Tras Trafalgar eligió quedarse cuando otros huían. Eligió reparar cuando otros habían decidido que era momento de partir. Enseñó a leer el agua a quienes creían que era enemigo. Nos enseñó que el comercio es responsabilidad ante los hombres que trabajamos, no ganancia que embolsamos y olvidamos. Hoy deja el timón. Pero el legado que nos deja no cabe en una caja."
+        - paragraph [ref=e642]: "Los presentes levantaron las copas. Vino tinto, aguardiente, agua en algunos casos. Las voces se alzaron en unidad imperfecta pero sincera: \"Por Ramón Iriarte, que navegó con honor.\""
+        - paragraph [ref=e643]: Ramón abrazó a quienes había entrenado siendo marineros jóvenes, a hijos de marineros que conoció en sus primeros años como armador, a comerciantes con los que negoció durante treinta años, a maestros carpinteros que reconstruyeron La Esperanza después de Trafalgar, a pilotos que aprendieron a leer las corrientes viendo cómo él las anotaba en sus márgenes. Conforme caía la tarde, la luz tocaba el agua y la convertía en espejo. Ramón sintió que estaba brindando consigo mismo, con la juventud que había sido en esa bahía, con el miedo perdido a los once años cuando su abuelo lo obligó a actuar en la tormenta, con todas las decisiones que lo habían traído a este momento exacto.
+        - paragraph [ref=e644]: Cuando el cielo se oscureció, Ramón subió con María al balcón de la casa. Ella colocó su cabeza en su hombro como lo hacía hace tantos años, cuando eran jóvenes y el futuro era una promesa que aún tenía forma de incertidumbre. Andrés se reunió con ellos poco después, trayendo vino. Tres generaciones en ese balcón, viendo la bahía que los había nutrido y formado.
+        - paragraph [ref=e645]: Ramón preguntó a Andrés por sus planes. Su hijo respondió con confianza sobre el futuro de los negocios, sobre rutas que estaba estudiando, sobre marineros jóvenes que había comenzado a entrenar. Hablaba sin presunción, con la gravedad de quien sabe que cada cifra representa a alguien esperando en casa. "El barco es tuyo ahora," dijo Ramón. "Yo seré el marinero que recuerda la ruta, no el que la navega. La diferencia es importante. Quien navega carga el peso de cada decisión. Quien recuerda puede compartir lo aprendido sin deberle nada al viento."
+        - paragraph [ref=e646]: "María apretó la mano de Ramón. En ese apretón ambos entendieron lo mismo: que es tiempo de descansar, pero también de continuar siendo útil. Que la vida es un horizonte, no un puerto final. Que haber llegado a este momento sin naufragar, sin huir, sin perder lo esencial, era un triunfo que solo ahora se revelaba completamente."
+        - paragraph [ref=e647]: "Ramón observó la bahía en la oscuridad, viendo los puntitos de luz en los navíos anclados, imaginando las historias que estaban escribiendo en ese momento mismo. Ya no sería él quien trazara esas rutas. Pero las conocía todas, porque las había trazado años atrás, porque las había corregido en sus márgenes, porque había sobrevivido a lo que enseñaban. Sonrió. Era un final, ciertamente, pero se sentía como algo más completo: la sensación de una vida vivida no hacia adentro, sino hacia afuera, en forma de legado que seguiría navegando aunque él descansara en tierra."
+      - navigation "Navegación entre capítulos" [ref=e648]:
+        - link "← Capítulo anterior" [ref=e650] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/9
+        - link "Índice" [ref=e651] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+      - generic [ref=e652]:
+        - heading "Pedir un cambio" [level=2] [ref=e653]
+        - generic [ref=e654]:
+          - paragraph [ref=e655]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e656]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e657]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e658]

@@ -25,12 +25,21 @@ CONSTANTS
     NCapitulos,     \* Capítulos de la novela. El modelo pequeño usa 5.
     MaxIntentos,    \* Reintentos por capítulo. El modelo pequeño usa 2.
     GatesActivos,   \* TRUE en interactivo; FALSE en modo batch.
-    MaxRechazosJuez \* Veces que el juez puede devolver la novela al gate.
+    MaxRechazosJuez,\* Veces que la publicación —el juez o las comprobaciones de
+                    \* PublishVersion— puede devolver la novela al gate de Writing.
+    MaxCaidas,      \* Caídas del proceso que el modelo explora. El modelo usa 1.
+    MaxReintentos,  \* `storymaker reintentar` tras un Fail de capítulo. Usa 1.
+    MaxCambiosLector\* Peticiones de cambio del lector. Usa 1. El lector es
+                    \* entorno: pide un número finito de cambios, y sin cota el
+                    \* espacio de estados no se agota porque `versiones` crece.
 
 ASSUME NCapitulos \in Nat /\ NCapitulos > 0
 ASSUME MaxIntentos \in Nat
 ASSUME GatesActivos \in BOOLEAN
 ASSUME MaxRechazosJuez \in Nat
+ASSUME MaxCaidas \in Nat
+ASSUME MaxReintentos \in Nat
+ASSUME MaxCambiosLector \in Nat
 
 VARIABLES
     pc,                 \* El nodo en el que está la invocación.
@@ -42,13 +51,23 @@ VARIABLES
     huecos,             \* Huecos de micro-investigación que le quedan al arquitecto.
     sellado,            \* TRUE cuando el corpus quedó sellado al cerrar Plotting.
     regenerando,        \* TRUE mientras se rehacen capítulos por cambio del lector.
-    rechazosJuez,       \* Veces que el juez ha devuelto la novela. Lo descubrió TLC:
-                        \* sin tope, Judge y el gate se pasan la novela para siempre.
-    publicoSinValidar   \* Variable de historia: TRUE si alguna publicación incluyó
+    rechazosJuez,       \* Veces que la publicación ha devuelto la novela. Lo
+                        \* descubrió TLC: sin tope, Judge y el gate se pasan la
+                        \* novela para siempre.
+    publicoSinValidar,  \* Variable de historia: TRUE si alguna publicación incluyó
                         \* un capítulo no validado. Ver NoPublishUnvalidated.
+    vivo,               \* FALSE entre una caída del proceso y su reanudación.
+    caidas,             \* Caídas ocurridas, contra MaxCaidas.
+    reintentos,         \* Reintentos manuales usados, contra MaxReintentos.
+    cambios             \* Peticiones del lector atendidas, contra MaxCambiosLector.
 
 vars == <<pc, capitulo, intentos, aprobados, validados, versiones,
-          huecos, sellado, regenerando, rechazosJuez, publicoSinValidar>>
+          huecos, sellado, regenerando, rechazosJuez, publicoSinValidar,
+          vivo, caidas, reintentos, cambios>>
+
+\* Lo que las acciones del grafo no tocan nunca: el proceso sigue vivo y los
+\* contadores del entorno no se mueven. Cada acción lo añade a su UNCHANGED.
+entorno == <<vivo, caidas, reintentos, cambios>>
 
 (***************************************************************************)
 (* Las transiciones, declaradas una sola vez.                              *)
@@ -101,6 +120,8 @@ Aristas ==
         <<"Judge", "AwaitApproval4">>,
         <<"Judge", "Fail">>,
         <<"PublishVersion", "Idle">>,
+        <<"PublishVersion", "AwaitApproval4">>,
+        <<"PublishVersion", "Fail">>,
 
         \* Fase 6 · Regeneration
         <<"Idle", "RequestChange">>,
@@ -122,6 +143,7 @@ Terminales == {"Branch", "Fail"}
 (* Mover el pc es siempre lo mismo: comprobar que la arista existe.        *)
 (***************************************************************************)
 Mueve(de, a) ==
+    /\ vivo
     /\ pc = de
     /\ <<de, a>> \in Aristas
     /\ pc' = a
@@ -140,6 +162,10 @@ TypeOK ==
     /\ regenerando \in BOOLEAN
     /\ rechazosJuez \in 0 .. MaxRechazosJuez
     /\ publicoSinValidar \in BOOLEAN
+    /\ vivo \in BOOLEAN
+    /\ caidas \in 0 .. MaxCaidas
+    /\ reintentos \in 0 .. MaxReintentos
+    /\ cambios \in 0 .. MaxCambiosLector
 
 Init ==
     /\ pc = "Configure"
@@ -153,6 +179,10 @@ Init ==
     /\ regenerando = FALSE
     /\ rechazosJuez = 0
     /\ publicoSinValidar = FALSE
+    /\ vivo = TRUE
+    /\ caidas = 0
+    /\ reintentos = 0
+    /\ cambios = 0
 
 (***************************************************************************)
 (* Fase 1 · Intake                                                         *)
@@ -160,7 +190,7 @@ Init ==
 Configure ==
     /\ Mueve("Configure", "AwaitApproval")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* El Autor. Se modela como entorno no determinista: en cada gate puede    *)
@@ -170,13 +200,13 @@ Configure ==
 Aprobar(de, a) ==
     /\ Mueve(de, a)
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 Rehacer(de, a) ==
     /\ GatesActivos
     /\ Mueve(de, a)
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Rehacer desde el gate de Writing es un caso aparte, y lo descubrió TLC.  *)
@@ -195,20 +225,30 @@ Rehacer(de, a) ==
 (*                                                                         *)
 (* Así que rehacer Writing entra en modo regeneración, que es lo que era    *)
 (* desde el principio. Ver el registro de contraejemplos del README.        *)
+(*                                                                         *)
+(* Qué capítulo se rehace lo eligen las incidencias que citan capítulos —  *)
+(* las contradicciones del juez y los rechazos de la publicación—, así que *)
+(* el modelo lo elige de forma no determinista entre los aprobados. El     *)
+(* elegido deja de estar validado: su versión nueva todavía no ha pasado   *)
+(* ningún validador, y NoPublishUnvalidated tiene que notarlo si algún     *)
+(* camino la publicara sin pasar por Extract.                              *)
 (***************************************************************************)
 RehacerWriting ==
     /\ GatesActivos
     /\ Mueve("AwaitApproval4", "WriteChapter")
+    /\ \E c \in aprobados :
+        /\ capitulo' = c
+        /\ validados' = validados \ {c}
     /\ regenerando' = TRUE
     /\ intentos' = 0
-    /\ UNCHANGED <<capitulo, aprobados, validados, versiones,
-                   huecos, sellado, publicoSinValidar, rechazosJuez>>
+    /\ UNCHANGED <<aprobados, versiones,
+                   huecos, sellado, publicoSinValidar, rechazosJuez, entorno>>
 
 Abortar ==
     /\ GatesActivos
     /\ Mueve("AwaitApproval", "Fail")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Fase 2 · Investigation                                                  *)
@@ -220,12 +260,12 @@ Abortar ==
 Research ==
     /\ Mueve("Research", "VerifyCorpus")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 VerifyCorpus ==
     /\ Mueve("VerifyCorpus", "AwaitApproval2")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Fase 3 · Plotting                                                       *)
@@ -238,23 +278,23 @@ Plan ==
     \/ /\ Mueve("Plan", "FillGap")
        /\ huecos > 0
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ /\ Mueve("Plan", "AwaitApproval3")
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 FillGap ==
     /\ Mueve("FillGap", "Plan")
     /\ huecos > 0
     /\ huecos' = huecos - 1
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 SealCorpus ==
     /\ Mueve("SealCorpus", "WriteChapter")
     /\ sellado' = TRUE
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Fase 4 · Writing                                                        *)
@@ -267,53 +307,53 @@ SealCorpus ==
 WriteChapter ==
     /\ Mueve("WriteChapter", "Validate")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 Validate ==
     \/ \* Pasada determinista limpia.
        /\ Mueve("Validate", "Extract")
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ \* Incidencias, y quedan reintentos.
        /\ Mueve("Validate", "Repair")
        /\ intentos < MaxIntentos
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ \* Reintentos agotados.
        /\ Mueve("Validate", "Fail")
        /\ intentos >= MaxIntentos
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 Extract ==
     \/ \* Sin incidencias bloqueantes: el capítulo queda validado.
        /\ Mueve("Extract", "ApproveChapter")
        /\ validados' = validados \cup {capitulo}
        /\ UNCHANGED <<capitulo, intentos, aprobados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ \* Incidencias bloqueantes, y quedan reintentos.
        /\ Mueve("Extract", "Repair")
        /\ intentos < MaxIntentos
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ \* Reintentos agotados.
        /\ Mueve("Extract", "Fail")
        /\ intentos >= MaxIntentos
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 Repair ==
     /\ Mueve("Repair", "Validate")
     /\ intentos < MaxIntentos
     /\ intentos' = intentos + 1
     /\ UNCHANGED <<capitulo, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 ApproveChapter ==
     /\ Mueve("ApproveChapter", "Checkpoint")
     /\ aprobados' = aprobados \cup {capitulo}
     /\ UNCHANGED <<capitulo, intentos, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* El checkpoint y el capítulo aprobado se escriben en la misma            *)
@@ -328,14 +368,14 @@ Checkpoint ==
        /\ capitulo' = capitulo + 1
        /\ intentos' = 0
        /\ UNCHANGED <<aprobados, validados, versiones, huecos, sellado,
-                      regenerando, publicoSinValidar, rechazosJuez>>
+                      regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ /\ Mueve("Checkpoint", "AwaitApproval4")
        /\ \/ capitulo = NCapitulos
           \/ regenerando
        /\ intentos' = 0
        /\ regenerando' = FALSE
        /\ UNCHANGED <<capitulo, aprobados, validados, versiones, huecos,
-                      sellado, publicoSinValidar, rechazosJuez>>
+                      sellado, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Fase 5 · Publication                                                    *)
@@ -359,25 +399,49 @@ Checkpoint ==
 Judge ==
     \/ /\ Mueve("Judge", "PublishVersion")
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
     \/ \* Umbral no superado, y quedan rechazos: vuelve al gate de Writing.
        /\ Mueve("Judge", "AwaitApproval4")
        /\ rechazosJuez < MaxRechazosJuez
        /\ rechazosJuez' = rechazosJuez + 1
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar>>
+                      huecos, sellado, regenerando, publicoSinValidar, entorno>>
     \/ \* Rechazos agotados: se detiene e informa, como con los reintentos.
        /\ Mueve("Judge", "Fail")
        /\ rechazosJuez >= MaxRechazosJuez
        /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
+(***************************************************************************)
+(* PublishVersion puede rechazar la versión candidata, y el rechazo vuelve  *)
+(* al gate de Writing.                                                     *)
+(*                                                                         *)
+(* Dentro del nodo corren, antes de confirmar nada, la cronología completa  *)
+(* (Lean) y `render_visual` en un navegador. Si cualquiera de las dos       *)
+(* falla, la versión no existe: no se añade nada a `versiones`. El fallo    *)
+(* queda como incidencia que cita los capítulos culpables y la novela       *)
+(* vuelve al gate de Writing, desde donde el Autor rehace esos capítulos.  *)
+(* El rechazo comparte contador con el del juez: sin tope, un render que   *)
+(* falla siempre y un Autor que aprueba siempre serían el mismo ciclo que  *)
+(* TLC ya encontró entre Judge y el gate.                                  *)
+(***************************************************************************)
 PublishVersion ==
-    /\ Mueve("PublishVersion", "Idle")
-    /\ versiones' = Append(versiones, aprobados)
-    /\ publicoSinValidar' = (publicoSinValidar \/ (aprobados \ validados # {}))
-    /\ UNCHANGED <<capitulo, intentos, aprobados, validados, huecos,
-                   sellado, regenerando, rechazosJuez>>
+    \/ /\ Mueve("PublishVersion", "Idle")
+       /\ versiones' = Append(versiones, aprobados)
+       /\ publicoSinValidar' = (publicoSinValidar \/ (aprobados \ validados # {}))
+       /\ UNCHANGED <<capitulo, intentos, aprobados, validados, huecos,
+                      sellado, regenerando, rechazosJuez, entorno>>
+    \/ \* Cronología o render rechazados, y quedan rechazos: al gate de Writing.
+       /\ Mueve("PublishVersion", "AwaitApproval4")
+       /\ rechazosJuez < MaxRechazosJuez
+       /\ rechazosJuez' = rechazosJuez + 1
+       /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
+                      huecos, sellado, regenerando, publicoSinValidar, entorno>>
+    \/ \* Rechazos agotados: se detiene sin publicar.
+       /\ Mueve("PublishVersion", "Fail")
+       /\ rechazosJuez >= MaxRechazosJuez
+       /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
+                      huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 (***************************************************************************)
 (* Fase 6 · Regeneration                                                   *)
@@ -391,12 +455,19 @@ PublishVersion ==
 RequestChange ==
     /\ Mueve("RequestChange", "Invalidate")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
+\* Una petición del lector abre una invocación nueva: `regenerar` escribe en el
+\* checkpoint `pc = RequestChange` como salida de Idle y pone a cero los rechazos
+\* de la publicación, que eran de la versión anterior.
 IdleRequest ==
     /\ Mueve("Idle", "RequestChange")
+    /\ cambios < MaxCambiosLector
+    /\ cambios' = cambios + 1
+    /\ rechazosJuez' = 0
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar,
+                   vivo, caidas, reintentos>>
 
 (***************************************************************************)
 (* Se invalidan los capítulos que usan el hecho cambiado, que la tabla de  *)
@@ -411,17 +482,72 @@ Invalidate ==
         /\ validados' = validados \ {c}
     /\ regenerando' = TRUE
     /\ intentos' = 0
-    /\ UNCHANGED <<aprobados, versiones, huecos, sellado, publicoSinValidar, rechazosJuez>>
+    /\ UNCHANGED <<aprobados, versiones, huecos, sellado, publicoSinValidar, rechazosJuez, entorno>>
 
 RegenerateAffected ==
     /\ Mueve("RegenerateAffected", "Validate")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
 
 Branch ==
     /\ Mueve("Idle", "Branch")
     /\ UNCHANGED <<capitulo, intentos, aprobados, validados, versiones,
-                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez>>
+                   huecos, sellado, regenerando, publicoSinValidar, rechazosJuez, entorno>>
+
+(***************************************************************************)
+(* Caída del proceso y reanudación desde checkpoint.                       *)
+(*                                                                         *)
+(* El proceso puede morir en cualquier nodo que no sea un reposo. Mientras  *)
+(* está muerto no ocurre nada: `Mueve` exige `vivo`, así que ninguna acción *)
+(* del grafo está habilitada. `storymaker continuar` lo reanuda con         *)
+(* `Command(resume=...)` desde el último checkpoint de LangGraph, que se    *)
+(* escribe en la misma transacción que las filas de dominio del nodo. Por  *)
+(* eso la reanudación no mueve el pc ni toca ninguna otra variable: lo que  *)
+(* el nodo en curso no llegó a confirmar no existe, y el nodo se vuelve a   *)
+(* ejecutar entero. Lo que TLC comprueba es que una caída en cualquier      *)
+(* punto —a mitad de un capítulo, entre reintentos, dentro de una          *)
+(* regeneración— deja intactos los invariantes, en particular              *)
+(* ResumeIsExactlyOnce.                                                    *)
+(***************************************************************************)
+Caida ==
+    /\ vivo
+    /\ pc \notin Terminales \cup {"Idle"}
+    /\ caidas < MaxCaidas
+    /\ vivo' = FALSE
+    /\ caidas' = caidas + 1
+    /\ UNCHANGED <<pc, capitulo, intentos, aprobados, validados, versiones,
+                   huecos, sellado, regenerando, rechazosJuez, publicoSinValidar,
+                   reintentos, cambios>>
+
+ResumeFromCheckpoint ==
+    /\ ~vivo
+    /\ vivo' = TRUE
+    /\ UNCHANGED <<pc, capitulo, intentos, aprobados, validados, versiones,
+                   huecos, sellado, regenerando, rechazosJuez, publicoSinValidar,
+                   caidas, reintentos, cambios>>
+
+(***************************************************************************)
+(* `storymaker reintentar`: reabrir el capítulo que agotó sus reintentos.   *)
+(*                                                                         *)
+(* No es una arista del grafo sino una escritura en el checkpoint: el      *)
+(* código deja el estado de un capítulo recién empezado «como salida de     *)
+(* SealCorpus», cuya única arista lleva a WriteChapter. Por eso exige esa  *)
+(* arista y no una Fail -> WriteChapter que no existe. Solo cabe si el      *)
+(* capítulo en curso no está validado, que es lo que distingue un Fail de   *)
+(* capítulo de uno del juez o de la publicación. Lo aprobado no se toca.   *)
+(***************************************************************************)
+Reintentar ==
+    /\ vivo
+    /\ pc = "Fail"
+    /\ <<"SealCorpus", "WriteChapter">> \in Aristas
+    /\ sellado
+    /\ capitulo \notin validados
+    /\ reintentos < MaxReintentos
+    /\ pc' = "WriteChapter"
+    /\ intentos' = 0
+    /\ reintentos' = reintentos + 1
+    /\ UNCHANGED <<capitulo, aprobados, validados, versiones, huecos, sellado,
+                   regenerando, rechazosJuez, publicoSinValidar, vivo, caidas, cambios>>
 
 (***************************************************************************)
 (* Los gates, según el modo.                                               *)
@@ -444,7 +570,7 @@ GateWriting ==
     \/ RehacerWriting
 
 (***************************************************************************)
-(* Las aprobaciones, por separado, para poder exigirles equidad débil.     *)
+(* Las aprobaciones, por separado, para poder exigirles equidad fuerte.    *)
 (***************************************************************************)
 AutorAprueba ==
     \/ Aprobar("AwaitApproval", "Research")
@@ -478,6 +604,9 @@ Next ==
     \/ Invalidate
     \/ RegenerateAffected
     \/ Branch
+    \/ Caida
+    \/ ResumeFromCheckpoint
+    \/ Reintentar
     \/ Terminado
 
 (***************************************************************************)
@@ -546,7 +675,10 @@ PreviousVersionPreserved ==
 
 \* Toda generación termina: publicando una versión, ramificando, o parando con
 \* error. En batch la propiedad es directa; en interactivo vale bajo la equidad
-\* débil que Spec declara sobre la respuesta del Autor.
+\* fuerte que Spec declara sobre la aprobación del Autor. Las caídas, los
+\* reintentos manuales y los cambios del lector están acotados por constantes:
+\* son el entorno, y un entorno que cae o pide cambios infinitas veces no deja
+\* terminar a ningún sistema.
 Termina == <>(pc \in {"Idle", "Fail", "Branch"})
 
 ================================================================================

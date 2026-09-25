@@ -46,6 +46,8 @@ class DecisionTomada:
     decision: Decision
     comentario: str | None = None
     actor: str = "autor"
+    #: La fase del gate decidido. La de Regeneración no reanuda: entra en la Fase 6.
+    fase: str | None = None
 
     @property
     def cuenta_como_reintento(self) -> bool:
@@ -129,7 +131,10 @@ async def aplicar(
             "modelo TLA+. En los demas gates, no decidir ya deja la novela parada sin coste."
         )
     tomada = DecisionTomada(
-        gate_id=int(pendiente["id"]), decision=Decision(decision), comentario=comentario or None
+        gate_id=int(pendiente["id"]),
+        decision=Decision(decision),
+        comentario=comentario or None,
+        fase=fase,
     )
     await registrar(db, observador, tomada)
     return tomada

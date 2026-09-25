@@ -1,0 +1,59 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e249]:
+      - generic [ref=e250]:
+        - navigation [ref=e251]:
+          - link "Índice" [ref=e252] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e254] [cursor=pointer]:
+          - generic [ref=e255]: A
+          - generic [ref=e256]: a
+      - heading "Capítulo 4. La forja del imperio" [level=1] [ref=e257]
+      - article [ref=e258]:
+        - paragraph [ref=e259]: "A los treinta y dos años, Ramón Iriarte había acumulado lo suficiente. No riqueza exuberante, sino lo que Don Gómez llamaba «capital vivo»: dinero que no dormía en cajas sino que circulaba, que se multiplicaba con cada viaje, que aprendía de los errores. Durante trece años como contable y observador de expediciones, Ramón había guardado cada moneda que sus cartas personalizadas le permitían ganar. Sus anotaciones sobre corrientes, sus notas sobre los vientos de estación, sus márgenes llenos de sabiduría marinera habían convertido a capitanes mediocres en navegantes ágiles. Don Gómez le había pagado bien por eso, pero Ramón sabía que no era suficiente ser recompensado. Debía ser propietario."
+        - paragraph [ref=e260]: "En octubre de 1790, en un despacho que olía a cera de sello y tinta de escribano, Ramón estampó su firma en el documento que lo convertiría en armador. La letra temblaba, apenas perceptible, pero temblaba. El escribano lo notó, alzó una ceja, continuó su trabajo. Había visto a hombres firmar el destino de sus familias cientos de veces. El temblor no era signo de debilidad sino de comprensión: Ramón sabía exactamente lo que hacía."
+        - paragraph [ref=e261]: La escritura notarial refrendaba la compra de un navío mercante de casco robusto, velas de lino nuevas, bodega con capacidad para carga sustancial. Había invertido casi toda su fortuna, dejando apenas reserva para imprevistos. El contrato especificaba que el barco llevaría por nombre «La Esperanza» y que Ramón Iriarte Sologaray era su propietario legal, responsable ante la Audiencia, la Hermandad de Mareantes y Dios mismo de mantener la nave en navegación rentable.
+        - paragraph [ref=e262]: El escribano deslizó el sello sobre la cera líquida. El metal caliente marcó el documento con precisión definitiva. No había marcha atrás, no había corrección posible. El hombre que había firmado hace un momento había dejado de existir. Ahora existía solo el armador.
+        - paragraph [ref=e263]: Mientras Ramón recogía su copia del documento, el comerciante de quien había tomado prestado capital en forma de pagaré le recordó, con cortesía de quien maneja poder real, que los plazos de reembolso comenzarían después del primer viaje exitoso. Ramón asintió, consciente de que había abandonado para siempre la seguridad del empleo en oficina, donde las ganancias eran modestas pero el riesgo de ruina era remoto. El mar, como le había enseñado su abuelo hace tanto, no regala su favor. Lo vende.
+        - paragraph [ref=e264]: "Saliendo del despacho hacia las calles de Cádiz, Ramón sintió el peso del navío sobre sus hombros como si fuera una estructura de hierro y madera que lo atravesara. Cada paso hacia el puerto acentuaba la responsabilidad. Pero junto con el peso llegó algo inesperado: una extraña libertad. Ya no servía a otra voluntad. Ya no esperaba instrucciones. El agua que miraba hacia el sur, hacia el Atlántico, hacia América, era ahora en cierto sentido suya."
+        - paragraph [ref=e265]: En mayo de 1791, ante la Iglesia de Santa María donde años atrás el abuelo le había entregado su carta ancestral, Ramón se casó con María de los Ángeles, hija del comerciante Mateo Rodríguez de Alcázar. María entró en la nave iluminada por velas, vistiendo de blanco inmaculado, el velo de encaje tan fino que parecía tejido de niebla marina. Ramón la vio avanzar y sintió que sus cálculos sobre cargas comerciales, rutas, corrientes y márgenes de ganancia desaparecían de su mente. Ella sonrió cuando sus ojos se encontraron, una sonrisa que decía más de lo que las voces autorizadas a hablar en ese lugar podían pronunciar.
+        - paragraph [ref=e266]: Durante el intercambio de votos, María tomó las manos de Ramón y ambos, con voz clara, prometieron navegar juntos la vida como navegaban juntos el agua. Era una frase que Ramón había escuchado en bodas de marineros, pero en su propia boca adquirió peso de verdad. María no era una mujer de tierra. Era hija de mercader, hermana de capitanes que ya navegaban. Comprendería las ausencias, los riesgos, las oscilaciones entre abundancia y escasez.
+        - paragraph [ref=e267]: Lo que no comprendería tan fácilmente era que su padre, Mateo Rodríguez, esperaba que aquella boda fuera primer paso hacia una fusión de flotas. Después de la ceremonia, mientras Ramón y María recibían felicitaciones en el atrio, Mateo se acercó al oído del yerno y susurró que ese matrimonio beneficiaba a ambas casas, que pronto deberían hablar de integrar las operaciones comerciales de la familia Rodríguez con las de Ramón, que la alianza matrimonial podría multiplicar su poder en el puerto.
+        - paragraph [ref=e268]: "Ramón escuchó con la cortesía que su posición de yerno le exigía. Pero su respuesta fue firme, modulada sin dureza: su negocio debía crecer por sus propias merits, por el trabajo, la precisión de sus cartas y la capacidad de sus capitanes. Una fusión prematura sería muerte de ambos proyectos. Su respuesta no fue rechazo sino aplazamiento: cuando ambas flotas fueran lo suficientemente fuertes, la unión no sería debilidad sino consolidación."
+        - paragraph [ref=e269]: Mateo no pareció descontento. Los mercaderes entienden cuando hablan con otros mercaderes.
+        - paragraph [ref=e270]: Al caer la tarde, Ramón y María salieron de la iglesia hacia el puerto. No hacia sus casas. Caminaron lentamente entre los muelles, entre las velas que se hinchaban con vientos de primavera, entre la estructura de madera y la geometría del comercio marítimo. María apoyó su brazo en el de Ramón. Ella no dijo nada sobre las responsabilidades que él llevaba, ni él mencionó los meses de separación que llegarían inevitable. Solo caminaron como quien camina sobre un mapa que ambos podían leer, aunque solo él supiera traducir sus símbolos en vientos y distancias.
+        - paragraph [ref=e271]: "En septiembre de 1792, La Esperanza zarpa hacia las colonias de América del Sur. Ramón, en el muelle, entregó personalmente al Capitán Benjamín Cortés las cartas náuticas que había preparado durante meses. No eran mapas convencionales. Cada línea de ruta llevaba anotaciones en márgenes: indicaciones sobre corrientes que cambian según estación, advertencias sobre arrecifes que emergieron tras última tormenta, notas sobre comportamiento del viento en latitudes específicas. Eran documentos que contenían la experiencia de años observando cómo el agua enseña a quienes saben escuchar."
+        - paragraph [ref=e272]: María, ya embarazada del primero de sus hijos, lo abrazó en el muelle. Ambos sabían que no se verían en meses. Ramón podría esperar entre ocho y doce meses antes del regreso. Pero María no expresó miedo. Era hija de marineros, hermana de navegantes. Sabía que el regalo que el mar entregaba a cambio de sus vidas era riqueza, estabilidad, legado para quienes nacían de uniones entre tierra y agua.
+        - paragraph [ref=e273]: Ramón observó el navío alejarse, cada vela desplegada como promesa. Toda su fortuna, todo lo que había ahorrado, todo lo que había ganado con sus cartas, navegaba ahora hacia el horizonte. El capitán conocía las rutas. Sabía leer el agua. Pero Ramón, mientras el barco se empequeñecía contra la línea del océano, comprendió que no podía dominar el resultado. Solo había preparado el camino. El resto era acuerdo tácito entre el hombre, la nave y el agua que ambos desafiaban.
+        - paragraph [ref=e274]: Durante los meses de espera, Ramón no permaneció ocioso. Construyó registros detallados del viaje esperado, planificó la próxima expedición, estudió nuevas rutas hacia el Atlántico norte. Preparó cartas para capitanes que ya pedían sus servicios. Visitó a María cuando el embarazo se volvía cada vez más visible. La tocaba el vientre como si pudiera escuchar en ese contacto las instrucciones que el agua le transmitía al futuro que allí crecía.
+        - paragraph [ref=e275]: En junio de 1793, después de ocho meses navegando, La Esperanza regresó a las aguas de Cádiz. Ramón estaba en el muelle. Vio al Capitán Cortés en la proa, alzando el brazo en señal de éxito. La bodega venía llena. Las ganancias serían sustanciales.
+        - paragraph [ref=e276]: "En ese momento, con la nave que le pertenecía retornando cargada de prosperidad, Ramón Iriarte comprendió la verdad que su abuelo le había insinuado hace años: el mar no era enemigo. No era ni siquiera desconocido. Era socio. Un socio que exigía precisión, valentía y respeto, pero que recompensaba con abundancia a quien aprendía a leer sus intenciones. De aprendiz de cartas había ascendido a armador. De observador de agua había devenido en propietario de navío. Y el agua seguía siendo, como siempre, la verdadera brújula que señalaba el camino."
+      - navigation "Navegación entre capítulos" [ref=e277]:
+        - link "← Capítulo anterior" [ref=e279] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/3
+        - link "Índice" [ref=e280] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e282] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/5
+      - generic [ref=e283]:
+        - heading "Pedir un cambio" [level=2] [ref=e284]
+        - generic [ref=e285]:
+          - paragraph [ref=e286]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e287]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e288]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e289]

@@ -438,6 +438,10 @@ async def editar(nombre: str, cuerpo: CuerpoDeEdicion, peticion: Request) -> Hec
                     actor="autor",
                     fase_run_id=int(pendiente["fase_run_id"]) if pendiente is not None else None,
                 )
+                if objeto in (ObjetoDelCambio.HECHO, ObjetoDelCambio.PERSONAJE):
+                    from storymaker.plotting.gate import recalcular_invenciones
+
+                    await recalcular_invenciones(db)
                 await db.commit()
     except HTTPException:
         raise

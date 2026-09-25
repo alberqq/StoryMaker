@@ -1,0 +1,67 @@
+# FASE 4 · Writing
+#
+# Se queda parada en: el gate de Writing, con el manuscrito entero escrito y sin publicar.
+#
+# Intake, Investigation y Plotting se aprueban. El escritor redacta cada capítulo de una
+# vez; la pasada determinista y la del extractor lo validan, el editor repara lo que
+# bloquea, con límite de reintentos, y cada capítulo aprobado se guarda con su checkpoint.
+# Al terminar, `cobertura_personalizacion` comprueba sobre la novela entera que cada
+# elemento obligatorio aparece, y el gate espera antes de pasar al juez.
+#
+# Cinco capítulos para que llegue al gate en menos tiempo: el mecanismo es el mismo.
+#
+# Qué se enseña en la presentación: el panel con los capítulos aprobados, los intentos de
+# cada uno y lo que el editor reparó; el gate de Writing con su informe. Aprobarlo en
+# directo publica la novela.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/fases/f4-escritura.yaml --nombre fase-4-escritura
+#   uv run storymaker decidir fase-4-escritura aprobar     # Intake
+#   uv run storymaker decidir fase-4-escritura aprobar     # Investigation
+#   uv run storymaker decidir fase-4-escritura aprobar     # Plotting → escribe los capítulos
+
+fase:
+  se_detiene_en: gate de Writing
+  gates_aprobados: [intake, investigation, plotting]
+  se_ve: capítulos aprobados, intentos, reparaciones del editor y cobertura
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Iñaki Etxeberria Garmendia
+    fecha_nacimiento: 1976-08-15
+    rol_epoca: bañero de la playa de La Concha
+    ocasion: cincuenta cumpleaños
+    elementos_personalizacion:
+      - texto: se baña en el mar todos los días del año, también en enero
+        obligatorio: true
+      - texto: silba siempre la misma canción cuando está contento
+        obligatorio: true
+  mundo:
+    periodo:
+      inicio: 1893
+      fin: 1893
+      denominacion: Belle Époque donostiarra
+    lugar: San Sebastián
+    evento_ancla: la inauguración del Palacio de Miramar en 1893
+    personajes_historicos:
+      aparecen:
+        - María Cristina de Habsburgo-Lorena
+      se_evitan:
+        - Antonio Cánovas del Castillo
+  obra:
+    genero:
+      principal: histórica
+      subgenero: costumbrista
+    tono: luminoso y con humor
+    punto_de_vista: tercera persona con focalización en el homenajeado
+    grado_licencia: moderado
+    arcaismo: minimo
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - ahogado
+      destinatario:
+        - hospital
+    n_capitulos: 5
+    palabras_por_capitulo: 1000

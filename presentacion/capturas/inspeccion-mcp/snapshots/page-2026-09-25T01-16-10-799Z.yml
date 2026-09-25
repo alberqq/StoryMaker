@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e660]:
+      - generic [ref=e661]:
+        - navigation [ref=e662]:
+          - link "Portada" [ref=e663] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1/portada
+          - link "Personajes y lugares" [ref=e664] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1/personajes
+          - link "Historial" [ref=e665] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/versiones
+          - link "Descargar PDF" [ref=e666] [cursor=pointer]:
+            - /url: /api/novelas/eval-01-jubilacion/versiones/1/pdf
+        - button "Ajustes de lectura" [ref=e668] [cursor=pointer]:
+          - generic [ref=e669]: A
+          - generic [ref=e670]: a
+      - heading "Índice" [level=1] [ref=e671]
+      - status [ref=e672]: Cargando el índice…

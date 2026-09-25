@@ -89,7 +89,13 @@ class EventoNarrativo(BaseModel):
     descripcion: str = Field(min_length=1)
     momento: str = Field(min_length=1, description="fecha narrativa del evento")
     escena: int = Field(ge=1)
-    participantes: list[int] = Field(default_factory=list)
+    participantes: list[int] = Field(
+        default_factory=list,
+        description=(
+            "personaje_id de los presentes en el evento; quien solo se recuerda, se "
+            "menciona o ya ha muerto no participa"
+        ),
+    )
 
 
 class VeredictoDeEjecucion(BaseModel):

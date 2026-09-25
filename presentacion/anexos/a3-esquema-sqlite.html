@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A3 · Story bible en SQLite</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  table.esq td { padding-top: 3px; padding-bottom: 3px; }
+  table.esq td:first-child { font-family: var(--mono); font-weight: 500; white-space: nowrap; width: 230px; }
+  table.esq td:last-child { white-space: nowrap; width: 400px; }
+  table.esq td:nth-child(2) { white-space: nowrap; }
+  table.esq tr.fam td { background: var(--tinta-06); font-family: var(--sans); font-weight: 600; color: var(--tinta); padding-top: 4px; padding-bottom: 4px; border-bottom: 1px solid var(--tinta-12); }
+  table.esq tr.fam td span { font-weight: 400; color: var(--piedra); }
+  .trig { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .trig .caja { padding: 10px 14px; }
+  .trig h2 { font-size: 17px; margin-bottom: 4px; }
+</style>
+</head>
+<body data-anexo="A3">
+
+<!-- 1 · Diagrama por familias -->
+<section class="pagina" data-fuente="DDL de <code>backend/src/storymaker/commons/db/esquema/*.sql</code> (44 tablas) · <code>docs/diagramas.md</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A3</span><span class="sep"></span>Story bible en SQLite</div>
+    <h1>Una novela es un fichero: siete familias de tablas y tres índices vectoriales</h1>
+  </header>
+  <main class="cuerpo ancho" style="top:100px">
+<!-- BEGIN gen:er -->
+<svg class="diag" width="1200" height="556" viewBox="0 0 1200 556" xmlns="http://www.w3.org/2000/svg"><defs><marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#1C2433"/></marker><marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#B23A2B"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#C9A34E"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#7D7869"/></marker><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#5E8C6A"/></marker></defs><rect x="0" y="0" width="280" height="122" rx="8" fill="rgba(201,163,78,0.10)" stroke="#C9A34E" stroke-width="2"/><text x="12" y="21" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">intake_*</text><text x="268" y="21" text-anchor="end" fill="#7D7869">encargo del comprador</text><rect x="12" y="28" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="43" text-anchor="start" class="mono" fill="#1C2433">intake_brief</text><rect x="12" y="50" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="65" text-anchor="start" class="mono" fill="#1C2433">intake_texto_crudo</text><rect x="12" y="72" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="87" text-anchor="start" class="mono" fill="#1C2433">intake_dato</text><rect x="12" y="94" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="109" text-anchor="start" class="mono" fill="#1C2433">intake_uso_dato</text><rect x="460" y="0" width="280" height="166" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="472" y="21" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">plan_*</text><text x="728" y="21" text-anchor="end" fill="#7D7869">escaleta</text><rect x="472" y="28" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="43" text-anchor="start" class="mono" fill="#1C2433">plan_capitulo</text><rect x="472" y="50" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="65" text-anchor="start" class="mono" fill="#1C2433">plan_escena</text><rect x="472" y="72" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="87" text-anchor="start" class="mono" fill="#1C2433">plan_beat</text><rect x="472" y="94" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="109" text-anchor="start" class="mono" fill="#1C2433">plan_escena_personaje</text><rect x="472" y="116" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="131" text-anchor="start" class="mono" fill="#1C2433">plan_anclaje</text><rect x="472" y="138" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="153" text-anchor="start" class="mono" fill="#1C2433">plan_hueco</text><rect x="920" y="0" width="280" height="232" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="932" y="21" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">canon_*</text><text x="1188" y="21" text-anchor="end" fill="#7D7869">biblia de la obra</text><rect x="932" y="28" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="43" text-anchor="start" class="mono" fill="#1C2433">canon_obra</text><rect x="932" y="50" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="65" text-anchor="start" class="mono" fill="#1C2433">canon_personaje</text><rect x="932" y="72" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="87" text-anchor="start" class="mono" fill="#1C2433">canon_relacion</text><rect x="932" y="94" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="109" text-anchor="start" class="mono" fill="#1C2433">canon_arco</text><rect x="932" y="116" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="131" text-anchor="start" class="mono" fill="#1C2433">canon_arco_hito</text><rect x="932" y="138" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="153" text-anchor="start" class="mono" fill="#1C2433">canon_escenario</text><rect x="932" y="160" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="175" text-anchor="start" class="mono" fill="#1C2433">canon_licencia</text><rect x="932" y="182" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="197" text-anchor="start" class="mono" fill="#1C2433">canon_glosario</text><rect x="932" y="204" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="219" text-anchor="start" class="mono" fill="#1C2433">canon_prohibida</text><rect x="0" y="246" width="280" height="144" rx="8" fill="rgba(201,163,78,0.10)" stroke="#C9A34E" stroke-width="2"/><text x="12" y="267" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">mundo_*</text><text x="268" y="267" text-anchor="end" fill="#7D7869">corpus, se sella</text><rect x="12" y="274" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="289" text-anchor="start" class="mono" fill="#1C2433">mundo_fuente</text><rect x="12" y="296" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="311" text-anchor="start" class="mono" fill="#1C2433">mundo_hecho</text><rect x="12" y="318" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="333" text-anchor="start" class="mono" fill="#1C2433">mundo_hecho_fuente</text><rect x="12" y="340" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="355" text-anchor="start" class="mono" fill="#1C2433">mundo_entidad</text><rect x="12" y="362" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="20" y="377" text-anchor="start" class="mono" fill="#1C2433">mundo_sello</text><rect x="460" y="246" width="280" height="166" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="472" y="267" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">texto</text><text x="728" y="267" text-anchor="end" fill="#7D7869">capítulos y versiones</text><rect x="472" y="274" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="289" text-anchor="start" class="mono" fill="#1C2433">capitulo_version</text><rect x="472" y="296" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="311" text-anchor="start" class="mono" fill="#1C2433">version_novela</text><rect x="472" y="318" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="333" text-anchor="start" class="mono" fill="#1C2433">version_capitulo</text><rect x="472" y="340" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="355" text-anchor="start" class="mono" fill="#1C2433">uso_hecho</text><rect x="472" y="362" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="377" text-anchor="start" class="mono" fill="#1C2433">uso_hito</text><rect x="472" y="384" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="480" y="399" text-anchor="start" class="mono" fill="#1C2433">continuidad</text><rect x="920" y="246" width="280" height="78" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="932" y="267" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">cronologia_*</text><text x="1188" y="267" text-anchor="end" fill="#7D7869">para Lean</text><rect x="932" y="274" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="289" text-anchor="start" class="mono" fill="#1C2433">cronologia_evento</text><rect x="932" y="296" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="311" text-anchor="start" class="mono" fill="#1C2433">cronologia_participante</text><rect x="920" y="336" width="280" height="100" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2" stroke-dasharray="6 4"/><text x="932" y="357" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">vec_*</text><text x="1188" y="357" text-anchor="end" fill="#7D7869">vec0 · 384d</text><rect x="932" y="364" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="379" text-anchor="start" class="mono" fill="#1C2433">vec_hecho</text><rect x="932" y="386" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="401" text-anchor="start" class="mono" fill="#1C2433">vec_canon</text><rect x="932" y="408" width="256" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="940" y="423" text-anchor="start" class="mono" fill="#1C2433">vec_resumen</text><rect x="0" y="478" width="1200" height="76" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2" stroke-dasharray="6 4"/><text x="14" y="504" text-anchor="start" class="mono" fill="#1C2433" font-weight="700">arnes_*</text><text x="14" y="524" text-anchor="start" fill="#7D7869">estado del sistema</text><text x="14" y="543" text-anchor="start" fill="#7D7869">tablas sin prefijo</text><rect x="214" y="490" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="222" y="505" text-anchor="start" class="mono" fill="#1C2433">fase_run</text><rect x="412" y="490" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="420" y="505" text-anchor="start" class="mono" fill="#1C2433">gate</text><rect x="610" y="490" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="618" y="505" text-anchor="start" class="mono" fill="#1C2433">incidencia</text><rect x="808" y="490" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="816" y="505" text-anchor="start" class="mono" fill="#1C2433">score</text><rect x="1006" y="490" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="1014" y="505" text-anchor="start" class="mono" fill="#1C2433">audit_log</text><rect x="214" y="519" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="222" y="534" text-anchor="start" class="mono" fill="#1C2433">edicion_humana</text><rect x="412" y="519" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="420" y="534" text-anchor="start" class="mono" fill="#1C2433">procedencia</text><rect x="610" y="519" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="618" y="534" text-anchor="start" class="mono" fill="#1C2433">manifiesto</text><rect x="808" y="519" width="186" height="19" rx="4" fill="#F5EFE3" stroke="#1C2433" stroke-width="1"/><text x="816" y="534" text-anchor="start" class="mono" fill="#1C2433">paquete_contexto</text><path d="M472,125.5 C370.0,125.5 370.0,81.5 268,81.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="472" cy="125.5" r="4" fill="#1C2433"/><line x1="267" y1="75.5" x2="267" y2="87.5" stroke="#1C2433" stroke-width="2"/><path d="M472,130.5 C370.0,130.5 370.0,305.5 268,305.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="472" cy="130.5" r="4" fill="#1C2433"/><line x1="267" y1="299.5" x2="267" y2="311.5" stroke="#1C2433" stroke-width="2"/><path d="M472,349.5 C370.0,349.5 370.0,310.5 268,310.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="472" cy="349.5" r="4" fill="#1C2433"/><line x1="267" y1="304.5" x2="267" y2="316.5" stroke="#1C2433" stroke-width="2"/><path d="M268,103.5 C370.0,103.5 370.0,283.5 472,283.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="268" cy="103.5" r="4" fill="#1C2433"/><line x1="471" y1="277.5" x2="471" y2="289.5" stroke="#1C2433" stroke-width="2"/><path d="M932,125.5 C830.0,125.5 830.0,59.5 728,59.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="932" cy="125.5" r="4" fill="#1C2433"/><line x1="727" y1="53.5" x2="727" y2="65.5" stroke="#1C2433" stroke-width="2"/><path d="M728,103.5 C830.0,103.5 830.0,59.5 932,59.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="728" cy="103.5" r="4" fill="#1C2433"/><line x1="931" y1="53.5" x2="931" y2="65.5" stroke="#1C2433" stroke-width="2"/><path d="M728,393.5 C830.0,393.5 830.0,64.5 932,64.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="728" cy="393.5" r="4" fill="#1C2433"/><line x1="931" y1="58.5" x2="931" y2="70.5" stroke="#1C2433" stroke-width="2"/><path d="M728,371.5 C830.0,371.5 830.0,130.5 932,130.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="728" cy="371.5" r="4" fill="#1C2433"/><line x1="931" y1="124.5" x2="931" y2="136.5" stroke="#1C2433" stroke-width="2"/><path d="M932,283.5 C830.0,283.5 830.0,283.5 728,283.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="932" cy="283.5" r="4" fill="#1C2433"/><line x1="727" y1="277.5" x2="727" y2="289.5" stroke="#1C2433" stroke-width="2"/><path d="M472,283.5 L465,283.5 L465,37.5 L472,37.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="472" cy="283.5" r="4" fill="#1C2433"/><path d="M1188,305.5 L1195,305.5 L1195,59.5 L1188,59.5" fill="none" stroke="#1C2433" stroke-width="1.6"/><circle cx="1188" cy="305.5" r="4" fill="#1C2433"/><text x="1186" y="468" text-anchor="end" fill="#7D7869">incidencia, paquete_contexto → capitulo_version · manifiesto → version_novela → gate</text><circle cx="6" cy="457" r="4" fill="#1C2433"/><text x="16" y="462" text-anchor="start" fill="#1C2433">lleva la clave ajena</text><line x1="175" y1="451" x2="175" y2="463" stroke="#1C2433" stroke-width="2"/><text x="184" y="462" text-anchor="start" fill="#1C2433">tabla referida</text><text x="4" y="412" text-anchor="start" fill="#7D7869">mundo_entidad → canon_personaje, canon_escenario,</text><text x="4" y="431" text-anchor="start" fill="#7D7869">cronologia_evento y plan_anclaje</text></svg>
+<!-- END gen:er -->
+  </main>
+</section>
+
+<!-- 2 · intake, mundo, plan -->
+<section class="pagina" data-fuente="<code>intake.sql</code>, <code>mundo.sql</code>, <code>plan.sql</code> en <code>backend/src/storymaker/commons/db/esquema/</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A3</span><span class="sep"></span>Lo que entra y la escaleta</div>
+    <h1>Los datos del comprador y el corpus histórico no se mezclan nunca</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t esq">
+      <tr><th>Tabla</th><th>Qué guarda</th><th>Claves ajenas</th></tr>
+      <tr class="fam"><td colspan="3">intake_* <span>· encargo del comprador; la verdad son las filas de intake_dato, no el JSON</span></td></tr>
+      <tr><td>intake_brief</td><td>El <code>Brief</code> cerrado en el gate, con su hash; no decide nada</td><td>fase_run</td></tr>
+      <tr><td>intake_texto_crudo</td><td>Cuarentena del texto pegado: no sale de aquí</td><td>—</td></tr>
+      <tr><td>intake_dato</td><td>Elemento tipado, su origen y si es obligatorio</td><td>intake_texto_crudo</td></tr>
+      <tr><td>intake_uso_dato</td><td>Qué escena de qué intento usó cada dato</td><td>capitulo_version, plan_escena, intake_dato</td></tr>
+      <tr class="fam"><td colspan="3">mundo_* <span>· corpus histórico, append-only hasta el sello y de solo lectura después</span></td></tr>
+      <tr><td>mundo_fuente</td><td>URL, título, autor y fiabilidad</td><td>—</td></tr>
+      <tr><td>mundo_hecho</td><td>Enunciado, estado, dimensión, origen, cita ≤ 300 y respaldo</td><td>fase_run</td></tr>
+      <tr><td>mundo_hecho_fuente</td><td>Relación N:M entre hechos y fuentes</td><td>mundo_hecho, mundo_fuente</td></tr>
+      <tr><td>mundo_entidad</td><td>Período, lugar, figura, objeto o término, con sus fechas</td><td>—</td></tr>
+      <tr><td>mundo_sello</td><td>Hash del corpus al aprobar la escaleta</td><td>fase_run</td></tr>
+      <tr class="fam"><td colspan="3">plan_* <span>· escaleta jerárquica: capítulos, escenas, beats</span></td></tr>
+      <tr><td>plan_capitulo</td><td>Número, título, función y gancho</td><td>—</td></tr>
+      <tr><td>plan_escena</td><td>Fecha narrativa, objetivo, conflicto y resultado</td><td>plan_capitulo, canon_escenario, canon_personaje</td></tr>
+      <tr><td>plan_beat</td><td>Acción y cambio de valor, materia de <code>ejecucion_escaleta</code></td><td>plan_escena</td></tr>
+      <tr><td>plan_escena_personaje</td><td>Quién está en cada escena</td><td>plan_escena, canon_personaje</td></tr>
+      <tr><td>plan_anclaje</td><td>Exactamente uno de hecho, entidad o dato (<code>CHECK</code>)</td><td>plan_escena, mundo_hecho, mundo_entidad, intake_dato</td></tr>
+      <tr><td>plan_hueco</td><td>Pregunta, dimensión, propuesta; encontrado o inventado</td><td>plan_escena, mundo_hecho</td></tr>
+    </table>
+  </main>
+</section>
+
+<!-- 3 · canon, cronologia, vec -->
+<section class="pagina" data-fuente="<code>canon.sql</code>, <code>cronologia.sql</code>, <code>vec.sql</code> · <code>docs/architecture.md</code> §7">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A3</span><span class="sep"></span>La biblia de la obra y la cronología</div>
+    <h1>El arco tiene tabla porque sin fila no hay validador que lo compruebe</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t esq">
+      <tr><th>Tabla</th><th>Qué guarda</th><th>Claves ajenas</th></tr>
+      <tr class="fam"><td colspan="3">canon_* <span>· biblia de la obra, viva hasta el sello</span></td></tr>
+      <tr><td>canon_obra</td><td>Premisa, tema, capítulos, palabras y <code>estilo_json</code></td><td>canon_personaje (homenajeado), fase_run</td></tr>
+      <tr><td>canon_personaje</td><td>Tipo (inventado, histórico ficcionalizado, de fondo) y fechas</td><td>mundo_entidad</td></tr>
+      <tr><td>canon_relacion</td><td>Tipo e intensidad entre dos personajes</td><td>canon_personaje ×2</td></tr>
+      <tr><td>canon_arco</td><td>Positivo, negativo o plano, con estado inicial y final</td><td>canon_personaje</td></tr>
+      <tr><td>canon_arco_hito</td><td>Hitos ordenados, cada uno anclado a una escena</td><td>canon_arco, plan_escena</td></tr>
+      <tr><td>canon_escenario</td><td>Descripción y detalles de un lugar</td><td>mundo_entidad</td></tr>
+      <tr><td>canon_licencia</td><td>Alteración declarada de un hecho, con justificación</td><td>mundo_hecho</td></tr>
+      <tr><td>canon_glosario</td><td>Término de época, significado y registro</td><td>—</td></tr>
+      <tr><td>canon_prohibida</td><td>Término por nivel (global, novela, destinatario), normalizado</td><td>—</td></tr>
+      <tr class="fam"><td colspan="3">cronologia_* <span>· la materia prima de Lean; mezcla a propósito lo histórico y lo narrativo</span></td></tr>
+      <tr><td>cronologia_evento</td><td>Clave, momento, lugar y origen; lo narrativo, con su intento</td><td>mundo_entidad, capitulo_version</td></tr>
+      <tr><td>cronologia_participante</td><td>Quién estuvo en cada evento</td><td>cronologia_evento, canon_personaje</td></tr>
+      <tr class="fam"><td colspan="3">vec_* <span>· índices vec0 de sqlite-vec, 384 dimensiones, coseno</span></td></tr>
+      <tr><td>vec_hecho</td><td>Un vector por hecho; metadatos estado y dimensión</td><td>hecho_id como clave</td></tr>
+      <tr><td>vec_canon</td><td>Personajes, escenarios y glosario; auxiliares +tabla, +fila_id</td><td>—</td></tr>
+      <tr><td>vec_resumen</td><td>Resúmenes; metadatos capitulo_numero y vigente</td><td>capitulo_version_id como clave</td></tr>
+    </table>
+  </main>
+</section>
+
+<!-- 4 · texto y arnés -->
+<section class="pagina" data-fuente="<code>texto.sql</code> y <code>arnes.sql</code> en <code>backend/src/storymaker/commons/db/esquema/</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A3</span><span class="sep"></span>Texto, versiones y arnés</div>
+    <h1>Una versión de la novela es un manifiesto, no una copia del texto</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t esq">
+      <tr><th>Tabla</th><th>Qué guarda</th><th>Claves ajenas</th></tr>
+      <tr class="fam"><td colspan="3">texto <span>· capítulos inmutables y versiones (tablas sin prefijo)</span></td></tr>
+      <tr><td>capitulo_version</td><td>Texto, palabras, intento, resumen y estado</td><td>plan_capitulo, fase_run</td></tr>
+      <tr><td>version_novela</td><td>Número de versión y juicio del juez</td><td>gate</td></tr>
+      <tr><td>version_capitulo</td><td>El manifiesto: qué <code>capitulo_version</code> compone cada versión</td><td>version_novela, capitulo_version</td></tr>
+      <tr><td>uso_hecho</td><td>Hecho usado por escena e intento: índice de la regeneración</td><td>capitulo_version, plan_escena, mundo_hecho</td></tr>
+      <tr><td>uso_hito</td><td>Si cada hito de arco se ejecutó en su escena</td><td>capitulo_version, plan_escena, canon_arco_hito</td></tr>
+      <tr><td>continuidad</td><td>Dónde está cada personaje, qué sabe y qué posee al cierre</td><td>capitulo_version, canon_personaje, canon_escenario</td></tr>
+      <tr class="fam"><td colspan="3">arnes_* <span>· estado del sistema (tablas sin prefijo)</span></td></tr>
+      <tr><td>fase_run</td><td>Fase, estado, prompt, modelo, tokens, coste y <code>trace_id</code></td><td>fase_run (input_run_id)</td></tr>
+      <tr><td>gate</td><td>Pendiente, decidido o aparcado, y la decisión del Autor</td><td>fase_run</td></tr>
+      <tr><td>incidencia</td><td>Validador, severidad (bloqueante o aviso), mensaje, propuesta</td><td>capitulo_version (anulable)</td></tr>
+      <tr><td>score</td><td>El valor de cada validador sobre cualquier objeto</td><td>—</td></tr>
+      <tr><td>audit_log</td><td>Actor, acción, objeto, antes y después</td><td>—</td></tr>
+      <tr><td>edicion_humana</td><td>Tabla, fila, campo, antes, después y motivo</td><td>fase_run</td></tr>
+      <tr><td>procedencia</td><td>Fichero y <code>fase_run</code> de origen de una rama</td><td>—</td></tr>
+      <tr><td>manifiesto</td><td>Hashes de brief y sello, prompts, modelos, embeddings, SDK</td><td>version_novela</td></tr>
+      <tr><td>paquete_contexto</td><td>Lo que vio el modelo en cada intento, con tokens y span</td><td>capitulo_version</td></tr>
+    </table>
+  </main>
+</section>
+
+<!-- 5 · Invariantes de datos -->
+<section class="pagina" data-fuente="<code>backend/src/storymaker/commons/db/esquema/inmutabilidad.sql</code> y los <code>CHECK</code> del DDL · <code>docs/diagramas.md</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A3</span><span class="sep"></span>Invariantes de los datos</div>
+    <h1>«Nada se sobrescribe» tiene dos cerrojos: una regla Semgrep y un trigger</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="trig">
+      <div class="caja">
+        <h2><span class="mono">capitulo_version</span></h2>
+        <p style="margin:0">Un <code>UPDATE</code> solo puede cambiar el <b>estado</b>: texto, capítulo, <code>fase_run_id</code>, intento, palabras y fecha abortan. <code>DELETE</code> aborta siempre.</p>
+      </div>
+      <div class="caja">
+        <h2><span class="mono">fase_run</span></h2>
+        <p style="margin:0">Su identidad (fase, entrada, prompt, modelo, inicio) no cambia; solo se cierra con su consumo y su hora de fin. <code>DELETE</code> aborta.</p>
+      </div>
+      <div class="caja">
+        <h2><span class="mono">version_novela</span> · <span class="mono">version_capitulo</span></h2>
+        <p style="margin:0">Ni <code>UPDATE</code> ni <code>DELETE</code>, sin matices: es la promesa de <code>PreviousVersionPreserved</code> en el modelo TLA+.</p>
+      </div>
+      <div class="caja">
+        <h2><span class="mono">mundo_hecho</span> tras el sello</h2>
+        <p style="margin:0">Con una fila en <code>mundo_sello</code>, <code>INSERT</code>, <code>UPDATE</code> y <code>DELETE</code> abortan: es <code>CorpusSelladoNoSeToca</code> en la base.</p>
+      </div>
+    </div>
+    <h3 style="margin-top:14px">Restricciones del DDL (tablas <code>STRICT</code>)</h3>
+    <ul class="lista" style="columns:2; column-gap:36px">
+      <li><code>plan_anclaje</code>: exactamente uno de <code>hecho_id</code>, <code>entidad_id</code>, <code>dato_id</code>.</li>
+      <li><code>mundo_hecho.cita</code> y <code>sin_respaldo</code>: 300 caracteres como mucho.</li>
+      <li>Una invención autorizada nace con <code>respaldo = 'no_aplica'</code>.</li>
+      <li>Un dato de texto libre exige su <code>texto_crudo_id</code>.</li>
+      <li>Un evento narrativo exige su <code>capitulo_version_id</code>.</li>
+      <li>Fuera del DDL: el checkpointer de LangGraph crea sus tablas en el mismo fichero.</li>
+    </ul>
+    <div class="fila" style="gap:14px; margin-top:12px">
+      <div class="franja col">Nunca <code>UPDATE</code> sobre un capítulo: una versión es un manifiesto.</div>
+      <div class="franja col"><code>mundo_*</code> es append-only hasta el sello y de solo lectura después.</div>
+      <div class="franja col"><code>uso_hecho</code> es el índice de la regeneración.</div>
+    </div>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

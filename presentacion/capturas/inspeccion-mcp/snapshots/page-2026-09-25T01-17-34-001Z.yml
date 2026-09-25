@@ -1,0 +1,59 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e111]:
+      - generic [ref=f3e112]:
+        - navigation [ref=f3e113]:
+          - link "Índice" [ref=f3e114] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f3e116] [cursor=pointer]:
+          - generic [ref=f3e117]: A
+          - generic [ref=f3e118]: a
+      - heading "Capítulo 2. Las Aguas Llegan" [level=1] [ref=f3e119]
+      - article [ref=f3e120]:
+        - paragraph [ref=f3e121]: La Calle San Bernardo se había transformado en un paisaje de confusión ordenada. Donde antes se extendía el pavimento liso del tránsito cotidiano, ahora se abría una brecha de tierra removida, rodeada de andamios de madera que se erguían como esqueletos de algún animal gigante. Aquella mañana de invierno de 1857, Tomás llegó a la zona con sus botijos llenos para abastecerse de los obreros que trabajaban en la obra del Canal de Isabel II. No era la primera vez que veía construcción en Madrid, pero algo en esta era diferente. La envergadura, quizá. O la intención que emanaba de cada movimiento.
+        - paragraph [ref=f3e122]: "La primera evidencia golpeó sus sentidos antes de tocar la tierra: el sonido. No el de herramientas ocasionales, sino el de máquinas, de picos rítmicos, de voces coordinadas. Docenas de hombres cavaban en formación, como si respondieran a un plan invisible que alguien hubiera diseñado en un despacho con planos y compás. Tomás se acercó lentamente, observando. Tuberías de hierro descansaban en pilas ordenadas junto a la excavación, más gruesas y pesadas que cualquier cosa que hubiera visto destinada a agua. Junto a ellas, rollos de especificaciones técnicas se balanceaban sobre caballetes. El hierro, frío y matemático, tan distinto de la arcilla porosa que él conocía."
+        - paragraph [ref=f3e123]: Un caballero a caballo supervisaba las obras. Su traje era de paño fino, su postura recta, sus órdenes breves pero precisas. Lucio del Valle, supo Tomás sin que nadie le lo dijera. El ingeniero. El hombre cuyo nombre había escuchado en bocas de Amancio y otros, siempre envuelto en un halo de inevitabilidad. Del Valle indicaba dónde profundizar, señalaba con un dedo enguantado la disposición de las tuberías. Había algo militar en su autoridad, pero también algo casi pastoral, como si tuviera visiones que solo él podía ver.
+        - paragraph [ref=f3e124]: "Tomás se aproximó a un grupo de obreros que descansaban, sentados sobre sacos de herramientas. Extendió los botijos con ese gesto de oferta que había repetido mil veces. Mientras llenaba un vaso de hojalata para el más próximo, reunió valor para una pregunta que brotó en voz casi inaudible: \"¿Cuánto tiempo?\""
+        - paragraph [ref=f3e125]: El obrero, hombre de barba oscura y manos cuarteadas, comprendió al instante. "Meses. Quizá tres, quizá cuatro. Cuando esto esté terminado, agua en grifos. Aquí mismo, en Calle San Bernardo. Luego en toda la ciudad. Así lo dice el ingeniero."
+        - paragraph [ref=f3e126]: "Tomás asintió lentamente. No lo había dudado, pero escucharlo pronunciado en voz alta, sin ambigüedad, fue diferente a los rumores. Era como ver convertirse en piedra lo que había sido solo sombra. El obrero continuó, porque los hombres así sienten necesidad de llenar el silencio de otros: \"Agua que sale de los grifos sin que nadie la traiga. Sin botellas, sin aguadores. Así funcionará. Así está diseñado.\""
+        - paragraph [ref=f3e127]: Tomás volvió a la Calle San Bernardo tres días después. No para distribuir agua, sino para verla. Era una compulsión que no sabía explicar. Del Valle estaba nuevamente presente, ahora bajado del caballo, examinando un fragmento de tubería con los obreros. Algo en su postura sugería genuina fascinación, no solo supervisión.
+        - paragraph [ref=f3e128]: Cuando Tomás llegó con sus botijos, entregó agua a varios obreros como había hecho días atrás. Fue Lucio del Valle quien se acercó esta vez. Su aproximación fue casual, casi desinteresada, como la de alguien que simplemente nota que algo sucede en el perímetro de su atención.
+        - paragraph [ref=f3e129]: "\"¿Aguas de fuente?\", preguntó Del Valle, con la educación de quien está acostumbrado a dirigirse a cualquier persona desde la misma altura de voz."
+        - paragraph [ref=f3e130]: "\"De San Ginés. Las mejores para el calor del día\", respondió Tomás. La frase había salido de su boca mil veces, pero ahora se le antojó extraña, defensiva."
+        - paragraph [ref=f3e131]: Del Valle tomó el vaso que le ofrecía y bebió. "Excelente. Tiene la precisión de quien sabe su oficio." Hizo una pausa, como calibrando si seguir. "Aunque pronto, como sabrá, esto será innecesario. Los grifos harán este trabajo."
+        - paragraph [ref=f3e132]: "No lo dijo con crueldad. Eso era lo que más perturbaba a Tomás: la ausencia de mala intención en las palabras. Del Valle continuó, inclinando la cabeza ligeramente: \"No es nada personal, comprenda. Es progreso. Los hombres como usted dignificaron el agua de Madrid durante siglos. Ahora la ciudad simplemente... crece. Se moderniza.\""
+        - paragraph [ref=f3e133]: "Tomás respondió con una cortesía fría que aprendió en algún recodo no mapeado de su reserva: \"Que Dios bendiga sus obras, ingeniero.\" No esperó respuesta. Se retiró, sus botijos vacíos colgando de la angarilla como acusaciones mudas."
+        - paragraph [ref=f3e134]: "Aquella noche, Tomás se encontró en la taberna de Lavapiés donde los aguadores convergían después de la jornada. La atmósfera era tensionada pero no hostil. Amancio estaba allí, junto a otros dos que Tomás conocía desde hacía años. Las conversaciones saltaban entre temas: algunos hablaban de buscar empleo en fábricas, en canteras. Otros se aferraban a una esperanza vaga, como si el tiempo pudiera detenerse mediante la sola voluntad."
+        - paragraph [ref=f3e135]: Doña Martina, que había entrado buscando vino para llevar, se adentró en el círculo. "El progreso es un pecado", pronunció, sin que nadie la llamara. "El hombre toca lo que Dios ha hecho perfecto. Por eso vienen las plagas."
+        - paragraph [ref=f3e136]: Amancio levantó su vaso. "Con respeto, doña, pero qué remedio hay. Se adapta uno o se queda en la cuneta. El agua viene de grifos, venga o no le guste al cielo."
+        - paragraph [ref=f3e137]: Nadie discutió. Nadie gritó. La resignation fluyó como el vino tinto que vaciaban en jarras de barro, esas mismas que el abuelo de Tomás había moldeado una vez, quién sabe si con las manos que algún día soñaron con permanecer necesarias.
+        - paragraph [ref=f3e138]: "Tomás permaneció en silencio, la copa entre los dedos, escuchando cómo la comunidad se desmoronaba no en batallas sino en acepciones calladas. Supo entonces que estaba solo en algo que los otros no sentían con la misma precisión: la necesidad de comprender no solo qué sucedía, sino quién era el hombre que lo hacía suceder. Lucio del Valle no era una máquina. Era un hombre con ojos que habían visto a los aguadores de Madrid como Tomás veía la arcilla en las manos de su abuelo. Visto y ya superado en la mente. Eso, de algún modo, era peor que la hostilidad."
+      - navigation "Navegación entre capítulos" [ref=f3e139]:
+        - link "← Capítulo anterior" [ref=f3e141] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/1
+        - link "Índice" [ref=f3e142] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3
+        - link "Capítulo siguiente →" [ref=f3e144] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/3
+      - generic [ref=f3e145]:
+        - heading "Pedir un cambio" [level=2] [ref=f3e146]
+        - generic [ref=f3e147]:
+          - paragraph [ref=f3e148]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f3e149]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f3e150]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f3e151]

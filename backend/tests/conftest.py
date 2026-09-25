@@ -4,8 +4,8 @@ Andamiaje común de la suite: una configuración inyectable, un directorio de no
 temporal y el doble del Agent SDK.
 
 Todas las pruebas construyen su propio `Settings` en lugar de leer el entorno del
-proceso. Es lo que hace que la suite corra igual en el portátil del Autor y en CI,
-donde no hay ni `.env` ni credenciales.
+proceso. Es lo que hace que la suite corra igual en el portátil del Autor que en una máquina
+sin `.env` ni credenciales.
 """
 
 from __future__ import annotations
@@ -27,6 +27,11 @@ from storymaker.commons.db.repos.arnes import abrir_fase_run
 # pruebas ven un frontend ausente y caen al HTML mínimo, como antes. La prueba que ejercita
 # la impresión de verdad pasa su `frontend_dist` explícito.
 os.environ.setdefault("STORYMAKER_FRONTEND_DIST", str(Path(__file__).parent / "sin-frontend"))
+
+# Con Lean instalado, cada prueba que cruza una cronología arrancaría un proceso de Lean y
+# la suite pasaría de un minuto a nueve. Por defecto se evalúa en Python, que mira lo mismo;
+# las pruebas de Lean lo vuelven a encender con `STORYMAKER_LEAN=1`.
+os.environ.setdefault("STORYMAKER_LEAN", "0")
 
 
 @pytest.fixture

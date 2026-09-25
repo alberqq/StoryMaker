@@ -11,18 +11,26 @@ mismo desde el disco, se quedan en el repositorio y se registran por su hash.
 El respaldo local no es una copia de la verdad: es lo que permite correr sin credenciales
 —la suite, el portátil sin `.env`— y se marca como tal en el span, con la versión
 `local`, de modo que una métrica producida sin Langfuse nunca se confunde con una
-producida con la versión 7 de un prompt.
+producida con la versión 7 de un prompt. También es la semilla: `subir` crea en Langfuse
+los prompts que falten con ese texto, y a partir de ahí se editan allí.
+
+    uv run python -m storymaker.commons.obs.prompts subir
 """
 
 from __future__ import annotations
 
 import hashlib
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from storymaker.commons.agents.techos import Perfil
 from storymaker.commons.config import Settings
+
+#: La etiqueta que el arnés lee. Una versión nueva se prueba sin ella y se le pone cuando
+#: pasa los evals (verification §4.8).
+ETIQUETA = "production"
 
 #: Respaldo mínimo por perfil. Deliberadamente escueto: lo bueno vive en Langfuse.
 RESPALDO: dict[Perfil, str] = {
@@ -52,7 +60,9 @@ RESPALDO: dict[Perfil, str] = {
     ),
     Perfil.ARQUITECTO: (
         "Inventas la premisa y el tema, construyes el canon y la escaleta de capitulos, "
-        "escenas y beats, y anclas cada escena al corpus."
+        "escenas y beats, y anclas cada escena al corpus. Para la edad de un personaje en "
+        "una escena o una fecha relativa a otra, usa `edad_en_fecha` y `sumar_dias` en "
+        "lugar de calcularlas de cabeza."
     ),
     Perfil.ESCRITOR: (
         "Escribes el capitulo entero de una vez, con el paquete de contexto como unica "
@@ -79,6 +89,7 @@ class PromptDeRol:
 
     texto: str
     version: str
+    nombre: str = ""
 
     @property
     def es_local(self) -> bool:
@@ -114,12 +125,64 @@ class RepositorioDePrompts:
         return self._cliente
 
     def para(self, perfil: Perfil) -> PromptDeRol:
+        """El prompt del perfil con su versión, o el respaldo marcado como `local`.
+
+        Con `fallback`, un prompt que no existe en Langfuse no lanza: el SDK devuelve el
+        respaldo marcado con `is_fallback`, y eso es lo que decide que la versión sea
+        `local` y no la de un prompt que nunca se usó.
+        """
         cliente = self._cliente_langfuse()
         if cliente is not None:
             try:
-                remoto = cliente.get_prompt(perfil.value)
-            except Exception:  # sin prompt remoto se sigue con el local
+                remoto = cliente.get_prompt(perfil.value, label=ETIQUETA, fallback=RESPALDO[perfil])
+            except Exception:  # sin Langfuse se sigue con el local
                 remoto = None
-            if remoto is not None:
-                return PromptDeRol(str(remoto.prompt), str(getattr(remoto, "version", "?")))
-        return PromptDeRol(RESPALDO[perfil], "local")
+            if remoto is not None and not getattr(remoto, "is_fallback", False):
+                return PromptDeRol(
+                    str(remoto.prompt), str(getattr(remoto, "version", "?")), perfil.value
+                )
+        return PromptDeRol(RESPALDO[perfil], "local", perfil.value)
+
+    def subir(self) -> tuple[list[str], list[str]]:
+        """Crea en Langfuse los prompts que faltan, con el texto del respaldo.
+
+        **No toca los que ya existen**: Langfuse es la fuente de verdad, y la versión que
+        el Autor haya editado allí manda sobre la semilla del repositorio. Devuelve los
+        creados y los que se dejaron como estaban.
+        """
+        cliente = self._cliente_langfuse()
+        if cliente is None:
+            raise RuntimeError("Faltan las claves de Langfuse en backend/.env")
+        creados: list[str] = []
+        existentes: list[str] = []
+        for perfil in Perfil:
+            try:
+                cliente.get_prompt(perfil.value, label=ETIQUETA, max_retries=0)
+            except Exception:
+                cliente.create_prompt(
+                    name=perfil.value,
+                    prompt=RESPALDO[perfil],
+                    labels=[ETIQUETA],
+                    type="text",
+                    commit_message="Semilla: respaldo local de StoryMaker",
+                )
+                creados.append(perfil.value)
+            else:
+                existentes.append(perfil.value)
+        cliente.flush()
+        return creados, existentes
+
+
+def main(argumentos: list[str]) -> int:
+    """`subir`: siembra en Langfuse los prompts de rol que falten."""
+    if argumentos != ["subir"]:
+        print("uso: python -m storymaker.commons.obs.prompts subir", file=sys.stderr)
+        return 2
+    creados, existentes = RepositorioDePrompts(Settings()).subir()
+    print(f"Creados ({len(creados)}): {', '.join(creados) or '-'}")
+    print(f"Ya existian ({len(existentes)}): {', '.join(existentes) or '-'}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

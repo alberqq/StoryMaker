@@ -7,30 +7,39 @@ lo único que queda entre medias es automático. Eso pone toda la responsabilida
 puertas que sí hay, y las dos son de las que no admiten excepción: **Lean sobre la
 cronología completa** y **`render_visual` antes del `commit`**.
 
-El orden dentro de `PublishVersion` es lo que lo hace una puerta y no un informe: se arma el
-manifiesto de la versión candidata, se renderiza contra él, se juzga el render, y **solo
-entonces** se confirma la transacción. Si algo no renderiza, se deshace y no hay versión
-publicada. No hace falta nodo nuevo ni arista nueva, porque la comprobación cabe dentro del
-propio nodo mientras la transacción sigue abierta.
+El orden dentro de `PublishVersion` es lo que lo hace una puerta y no un informe: se compone
+la versión candidata, se comprueba su cronología, se abre su lectura en un navegador, y
+**solo entonces** se escriben las filas de la versión. Si algo falla no hay nada que
+deshacer, porque todavía no existe nada.
+
+**El rechazo vuelve al gate de Writing.** Lo que falla se guarda como incidencia citando los
+capítulos culpables, y la novela vuelve al Autor por la arista `PublishVersion →
+AwaitApproval4`; si rehace, se reescriben esos capítulos y su escritor recibe el motivo en
+el encargo. El rechazo comparte contador con el del juez, y agotado va a `Fail`.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
+import aiosqlite
 import yaml
 
 from storymaker.commons.agents.invocacion import invocar_rol
 from storymaker.commons.agents.techos import Perfil
-from storymaker.commons.db.repos import plan, texto
+from storymaker.commons.db.repos import arnes, plan, texto
 from storymaker.commons.errores import ErrorDeStoryMaker
-from storymaker.commons.formal.generador import Evento, NovelaLean, Persona, a_momento
+from storymaker.commons.formal.cronologia import cronologia_de_la_novela, verificar_cronologia
+from storymaker.commons.formal.generador import (
+    NovelaLean,
+)
 from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.obs.prompts import RepositorioDePrompts
-from storymaker.commons.obs.scores import registrar
+from storymaker.commons.obs.scores import registrar, registrar_veredicto
 from storymaker.commons.obs.trazas import Span, nombre_de_span
 from storymaker.commons.validation.modelos import Incidencia
 from storymaker.publication import manifiesto, render
@@ -41,10 +50,19 @@ from storymaker.publication.esquemas import UMBRAL_DE_PUBLICACION, Criterio, Sal
 class PublicacionRechazada(ErrorDeStoryMaker):
     """La versión no se publica. **No hay anulación.**
 
-    Se lanza cuando Lean tumba la cronología completa o cuando el render candidato no pasa.
-    Es una excepción y no una incidencia porque no hay a quién devolverle el capítulo: lo
-    que falla aquí es la novela entera, y la decisión de qué hacer es del Autor.
+    Se lanza cuando Lean tumba la cronología completa o cuando el render candidato no pasa,
+    y lleva las incidencias bloqueantes que lo causaron. `publish` la recoge, las guarda y
+    devuelve la novela al gate de Writing: el Autor decide qué se rehace.
     """
+
+    def __init__(self, mensaje: str, incidencias: tuple[Incidencia, ...] = ()) -> None:
+        super().__init__(mensaje)
+        self.incidencias = incidencias
+
+
+#: Los validadores de `PublishVersion`. Sus incidencias cuelgan de la novela, no de un
+#: capítulo, y citan los capítulos culpables en el texto para que el gate los devuelva.
+VALIDADORES_DE_PUBLICACION = ("cronologia_publicacion", "render_visual")
 
 
 @dataclass(frozen=True)
@@ -55,7 +73,7 @@ class VersionPublicada:
 
 
 async def juzgar(*, capitulos: list[str]) -> SalidaJuez:
-    """El juez lee la novela terminada y aplica la rúbrica de siete criterios.
+    """El juez lee la novela terminada y aplica la rúbrica de ocho criterios.
 
     Recibe el texto y devuelve notas. No tiene permiso de escritura sobre el texto y su
     esquema no le da dónde ejercerlo: su única salida es el esquema de puntuaciones, que se
@@ -63,19 +81,21 @@ async def juzgar(*, capitulos: list[str]) -> SalidaJuez:
     """
     deps = actuales()
     novela = "\n\n".join(f"Capitulo {i}\n{t}" for i, t in enumerate(capitulos, start=1))
+    prompt = RepositorioDePrompts(deps.settings).para(Perfil.JUEZ)
     resultado = await invocar_rol(
         Perfil.JUEZ,
         _rubrica() + "\n\n# La novela\n\n" + novela,
         SalidaJuez,
         transporte=deps.transporte,
         settings=deps.settings,
-        sistema=RepositorioDePrompts(deps.settings).para(Perfil.JUEZ).texto,
+        sistema=prompt.texto,
     )
     deps.observador.registrar_span(
         Span(
             nombre=nombre_de_span(capitulo=None, rol="juez"),
             rol="juez",
             consumo=resultado.consumo,
+            prompt_version=prompt.version,
         )
     )
     return resultado.valor
@@ -83,9 +103,9 @@ async def juzgar(*, capitulos: list[str]) -> SalidaJuez:
 
 @cache
 def _rubrica() -> str:
-    """Las siete preguntas de `rubrica.yaml`, el mismo fichero que usa la revisión humana.
+    """Las ocho preguntas de `rubrica.yaml`, el mismo fichero que usa la revisión humana.
 
-    Sin ellas el juez puntuaba siete criterios de los que solo conocía el nombre.
+    Sin ellas el juez puntuaba ocho criterios de los que solo conocía el nombre.
     """
     ruta = Path(__file__).with_name("rubrica.yaml")
     datos = yaml.safe_load(ruta.read_text(encoding="utf-8"))
@@ -98,7 +118,7 @@ def _rubrica() -> str:
         "afirma y otro desmiente (un objeto que se entrega dos veces, una promesa que luego "
         "se niega, un dato que cambia), y lo que un personaje sabe o cuenta antes de que "
         "ocurra en la fecha narrativa. Si no hay ninguna, deja la lista vacia.\n\n"
-        "Despues puntua esta novela del 1 al 10 en cada uno de los siete criterios de la "
+        "Despues puntua esta novela del 1 al 10 en cada uno de los ocho criterios de la "
         "rubrica, con una justificacion por criterio.\n\n# Rubrica\n\n" + preguntas
     )
 
@@ -123,61 +143,23 @@ def topar_continuidad(notas: SalidaJuez) -> SalidaJuez:
 
 
 async def cronologia_completa() -> NovelaLean:
-    """Toda la cronología de la novela: lo histórico y lo narrativo que el extractor escribió.
+    """Toda la cronología de la novela: lo histórico y lo narrativo de lo aprobado.
 
     Es el tercero de los tres puntos de Lean, y el único cuyo fallo **impide publicar**. Los
-    otros dos devuelven el trabajo a alguien; este no tiene a quién devolvérselo.
+    otros dos devuelven el trabajo a alguien; este no tiene a quién devolvérselo. Solo
+    cuentan las versiones aprobadas vigentes: los eventos de un intento descartado
+    describen algo que ya no está en la novela.
     """
-    deps = actuales()
-    personas: list[Persona] = []
-    async with deps.db.execute(
-        "SELECT id, nombre, fecha_nacimiento, fecha_muerte FROM canon_personaje ORDER BY id"
-    ) as cursor:
-        for fila in await cursor.fetchall():
-            personas.append(
-                Persona(
-                    id=int(fila["id"]),
-                    nombre=str(fila["nombre"]),
-                    nacimiento=a_momento(fila["fecha_nacimiento"]) or 0,
-                    muerte=a_momento(fila["fecha_muerte"]),
-                )
-            )
-
-    eventos: list[Evento] = []
-    async with deps.db.execute(
-        "SELECT id, clave, momento, origen FROM cronologia_evento ORDER BY momento, id"
-    ) as cursor:
-        filas = list(await cursor.fetchall())
-
-    for fila in filas:
-        momento = a_momento(fila["momento"])
-        if momento is None:
-            continue
-        async with deps.db.execute(
-            "SELECT personaje_id FROM cronologia_participante WHERE evento_id = ?",
-            (fila["id"],),
-        ) as cursor:
-            participantes = tuple(int(p["personaje_id"]) for p in await cursor.fetchall())
-        eventos.append(
-            Evento(
-                id=int(fila["id"]),
-                clave=str(fila["clave"]),
-                momento=momento,
-                lugar=0,
-                participantes=participantes,
-                objetos=(),
-                origen=str(fila["origen"]),
-            )
-        )
-
-    return NovelaLean(personas=tuple(personas), objetos=(), eventos=tuple(eventos))
+    return await cronologia_de_la_novela(actuales().db)
 
 
 async def publicar(*, numero: int, gate_id: int | None = None) -> VersionPublicada:
-    """Arma la versión candidata, comprueba el render y **solo entonces** confirma.
+    """Compone la candidata, comprueba cronología y render, y **solo entonces** la escribe.
 
-    El orden es la puerta. Si `render_visual` se ejecutara después del `commit`, un índice
-    roto sería una versión ya publicada, y G5 existe precisamente para impedir eso.
+    El orden es la puerta. Si `render_visual` se ejecutara después de escribir la versión, un
+    índice roto sería una versión ya publicada, y G5 existe precisamente para impedir eso.
+    Las dos comprobaciones corren siempre, también si la primera falla, para que el Autor
+    vea de una vez todo lo que tiene que rehacer; cada una deja su *score*.
     """
     deps = actuales()
 
@@ -194,23 +176,74 @@ async def publicar(*, numero: int, gate_id: int | None = None) -> VersionPublica
             )
         versiones.append(int(aprobado["id"]))
 
+    # G5: la cronología completa y el render, antes de que exista la versión (arq. §11a, §11c).
+    cronologia = await verificar_cronologia(
+        await cronologia_completa(), bloquea=True, validador="cronologia_publicacion"
+    )
+    lectura = await render.construir_lectura_candidata(deps.db, versiones)
+    visuales = await render.render_visual(lectura)
+
+    por_validador = {"cronologia_publicacion": cronologia, "render_visual": visuales}
+    for validador, incidencias in por_validador.items():
+        await registrar_veredicto(
+            deps.db,
+            deps.observador,
+            validador=validador,
+            incidencias=[i for i in incidencias if i.bloquea],
+            objeto_tipo="novela",
+            objeto_id=numero,
+        )
+
+    bloqueantes = tuple(i for i in (*cronologia, *visuales) if i.bloquea)
+    if bloqueantes:
+        raise PublicacionRechazada(
+            "La version candidata no se publica: " + "; ".join(i.mensaje for i in bloqueantes),
+            bloqueantes,
+        )
+
     version_id = await texto.publicar_version(
         deps.db, numero=numero, capitulo_version_ids=versiones, gate_id=gate_id
     )
-
-    lectura = await render.construir_lectura(deps.db, version_id)
-    incidencias: list[Incidencia] = render.render_visual(lectura)
-    if incidencias:
-        # La transacción sigue abierta: quien nos llamó la deshará, y no habrá versión.
-        raise PublicacionRechazada(
-            "El render de la version candidata no pasa: "
-            + "; ".join(i.mensaje for i in incidencias)
-        )
-
     datos = await manifiesto.reunir(deps.db, deps.settings)
     manifiesto_id = await manifiesto.escribir(deps.db, version_id, datos)
 
     return VersionPublicada(version_id=version_id, manifiesto_id=manifiesto_id, media_del_juez=0.0)
+
+
+_CAPITULO_CITADO_EN_INCIDENCIA = re.compile(r"\bcap(?:itulo)?[\s_-]?(\d+)", re.IGNORECASE)
+
+
+def capitulos_citados(incidencia: Incidencia) -> list[int]:
+    """Los capítulos que una incidencia de la publicación nombra, en orden.
+
+    Las de la cronología citan los eventos por su clave (`cap4-esc10`), y las del render la
+    pieza o el capítulo (`cap3`). Es lo que permite al gate de Writing devolver al escritor
+    justo esos capítulos y no la novela entera.
+    """
+    texto_citado = " ".join(
+        t for t in (incidencia.ubicacion, incidencia.mensaje, incidencia.propuesta) if t
+    )
+    return sorted({int(n) for n in _CAPITULO_CITADO_EN_INCIDENCIA.findall(texto_citado)})
+
+
+async def registrar_rechazo(db: aiosqlite.Connection, incidencias: tuple[Incidencia, ...]) -> None:
+    """Guarda el rechazo como incidencias de la novela, sustituyendo las del intento anterior.
+
+    `ubicacion` lleva los capítulos citados (`cap1, cap5`), igual que las contradicciones del
+    juez, para que el gate de Writing y el encargo del escritor los lean del mismo modo.
+    """
+    for validador in VALIDADORES_DE_PUBLICACION:
+        await arnes.retirar_incidencias_sin_capitulo(db, validador)
+    for incidencia in incidencias:
+        citados = capitulos_citados(incidencia)
+        await arnes.registrar_incidencia(
+            db,
+            validador=incidencia.validador,
+            severidad="bloqueante",
+            mensaje=incidencia.mensaje,
+            ubicacion=", ".join(f"cap{n}" for n in citados) or incidencia.ubicacion,
+            propuesta=incidencia.propuesta,
+        )
 
 
 # --- Los nodos del grafo -------------------------------------------------------------
@@ -246,6 +279,7 @@ async def judge(estado: EstadoNovela) -> EstadoNovela:
         objeto_id=1,
         detalle={**notas.por_criterio(), "contradicciones": notas.contradicciones},
     )
+    await registrar_contradicciones(deps.db, notas.contradicciones)
     supera = supera_el_umbral(notas)
     if not supera and not estado["gates_enabled"]:
         # En batch nadie puede decidir qué rehacer, y volver a juzgar el mismo texto solo
@@ -260,7 +294,13 @@ async def judge(estado: EstadoNovela) -> EstadoNovela:
 
 
 async def publish(estado: EstadoNovela) -> EstadoNovela:
-    """`PublishVersion`. Render comprobado antes del `commit`, manifiesto escrito después."""
+    """`PublishVersion`. Publicada → `Idle`; rechazada → al gate de Writing o a `Fail`.
+
+    El rechazo no es una excepción que tumbe la invocación: se guarda, suma un rechazo al
+    contador que comparte con el juez y deja `hay_bloqueantes` para que `tras_publish` elija
+    la arista. Una versión que no se puede ni componer —un capítulo sin aprobar— sí revienta,
+    porque ahí no hay nada que devolver a nadie.
+    """
     deps = actuales()
     async with deps.db.execute(
         "SELECT COALESCE(MAX(numero), 0) + 1 AS siguiente FROM version_novela"
@@ -268,10 +308,47 @@ async def publish(estado: EstadoNovela) -> EstadoNovela:
         fila = await cursor.fetchone()
     numero = int(fila["siguiente"]) if fila is not None else 1
 
-    await publicar(numero=numero, gate_id=estado["gate_id"])
+    try:
+        await publicar(numero=numero, gate_id=estado["gate_id"])
+    except PublicacionRechazada as rechazo:
+        if not rechazo.incidencias:
+            raise
+        await registrar_rechazo(deps.db, rechazo.incidencias)
+        return {
+            **estado,
+            "pc": "PublishVersion",
+            "hay_bloqueantes": True,
+            "rechazos_juez": estado["rechazos_juez"] + 1,
+        }
+    await registrar_rechazo(deps.db, ())
     # El PDF no se imprime aquí: dentro del paso la versión aún no está confirmada, y la ruta
     # de impresión la lee por la API. Lo imprime `invocar` al salir del grafo (spec §4.5).
-    return {**estado, "pc": "Idle"}
+    return {**estado, "pc": "Idle", "hay_bloqueantes": False}
+
+
+#: Las contradicciones que lista el juez, una incidencia de aviso cada una.
+CONTRADICCION_DEL_JUEZ = "juez_contradiccion"
+_CAPITULO_CITADO = re.compile(r"[Cc]ap[ií]tulos?\s+(\d+)")
+
+
+async def registrar_contradicciones(db: aiosqlite.Connection, contradicciones: list[str]) -> None:
+    """Cada contradicción del juez, como aviso sin capítulo con los capítulos que cita.
+
+    Antes solo vivían dentro de la nota: la de `metro` —la edad de la homenajeada, diez años
+    distinta entre el capítulo 1 y el 5— no llegó a nadie que pudiera corregirla. Así las
+    enseñan el gate de Writing, si el juez devuelve la novela, y el aviso de terminada, si
+    no (specs/escritura §6). Cada juicio sustituye al anterior.
+    """
+    await arnes.retirar_incidencias_sin_capitulo(db, CONTRADICCION_DEL_JUEZ)
+    for contradiccion in contradicciones:
+        citados = sorted({int(n) for n in _CAPITULO_CITADO.findall(contradiccion)})
+        await arnes.registrar_incidencia(
+            db,
+            validador=CONTRADICCION_DEL_JUEZ,
+            severidad="aviso",
+            mensaje=contradiccion,
+            ubicacion=", ".join(f"cap{n}" for n in citados) or None,
+        )
 
 
 def supera_el_umbral(salida: SalidaJuez, umbral: float = UMBRAL_DE_PUBLICACION) -> bool:

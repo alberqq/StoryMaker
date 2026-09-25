@@ -252,6 +252,30 @@ class TestPolicy:
         )
         assert len(incidencias) == 1
 
+    @pytest.mark.parametrize("variante", ["gilipollas", "Gilipollas", "GILIPOLLAS."])
+    def test_prohibida_global(self, variante: str) -> None:
+        """El nivel que pone el arnés, con la misma normalización que los otros dos."""
+        incidencias = guardrail_prohibidas(
+            capitulo(
+                texto=f"Le grito {variante} desde la puerta.",
+                prohibidas=(TerminoProhibido("global", "gilipollas", "gilipolla"),),
+            )
+        )
+        assert len(incidencias) == 1
+        assert "nivel global" in incidencias[0].mensaje
+
+    def test_la_lista_global_no_trae_palabras_con_otra_acepcion(self) -> None:
+        """Cada término de la lista global tiene que casar consigo mismo y con su plural."""
+        from storymaker.commons.validation.policy_checker import PROHIBIDAS_GLOBALES
+        from storymaker.commons.validation.puras import normalizar
+
+        for termino in PROHIBIDAS_GLOBALES:
+            prohibida = TerminoProhibido("global", termino, normalizar(termino))
+            assert guardrail_prohibidas(capitulo(texto=f"Dijo {termino}.", prohibidas=(prohibida,)))
+        limpio = "Entro en la casa, el correo llego retrasado y vio una zorra en el monte."
+        todas = tuple(TerminoProhibido("global", t, normalizar(t)) for t in PROHIBIDAS_GLOBALES)
+        assert guardrail_prohibidas(capitulo(texto=limpio, prohibidas=todas)) == []
+
     def test_no_salta_dentro_de_otra_palabra(self) -> None:
         """Buscar la subcadena haria que «asa» saltara dentro de «casa»."""
         incidencias = guardrail_prohibidas(

@@ -1,0 +1,65 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e49]:
+      - generic [ref=f3e50]:
+        - navigation [ref=f3e51]:
+          - link "Índice" [ref=f3e52] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f3e54] [cursor=pointer]:
+          - generic [ref=f3e55]: A
+          - generic [ref=f3e56]: a
+      - heading "Capítulo 1. El Taller del Abuelo" [level=1] [ref=f3e57]
+      - article [ref=f3e58]:
+        - paragraph [ref=f3e59]: Tomás era apenas un muchacho cuando descubrió que el mundo había de observarse desde debajo de las cosas. La mesa de trabajo del taller de su abuelo, de madera oscura y gastada por décadas, le ofrecía un refugio perfecto. Allá por los años cuarenta, cuando Tomás tenía seis o siete años y el Madrid seguía siendo Madrid de verdad —como dirían más adelante los viejos—, el niño solía escurrirse bajo aquella mesa mientras su abuelo, el maestro Jacinto Ibarra, moldeaba la arcilla con las manos que parecían tener voluntad propia.
+        - paragraph [ref=f3e60]: "Desde su escondite, Tomás veía trabajar a las manos. Grandes, correosas, con las venas marcadas como relieves de río, se sumergían en la arcilla roja del Manzanares y emergían tiritando de agua. Los dedos plegaban, alargaban, comprimían, como si conversaran con la materia en un idioma que el niño aún no comprendía. El torno giraba, gemía suavemente, y la arcilla se erguía en forma de botijo: ancho de vientre, estrecho de cuello, grácil de boca. Botijos, siempre botijos. El maestro Jacinto llevaba toda su vida metido en aquel oficio: dar forma al recipiente que mantuviera el agua fresca en las casas de Madrid."
+        - paragraph [ref=f3e61]: «Vienes aquí para no estar allá», dijo una tarde el abuelo, sin levantar la vista del torno. Tomás se sobresaltó. No sabía que lo había visto.
+        - paragraph [ref=f3e62]: «Abuela quiere que friegue cacharros», murmuró el niño.
+        - paragraph [ref=f3e63]: El maestro Jacinto sonrió, esa sonrisa lenta de los hombres que trabajan la arcilla. «Pues quédate entonces. Pero en silencio».
+        - paragraph [ref=f3e64]: "Así comenzó el aprendizaje. No formal, no con gritos ni correcciones, sino de la manera que Tomás recordaría para siempre: observando las manos, escuchando historias. El abuelo hablaba mientras trabajaba. Contaba de los aguadores que compraban sus botijos, de cómo el agua se conservaba más fresca en la cerámica que en cualquier otro recipiente porque la arcilla sudaba, dejaba evaporar el calor del verano. Hablaba de la importancia del oficio: el agua era vida, el botijo era su guardián, y quien hacía botijos hacía un servicio para los pobres y los ricos por igual."
+        - paragraph [ref=f3e65]: «El agua no entiende de clases», decía Jacinto, y levantaba su botijo terminado a la luz, como si fuera un sacramental.
+        - paragraph [ref=f3e66]: "A los nueve años, Tomás ya sabía distinguir una arcilla de otra, un cocimiento bien hecho de uno fracasado. A los diecinueve, sabía también que no sería alfarero como su abuelo, sino aguador. Algo en ese oficio lo llamaba más: la calle, el movimiento, el contacto directo con la gente. El abuelo no se lo tomó a mal. «La arcilla es para quien la llama», había dicho simplemente."
+        - paragraph [ref=f3e67]: "Seis años después, en la primavera de 1856, Tomás salía cada madrugada con sus botijos llenos, cargados al cuello mediante una angarilla de madera. Su territorio era el de siempre: desde la Cebada hasta la Ronda de Atocha, pasando por las fondas, las posadas, los pequeños comercios del barrio de Lavapiés. Conocía a cada cliente, y cada cliente lo conocía a él. Había llegado a ser un aguador respetable, con buen pie, como se decía."
+        - paragraph [ref=f3e68]: Aquela madrugada de marzo salió con el mismo sigilo de costumbre, cuando las calles aún dormían. Los botijos tintineaban con suavidad. El agua de la fuente de San Ginés, que él siempre prefería, tenía la temperatura exacta para llevarla a las casas. Se cruzó con Amancio, otro aguador, amigo y rival a la vez, en la esquina de la Cebada. Amancio llevaba carga también.
+        - paragraph [ref=f3e69]: «Buen agua para vender, ¿eh?» bromeó Amancio, chocando ligeramente sus botijos con los de Tomás, el saludo de los aguadores.
+        - paragraph [ref=f3e70]: «La mejor», confirmó Tomás.
+        - paragraph [ref=f3e71]: La primera parada fue en la casa de Doña Martina, la viuda que compraba agua cada mañana sin falta. Mientras Tomás llenaba su tinaja, ella se asomó a la ventana.
+        - paragraph [ref=f3e72]: «¿Cuánto crees que nos queda, Tomás?» preguntó, con esa entonación que suena a secreto compartido.
+        - paragraph [ref=f3e73]: «¿Que nos queda de qué, doña?»
+        - paragraph [ref=f3e74]: «Del agua que nos trae. Dicen que pronto traerán otra. El agua que viene, la llaman. Agua que sale de grifos, sin aguadores de por medio».
+        - paragraph [ref=f3e75]: Tomás rió, pero algo se tensó en su pecho. «Habladurías, señora. Siempre hay habladurías».
+        - paragraph [ref=f3e76]: Pero mientras continuaba su ronda ese mismo día, ya por la tarde, junto a la fuente mientras llenaba los botijos para vender el resto del día, escuchó a Amancio y a otros dos aguadores conversando en voz baja. Habían de cambios en el gobierno, de planes de ministros, de un ingeniero llamado Lucio del Valle que trabajaba en un proyecto del Canal de Isabel II. Mencionaron cifras, fechas, un futuro que sonaba próximo.
+        - paragraph [ref=f3e77]: "Tomás siguió llenando sus botijos. Luego, casi sin querer, comenzó a silbar. La copla le vino a los labios sin pensamiento:"
+        - paragraph [ref=f3e78]: Que vueltas da la rueda,
+        - paragraph [ref=f3e79]: que vueltas da la fortuna,
+        - paragraph [ref=f3e80]: que hoy eres luz y mañana
+        - paragraph [ref=f3e81]: no eres ni sombra ninguna.
+        - paragraph [ref=f3e82]: La silbaba siempre cuando la inquietud se apoderaba de él, desde hacía años. Era una copla antigua, de esas que canta la gente en los mentideros, sobre cambios, sobre impermanencia.
+        - paragraph [ref=f3e83]: Amancio lo miró y reconoció en Tomás al muchacho que ya sabía, sin palabras, lo que significaban aquellos rumores. Se acercó y le puso una mano en el hombro, pero no dijo nada. ¿Qué habría que decir?
+        - paragraph [ref=f3e84]: "Tomás terminó su ronda aquel atardecer intranquilo, pensando en las manos de su abuelo modelando arcilla, preguntándose si en eso consistía ser aguador: en llevar agua de un lado para otro, viviendo el tiempo que durara la necesidad, y luego desaparecer como la sombra de la que hablaba la copla. Pero por ahora, aún había agua que llevar, aún había clientes que lo esperaban, aún había un oficio que cumplir."
+      - navigation "Navegación entre capítulos" [ref=f3e85]:
+        - link "Índice" [ref=f3e86] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3
+        - link "Capítulo siguiente →" [ref=f3e88] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/2
+      - generic [ref=f3e89]:
+        - heading "Pedir un cambio" [level=2] [ref=f3e90]
+        - generic [ref=f3e91]:
+          - paragraph [ref=f3e92]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f3e93]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f3e94]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f3e95]

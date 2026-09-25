@@ -112,6 +112,60 @@ class InformeDePlotting:
             lineas.append("\nCobertura, arcos y cronologia en verde: la escaleta puede sellarse.")
         return "\n".join(lineas)
 
+    def como_resumen(self) -> list[str]:
+        """Lo mismo, para el móvil: cifras y avisos agrupados, sin una frase por aviso.
+
+        El informe entero se lee en el PC, que es donde se decide (arq. §10). En el móvil
+        basta con saber si merece la pena ir a mirar: cuántos huecos se inventaron y qué
+        clase de avisos hay, lo grave primero.
+        """
+        encontrados = sum(1 for h in self.huecos if h.resultado == "encontrado")
+        lineas: list[str] = []
+        if self.huecos:
+            lineas.append(
+                f"Huecos: {_cuantos(encontrados, 'encontrado', 'encontrados')}, "
+                f"{_cuantos(self.inventados, 'inventado', 'inventados')}"
+            )
+        elif self.inventados:
+            lineas.append(f"Inventados: {self.inventados}")
+        if not self.incidencias:
+            lineas.append("Revisión en verde")
+            return lineas
+        graves = sum(1 for i in self.incidencias if i.bloquea)
+        cabecera = f"Revisión: {_cuantos(len(self.incidencias), 'aviso', 'avisos')}"
+        lineas.append(cabecera + (f", {_cuantos(graves, 'grave', 'graves')}" if graves else ""))
+        por_tipo: dict[str, list[Incidencia]] = {}
+        for incidencia in self.incidencias:
+            por_tipo.setdefault(
+                ETIQUETAS.get(incidencia.validador, incidencia.validador), []
+            ).append(incidencia)
+        orden = sorted(
+            por_tipo.items(), key=lambda par: (not any(i.bloquea for i in par[1]), -len(par[1]))
+        )
+        for etiqueta, lista in orden:
+            marca = " (grave)" if any(i.bloquea for i in lista) else ""
+            lineas.append(f"  · {etiqueta}: {len(lista)}{marca}")
+        return lineas
+
+
+#: Cómo se nombra cada validador de la revisión fuera del código: las mismas etiquetas que
+#: la pantalla del gate, para que el móvil y el PC hablen igual.
+ETIQUETAS = {
+    "cobertura_anclada": "elemento sin anclar",
+    "cobertura_reparada": "anclado por el arnés",
+    "arco_anclado": "arco",
+    "escenas_por_capitulo": "escenas por capítulo",
+    "anclaje_resuelto": "anclaje sin resolver",
+    "anclaje_por_parecido": "anclado por parecido",
+    "invencion_sobre_historico": "invención sobre un histórico",
+    "cronologia_escaleta": "cronología",
+    "lean_cronologia": "cronología",
+}
+
+
+def _cuantos(n: int, singular: str, plural: str) -> str:
+    return f"{n} {singular if n == 1 else plural}"
+
 
 async def construir(
     db: aiosqlite.Connection, fase_run_id: int, puerta: PuertaDePlotting, *, huecos_gastados: int

@@ -29,6 +29,7 @@ from storymaker.commons.formal.generador import (
 )
 from storymaker.commons.formal.runner import (
     PROYECTO_POR_DEFECTO,
+    AveriaDeLean,
     escribir_generado,
     interpretar,
     verificar,
@@ -102,6 +103,14 @@ class TestGenerador:
         assert "muerte := some" in fuente
         assert "muerte := none" in fuente
 
+    def test_una_muerte_negativa_va_entre_parentesis(self) -> None:
+        """`some -4035` es una resta para Lean y el fichero no compila."""
+        fuente = generar(
+            NovelaLean(personas=(Persona(id=7, nombre="Carlos III", nacimiento=-30681, muerte=-4035),))
+        )
+        assert "muerte := some (-4035)" in fuente
+        assert "some -" not in fuente
+
     def test_el_origen_conserva_la_mezcla(self) -> None:
         fuente = generar(novela_de_ejemplo())
         assert "origen := Origen.historico" in fuente
@@ -150,12 +159,17 @@ class TestInterpretacion:
         salida = "✗ I1 · participa antes de nacer\n✗ I4 · objeto anacronico\n"
         assert len(interpretar(1, salida).incidencias) == 2
 
-    def test_el_codigo_manda_sobre_la_prosa(self) -> None:
-        """Perder el detalle es aceptable; dar por bueno lo que fallo, no."""
-        veredicto = interpretar(1, "error: build failed")
-        assert not veredicto.correcto
-        assert len(veredicto.incidencias) == 1
-        assert all(i.bloquea for i in veredicto.incidencias)
+    def test_un_fallo_sin_invariante_es_una_averia(self) -> None:
+        """No compilar o no poder ejecutar no es un veredicto: es un error de entorno."""
+        for salida in (
+            "error: build failed",
+            "error: unspecified system_category error (error code: 4551)",
+        ):
+            with pytest.raises(AveriaDeLean):
+                interpretar(1, salida)
+
+    def test_la_averia_es_un_error_de_entorno(self) -> None:
+        assert issubclass(AveriaDeLean, ErrorDeEntorno)
 
     def test_los_cuatro_invariantes_tienen_mensaje(self) -> None:
         assert set(INVARIANTES) == {"I1", "I2", "I3", "I4"}
@@ -185,3 +199,32 @@ class TestRunner:
             await verificar(novela_de_ejemplo(), proyecto=tmp_path)
         assert "lake" in str(fallo.value)
         assert "en lugar de aprobarlo" in str(fallo.value)
+
+
+class TestAveriaCaeAPython:
+    """Una avería de Lean no aprueba ni suspende: juzga Python (arq. §11c)."""
+
+    async def test_la_averia_la_juzga_python_con_la_misma_severidad(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from storymaker.commons.formal import cronologia, runner
+
+        async def averiado(_novela: NovelaLean) -> None:
+            raise AveriaDeLean("error code: 4551")
+
+        monkeypatch.setattr(cronologia, "lean_activo", lambda: True)
+        monkeypatch.setattr(runner, "verificar", averiado)
+        antes_de_nacer = NovelaLean(
+            personas=(Persona(1, "Manuel Ferrer", 1000, None),),
+            eventos=(Evento(1, "cap1-e", 10, 0, (1,), (), "narrativo"),),
+        )
+        incidencias = await cronologia.verificar_cronologia(antes_de_nacer, bloquea=True)
+        assert incidencias, "Python ve que participa antes de nacer"
+        assert all(i.bloquea for i in incidencias)
+        assert "Manuel Ferrer" in incidencias[0].mensaje
+
+        coherente = NovelaLean(
+            personas=(Persona(1, "Manuel Ferrer", 1, None),),
+            eventos=(Evento(1, "cap1-e", 10, 0, (1,), (), "narrativo"),),
+        )
+        assert await cronologia.verificar_cronologia(coherente, bloquea=True) == []

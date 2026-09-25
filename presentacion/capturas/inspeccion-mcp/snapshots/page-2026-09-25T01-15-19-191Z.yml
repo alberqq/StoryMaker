@@ -1,0 +1,64 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e371]:
+      - generic [ref=e372]:
+        - navigation [ref=e373]:
+          - link "Índice" [ref=e374] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e376] [cursor=pointer]:
+          - generic [ref=e377]: A
+          - generic [ref=e378]: a
+      - heading "Capítulo 6. La batalla de Trafalgar" [level=1] [ref=e379]
+      - article [ref=e380]:
+        - paragraph [ref=e381]: Las campanas de la Iglesia de Santa María tocaron antes del amanecer del veintiuno de octubre. Ramón despertó con el sonido que vibraba en los cristales de la habitación, ese sonido que no era llamada a misa sino convocatoria de destino. Se levantó sin despertar a [NOMBRE_ANONIMIZADO] y caminó descalzo hacia la ventana que daba a la bahía. El puerto ya se movía. Antorchas iluminaban los muelles desde la oscuridad todavía densa, y en esa penumbra anterior al alba, podía ver figuras que corrían, que cargaban, que preparaban. Las velas de sus navíos —La Esperanza, La Rosa Dorada, La Santa Magdalena— estaban siendo desplegadas lentamente, como si alguien despertara los gigantes dormidos del agua.
+        - paragraph [ref=e382]: "Ramón bajó al puerto cuando el cielo comenzaba su transición entre el negro puro y el azul oscuro. El muelle estaba lleno de gente: marineros que conocía por nombre, oficiales de la Armada que daban órdenes, familias que habían venido a ver partir a los suyos. No había celebración en los rostros, sino una solemnidad que Ramón reconocía de otros momentos críticos de su vida, ese peso en el aire que precedía a las grandes transformaciones. Conocía algunos de los capitanes que comandaban sus embarcaciones, hombres probados en travesías atlánticas, hombres que sabían leer el agua como él mismo había aprendido a hacerlo. Ahora navegarían hacia una batalla, hacia un encuentro con los ingleses que dominaban el océano desde hacía años, hacia un destino que nadie en ese muelle podía medir completamente."
+        - paragraph [ref=e383]: Un joven marinero, no más que muchacho, se acercó a Ramón mientras observaba los preparativos. Era la edad de [NOMBRE_ANONIMIZADO], su hijo, aunque este muchacho llevaba ya el uniforme de la Armada.
+        - paragraph [ref=e384]: "\"¿Cree que ganaremos, señor?\" preguntó con la ingenuidad de quien aún cree que las batallas se ganan o se pierden según la voluntad."
+        - paragraph [ref=e385]: "Ramón respondió sin apartar la vista de los barcos: \"Ganaremos o aprenderemos. No hay otra opción en el agua.\""
+        - paragraph [ref=e386]: El muchacho asintió como si la respuesta tuviera sentido, aunque probablemente no era así. Se alejó luego, absorbido por las tareas que los oficiales le asignaban.
+        - paragraph [ref=e387]: "Ramón buscó a Gravina entre la multitud de uniformes. Lo encontró en el barco insignia, en la cubierta elevada donde podía dominar todo el movimiento del puerto con una sola mirada. Incluso desde la distancia, la autoridad de ese hombre era evidente. Llevaba los años del mando visible en la manera de estar de pie, en cómo los oficiales se aproximaban, esperaban, ejecutaban sus palabras. Gravina vio a Ramón en el muelle y levantó una mano en un gesto que era reconocimiento y despedida simultáneamente. Ramón correspondió con un movimiento similar, y en ese instante supo que el Almirante comprendía lo que significaba estar en tierra viendo partir a otros. La responsabilidad del mando era esa: ver partir a los hombres hacia el peligro mientras permanecías en tu puesto, esperando noticias que cambiarían todo."
+        - paragraph [ref=e388]: A medida que el alba llegaba con su luz definitiva, las velas de los navíos se hinchaban con el viento que soplaba desde el noreste. El espectáculo era hermoso de una manera que no era alegre sino necesaria, inevitable como la marea. Los barcos comenzaron a moverse, a alejarse lentamente de los muelles. Ramón vio cómo La Esperanza —su primer navío, la nave que había iniciado su fortuna— se deslizaba hacia aguas más profundas de la bahía. Detrás de ella, La Rosa Dorada y La Santa Magdalena seguían el movimiento con la precisión de una danza ejecutada mil veces. Mientras la flota se alejaba, Ramón sintió que una parte de su mundo se iba con ella, una parte que no podría recuperar, una parte que se enfrentaría a fuerzas que él comprendía solo por rumores y reportes de marineros que habían navegado estas aguas de peligro.
+        - paragraph [ref=e389]: Cuando los últimos navíos desaparecieron en el horizonte, más allá de la bocana de la bahía, Ramón permaneció en el muelle. Otros también se quedaban, mujeres principalmente, algunas llorando, otras inmóviles. Él no lloraba, pero sentía el peso de una impotencia tan absoluta que era casi un alivio. Había hecho lo que podía hacer. El resto era agua, viento y la determinación de hombres cuyas decisiones estaban ahora completamente fuera de su alcance.
+        - paragraph [ref=e390]: No fue hasta el atardecer cuando la primera noticia llegó. Un bote pequeño, casi destrozado, alcanzó el muelle con dificultad. Los hombres que lo tripulaban estaban mojados, exhaustos, algunos heridos. Ramón corrió hacia ellos con los otros que habían permanecido esperando.
+        - paragraph [ref=e391]: "\"¿Qué ha sucedido?\" preguntó, aunque algo en la expresión de aquellos marineros ya contaba una historia que no era la que la Armada había planeado."
+        - paragraph [ref=e392]: "Las palabras llegaron entrecortadas, casi sin coherencia: caos en el agua, barcos ingleses más numerosos de lo que se sabía, fuego por todas partes, el mar mismo parecía inflamarse. Algunos marineros hablaban de victoria, pero sus ojos desmentían sus palabras. Otros directamente hablaban de retirada, de naves que se hundían, de órdenes que llegaban demasiado tarde."
+        - paragraph [ref=e393]: "\"¿Gravina?\" preguntó Ramón bruscamente. \"¿Dónde está el Almirante? ¿Ha visto al Almirante?\""
+        - paragraph [ref=e394]: Hubo silencio. Varios marineros miraron hacia otro lado. Ramón repitió la pregunta, esta vez más fuerte.
+        - paragraph [ref=e395]: "Fue un marinero mayor, con sangre seca en la mejilla izquierda, quien finalmente respondió: \"El Almirante estaba en su barco hasta el último momento. Recibía órdenes hasta que fue imposible dar más órdenes. No sé si vive, señor. No sé si vive.\""
+        - paragraph [ref=e396]: "En esas palabras, Ramón comprendió toda la verdad que la Armada aún tardaba en admitir: era derrota. No una derrota parcial, no una retirada táctica, sino una transformación fundamental de lo que significaba ser España en el Atlántico. Los ingleses controlaban ahora el océano sin disputa. Sus rutas de comercio, sus barcos, su fortuna acumulada en doce años de precisión cartográfica, todo estaba ahora bajo la amenaza de una potencia naval que no respetaba límites ni tratados."
+        - paragraph [ref=e397]: Cuatro días después, cuando Ramón fue permitido ver a Gravina, encontró al Almirante en un lecho de enfermedad en una habitación oscura de la casa que lo alojaba. El hombre que había entrado en la asamblea de armadores irradiando autoridad ahora estaba inmóvil, cubierto de vendajes, la mitad del cuerpo aparentemente destruida por metralla o fuego.
+        - paragraph [ref=e398]: Gravina abrió los ojos cuando Ramón entró. Lo reconoció, y un intento de sonrisa cruzó su rostro, aunque el dolor pareció hacer abortar el gesto.
+        - paragraph [ref=e399]: Ramón comenzó a hablar de lo que la Armada decía oficialmente, palabras sobre honor y sacrificio, sobre que la batalla había sido enfrentada con valor, sobre que España seguía siendo grande.
+        - paragraph [ref=e400]: Gravina levantó una mano lentamente, requiriendo un esfuerzo que hizo visible el precio de sus heridas.
+        - paragraph [ref=e401]: "\"Los barcos se fueron,\" susurró el Almirante, su voz apenas audible. \"Supimos lo que costaba. Cádiz debe aprender a vivir sin ellos ahora. Eso es lo que nos queda para aprender.\""
+        - paragraph [ref=e402]: Ramón tomó la mano de Gravina, esa mano que había señalado rutas en mapas, que había dado órdenes a flotas, que ahora estaba tan frágil como la de un anciano al término de su vida.
+        - paragraph [ref=e403]: "Ambos entendieron en ese silencio lo que ninguna palabra oficial jamás admitiría: la guerra era larga, más larga de lo que cualquiera había previsto, y el costo era generacional. Los hombres envejecían en un instante. Las ciudades debían aprender a vivir con la pérdida. Y quienes permanecían en tierra, como Ramón, descubrían que la verdadera batalla ocurría en el silencio después de que los barcos desaparecían, en esa espera imposible de noticias que cambiarían todo para siempre."
+      - navigation "Navegación entre capítulos" [ref=e404]:
+        - link "← Capítulo anterior" [ref=e406] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/5
+        - link "Índice" [ref=e407] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e409] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/7
+      - generic [ref=e410]:
+        - heading "Pedir un cambio" [level=2] [ref=e411]
+        - generic [ref=e412]:
+          - paragraph [ref=e413]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e414]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e415]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e416]

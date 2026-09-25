@@ -1,0 +1,56 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e674]:
+      - generic [ref=e675]:
+        - navigation [ref=e676]:
+          - link "Índice" [ref=e677] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e679] [cursor=pointer]:
+          - generic [ref=e680]: A
+          - generic [ref=e681]: a
+      - heading "Capítulo 1. La herencia del abuelo" [level=1] [ref=e682]
+      - article [ref=e683]:
+        - paragraph [ref=e684]: La mano del abuelo era áspera y cálida, curtida por décadas de sal marina. Ramón, apenas de ocho años, sintió cómo lo guiaba entre los mástiles del muelle de Santa María, esquivando marineros que descargaban barriles y bultos de tela. El abuelo caminaba sin prisa, como quien no tuviera prisa de llegar a ningún lado y al mismo tiempo avanzara hacia el único destino que importaba. El niño debía apresurarse para seguir el ritmo, sus pies desnudos golpeando contra las tablas mojadas del puerto.
+        - paragraph [ref=e685]: Fue cuando vieron la txalupa cuando Ramón sintió que la garganta se le cerraba. La embarcación reposaba en el agua con una serenidad que al niño le pareció amenazante. Tenía poco más de diez metros de largo, el casco pintado en un rojo oscuro que parecía absorber la luz del mediodía. Las velas estaban recogidas, hechos un nudo pulcro junto al mástil, pero incluso dormidas, hechas de lino del color de la piel vieja, destilaban una autoridad que hizo que Ramón apretara la mano de su abuelo. El agua se movía alrededor del casco con un sonido que no era del todo agua, sino algo más antiguo, como si la bahía respirara bajo la tela del cielo azul.
+        - paragraph [ref=e686]: "El abuelo se detuvo al borde del muelle. Ramón se inclinó hacia el agua y vio reflejarse su propio rostro allí abajo, pequeño, asustado. La bahía era inmensa alrededor de Cádiz, un círculo de agua que abrazaba la ciudad y la dejaba sola, suspendida. En el reflejo, el niño vio la fragilidad de aquel mundo: solo piedra y madera, y debajo, el agua. Tanto agua. Agua que se movía como si tuviera voluntad propia."
+        - paragraph [ref=e687]: —No tengas miedo —dijo el abuelo, aunque Ramón no había hablado. Quizás el miedo era algo tan evidente que no necesitaba palabras. Lo alzó con naturalidad, como quien carga con un saco de harina, y lo puso en el banco de remos, en el centro de la txalupa. La madera crujió bajo el peso combinado, y ese sonido hizo que Ramón temblara. Pero no retrocedió. Algo en la forma en que el abuelo lo miraba —con paciencia, sin burlarse, como si ya supiera que el niño sería capaz de esto— lo mantuvo en su lugar.
+        - paragraph [ref=e688]: —Esto es la vela —dijo el abuelo, tocando el lino rígido, frío casi, como la piel de un reptil. El niño estiró la mano y lo tocó también. La sorpresa fue tan profunda que olvidó por un momento que tenía miedo. El lino no era suave como esperaba, sino áspero, con nudos de cuerda cosida a los lados. Había autoridad en esa aspereza, historia de tormentas viajadas y mercancías transportadas. El abuelo señaló la proa, la popa, los obenques. Ramón no recordaría los nombres después, o los recordaría mal, pero recordaría las manos del abuelo en el aire, trazando los límites invisibles de la pequeña nave, como un maestro que enseña geografía de un mundo en miniatura.
+        - paragraph [ref=e689]: —Abuelo —dijo Ramón, porque la pregunta le ardía en la garganta—, ¿el agua es peligrosa?
+        - paragraph [ref=e690]: El abuelo sonrió, la forma lenta de sonreír de quien conoce una verdad que no puede ser dicha de prisa. —El agua no es peligrosa, muchacho. Es honesta. Respeta a quien la respeta. Si escuchas bien, si abres los oídos a su lenguaje, aprenderás a hablar con el agua. —Hizo una pausa, mirando hacia el horizonte de la bahía—. Ese es el legado de nuestra familia. No es oro ni tierras. Es ese lenguaje.
+        - paragraph [ref=e691]: Ramón guardó esas palabras dentro de sí, ardientes como ascuas.
+        - paragraph [ref=e692]: A la mañana siguiente, el abuelo izo la vela lentamente, cada movimiento deliberado, cada gesto una lección. Ramón observaba desde el banco de remos, los ojos siguiendo cada paso, preguntándose cómo algo tan rígido como el lino podía moverse. Cuando el agua comenzó a llenar la vela, la txalupa se inclinó levemente, y el niño gritó, asustado de que se volcaran, agarrándose a todo lo que tenía al alcance. Pero las manos del abuelo lo mantuvieron firme, un brazo de bronce alrededor de su cintura.
+        - paragraph [ref=e693]: —Mira —dijo—. El agua tiene caminos, como las calles de Cádiz. Aquí, en este lugar, ella quiere llevarnos hacia el norte. Si aprendes a leerla, a sentir cómo se mueve bajo el casco, siempre sabrás dónde estás.
+        - paragraph [ref=e694]: Y luego, tan insensiblemente que Ramón no sabría decir cuándo cambió, el miedo se transformó en maravilla. El movimiento de la txalupa era suave, casi hipnótico, como el mecer de un astillero invisible. El agua se convertía en movimiento, en dirección, en propósito. El niño extendió las manos, sintiendo cómo el viento se las golpeaba, y por primera vez comprendió que el miedo y el asombro eran la misma cosa vista desde ángulos distintos.
+        - paragraph [ref=e695]: Cuando regresaron al muelle, Ramón entró corriendo en la casa, cubierto de sal marina de pies a cabeza, los ojos brillando como dos piezas de ámbar recién pulidas. Su madre lo vio y el miedo cruzó su rostro como una sombra.
+        - paragraph [ref=e696]: —¿Qué ha pasado? ¿Estabas en el agua?
+        - paragraph [ref=e697]: —Sí, mamá. El agua. Abuelo dice que tiene caminos, como las calles. Vimos peces, mamá, peces que saltaban como si quisieran volar. El abuelo dice que si escucho bien, puedo hablar con el agua.
+        - paragraph [ref=e698]: Su madre miró al abuelo, que entraba detrás con la calma de quien acababa de navegar el mar interior de la bahía. —¿Es seguro? —preguntó ella, la pregunta que todas las madres hacen.
+        - paragraph [ref=e699]: —Más seguro que cualquier otra cosa en esta vida —respondió el abuelo—. El mar educó a mi padre, a su padre antes que a él, y a todos nuestros antepasados. No hay oficio más honesto ni más enseñante. Ramón estará protegido.
+        - paragraph [ref=e700]: "Esa noche, durante la cena, el niño se quedó dormido en la silla, la cabeza apoyada en los brazos, mientras susurraba algo sobre caminos invisibles y el lenguaje del agua. Su madre lo llevó a la cama, besó su frente salada, y supo que algo había cambiado en el mundo. Su hijo ya no era completamente suyo. Era también del mar, como todos los hombres de su familia habían sido. Era, de ahora en adelante, heredero de una promesa que no era de oro sino de agua, de un lenguaje que solo podía aprenderse con el tiempo, las mareas y la paciencia de un abuelo que transmitía lo único verdaderamente valioso: la sabiduría de conocer, en lugar del miedo, la honestidad del mundo."
+      - navigation "Navegación entre capítulos" [ref=e701]:
+        - link "Índice" [ref=e702] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e704] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/2
+      - generic [ref=e705]:
+        - heading "Pedir un cambio" [level=2] [ref=e706]
+        - generic [ref=e707]:
+          - paragraph [ref=e708]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e709]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e710]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e711]

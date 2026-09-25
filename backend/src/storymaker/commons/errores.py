@@ -87,3 +87,11 @@ class NadaQueReintentar(ErrorDeStoryMaker):
     espera en un gate o aún no ha sellado el corpus la sacaría del camino que el grafo
     garantiza.
     """
+
+
+class NadaQueRegenerar(ErrorDeStoryMaker):
+    """Aprobar una petición de cambio sobre una novela que no está publicada y en reposo.
+
+    La Fase 6 entra desde `Idle`: sobre una novela a medio escribir, o con otro gate
+    esperando, no hay versión publicada que regenerar.
+    """

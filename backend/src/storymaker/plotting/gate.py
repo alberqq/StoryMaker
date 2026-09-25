@@ -25,7 +25,8 @@ from __future__ import annotations
 
 import json
 import math
-import shutil
+import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 import aiosqlite
@@ -34,11 +35,18 @@ from storymaker.commons.config import Defaults
 from storymaker.commons.db.repos import arnes, canon, intake, plan
 from storymaker.commons.embeddings.modelo import Vectorizador
 from storymaker.commons.formal import evaluacion
+from storymaker.commons.formal.cronologia import verificar_cronologia
 from storymaker.commons.formal.generador import (
+    DIA,
     Evento,
     NovelaLean,
     Persona,
     a_momento,
+    leer_fecha,
+    nacimiento_de,
+)
+from storymaker.commons.formal.generador import (
+    NACIMIENTO_DESCONOCIDO as NACIMIENTO_DESCONOCIDO,
 )
 from storymaker.commons.validation.escaleta import arco_anclado, cobertura_anclada
 from storymaker.commons.validation.modelos import (
@@ -47,6 +55,7 @@ from storymaker.commons.validation.modelos import (
     Incidencia,
     Severidad,
 )
+from storymaker.commons.validation.puras import normalizar
 
 
 async def construir_revision(db: aiosqlite.Connection) -> EscaletaEnRevision:
@@ -113,7 +122,7 @@ async def cronologia_de_la_escaleta(db: aiosqlite.Connection) -> NovelaLean:
                 Persona(
                     id=int(fila["id"]),
                     nombre=str(fila["nombre"]),
-                    nacimiento=_nacimiento(fila["fecha_nacimiento"]),
+                    nacimiento=nacimiento_de(fila["fecha_nacimiento"]),
                     muerte=a_momento(fila["fecha_muerte"]),
                 )
             )
@@ -130,7 +139,8 @@ async def cronologia_de_la_escaleta(db: aiosqlite.Connection) -> NovelaLean:
         escenas = list(await cursor.fetchall())
 
     for fila in escenas:
-        momento = a_momento(fila["fecha_narrativa"])
+        fecha = leer_fecha(fila["fecha_narrativa"])
+        momento = fecha.momento
         if momento is None:
             # Una escena sin fecha no se puede juzgar temporalmente, y no tenerla no es un
             # error: el arquitecto puede dejarla al aire. Lean no opina sobre lo que no sabe.
@@ -145,7 +155,10 @@ async def cronologia_de_la_escaleta(db: aiosqlite.Connection) -> NovelaLean:
                 id=int(fila["id"]),
                 clave=f"cap{fila['numero']}-esc{fila['orden']}",
                 momento=momento,
-                lugar=int(fila["escenario_id"] or 0),
+                # Solo lo fechado al día puede estar «en otro sitio el mismo día»: una
+                # escena de «1856» no ocurre el 1 de enero. Sin día, el escenario pasa a
+                # desconocido, que I3 no cuenta.
+                lugar=int(fila["escenario_id"] or 0) if fecha.precision == DIA else 0,
                 participantes=participantes,
                 objetos=(),
                 origen="narrativo",
@@ -153,16 +166,6 @@ async def cronologia_de_la_escaleta(db: aiosqlite.Connection) -> NovelaLean:
         )
 
     return NovelaLean(personas=tuple(personas), objetos=(), eventos=tuple(eventos))
-
-
-#: El nacimiento de quien no tiene fecha: tan atrás que ninguna escena cae antes. Con `0`
-#: —el 1 de enero de 1800— toda escena del siglo XVI ponía a sus personajes antes de nacer.
-NACIMIENTO_DESCONOCIDO = -(10**7)
-
-
-def _nacimiento(fecha: object) -> int:
-    momento = a_momento(str(fecha)) if fecha else None
-    return NACIMIENTO_DESCONOCIDO if momento is None else momento
 
 
 @dataclass(frozen=True)
@@ -216,9 +219,14 @@ VALIDADORES_DE_LA_TRAMA = (
     "arco_anclado",
     "escenas_por_capitulo",
     "anclaje_resuelto",
+    "anclaje_por_parecido",
+    "invencion_sobre_historico",
     evaluacion.VALIDADOR,
     "lean_cronologia",
 )
+
+#: Los que escribe el volcado de la escaleta y no la revisión, que por eso no los retira.
+ESCRITOS_POR_EL_VOLCADO = ("anclaje_resuelto", "anclaje_por_parecido")
 
 
 def _coseno(a: list[float], b: list[float]) -> float:
@@ -235,6 +243,11 @@ async def reparar_cobertura(
     paquete del escritor con su escena, que es donde el escritor mira qué tiene que usar.
     Que la escena sea la acertada lo decide un parecido de embeddings y no el arquitecto,
     así que se dice —cuál y dónde— para que el Autor lo mueva si no le convence.
+
+    **Antes del parecido, la fecha** (trama-rehacible §3.2). Si el elemento lleva fecha —el
+    evento ancla lleva la del encargo—, solo compiten las escenas de su año, y de ellas las
+    de su mes si las hay. El parecido de embeddings no sabe de tiempo: dejaba la
+    inauguración de octubre de 1919 en una escena de 1917 porque hablaba del Metro.
     """
     sueltos = await intake.obligatorios_sin_anclar(db)
     escenas = await plan.escenas_con_texto(db)
@@ -243,11 +256,14 @@ async def reparar_cobertura(
 
     textos_de_escena = [str(e["texto"]).strip() or f"escena {e['orden']}" for e in escenas]
     vectores_de_escena = vectorizador.vectorizar(textos_de_escena)
+    evento_ancla = await _evento_ancla_con_fecha(db)
     avisos: list[Incidencia] = []
     for dato in sueltos:
         valor = _valor(dato["valor_json"])
+        referencia = evento_ancla if normalizar(valor).startswith("evento ancla") else valor
+        candidatas = escenas_de_su_fecha(referencia, [e["fecha_narrativa"] for e in escenas])
         (vector,) = vectorizador.vectorizar([valor])
-        indice = max(range(len(escenas)), key=lambda i: _coseno(vector, vectores_de_escena[i]))
+        indice = max(candidatas, key=lambda i: _coseno(vector, vectores_de_escena[i]))
         escena = escenas[indice]
         await plan.anclar_dato(db, int(escena["id"]), int(dato["id"]))
         avisos.append(
@@ -262,6 +278,192 @@ async def reparar_cobertura(
             )
         )
     return avisos
+
+
+_ANIO = re.compile(r"\b(1[0-9]{3}|20[0-9]{2})\b")
+_MES_ISO = re.compile(r"\b\d{4}-(\d{2})\b")
+_MESES = (
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+)  # fmt: skip
+
+
+def _anios_y_meses(texto: str | None) -> tuple[set[int], set[int]]:
+    """Los años y los meses que nombra un texto, en cifra o en castellano."""
+    if not texto:
+        return set(), set()
+    anios = {int(a) for a in _ANIO.findall(texto)}
+    palabras = set(normalizar(texto).split())
+    meses = {i + 1 for i, mes in enumerate(_MESES) if mes in palabras}
+    meses |= {int(m) for m in _MES_ISO.findall(texto) if 1 <= int(m) <= 12}
+    return anios, meses
+
+
+def escenas_de_su_fecha(referencia: str, fechas: list[object]) -> list[int]:
+    """Los índices de las escenas que casan con la fecha de la referencia.
+
+    Sin fecha en la referencia, o sin ninguna escena de su año, compiten todas: la fecha
+    estrecha la búsqueda, nunca la deja sin candidatas.
+    """
+    anios, meses = _anios_y_meses(referencia)
+    todas = list(range(len(fechas)))
+    if not anios:
+        return todas
+
+    def sintonia(i: int) -> int:
+        suyos, sus_meses = _anios_y_meses(str(fechas[i] or ""))
+        if not anios & suyos:
+            return 0
+        return 2 + (1 if meses & sus_meses else 0)
+
+    mejor = max(sintonia(i) for i in todas)
+    return [i for i in todas if sintonia(i) == mejor] if mejor else todas
+
+
+async def _brief_guardado(db: aiosqlite.Connection) -> dict[str, object]:
+    """La fotografía del encargo, como diccionario. Vacía si no hay o no se lee."""
+    async with db.execute("SELECT json FROM intake_brief ORDER BY id DESC LIMIT 1") as cursor:
+        fila = await cursor.fetchone()
+    if fila is None:
+        return {}
+    try:
+        cargado = json.loads(str(fila["json"]))
+    except json.JSONDecodeError:
+        return {}
+    return cargado if isinstance(cargado, dict) else {}
+
+
+async def _evento_ancla_con_fecha(db: aiosqlite.Connection) -> str:
+    """El evento ancla del encargo con su fecha, que es contra lo que se busca su escena."""
+    brief = await _brief_guardado(db)
+    return " ".join(str(brief.get(c) or "") for c in ("evento_ancla", "fecha_evento_ancla"))
+
+
+async def invenciones_sobre_historicos(
+    db: aiosqlite.Connection, hecho_ids: Iterable[int] | None = None
+) -> list[Incidencia]:
+    """Un aviso por hecho inventado que nombra a un personaje histórico (trama-rehacible §4.4).
+
+    La invención autorizada no tiene cita que verificar, y por eso nadie la comprobaba. Pero
+    lo que se inventa para un hueco es ambiente, no biografía: un hecho que convierte a un
+    ingeniero real en jefe de una oficina donde nunca trabajó llegaba al canon sin que nada
+    lo parase. Se detecta por el nombre —completo o por su último apellido— y **avisa**: el
+    Autor lo corrige con la edición directa del hecho, o rehace. No hace falta un modelo
+    para saber que una frase sin fuente habla de alguien real.
+    """
+    historicos = await _nombres_historicos(db)
+    if not historicos:
+        return []
+    async with db.execute(
+        "SELECT id, enunciado FROM mundo_hecho WHERE origen = 'invencion_autorizada' ORDER BY id"
+    ) as cursor:
+        filas = list(await cursor.fetchall())
+    elegidos = None if hecho_ids is None else set(hecho_ids)
+    avisos: list[Incidencia] = []
+    for fila in filas:
+        if elegidos is not None and int(fila["id"]) not in elegidos:
+            continue
+        enunciado = str(fila["enunciado"])
+        for nombre in historicos:
+            if not nombra_a(enunciado, nombre):
+                continue
+            avisos.append(
+                Incidencia(
+                    validador="invencion_sobre_historico",
+                    severidad=Severidad.AVISO,
+                    mensaje=(
+                        f"El hecho inventado #{fila['id']} dice algo de «{nombre}», que es un "
+                        f"personaje historico, sin fuente que lo respalde: «{enunciado}». "
+                        f"Si no es cierto, corrigelo antes de sellar."
+                    ),
+                    ubicacion=f"hecho #{fila['id']}",
+                )
+            )
+    return avisos
+
+
+async def recalcular_invenciones(db: aiosqlite.Connection) -> None:
+    """Vuelve a mirar lo inventado tras una edición directa del Autor en el gate.
+
+    La revisión no se repite al editar, y sin esto el aviso de un hecho ya corregido —o de
+    un personaje al que el Autor le cambió el nombre— seguiría en la pantalla diciendo lo
+    que ya no es verdad.
+    """
+    await arnes.retirar_incidencias_sin_capitulo(db, "invencion_sobre_historico")
+    for aviso in await invenciones_sobre_historicos(db):
+        await arnes.registrar_incidencia(
+            db,
+            validador=aviso.validador,
+            severidad=aviso.severidad.value,
+            mensaje=aviso.mensaje,
+            ubicacion=aviso.ubicacion,
+        )
+
+
+#: Palabras que, delante de un nombre, lo convierten en el de un lugar o una institución:
+#: el Canal de Isabel II no es la reina, ni la calle de Gravina el almirante.
+DELANTE_DE_UN_LUGAR = frozenset(
+    {
+        "avenida", "barrio", "cafe", "calle", "canal", "colegio", "compania", "convento",
+        "estacion", "fuente", "fundacion", "glorieta", "hospital", "hotel", "iglesia",
+        "instituto", "museo", "palacio", "parque", "paseo", "plaza", "premio", "puente",
+        "puerta", "puerto", "ronda", "teatro", "universidad",
+    }
+)  # fmt: skip
+_ENLACES = frozenset({"de", "del", "la", "las", "el", "los"})
+_PALABRA = re.compile(r"\w+")
+
+
+def nombra_a(texto: str, nombre: str) -> bool:
+    """Si el texto nombra a esa persona, y no a un sitio que lleva su nombre.
+
+    Cuenta el nombre entero, o su último apellido si tiene cinco letras o más **y va con
+    mayúscula**: «Valle dirigió la obra» nombra a Lucio del Valle; «el valle del Lozoya», no.
+    Y ninguna de las dos formas cuenta detrás de una palabra de lugar —«Canal», «calle»,
+    «plaza»…—, saltándose los «de», «del» y artículos de en medio.
+    """
+    originales = _PALABRA.findall(texto)
+    palabras = [normalizar(p) for p in originales]
+    buscado = normalizar(nombre).split()
+    if not buscado:
+        return False
+    ultimo = buscado[-1]
+    for i in range(len(palabras)):
+        entero = palabras[i : i + len(buscado)] == buscado
+        apellido = (
+            len(buscado) > 1
+            and len(ultimo) >= 5
+            and palabras[i] == ultimo
+            and originales[i][:1].isupper()
+        )
+        if (entero or apellido) and not _detras_de_un_lugar(palabras, i):
+            return True
+    return False
+
+
+def _detras_de_un_lugar(palabras: list[str], i: int) -> bool:
+    j = i - 1
+    while j >= 0 and palabras[j] in _ENLACES:
+        j -= 1
+    return j >= 0 and palabras[j] in DELANTE_DE_UN_LUGAR
+
+
+async def _nombres_historicos(db: aiosqlite.Connection) -> list[str]:
+    """Los personajes históricos del canon y del encargo, sin el homenajeado."""
+    homenajeado = await canon.homenajeado(db)
+    excluido = str(homenajeado["nombre"]) if homenajeado is not None else None
+    async with db.execute(
+        "SELECT nombre FROM canon_personaje WHERE tipo LIKE 'historico%' ORDER BY id"
+    ) as cursor:
+        nombres = [str(f["nombre"]) for f in await cursor.fetchall()]
+    personajes = (await _brief_guardado(db)).get("personajes_historicos") or []
+    if isinstance(personajes, list):
+        nombres += [str(p["nombre"]) for p in personajes if isinstance(p, dict) and p.get("nombre")]
+    vistos: list[str] = []
+    for nombre in nombres:
+        if nombre != excluido and nombre not in vistos:
+            vistos.append(nombre)
+    return vistos
 
 
 def _valor(valor_json: object) -> str:
@@ -279,30 +481,42 @@ async def comprobar_cronologia(db: aiosqlite.Connection) -> list[Incidencia]:
 
     Con Lean, sus incidencias bajan a aviso: aquí no hay capítulo que devolver al editor,
     solo una escaleta que el Autor decide si rehacer. Un fallo de Lean —no compila, no
-    arranca— tampoco detiene nada: se cae a la evaluación en Python, que mira lo mismo.
+    arranca— tampoco detiene nada: se cae a la evaluación en Python, que mira lo mismo. Es
+    el mismo cálculo que el de Writing y el de la publicación; solo cambia la severidad.
     """
-    novela = await cronologia_de_la_escaleta(db)
-    if not novela.eventos:
-        return []
-    if shutil.which("lake") is not None:
-        from storymaker.commons.formal import runner
+    return await verificar_cronologia(
+        await cronologia_de_la_escaleta(db), bloquea=False, validador=evaluacion.VALIDADOR
+    )
 
-        try:
-            veredicto = await runner.verificar(novela)
-        except Exception:  # cualquier avería de Lean cae a la evaluación en Python
-            veredicto = None
-        if veredicto is not None:
-            return [
-                Incidencia(
-                    validador=i.validador,
-                    severidad=Severidad.AVISO,
-                    mensaje=i.mensaje,
-                    ubicacion=i.ubicacion,
-                    propuesta=i.propuesta,
-                )
-                for i in veredicto.incidencias
-            ]
-    return list(evaluacion.evaluar(novela).incidencias)
+
+#: Los validadores de la revisión que puntúan en Langfuse. Uno por nombre de §11a y §11c.
+PUNTUADOS_EN_LA_TRAMA = ("cobertura_anclada", "arco_anclado", evaluacion.VALIDADOR)
+
+
+async def puntuar(db: aiosqlite.Connection, incidencias: Iterable[Incidencia]) -> None:
+    """Un *score* por validador de la revisión, también cuando pasa (ver `registrar_veredicto`).
+
+    Fuera de una invocación —la interfaz recalcula la revisión tras una edición— no hay
+    observador, y el *score* se queda solo en la base.
+    """
+    from storymaker.commons.graph.dependencias import SinDependencias, actuales
+    from storymaker.commons.obs.scores import registrar_veredicto
+    from storymaker.commons.obs.trazas import ObservadorNulo
+
+    try:
+        observador = actuales().observador
+    except SinDependencias:
+        observador = ObservadorNulo()
+    lista = list(incidencias)
+    for validador in PUNTUADOS_EN_LA_TRAMA:
+        await registrar_veredicto(
+            db,
+            observador,
+            validador=validador,
+            incidencias=[i for i in lista if i.validador == validador],
+            objeto_tipo="escaleta",
+            objeto_id=1,
+        )
 
 
 async def revisar(db: aiosqlite.Connection, vectorizador: Vectorizador) -> PuertaDePlotting:
@@ -310,19 +524,22 @@ async def revisar(db: aiosqlite.Connection, vectorizador: Vectorizador) -> Puert
 
     Guardarlo es lo que permite que lo lean tres sitios distintos sin volver a calcularlo:
     el aviso del gate, la pantalla del gate y el prompt del arquitecto si el Autor rehace.
-    `anclaje_resuelto` no se retira aquí porque lo escribe el volcado, justo antes.
+    `anclaje_resuelto` y `anclaje_por_parecido` no se retiran aquí porque los escribe el
+    volcado, justo antes.
     """
     for validador in VALIDADORES_DE_LA_TRAMA:
-        if validador != "anclaje_resuelto":
+        if validador not in ESCRITOS_POR_EL_VOLCADO:
             await arnes.retirar_incidencias_sin_capitulo(db, validador)
 
     reparadas = await reparar_cobertura(db, vectorizador)
     puerta = await comprobar(db)
     cronologia = await comprobar_cronologia(db)
+    inventadas = await invenciones_sobre_historicos(db)
     nuevas = [
         *reparadas,
-        *(i for i in puerta.incidencias if i.validador != "anclaje_resuelto"),
+        *(i for i in puerta.incidencias if i.validador not in ESCRITOS_POR_EL_VOLCADO),
         *cronologia,
+        *inventadas,
     ]
     for incidencia in nuevas:
         await arnes.registrar_incidencia(
@@ -333,7 +550,8 @@ async def revisar(db: aiosqlite.Connection, vectorizador: Vectorizador) -> Puert
             ubicacion=incidencia.ubicacion,
             propuesta=incidencia.propuesta,
         )
-    return PuertaDePlotting((*puerta.incidencias, *reparadas, *cronologia))
+    await puntuar(db, (*puerta.incidencias, *cronologia))
+    return PuertaDePlotting((*puerta.incidencias, *reparadas, *cronologia, *inventadas))
 
 
 async def incidencias_guardadas(db: aiosqlite.Connection) -> list[Incidencia]:

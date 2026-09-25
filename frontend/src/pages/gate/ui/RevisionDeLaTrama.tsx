@@ -7,6 +7,8 @@ const ETIQUETAS: Record<string, string> = {
   arco_anclado: 'Arco',
   escenas_por_capitulo: 'Escenas por capítulo',
   anclaje_resuelto: 'Anclaje sin resolver',
+  anclaje_por_parecido: 'Anclado por parecido',
+  invencion_sobre_historico: 'Invención sobre un histórico',
   cronologia_escaleta: 'Cronología',
   lean_cronologia: 'Cronología',
 }

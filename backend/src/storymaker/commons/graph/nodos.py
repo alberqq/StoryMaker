@@ -72,6 +72,16 @@ GATES: Final[dict[str, str]] = {
     "AwaitApproval4": "writing",
 }
 
+#: Cómo se llama cada fase fuera del código: en la interfaz y en los avisos.
+NOMBRE_DE_FASE: Final[dict[str, str]] = {
+    "intake": "Encargo",
+    "investigation": "Investigación",
+    "plotting": "Trama",
+    "writing": "Escritura",
+    "publication": "Publicación",
+    "regeneration": "Regeneración",
+}
+
 #: La fase de cada nodo, con los valores del `CHECK` de `fase_run.fase`. Es lo que lee el
 #: envoltorio de contabilidad para decidir cuándo empieza una `fase_run` nueva. Los cuatro
 #: gates y los tres nodos de reposo o término no están: **heredan la fila abierta**. Un

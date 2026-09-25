@@ -55,9 +55,16 @@ def rubrica(valor: int = 8) -> SalidaJuez:
 
 
 class TestJuez:
-    def test_la_rubrica_son_siete_criterios(self) -> None:
-        assert len(Criterio) == 7
+    def test_la_rubrica_son_ocho_criterios(self) -> None:
+        assert len(Criterio) == 8
+        assert Criterio.TONO in Criterio
         assert rubrica().completa
+
+    def test_el_fichero_de_rubrica_y_el_esquema_dicen_lo_mismo(self) -> None:
+        """El juez y la revision humana puntuan desde el fichero: tiene que ser el esquema."""
+        from storymaker.publication.revision_humana import criterios
+
+        assert set(criterios()) == {c.value for c in Criterio}
 
     def test_no_tiene_donde_devolver_texto(self) -> None:
         """Si pudiera editar, el mismo agente optimizaria la metrica que produce.
@@ -97,7 +104,7 @@ class TestRenderVisual:
             db, numero=1, capitulo_version_ids=[novela.version_capitulo_1]
         )
         lectura = await render.construir_lectura(db, version)
-        assert render.render_visual(lectura) == []
+        assert await render.render_visual(lectura) == []
 
     async def test_una_version_sin_capitulos_no_se_publica(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba
@@ -105,7 +112,7 @@ class TestRenderVisual:
         """G5 no admite excepcion: el render se juzga antes de confirmar."""
         version = await texto.publicar_version(db, numero=1, capitulo_version_ids=[])
         lectura = await render.construir_lectura(db, version)
-        incidencias = render.render_visual(lectura)
+        incidencias = await render.render_visual(lectura)
         assert incidencias
         assert all(i.bloquea for i in incidencias)
 
@@ -123,7 +130,7 @@ class TestRenderVisual:
             capitulos=lectura.capitulos,
             personajes=lectura.personajes,
         )
-        assert any("navegable" in i.mensaje for i in render.render_visual(roto))
+        assert any("navegable" in i.mensaje for i in await render.render_visual(roto))
 
     async def test_la_lectura_sale_del_manifiesto_y_no_de_los_aprobados(
         self, db: aiosqlite.Connection, novela: NovelaDePrueba

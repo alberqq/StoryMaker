@@ -24,8 +24,10 @@ from storymaker.commons.graph.aristas import (
     tras_checkpoint,
     tras_espera,
     tras_extract,
+    tras_idle,
     tras_judge,
     tras_plan,
+    tras_publish,
     tras_validate,
 )
 from storymaker.commons.graph.contabilidad import contabilizado
@@ -126,7 +128,6 @@ def construir(checkpointer: Any = None) -> Any:
         ("WriteChapter", "Validate"),
         ("Repair", "Validate"),
         ("ApproveChapter", "Checkpoint"),
-        ("PublishVersion", "Idle"),
         ("RequestChange", "Invalidate"),
         ("Invalidate", "RegenerateAffected"),
         ("RegenerateAffected", "Validate"),
@@ -145,6 +146,9 @@ def construir(checkpointer: Any = None) -> Any:
         "Checkpoint", tras_checkpoint, ["WriteChapter", "AwaitApproval4"]
     )
     grafo.add_conditional_edges("Judge", tras_judge, ["PublishVersion", "AwaitApproval4", "Fail"])
+    grafo.add_conditional_edges(
+        "PublishVersion", tras_publish, ["Idle", "AwaitApproval4", "Fail"]
+    )
 
     # Los cuatro gates. En interactivo la invocación no llega aquí: `interrupt()` la corta
     # antes y el proceso vuelve. En modo batch el nodo resuelve por «aprobar» y la arista se
@@ -158,9 +162,11 @@ def construir(checkpointer: Any = None) -> Any:
     ):
         grafo.add_conditional_edges(gate, tras_espera, destinos)
 
-    # `Idle` no es un final sino un reposo: de ahí salen la petición de cambio y la
-    # ramificación, y las dos entran como **invocación nueva**, no como arista.
-    for terminal in (*TERMINALES, "Idle"):
+    # `Idle` no es un final sino un reposo. La ramificación copia el fichero y no pasa por
+    # aquí; la petición de cambio entra como **invocación nueva** que `regenerar` escribe
+    # en el checkpoint como salida de `Idle`, y este router la lleva a `RequestChange`.
+    grafo.add_conditional_edges("Idle", tras_idle, ["RequestChange", END])
+    for terminal in TERMINALES:
         grafo.add_edge(terminal, END)
 
     return grafo.compile(checkpointer=checkpointer)

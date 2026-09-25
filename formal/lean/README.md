@@ -9,7 +9,7 @@ No verifica el arnés —eso es [`formal/tla/`](../tla/)— sino su producto. So
 | Fichero | Qué es | Quién lo escribe |
 |---|---|---|
 | [`Cronologia/Basico.lean`](Cronologia/Basico.lean) | El modelo y los cuatro invariantes | A mano, una vez |
-| [`Cronologia/Generado.lean`](Cronologia/Generado.lean) | Los datos de **una** novela | El generador, en cada invocación |
+| [`Cronologia/Generado.lean`](Cronologia/Generado.lean) | Los datos de **una** novela. El del repositorio es un ejemplo | El generador, en cada verificación, sobre una copia temporal del proyecto |
 | [`Verificar.lean`](Verificar.lean) | El ejecutable que el arnés llama | A mano |
 
 **El generador emite datos y nada más.** Si emitiera también los teoremas, cada novela traería su propia definición de «coherente» y la palabra dejaría de significar nada: se podría hacer pasar cualquier cosa generando el invariante que le convenga. Generando solo datos, lo que se verifica es siempre lo mismo contra material distinto.
@@ -25,7 +25,7 @@ lake exe verificar        # 0 = coherente · 1 = incoherente, con los eventos cu
 
 Si sale 1, la versión **no se publica** y el fallo vuelve al editor con los eventos concretos. Es la puerta G5, que no admite excepción.
 
-> **Estado en este entorno.** No construido. No hay `lake` ni `elan` en la máquina (`lake` → *command not found*), así que el proyecto está escrito pero **no compilado**. La garantía es de clase **A por inspección**, no por demostración. Lo dice fila por fila [`docs/requirements-audit.md`](../../docs/requirements-audit.md) (LEAN-01 a LEAN-04).
+> **Estado en este entorno.** Construido y en uso. Con elan y el toolchain que fija `lean-toolchain` (v4.15.0), `lake build` compila los diez objetivos y `lake exe verificar` sale con 1 sobre el ejemplo del repositorio, que viola tres invariantes a propósito. Con `lake` en el PATH el arnés verifica con Lean en los tres puntos de §11c de la arquitectura; sin él, con la misma evaluación en Python.
 
 ## Los cuatro invariantes
 
@@ -46,21 +46,35 @@ Queda escrito aquí porque una limitación que no se declara se lee como una gar
 
 ## El caso que solo Lean ve
 
-El requisito pide «un caso real detectado solo por Lean, **o** su justificación». Como el arnés no ha generado ninguna novela todavía, lo que sigue es la justificación, construida sobre el brief [`evals/briefs/03-incoherencia-temporal.yaml`](../../evals/briefs/03-incoherencia-temporal.yaml) y volcada en `Generado.lean` para que el ejecutable tenga material.
+### El caso real: `metro`
 
-**El caso.** El brief pide que aparezca Federico Gravina, que murió el 9 de marzo de 1806, y fija un tono de «epílogo sereno, años después de la batalla». El arquitecto, razonablemente, sitúa el desenlace en 1808. Gravina es un personaje importante de la novela, así que aparece en el desenlace.
+`metro` es una novela generada y publicada por el arnés: cinco capítulos en el Madrid de 1917 a 1919, con una telegrafista como protagonista y la homenajeada del encargo como ese personaje. El canon guarda para ella **su fecha de nacimiento real, de 1967**, porque es un personaje *histórico ficcionalizado* y el arquitecto la copió del brief. La novela la sitúa cincuenta años antes.
 
-**Por qué no lo ve nadie más:**
+Lean, ejecutado sobre la base de la novela tal como quedó publicada, lo rechaza dos veces:
 
-- Los **validadores deterministas** no lo ven. `nombres_exactos` comprueba cómo se escribe «Gravina», no cuándo está vivo. `anacronismo_fechado` mira `mundo_entidad`, que cubre objetos, términos y conceptos — no el solape entre la vida de un personaje y la fecha de una escena. Ninguno de los once cruza dos tablas por su eje temporal.
-- El **juez** no lo ve. Su rúbrica evalúa continuidad, tono, calidad narrativa y personalización, y el capítulo es impecable en las cuatro: Gravina habla como Gravina, la escena es coherente con la anterior, el tono es el pedido. Para detectarlo tendría que recordar una fecha de muerte y compararla con la fecha narrativa de esa escena, a cien mil tokens de distancia de donde se declaró.
-- El **Autor** no lo ve, o no siempre. En el gate de Writing lee diez capítulos. Que el capítulo 9 transcurra en 1808 y que Gravina muriera en 1806 son dos datos ciertos que hay que tener a la vez en la cabeza, y el segundo está en la biblia, no en el texto.
+- sobre la **cronología de la prosa**, I1 (`I1_NadieAntesDeNacer`) cae en los veintiséis eventos narrativos en que participa la homenajeada, del capítulo 1 al 4;
+- sobre la **cronología de la escaleta**, I1 cae en las nueve escenas que la ponen en escena.
 
-**Por qué Lean sí.** Porque no lee la novela: lee dos listas y compara enteros. `I2_NadieDespuesDeMorir` recorre los participantes de cada evento y pregunta si `e.momento ≤ q.muerte`. La comprobación no depende de la longitud de la novela, ni de cuánto contexto quepa en un prompt, ni de que alguien se acuerde.
+**Qué vieron los demás cuando la novela se generó:**
+
+- El gate de Plotting enseñó seis avisos de `cronologia_escaleta`, que es la evaluación en Python de los mismos invariantes y solo avisa en ese punto. El Autor aprobó la escaleta.
+- Los **validadores deterministas** no lo vieron. `nombres_exactos` comprueba cómo se escribe un nombre, no cuándo vive su dueño, y ninguno de los once cruza la fecha de una escena con la de nacimiento de sus personajes.
+- El **juez** no lo vio. Encontró que la edad de la homenajeada cambiaba diez años entre el capítulo 1 y el 5, que es una contradicción *interna* de la prosa, pero no que el canon la hiciera nacer medio siglo después de todo lo que cuenta la novela: para eso tendría que tener delante una fecha que está en la biblia y no en el texto.
+- La versión 1 **se publicó**.
+
+**Con Lean en la publicación, no se habría publicado.** La cronología completa corre ahora dentro de `PublishVersion` antes de escribir la versión, y con esa base rechaza la candidata y la devuelve al gate de Writing citando los capítulos 1 a 4. Es el caso que el requisito pide: una incoherencia real, en una novela real, que el método formal detecta y los otros validadores dejaron pasar.
+
+En la misma pasada, `lozoya` dio otro caso, más pequeño: en su escaleta un personaje está el mismo día de junio de 1858 en dos escenarios distintos (I3). Ahí Python lo vio igual, y la prosa lo resolvió: sobre la cronología de lo escrito, Lean aprueba.
+
+### El ejemplo del repositorio
+
+`Generado.lean` lleva un ejemplo construido a mano para que el ejecutable tenga material sin una novela delante. Federico Gravina, que murió el 9 de marzo de 1806, aparece en un desenlace situado en 1808 —un epílogo «años después de la batalla»—, y el ejemplo incluye además una violación de **I1** —el homenajeado nace en 1831 y presencia Trafalgar en 1805— y una de **I4** —un telégrafo eléctrico en 1805—.
+
+El ejemplo enseña lo mismo que `metro`, y por qué ocurre. Lean no lee la novela: lee dos listas y compara enteros. `I2_NadieDespuesDeMorir` recorre los participantes de cada evento y pregunta si `e.momento ≤ q.muerte`. La comprobación no depende de la longitud de la novela, ni de cuánto contexto quepa en un prompt, ni de que alguien se acuerde.
 
 Ahí está el argumento entero para tener un método formal en un sistema de generación larga: **hay una clase de error que no es de calidad sino de consistencia global**, y la consistencia global es exactamente lo que se pierde cuando un texto se escribe por partes. Un juez con toda la novela delante lo vería; ningún juez tiene toda la novela delante.
 
-El fichero `Generado.lean` del repositorio contiene además una violación de **I1** —el homenajeado nace en 1831 y presencia Trafalgar en 1805— y una de **I4** —un telégrafo eléctrico en 1805—, ambas tomadas del mismo brief. La de I1 debería cazarla antes el `@model_validator` de Intake, y que Lean la vea también es deliberado: es la red de seguridad de una comprobación que ocurre mucho antes.
+El arnés no escribe sobre este fichero: cada verificación trabaja en una copia temporal del proyecto (arq. §11c), así que el ejemplo versionado sigue siendo el que es.
 
 ## Dónde mirar
 

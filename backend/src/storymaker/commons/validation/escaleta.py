@@ -112,14 +112,17 @@ def _revisar_arco(arco: ArcoEnRevision, n_capitulos: int) -> list[Incidencia]:
                 ubicacion=arco.personaje,
             )
         )
-    elif list(hitos) != sorted(set(hitos)):
+    elif list(hitos) != sorted(hitos):
+        # No decrecientes, no estrictamente crecientes: dos hitos en el mismo capítulo no
+        # van hacia atrás, y en una novela corta exigir uno por capítulo era imponer la
+        # forma de la escaleta con un validador (trama-rehacible §3.6).
         incidencias.append(
             Incidencia(
                 validador="arco_anclado",
                 severidad=Severidad.BLOQUEANTE,
                 mensaje=(
-                    f"Los hitos de «{arco.personaje}» no estan en capitulos estrictamente "
-                    f"crecientes: {list(hitos)}. Una transformacion no ocurre hacia atras."
+                    f"Los hitos de «{arco.personaje}» retroceden de capitulo: {list(hitos)}. "
+                    f"Una transformacion no ocurre hacia atras."
                 ),
                 ubicacion=arco.personaje,
             )

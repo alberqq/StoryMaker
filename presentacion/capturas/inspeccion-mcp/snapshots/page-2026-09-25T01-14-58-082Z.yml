@@ -1,0 +1,74 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e178]:
+      - generic [ref=e179]:
+        - navigation [ref=e180]:
+          - link "Índice" [ref=e181] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e183] [cursor=pointer]:
+          - generic [ref=e184]: A
+          - generic [ref=e185]: a
+      - heading "Capítulo 3. El aprendiz del puerto" [level=1] [ref=e186]
+      - article [ref=e187]:
+        - paragraph [ref=e188]: A los catorce años, Ramón Iriarte había aprendido que los hombres navegaban tanto por el papel como por el agua. El puerto de Cádiz no era solo madera y cuerdas, sino también escritorios y cartas náuticas que esperaban ser leídas y reescritas con cada viaje.
+        - paragraph [ref=e189]: "Fue Don Gómez, comerciante de treinta años, quien ofreció al abuelo que Ramón entrara como aprendiz. Don Gómez había navegado, pero desde hacía una década tomaba decisiones en tierra firme. Necesitaba a alguien joven que comprendiera ambos mundos: papel y mar. Ramón, con su infancia marinera, parecía el candidato."
+        - paragraph [ref=e190]: "La oficina olía a tinta y cera derretida. En las primeras semanas, Ramón trazaba rutas en cartas que le encargaban: líneas que conectaban puertos, registros de mercancías, cálculos de distancias. Nada que requiriera verdadero conocimiento, solo precisión. Pero estudiaba esas cartas como si fueran sagradas, imaginaba vientos, arrecifes y los caminos invisibles que el abuelo le enseñó a reconocer."
+        - paragraph [ref=e191]: Una noche, Don Gómez entró mientras Ramón trabajaba. Recorrió los papeles examinando con los ojos entrecerrados. Sus dedos se detuvieron sobre una carta y golpeó el papel.
+        - paragraph [ref=e192]: —Aquí —dijo—. Y aquí. Tres milímetros de error. En realidad cinco.
+        - paragraph [ref=e193]: Ramón se inclinó. Los errores eran imperceptibles, desviaciones tan pequeñas que ningún ojo sin entrenamiento las habría notado.
+        - paragraph [ref=e194]: —Apenas son un milímetro en la carta —argumentó Ramón—. En el agua serían...
+        - paragraph [ref=e195]: —Dos millas —completó Don Gómez—. Dos millas significan retrasos, compradores perdidos, ventas a mitad de precio. La diferencia entre ganancia y ruina. —Sus dedos aún sobre el papel—. La precisión no es arte. Es economía.
+        - paragraph [ref=e196]: "Ramón recomenzó su trabajo esa noche. Sus líneas se volvieron más cuidadosas. Pero algo cambió en su comprensión. Las cartas no eran solo mapas del agua. Eran documentos de poder: mostraban dónde los comerciantes ganaban o perdían fortuna. Cada línea representaba una decisión humana. Podía ir norte, por aguas seguras pero lentas. O noreste, por caminos rápidos que demandaban cálculo, experiencia, valor."
+        - paragraph [ref=e197]: Una tarde, Don Gómez señaló una ruta dibujada.
+        - paragraph [ref=e198]: —¿Por qué esta línea y no esta otra? —preguntó.
+        - paragraph [ref=e199]: —Porque la otra choca con el banco de arena de Trafalgar —respondió Ramón.
+        - paragraph [ref=e200]: —Conoces la carta. Pero ¿por qué esa línea en particular? ¿Qué diferencia hay?
+        - paragraph [ref=e201]: Ramón dudó. Las curvas eran casi idénticas.
+        - paragraph [ref=e202]: —No lo sé, señor.
+        - paragraph [ref=e203]: —Exacto. No es la línea. Es la razón. La hacia la izquierda añade media día de navegación. La de la derecha mantiene la ruta rápida pero requiere conocer los vientos de otoño. Un capitán experimentado lee eso; un novato no. La línea que dibujas no es geografía. Es psicología marina. Es saber a quién entregarás tu carta y confiar en lo que ese hombre puede comprender.
+        - paragraph [ref=e204]: Tres años más tarde, a los diecisiete, Don Gómez lo llevaba a los viajes, no como marinero sino como observador. Su trabajo era comprender cómo la teoría del papel se enfrentaba a la realidad del agua.
+        - paragraph [ref=e205]: Conoció entonces al Capitán Lezama, hombre de sesenta años que había navegado más océanos de los que Ramón podía nombrar. Lo vio estudiando la carta en cubierta, comparando obsesivamente la línea con el horizonte.
+        - paragraph [ref=e206]: —Bonito trabajo, joven —dijo Lezama, y su sonrisa tenía la amplitud de quien ya conoce el final de una historia—. ¿Crees que el papel es verdad?
+        - paragraph [ref=e207]: —Debería serlo —respondió Ramón.
+        - paragraph [ref=e208]: Lezama rió, un sonido como olas distantes.
+        - paragraph [ref=e209]: —El papel es una mentira que contamos para dormir tranquilos. Una mentira honesta, si quieres, pero mentira.
+        - paragraph [ref=e210]: Dos días después, Lezama cambió la ruta sin explicación. Ramón protestó, señalando la carta, pero el capitán apenas lo miró.
+        - paragraph [ref=e211]: —La carta no sabe nada de corrientes de otoño. No sabe que arrecifes nuevos emergieron tras la tormenta de agosto. No sabe que el viento llegará tarde si lo esperas. La carta es recuerdo. El mar es presente.
+        - paragraph [ref=e212]: "Durante los viajes siguientes, Ramón aprendió a ver con otros ojos. Tomaba notas obsesivamente: dónde se desviaba Lezama, por qué, en qué momento exacto, qué condiciones había en agua, cielo, viento. Comenzó a llenar márgenes de cartas con anotaciones, pequeña sabiduría marinera que no se dibujaba pero existía."
+        - paragraph [ref=e213]: "Cuando regresó a la oficina de Don Gómez, rediseñó las cartas. No las líneas principales, pero sí los márgenes. Anotaba: \"En octubre, vientos del sur llegan tarde. En noviembre, vigila arrecife nuevo, media milla al suroeste...\". Poco a poco, sus cartas adquirieron nueva cualidad. No eran mapas del agua sino conversaciones entre papel y los hombres que las leían. Eran cartas vivas, personalizadas para capitanes, documentos que contenían toda la experiencia que el papel convencional no sabía contar."
+        - paragraph [ref=e214]: En 1785, a los diecinueve años, Ramón fue reconocido en la comunidad del puerto. Los marineros pedían sus cartas por su nombre. Los capitanes jóvenes las buscaban. Los veteranos las estudiaban con respeto.
+        - paragraph [ref=e215]: La bendición de viajes ocurrió en la Iglesia de Santa María una mañana de octubre. El párroco, mientras leía plegarias por la protección de los navegantes y asperjaba agua consagrada sobre símbolos que serían colocados en las proas, mencionó entre los hombres con el don del mar a "Ramón Iriarte, cuya sabiduría del agua corre por sangre y tinta".
+        - paragraph [ref=e216]: Después de la ceremonia, marineros veteranos se acercaron a Ramón, ofreciendo consejos como si hubiera entrado en una hermandad invisible. Le hablaron del futuro, de armadores que necesitaban hombres como él, de oportunidades en construcción de flotas. Ramón escuchaba, pero su atención estaba dividida. El abuelo, muy mayor ahora, piel como pergamino, se había acercado lentamente. Le tomó del brazo con dedos que aún conservaban firmeza sorprendente y lo llevó aparte, a un rincón sombreado de la iglesia.
+        - paragraph [ref=e217]: "El abuelo llevaba una carta náutica antigua, bordes amarillentos, líneas suavizadas por el tiempo. Las costas que representaba mostraban decisiones tomadas décadas atrás. En la esquina inferior derecha, con letra de hace cincuenta años, estaba la firma: su nombre, su rúbrica."
+        - paragraph [ref=e218]: —Esta es mi vida —dijo el abuelo, extendiendo la carta a Ramón—. Los viajes, las rutas que aprendí, los hombres que salvé con este conocimiento. Todo en este papel. Ahora debes hacer la tuya, pero mejor.
+        - paragraph [ref=e219]: Ramón sostuvo la carta con las manos que habían trazado líneas en la oficina de Don Gómez, que habían tomado notas en cubiertas, que habían aprendido a leer el agua. Comprendió entonces que la herencia del mar no era promesa ni lenguaje. Era responsabilidad y legado combinados. Era la tarea silenciosa de convertir el presente en mapas que otros pudieran usar para no perderse, de escribir en márgenes toda la sabiduría que la vida entrega a quien observa con atención.
+        - paragraph [ref=e220]: "El abuelo sonrió, soltó la carta en sus manos, y se alejó hacia el puerto, donde los muelles esperaban como siempre, donde el agua respiraba su ritmo eterno, donde los hombres seguían aprendiendo que el mar no regala sus secretos sino que los vende al precio justo: el precio de la atención, la paciencia y la voluntad de convertir el miedo en sabiduría."
+      - navigation "Navegación entre capítulos" [ref=e221]:
+        - link "← Capítulo anterior" [ref=e223] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/2
+        - link "Índice" [ref=e224] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e226] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/4
+      - generic [ref=e227]:
+        - heading "Pedir un cambio" [level=2] [ref=e228]
+        - generic [ref=e229]:
+          - paragraph [ref=e230]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e231]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e232]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e233]

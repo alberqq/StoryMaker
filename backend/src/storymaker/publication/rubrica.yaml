@@ -4,7 +4,7 @@
 # esto y no dos copias parecidas es lo que hace comparable el juicio de la persona con el
 # del modelo: si la persona puntuara con otros criterios, la comparacion no diria nada.
 #
-# Siete criterios, del 1 al 10, cada uno con justificacion. Lo que se pide en cada uno esta
+# Ocho criterios, del 1 al 10, cada uno con justificacion. Lo que se pide en cada uno esta
 # escrito para que lo entienda tambien quien no ha leido la arquitectura.
 
 criterios:
@@ -30,6 +30,12 @@ criterios:
       ¿La novela avanza? Escenas que no mueven nada, capitulos que repiten la funcion del
       anterior, finales de capitulo sin gancho.
 
+  - nombre: tono
+    pregunta: >-
+      ¿La novela suena como el encargo pidio de principio a fin? El tono declarado en el
+      brief —festivo, sereno, melancolico— se sostiene en todos los capitulos, sin saltos
+      que no pida la historia, y es compatible con lo que el periodo cuenta.
+
   - nombre: prosa
     pregunta: >-
       ¿Se lee bien? Frases mecanicas, adjetivacion repetida, transiciones bruscas entre
@@ -52,6 +58,6 @@ escala:
   umbral_de_publicacion: 6.0
 
 nota: >-
-  El juez no edita. Su unica salida son estas siete notas con su justificacion, y esa
+  El juez no edita. Su unica salida son estas ocho notas con su justificacion, y esa
   separacion no es negociable: si el mismo agente que optimiza la metrica fuera el que la
   produce, los scores dejarian de significar nada.

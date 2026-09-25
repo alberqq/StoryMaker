@@ -272,7 +272,7 @@ async def escenas_con_texto(db: aiosqlite.Connection) -> list[aiosqlite.Row]:
     """Cada escena con lo que dice de sí misma, para buscar la que mejor recibe un elemento."""
     async with db.execute(
         """
-        SELECT e.id, c.numero AS capitulo, e.orden,
+        SELECT e.id, c.numero AS capitulo, e.orden, e.fecha_narrativa,
                COALESCE(e.objetivo, '') || ' ' || COALESCE(e.conflicto, '') || ' ' ||
                COALESCE(e.resultado, '') AS texto
           FROM plan_escena e JOIN plan_capitulo c ON c.id = e.capitulo_id

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A8 · Sensibilidad extendida</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  table.t td.num b { font-weight: 700; }
+  table.mx { width: 100%; border-collapse: separate; border-spacing: 6px; font-size: 15px; }
+  table.mx th { background: var(--tinta); color: var(--pergamino); font-weight: 600; padding: 8px 10px; border-radius: 6px; text-align: center; }
+  table.mx th.fila { text-align: left; vertical-align: middle; width: 250px; }
+  table.mx tr + tr th.fila { height: 62px; }
+  table.mx td { border-radius: 6px; padding: 10px 12px; text-align: center; font-family: var(--mono); font-weight: 500; }
+  table.mx td b { display: block; font-size: 22px; line-height: 1.1; font-weight: 700; }
+  table.mx td span { display: block; font-family: var(--sans); font-size: 15px; color: var(--tinta); }
+  table.mx td.s { background: var(--salvia-15); border: 1.5px solid var(--salvia); }
+  table.mx td.o { background: var(--oro-18); border: 1.5px solid var(--oro); }
+  table.mx td.l { background: var(--lacre-12); border: 1.5px solid var(--lacre); }
+  table.mx td.l b { color: var(--lacre); }
+  table.mx td.base { box-shadow: none; outline: 2px solid var(--tinta); outline-offset: 2px; }
+  .ley { display: flex; gap: 20px; align-items: center; font-size: 15px; margin-top: 8px; }
+  .ley i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px; }
+  .formula { font-family: var(--mono); font-weight: 500; font-size: 15px; background: var(--tinta-06); border-radius: 6px; padding: 8px 12px; }
+</style>
+</head>
+<body data-anexo="A8">
+
+<!-- 1 · Las dos palancas por separado -->
+<section class="pagina" data-fuente="Cifras de la slide 18: coste unitario a 300 novelas/mes, PVP 48,76 € sin IVA · <code>presentacion/deck/datos.json</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A8</span><span class="sep"></span>Sensibilidad extendida · dos palancas</div>
+    <h1>Triplicar los tokens deja el margen en el 57 %; seis revisiones lo bajan más que eso</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:32px">
+      <div class="col">
+        <h2>Precio de los tokens</h2>
+        <table class="t">
+          <tr><th>Coste de tokens</th><th class="num">Margen / novela</th><th class="num">% del PVP</th><th class="num">Frente a la base</th></tr>
+          <tr class="dest"><td>Actual (×1)</td><td class="num"><b>34,86 €</b></td><td class="num">71,5 %</td><td class="num">—</td></tr>
+          <tr><td>×1,5</td><td class="num">33,07 €</td><td class="num">67,8 %</td><td class="num">−5,1 %</td></tr>
+          <tr><td>×2</td><td class="num">31,28 €</td><td class="num">64,2 %</td><td class="num">−10,3 %</td></tr>
+          <tr><td>×3</td><td class="num">27,70 €</td><td class="num">56,8 %</td><td class="num">−20,5 %</td></tr>
+        </table>
+        <p class="nota" style="margin-top:8px">El factor se aplica a los tokens de la novela <b>y</b> a los de sus revisiones: 2,77 € + 0,81 € = <b>3,58 €</b>. Cada ×0,5 más resta 1,79 €. Los tokens son el 20 % del coste unitario (2,77 € de 13,90 €), por eso el margen aguanta.</p>
+      </div>
+      <div class="col">
+        <h2>Revisiones por novela</h2>
+        <table class="t">
+          <tr><th>Revisiones</th><th class="num">Margen / novela</th><th class="num">% del PVP</th><th class="num">Frente a la base</th></tr>
+          <tr class="dest"><td>1,5 (media estimada)</td><td class="num"><b>34,86 €</b></td><td class="num">71,5 %</td><td class="num">—</td></tr>
+          <tr><td>3 (las incluidas)</td><td class="num">30,93 €</td><td class="num">63,4 %</td><td class="num">−11,3 %</td></tr>
+          <tr><td>6</td><td class="num">23,07 €</td><td class="num">47,3 %</td><td class="num">−33,8 %</td></tr>
+          <tr><td>6, cobrando 4,90 € desde la 4.ª</td><td class="num">≈ 35 €</td><td class="num">≈ 72 %</td><td class="num">≈ 0 %</td></tr>
+        </table>
+        <p class="nota" style="margin-top:8px">Cada revisión extra cuesta <b>2,62 €</b>: 0,54 € de tokens (medido en la demo de Cádiz, 1805: 0,60 $) + 2,08 € de supervisión (5 min a 25 €/h). Las tres revisiones de pago suman 3 × 4,90 € con IVA = 12,15 € sin IVA.</p>
+      </div>
+    </div>
+    <div class="formula" style="margin-top:14px">margen(t, r) = 48,76 − [ t × (2,77 + 0,54·r) + 2,08 × (r − 1,5) + 8,35 + 1,97 ]</div>
+    <p class="nota" style="margin-top:6px"><b>t</b>: factor sobre el precio de los tokens · <b>r</b>: revisiones por novela · 8,35 € de supervisión de gates y 1,97 € de infraestructura y mantenimiento no dependen de ninguna de las dos.</p>
+  </main>
+</section>
+
+<!-- 2 · Matriz -->
+<section class="pagina" data-fuente="Calculado con la fórmula de la página anterior · reglas: factor sobre tokens de novela + revisiones; 2,62 € por revisión extra">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A8</span><span class="sep"></span>Matriz tokens × revisiones</div>
+    <h1>Solo la combinación extrema cae por debajo de 15 €: tokens ×3 y seis revisiones</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="mx">
+      <tr><th class="fila">Revisiones \ tokens</th><th>×1 (actual)</th><th>×1,5</th><th>×2</th><th>×3</th></tr>
+      <tr><th class="fila">1,5 (media)</th>
+        <td class="s base"><b>34,86 €</b><span>71,5 %</span></td><td class="s"><b>33,07 €</b><span>67,8 %</span></td><td class="s"><b>31,28 €</b><span>64,2 %</span></td><td class="s"><b>27,70 €</b><span>56,8 %</span></td></tr>
+      <tr><th class="fila">3 (incluidas)</th>
+        <td class="s"><b>30,93 €</b><span>63,4 %</span></td><td class="s"><b>28,74 €</b><span>58,9 %</span></td><td class="s"><b>26,54 €</b><span>54,4 %</span></td><td class="o"><b>22,15 €</b><span>45,4 %</span></td></tr>
+      <tr><th class="fila">6</th>
+        <td class="o"><b>23,07 €</b><span>47,3 %</span></td><td class="o"><b>20,07 €</b><span>41,2 %</span></td><td class="o"><b>17,06 €</b><span>35,0 %</span></td><td class="l"><b>11,05 €</b><span>22,7 %</span></td></tr>
+    </table>
+    <div class="ley">
+      <span><i style="background:var(--salvia-15);border:1.5px solid var(--salvia)"></i>más de 25 €</span>
+      <span><i style="background:var(--oro-18);border:1.5px solid var(--oro)"></i>entre 15 y 25 €</span>
+      <span><i style="background:var(--lacre-12);border:1.5px solid var(--lacre)"></i>menos de 15 €</span>
+      <span class="sec">Margen por novela a 300 novelas/mes; debajo, en % del PVP sin IVA (48,76 €).</span>
+    </div>
+    <div class="fila" style="gap:16px;margin-top:16px">
+      <div class="caja fina col"><h2 style="font-size:17px">Qué protege el margen</h2><p style="margin:0">Con los tokens de hoy, cobrar 4,90 € desde la 4.ª revisión devuelve la fila de 6 revisiones a la de 1,5 (≈ 35 €). Con tokens ×3 recupera 12,15 € de los 16,65 € que cuestan esas revisiones: la palanca que hay que vigilar son las revisiones, no el modelo.</p></div>
+      <div class="caja fina col"><h2 style="font-size:17px">Subir de modelo el arquitecto y el juez</h2><p style="margin:0">Pendiente de precio oficial; el efecto se lee en la columna del factor correspondiente. No se ponen aquí precios de modelos: no están verificados.</p></div>
+    </div>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

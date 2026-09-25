@@ -1,0 +1,60 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e284]:
+      - generic [ref=f3e285]:
+        - navigation [ref=f3e286]:
+          - link "Índice" [ref=f3e287] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f3e289] [cursor=pointer]:
+          - generic [ref=f3e290]: A
+          - generic [ref=f3e291]: a
+      - heading "Capítulo 5. Después del Agua" [level=1] [ref=f3e292]
+      - article [ref=f3e293]:
+        - paragraph [ref=f3e294]: "La semana que siguió a la inauguración fue un mapa en reordenamiento. El primero de julio, cuando Tomás llegó al pozo con la madrugada aún pegada a los párpados, supo que algo había cambiado en la estructura de sus rutas. No fue un cambio abrupto, sino una sedimentación gradual: Doña Martina seguía esperando su agua, tan puntual como el alba, pero otros vecinos ya no salían a abrirle la puerta. En algunas casas, especialmente las de los ricos hacia la Calle Mayor, el grifo de cobre brillaba como un nuevo símbolo de pertenencia. El agua ya no era un lujo; era un derecho en tuberías."
+        - paragraph [ref=f3e295]: "Sin embargo, la transformación no era una muerte simple. Era una reconfiguración. Las casas humildes de Lavapiés, las fondas, los cuartos donde vivían jornaleros, seguían necesitando su angarilla. Amancio confirmó lo que ambos habían intuido: el oficio no desaparecería, pero su geografía se contraería hacia los márgenes."
+        - paragraph [ref=f3e296]: Doña Martina lo recibió como siempre, pero con intención renovada. "Prefiero tu agua", le dijo mientras él vertía el líquido en su tinaja. "Sé de dónde viene. Sé que tú la has tocado con cuidado." No era halago; era reconocimiento de una continuidad que trascendía la tecnología. En ese gesto quedó sellada una alianza que ningún grifo público podía romper.
+        - paragraph [ref=f3e297]: Los días que siguieron, Tomás descubrió nichos inesperados. Obreros de la Puerta del Sol, sin casa fija, le compraban agua con urgencia. Cocineros de tabernas preferían agua de fuente porque hacía mejor la sopa. Mujeres seguían yendo al pozo por costumbre y economía. La contracción era real, pero dentro de ella había bolsas de resistencia que sorprendieron incluso a Tomás.
+        - paragraph [ref=f3e298]: "Fue Amancio quien le contó que pensaba en otra cosa. \"El agua de fuentes especiales. Hay reputación en ciertos pozos. Si nos diversificamos...\" Tomás escuchó reconociendo la necesidad que lo había perseguido: no abandonar el oficio, sino transformarlo."
+        - paragraph [ref=f3e299]: Esa transformación lo llevó, una tarde de julio cuando el calor presionaba las calles de Lavapiés, a una decisión que llevaba semanas gestándose. Se dirigió voluntariamente al taller de cerámica donde, durante décadas, había visto trabajar al maestro. Aquella tarde la puerta estaba abierta, y dentro, entre polvo de barro y olor a tierra mojada, el maestro trabajaba en su rueda.
+        - paragraph [ref=f3e300]: El anciano alzó la vista y sonrió. "Tomás Ibarra. Sabía que vendrías."
+        - paragraph [ref=f3e301]: "\"¿Lo sabía?\""
+        - paragraph [ref=f3e302]: "\"Tu abuelo Jacinto modelaba arcilla aquí hace cuarenta años. He visto cómo observas nuestro trabajo cada vez que pasas. Hay algo que busca retorno en ti.\" El maestro limpió sus dedos en el delantal. \"Además, te soy honesto: tengo un problema. La demanda ha caído. Menos recipientes, menos necesidad. Pero todavía hay quien necesita una buena vasija. Y si hubiera alguien que entendiera no solo la forma, sino el alma de lo que el agua demanda...\" Se detuvo, mirando a Tomás con una pregunta que no necesitaba palabras."
+        - paragraph [ref=f3e303]: Tomás sintió algo moverse en su pecho. "Mi abuelo me enseñó a observar. Desde debajo de una mesa."
+        - paragraph [ref=f3e304]: El maestro rió, un sonido que resonó en el taller. "Entonces sabes cómo se aprende un oficio de verdad. ¿Quieres aprender este, ahora que el tuyo cambia?"
+        - paragraph [ref=f3e305]: Tomás no necesitó reflexionar. "Sí", respondió. En esa palabra vibró toda la emoción que llevaba semanas guardándose.
+        - paragraph [ref=f3e306]: "El primer día llegó lluvioso. El maestro lo guió a través de cada movimiento: cómo preparar la arcilla, cómo sentir su disposición, cómo el agua y la tierra se hablaban. Sus dedos encontraron en el barro una familiaridad inquietante, como si el material recordara los dedos del nieto de Jacinto."
+        - paragraph [ref=f3e307]: A media mañana, mientras le mostraba cómo ajustar una forma en la rueda, Tomás se agachó para recoger una herramienta caída. Su cabeza pasó bajo el borde de la mesa. Fue un instante mínimo, pero en ese instante algo se invirtió. Vio las patas de la mesa desde la perspectiva que había sido la suya hace cincuenta años, cuando era un niño pequeño escondiéndose bajo ella. Ahora estaba viendo desde la altura de un hombre, y sin embargo la memoria lo devolvió a esas manos de su abuelo trabajando la arcilla, a las historias que Jacinto contaba en voz baja mientras Tomás observaba desde el refugio del tablero.
+        - paragraph [ref=f3e308]: Se incorporó rápidamente, pero algo dentro de él había cristalizado. Esta era la razón. Esto era lo que su cuerpo había estado buscando cuando sus ojos se posaban en ese taller.
+        - paragraph [ref=f3e309]: "Los días siguientes, Tomás se convirtió en aprendiz callado pero absorto. El maestro transmitía no solo técnica sino filosofía. Cómo el barro respira. Cómo el agua que añades debe ser agua pensada. Cómo un recipiente de cerámica es una promesa: que el agua permanecerá fresca, que quien beba será recordado por la calidad de lo que recibió."
+        - paragraph [ref=f3e310]: A media tarde de su segunda semana, Pepino apareció en la puerta con esa urgencia de quien busca continuidad donde otros ven fin. "¿Voy a trabajar aquí también, Maestro?"
+        - paragraph [ref=f3e311]: Tomás sonrió y se limpió las manos en su delantal nuevo—ahora era aprendiz, no visitante—y colocó una mano en el hombro del muchacho. "Sí. Pero primero aprenderemos juntos. Yo primero, porque tengo mucho que recordar. Luego tú, cuando haya vuelto a encontrar lo que mi abuelo me enseñó."
+        - paragraph [ref=f3e312]: "Esa tarde, mientras el maestro instruía a Pepino, Tomás se encontró silbando. No era la copla de la angustia. Era una versión diferente que brotaba con satisfacción callada: \"Que vueltas da la rueda...\", pero con un tono que hablaba de resolución."
+        - paragraph [ref=f3e313]: "El taller respondió con sus propios sonidos: instrucciones, la risa de Pepino cuando la arcilla se escurrió, la rueda girando, el agua siendo vertida. Afuera, en las calles, el agua corría por los grifos de cobre del Canal Isabel II. Pero aquí, en este pequeño espacio que olía a tierra mojada y tradición, el agua y el oficio persistían transfigurados: no como quien lleva, sino como quien recibe, moldea y entrega formas que harán posible que otros beban."
+        - paragraph [ref=f3e314]: Tomás continuó silbando, sus dedos en el barro, recordando y transformándose simultáneamente, mientras la tarde caía sobre Lavapiés y el futuro que había temido se revestía de las formas antiguas de su abuelo.
+      - navigation "Navegación entre capítulos" [ref=f3e315]:
+        - link "← Capítulo anterior" [ref=f3e317] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/4
+        - link "Índice" [ref=f3e318] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3
+      - generic [ref=f3e319]:
+        - heading "Pedir un cambio" [level=2] [ref=f3e320]
+        - generic [ref=f3e321]:
+          - paragraph [ref=f3e322]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f3e323]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f3e324]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f3e325]

@@ -78,13 +78,20 @@ def aviso_de_parada(novela: str, *, nodo: str, motivo: str) -> Aviso:
     )
 
 
-def aviso_de_terminada(novela: str, *, version: int | None, coste_usd: float) -> Aviso:
-    """La novela llegó a `Idle`: hay una versión publicada que leer."""
+def aviso_de_terminada(
+    novela: str, *, version: int | None, coste_usd: float, contradicciones: int = 0
+) -> Aviso:
+    """La novela llegó a `Idle`: hay una versión publicada que leer.
+
+    Si el juez listó contradicciones y aun así la nota pasó, se dice: es el único sitio
+    donde el Autor se entera de ellas sin abrir la base.
+    """
     publicada = f"Version {version} publicada." if version else "Version publicada."
+    lineas = [publicada, f"Coste de esta invocacion: {coste_usd:.4f} $"]
+    if contradicciones:
+        lineas.append(f"El juez encontro {contradicciones} contradiccion(es); miralas en el PC.")
     return Aviso(
-        titulo=f"StoryMaker · {novela} · terminada",
-        cuerpo=f"{publicada}\nCoste de esta invocacion: {coste_usd:.4f} $",
-        novela=novela,
+        titulo=f"StoryMaker · {novela} · terminada", cuerpo="\n".join(lineas), novela=novela
     )
 
 

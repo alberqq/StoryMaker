@@ -48,13 +48,13 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 | 6 | Property-based testing | **T/A** | Hypothesis sobre ensamblador, normalización y manifiestos | G1 | Adoptada, bloqueante |
 | 7 | Mutation testing | **T** | mutmut restringido a `commons/validation/` | G2 | Adoptada, solo Core Domain |
 | 8 | Contract testing | **A/T** | Esquemas de rol, OpenAPI del endpoint, contrato nodo↔hook | G1 | Adoptada, bloqueante |
-| 9 | Runtime observability | **D/T** | Langfuse: sesión por novela, span por invocación, aserciones sobre la traza | G6 | Adoptada |
+| 9 | Runtime observability | **D/T** | Langfuse: sesión por novela, traza por generación, span por capítulo, `generation` por invocación con latencia y prompt enlazado, `tool` por llamada a herramienta, aserciones sobre la traza | G6 | Adoptada |
 | 10 | Evals | **T/I** | Cinco briefs de evaluación, *datasets* de Langfuse, rúbrica compartida | G2 | Adoptada |
 | 11 | Sandboxed execution | **D/A** | `allowed_tools` por rol, contenedor, un fichero por novela | G4, G6 | Adoptada |
 | 12 | Guardrails | **A/T** | Validadores como nodos, cuarentena de texto libre, `canon_prohibida`, guarda de contexto | G3 | Adoptada, bloqueante |
 | 13 | Human-in-the-loop | **I** | Cinco gates avisados por Telegram y decididos en el PC, `edicion_humana`, revisión con rúbrica | G4 | Adoptada, bloqueante |
 | 14 | Multi-agent verification | **I/T** | Juez separado del editor; auto-consistencia como medida | G5 | Adoptada parcialmente (§4.6) |
-| 15 | CI/CD integration | **T/A** | GitHub Actions; misma tubería para código humano y generado | G1, G2 | Adoptada |
+| 15 | CI/CD integration | **T/A** | Tubería local que el Autor lanza a mano; la misma para código humano y generado | G1, G2 | Reinterpretada (§4.7) |
 | 16 | Progressive rollout | **D** | Versiones de prompt en Langfuse, ramas por fichero, *feature flags* | G2 | Reinterpretada (§4.8) |
 | 17 | Red-teaming | **T/I** | Suite adversaria determinista + sesión manual por hito | G1, G2 | Adoptada |
 | 18 | Model checking | **A** | TLA+ directo, TLC sobre modelo pequeño | G1 | Adoptada, bloqueante |
@@ -74,7 +74,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 |---|---|---|
 | Entrada del sistema | `Brief` (Pydantic v2) con `@model_validator` para las contradicciones de §4 de la arquitectura | `ValueError` que el entrevistador traduce a pregunta |
 | Salida de cada rol | Un modelo Pydantic por rol, inyectado como esquema de salida; el nodo `schema_guard` valida antes de escribir en SQLite | Reintento con el error de validación en el prompt; agotado el límite, incidencia |
-| Estado del grafo | `TypedDict` total con anotaciones explícitas; nada de `dict[str, Any]` en `graph/` | mypy en CI |
+| Estado del grafo | `TypedDict` total con anotaciones explícitas; nada de `dict[str, Any]` en `graph/` | mypy en G1 |
 | Código del arnés | mypy `--strict` sobre `src/storymaker/`, sin `ignore_missing_imports` salvo lista blanca | Build roja |
 | Persistencia | Tablas `STRICT` de SQLite más `CHECK` sobre los enumerados (`estado`, `origen`, `nivel`, `severidad`) | Excepción de integridad, transacción abortada |
 
@@ -92,7 +92,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 
 - `ruff` con el conjunto `S` (reglas de bandit): inyección SQL por interpolación, `subprocess` con `shell=True`, `pickle`, aserciones en producción.
 - `pip-audit` sobre el *lockfile*.
-- `gitleaks` en pre-commit y en CI. El repositorio convive con un token de Telegram y claves de Langfuse: un secreto commiteado es el único fallo de este proyecto con consecuencias fuera de él. **No hay clave de Anthropic que proteger**, y conviene decirlo porque cambia la superficie: los modelos corren a través de Claude Code, que el Agent SDK lanza como subproceso, de modo que la autenticación la pone la sesión ya iniciada del Autor y nunca entra en el árbol ni en el entorno del arnés.
+- `gitleaks` en pre-commit (G0), que corre en cada *commit*, y otra vez en G1 sobre el historial entero. El repositorio convive con un token de Telegram y claves de Langfuse: un secreto commiteado es el único fallo de este proyecto con consecuencias fuera de él. **No hay clave de Anthropic que proteger**, y conviene decirlo porque cambia la superficie: los modelos corren a través de Claude Code, que el Agent SDK lanza como subproceso, de modo que la autenticación la pone la sesión ya iniciada del Autor y nunca entra en el árbol ni en el entorno del arnés.
 
 **Reglas propias (Semgrep).** Son las que convierten principios escritos en prosa en comprobaciones mecánicas:
 
@@ -105,7 +105,7 @@ El sistema no tiene usuarios en producción ni impacto sobre terceros. Las técn
 | `pii-fuera-del-investigador` | Construir el prompt del investigador a partir de campos personales del `Brief` | Exfiltración de datos del homenajeado (§4.9) |
 | `indice-solo-por-embeddings` | `INSERT`, `UPDATE` o `DELETE` sobre cualquier tabla `vec_*` desde fuera de `commons/embeddings/` | «El índice se escribe en la misma transacción que la fila» (§16.2 arq.) |
 
-**Steiger, el linter de Feature-Sliced Design.** El frontend está organizado en FSD v2.1 (§16.3 arq.), cuyas dos reglas estructurales —un módulo solo importa de capas estrictamente inferiores, y dos *slices* de la misma capa nunca se importan entre sí— son comprobables sin ejecutar nada. `npx steiger src` las verifica en CI. Es la razón de haber preferido una metodología estándar a una convención propia: una convención propia no tiene quien la mire.
+**Steiger, el linter de Feature-Sliced Design.** El frontend está organizado en FSD v2.1 (§16.3 arq.), cuyas dos reglas estructurales —un módulo solo importa de capas estrictamente inferiores, y dos *slices* de la misma capa nunca se importan entre sí— son comprobables sin ejecutar nada. `npx steiger src` las verifica en G1. Es la razón de haber preferido una metodología estándar a una convención propia: una convención propia no tiene quien la mire.
 
 **Lo que Steiger no ve, y sí sostiene una puerta.** La regla de que **ningún módulo fuera de `shared/api` emite una petición de red** no es una regla de capas y el linter de FSD no la mira, pero de ella depende que `render_visual` pueda servir al navegador la versión candidata (§4 y §16.3 de la arquitectura). Se comprueba con una prueba propia sobre el árbol del frontend, y **esa sí bloquea**, por el mismo criterio que se enuncia a continuación: bloquea lo que sostiene una puerta.
 
@@ -204,7 +204,7 @@ Con Hypothesis, y estrategias que sintetizan novelas: corpus, canon, escaleta y 
 | Para cualquier secuencia de regeneraciones, toda versión publicada previamente sigue siendo recuperable entera | `PreviousVersionPreserved` |
 | Para cualquier traza de reintentos, el número de `capitulo_version` por capítulo y `fase_run` no supera el límite | `RetriesBounded` |
 | Para cualquier conjunto de usos, los capítulos invalidados incluyen todos los que usan el hecho | Corrección de la Fase 6 |
-| Para cualquier escaleta que pase `arco_anclado`, todo personaje en ≥3 escenas tiene arco, y todo arco positivo o negativo tiene ≥2 hitos en capítulos estrictamente crecientes | Corrección de `arco_anclado` |
+| Para cualquier escaleta que pase `arco_anclado`, todo personaje en ≥3 escenas tiene arco, y todo arco positivo o negativo tiene ≥2 hitos en capítulos que no retroceden | Corrección de `arco_anclado` |
 | Para cualquier escaleta cuya cronología Lean acepte en el gate de Plotting, ningún personaje aparece en dos escenas del mismo día en lugares distintos ni fuera de sus fechas vitales | Anticipación de los invariantes de Lean a la escaleta |
 | `normalizar` es idempotente y detecta toda variante generada de un término prohibido | Eficacia del guardrail |
 | Ninguna versión publicada contiene un `capitulo_version` sin *score* de todos los validadores | `NoPublishUnvalidated` |
@@ -231,7 +231,7 @@ Con Hypothesis, y estrategias que sintetizan novelas: corpus, canon, escaleta y 
 
 | Contrato | Lados | Verificación |
 |---|---|---|
-| **Orquestador ↔ rol** | Nodo del grafo / prompt en Langfuse | El modelo Pydantic es el contrato. Un corpus de salidas reales grabadas se revalida contra el esquema en CI: si alguien cambia un campo, la prueba cae aunque el prompt siga funcionando |
+| **Orquestador ↔ rol** | Nodo del grafo / prompt en Langfuse | El modelo Pydantic es el contrato. Un corpus de salidas reales grabadas se revalida contra el esquema en G1: si alguien cambia un campo, la prueba cae aunque el prompt siga funcionando |
 | **Prompt ↔ esquema** | Versión de prompt / versión del modelo de salida | El id de versión del prompt viaja en el span; una prueba comprueba que la versión publicada en Langfuse es compatible con el esquema del repositorio |
 | **CLI ↔ grafo** | `storymaker decidir` / acción `HumanDecide` | Una decisión desconocida o sin gate pendiente no reanuda el grafo, y reanudar no reabre el gate decidido |
 | **Código ↔ esquema SQLite** | Migraciones / consultas | Prueba de migración sobre una base de la versión anterior, más comprobación de que toda columna leída existe |
@@ -289,12 +289,12 @@ La primera y la última son `NoPublishUnvalidated` y la trazabilidad de la inter
 
 **Qué garantiza.** Que la conducta del sistema sobre un conjunto representativo de entradas es la esperada, y que no empeora cuando se toca un prompt.
 
-**Dataset.** Cinco briefs de evaluación, versionados en el repositorio y registrados como *dataset* de Langfuse, elegidos para cubrir ejes distintos: períodos con densidad documental muy diferente, un homenajeado con datos escasos, un brief con lista de palabras prohibidas larga, un período con eventos históricos duros y fechables, y un brief deliberadamente tenso (tono festivo sobre un período trágico). Corren en modo batch, con `gates.enabled = false`.
+**Dataset.** Cinco briefs de evaluación, versionados en el repositorio y registrados como *dataset* de Langfuse, elegidos para cubrir ejes distintos: períodos con densidad documental muy diferente, un homenajeado con datos escasos, un brief con lista de palabras prohibidas larga, un período con eventos históricos duros y fechables, y un brief deliberadamente tenso (tono festivo sobre un período trágico). Corren en modo batch, con `gates.enabled = false`. Viven en [`ejemplos/evals/`](../ejemplos/evals), **uno por cada ocasión que nombra el enunciado** —jubilación, un hijo, la pareja, una boda y un aniversario—, y cada uno cubre uno de esos ejes; los acompañan los dos adversariales de §4.9, *injection* en el texto libre e incoherencia temporal provocada. Cada fichero declara bajo `espera:` qué validadores deben pasar y cuál debe saltar, y el índice con la tabla de resultados está en [`ejemplos/README.md`](../ejemplos/README.md).
 
 | Tipo de eval | Qué mide | Criterio de aprobación | Clase |
 |---|---|---|---|
 | **Golden dataset** | Validadores deterministas sobre los cinco briefs | Cero incidencias críticas en la versión publicada | T |
-| **LLM-as-judge** | Rúbrica de siete criterios del juez | Media ≥ umbral declarado y ningún criterio por debajo del mínimo | T |
+| **LLM-as-judge** | Rúbrica de ocho criterios del juez | Media ≥ umbral declarado y ningún criterio por debajo del mínimo | T |
 | **Task completion** | ¿Llega a `PublishVersion` sin intervención? ¿Cuántos capítulos aprueban al primer intento? | 5/5 ejecuciones completan; ≥ 70 % de capítulos al primer intento | T |
 | **Adversarial** | Briefs construidos para romper (§4.9) | El sistema rechaza o pregunta; nunca publica en silencio | T |
 | **Live / online** | *Scores* de toda ejecución real, no solo de las de evaluación | Vigilancia de deriva entre versiones de prompt | D |
@@ -352,7 +352,7 @@ Cinco guardrails, ordenados por el momento en que actúan:
 
 **Lo que se registra.** Toda decisión va a `gate`; toda edición directa del corpus, del canon o de la escaleta va a `edicion_humana` y a `audit_log` con actor, momento y estados antes y después; todo comentario de «rehacer» se inyecta como bloque en el prompt y se versiona. **La intervención del Autor queda trazada igual que la de un agente.**
 
-**La revisión con rúbrica.** Una persona aplica a al menos una novela completa **la misma rúbrica de siete criterios que el juez**, desde el mismo fichero. Sin esa identidad, comparar juicio humano y juicio de modelo no significaría nada; con ella, la comparación por criterio es una tabla.
+**La revisión con rúbrica.** Una persona aplica a al menos una novela completa **la misma rúbrica de ocho criterios que el juez**, desde el mismo fichero. Sin esa identidad, comparar juicio humano y juicio de modelo no significaría nada; con ella, la comparación por criterio es una tabla. `storymaker revision hoja` prepara la hoja sin las notas del juez, y `storymaker revision registrar` la valida, la deja como *score* `revision_humana` al lado del juez y compone esa tabla como acta ([`revision-humana.md`](revision-humana.md)). La herramienta es **T**; la revisión sigue siendo **I**.
 
 **Qué pasa con la señal.** Este sistema no reentrena nada, y conviene no prometer más de lo que hay. La retroalimentación tiene tres destinos reales: el comentario de «rehacer» entra en el prompt de esa ejecución; la divergencia sistemática entre humano y juez motiva una **nueva versión de prompt en Langfuse**, medida contra el eval anterior; y la edición directa del canon dispara la maquinaria de la Fase 6. Llamar a eso *training signal* sería inexacto: es control, versionado y medido.
 
@@ -368,7 +368,7 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 | **Reflection** | **Adoptada, acotada y heterónoma.** El bucle editor↔validadores es reflexión con límite de dos iteraciones, y lo que la dispara es un **informe producido fuera del escritor**: determinista en todo lo que bloquea, y del extractor independiente en lo que solo avisa. Nunca la autocrítica de quien redactó | Un modelo juzgando su propia prosa es el fallo que la separación editor/juez existe para evitar, y el mismo que haría inútil preguntarle al escritor si ejecutó sus beats. Además `RetriesBounded` está verificado en TLC |
 | **Self-consistency** | **Adoptada como medida, no como decisión.** N ejecuciones del juez sobre la misma novela para publicar la varianza por criterio. Si excede la tolerancia, la puntuación del gate G5 pasa a ser la **mediana de tres ejecuciones** | Votar por mayoría sobre contenido generado no aplica: no hay una respuesta correcta que aparezca más veces |
 | **Ensembles** | **Rechazado para generación; contingente para el juez** | Alternar modelos entre capítulos rompería la consistencia de voz, que es un criterio de la rúbrica. Para el juez es la mitigación declarada si Haiku resulta demasiado ruidoso |
-| **Debate** | **Rechazado.** Anotado en §5 | Dos modelos discutiendo sobre una rúbrica de siete criterios multiplica el coste para un veredicto que no es más verificable. Los criterios duros ya los resuelven Lean y los validadores deterministas; los blandos los cierra una persona |
+| **Debate** | **Rechazado.** Anotado en §5 | Dos modelos discutiendo sobre una rúbrica de ocho criterios multiplica el coste para un veredicto que no es más verificable. Los criterios duros ya los resuelven Lean y los validadores deterministas; los blandos los cierra una persona |
 
 **El principio que ordena todo esto** es *determinista antes que modelo*. Un segundo modelo solo se añade donde no hay cálculo posible. Para fechas, nombres, longitudes, anacronismos y anclajes hay cálculo, y ahí un crítico LLM sería más caro y menos fiable que veinte líneas de Python.
 
@@ -378,16 +378,34 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 
 **Qué garantiza.** Que el código generado por agentes pasa exactamente por donde pasa el escrito por humanos, y que se puede saber de dónde vino cada cosa.
 
-**Tubería (GitHub Actions).**
+**Por qué se reinterpreta.** No hay integración continua. El proyecto tuvo dos workflows de GitHub Actions, uno para G1 en cada push y otro para G2 cada noche, y se retiraron por decisión del Autor (§17 de la arquitectura). En un ejercicio académico con una sola persona que integra, un servidor que avisa de fallos en cada push, sobre una máquina que no reproduce la del Autor, aporta más ruido que garantía. **Las comprobaciones siguen siendo las mismas; lo que cambia es quién las lanza.** G1 la lanza el Autor en su máquina antes de integrar y al cerrar cada hito, y G2 por hito. El riesgo de que no se lance queda escrito en U-19.
+
+**Tubería, a mano y en local.**
 
 | Etapa | Contenido | Tiempo objetivo | Bloqueante |
 |---|---|---|---|
-| 1 · Estática | ruff y bandit, mypy `--strict`, gitleaks, reglas Semgrep propias | < 1 min | Sí |
+| 1 · Estática | ruff y bandit, mypy `--strict`, gitleaks, reglas Semgrep propias, `pip-audit` | < 1 min | Sí |
 | 2 · Rápida | pytest unitarias, Hypothesis, contratos | < 3 min | Sí |
 | 3 · Formal del sistema | TLC sobre `formal/tla/harness.cfg` (5 capítulos, 2 reintentos) | < 3 min | Sí |
 | 4 · Formal de la historia | `lake build` sobre una cronología de *fixture* | < 2 min | Sí |
 | 5 · Integración | Grafo completo con agente falso sobre SQLite temporal | < 5 min | Sí |
-| 6 · Nocturna | Mutación, CrossHair, suite de evals con modelo real, varianza del juez | Sin límite | No |
+| 6 · Frontend | `tsc` y construcción, pruebas de pantalla con MSW, Steiger | < 3 min | Sí, salvo Steiger |
+| 7 · G2 | Mutación, CrossHair, suite de evals con modelo real, varianza del juez | Sin límite | No |
+
+**Los comandos.** Sin workflow que los guarde, viven aquí. Los de Python se lanzan desde `backend/` y los del frontend desde `frontend/`:
+
+| Etapa | Comando |
+|---|---|
+| Entorno | `uv sync --frozen --group dev` |
+| Estática | `uv run ruff check .` · `uv run mypy` · `gitleaks detect` en la raíz · `uv run --group ci semgrep scan --config ../semgrep --error ..` · `uv run --group ci pip-audit --strict --skip-editable` |
+| Pruebas, integración y correspondencia | `uv run pytest -q` |
+| TLC | `java -XX:+UseParallelGC -cp tla2tools.jar tlc2.TLC -config formal/tla/harness.cfg formal/tla/harness.tla` en la raíz, con `tla2tools.jar` descargado de las *releases* de `tlaplus/tlaplus` |
+| Frontend | `npm ci` · `npm run build` · `npm test` · `npx steiger ./src` (informa) |
+| G2 | `uv run --group ci mutmut run` y `mutmut results` · `uv run --group ci crosshair check --per_condition_timeout=30 storymaker.commons.validation.puras` y lo mismo sobre `storymaker.commons.context.truncado` · `evals/correr.py` y `evals/varianza_juez.py` |
+
+`pip-audit` lleva `--skip-editable` porque, sin él, intenta auditar el propio paquete `storymaker`, no lo encuentra en PyPI y `--strict` lo cuenta como fallo.
+
+**Una etapa que no puede correr en la máquina se anota, no se da por pasada.** Semgrep no publica rueda para Windows y el Application Control de Windows 11 puede bloquear sus binarios; `mutmut` no corre en Windows y remite a WSL; y `npm`, Java o `lake` pueden no estar instalados. Si una etapa no llega a ejecutarse, el informe lo dice, y lo que esa etapa cubría queda sin comprobar hasta que corra en una máquina que la admita.
 
 **Procedencia, en dos planos.** Conviene no confundirlos, porque responden a preguntas distintas:
 
@@ -445,9 +463,9 @@ La posición del proyecto es tan importante por lo que rechaza como por lo que a
 
 **`PreviousVersionPreserved` se comprueba como propiedad temporal** —la secuencia de versiones es *append-only* y ningún elemento publicado cambia— y no como invariante de estado: «la anterior sigue siendo recuperable» no se mira en una foto del sistema, sino entre un estado y el siguiente.
 
-**Liveness.** En batch, la propiedad directa: toda generación termina publicando una versión o deteniéndose con error. En interactivo, el humano se modela como proceso de entorno no determinista y la propiedad se enuncia **bajo hipótesis de equidad débil sobre su respuesta**: *si el Autor acaba respondiendo, toda generación termina*. No es una escapatoria: sin esa hipótesis la propiedad es falsa y no hay diseño que la salve.
+**Liveness.** En batch, la propiedad directa: toda generación termina publicando una versión o deteniéndose con error. En interactivo, el humano se modela como proceso de entorno no determinista y la propiedad se enuncia **bajo hipótesis de equidad fuerte sobre su aprobación**: *el Autor puede pedir que se rehaga tantas veces como quiera, pero no infinitas*. No es una escapatoria: sin esa hipótesis la propiedad es falsa y no hay diseño que la salve. El resto del entorno —las caídas del proceso, los reintentos manuales y los cambios del lector— va acotado por constantes, que es además lo que hace finito el modelo.
 
-**Configuración.** Modelo pequeño —5 capítulos, 2 reintentos— en `formal/tla/harness.cfg`, ejecutado en CI. TLC no ejecuta el código: explora el modelo. **Cada contraejemplo hallado durante el desarrollo se documenta junto al cambio de diseño que provocó**; esa lista es la evidencia más honesta de que la especificación sirvió para algo, y no un adorno escrito a posteriori.
+**Configuración.** Modelo pequeño —5 capítulos, 2 reintentos, una caída, un reintento manual y un cambio del lector— en `formal/tla/harness.cfg`, y el mismo en batch en `formal/tla/harness_batch.cfg`, ejecutados en G1. Las dos agotan su espacio —12.650 y 4.425 estados distintos, un segundo cada una— sin violar nada, y la mutación de la equidad fuerte a débil hace que TLC viole `Termina`, que es la prueba de que la comprobación no es vacía. TLC no ejecuta el código: explora el modelo. **Cada contraejemplo hallado durante el desarrollo se documenta junto al cambio de diseño que provocó**; esa lista es la evidencia más honesta de que la especificación sirvió para algo, y no un adorno escrito a posteriori.
 
 ---
 
@@ -457,7 +475,7 @@ Todo lo que este plan **no** verifica, dicho en voz alta. Cada fila es una decis
 
 | # | Riesgo aceptado | Por qué no se verifica | Mitigación | Cuándo se revisa |
 |---|---|---|---|---|
-| U-1 | **Brecha de refinamiento.** Que el código Python implemente fielmente el modelo TLA+ y el generador de Lean, y que la evaluación en Python de la cronología de la escaleta coincida con `Cronologia.Basico` | Demostrar refinamiento de Python contra TLA+ está fuera de todo presupuesto razonable | Identidad de nombres nodo↔acción, propiedades de Hypothesis que reflejan cada invariante (§3.6), pruebas de integración sobre los mismos escenarios | Si aparece un fallo que TLC daba por imposible |
+| U-1 | **Brecha de refinamiento.** Que el código Python implemente fielmente el modelo TLA+ y el generador de Lean, y que la evaluación en Python de la cronología de la escaleta coincida con `Cronologia.Basico`. Hay una diferencia declarada: Python no cuenta el escenario desconocido para I3 y Lean sí, así que con `lake` una escena sin día puede coincidir con otra fechada justo el día 1 del mismo mes. **Sin `lake`, la evaluación en Python es también la que bloquea en G3 y en G5**, así que esta brecha ya no se limita a un aviso | Demostrar refinamiento de Python contra TLA+ está fuera de todo presupuesto razonable | Identidad de nombres nodo↔acción, propiedades de Hypothesis que reflejan cada invariante (§3.6), pruebas de integración sobre los mismos escenarios | Si aparece un fallo que TLC daba por imposible |
 | U-2 | **Verdad histórica del corpus.** El sistema verifica que una afirmación tiene fuente y estado epistémico, **no que sea cierta** | Ninguna técnica de software decide qué ocurrió en 1805 | Estado epistémico por hecho, fuentes registradas, gate humano de Investigation, nota del autor con las licencias declaradas | Permanente: es la naturaleza del dominio |
 | U-3 | **Reproducibilidad textual.** Dos ejecuciones del mismo brief no producen el mismo texto | Un modelo generativo no es determinista bit a bit ni a temperatura cero | Se promete auditabilidad y estabilidad métrica en su lugar; la evidencia es el PDF commiteado más su manifiesto | No se revisa: es una promesa que no se hace |
 | U-4 | **Evasión del guardrail por paráfrasis.** Una lista de términos no detecta una alusión | El problema es semántico y abierto | Tres niveles de lista, normalización y gate humano de Writing | Si aparece un caso real en una revisión |
@@ -475,6 +493,9 @@ Todo lo que este plan **no** verifica, dicho en voz alta. Cada fila es una decis
 | U-14 | **Cita fabricada.** El verificador comprueba que el fragmento guardado sostenga el hecho, no que el fragmento esté realmente en la URL citada | Releer las páginas duplicaría el coste de la fase y abriría una segunda puerta a internet | La fuente queda registrada con su URL, a un clic en el informe del gate; y un hecho histórico falso sigue cayendo bajo U-2 | Si una revisión encuentra un caso real |
 | U-17 | **La API no tiene autenticación, y desde arq. §16.5 opera novelas.** Quien alcance el puerto puede leer una novela, pedir un cambio, lanzar una ejecución o decidir un gate, y cada invocación cuesta dinero | Montar usuarios y sesiones cuesta más que el riesgo que cubre en un sistema que corre en local, con un solo usuario que es a la vez el Autor | El servidor solo escucha en `127.0.0.1`; cada acción rechaza a un cliente no local y exige `Content-Type: application/json`, que una página ajena abierta en el navegador del Autor no puede enviar sin un permiso CORS que la API no concede. Toda acción que ejecuta el grafo pasa por la CLI, con su cerrojo y su traza | Si el backend se desplegara fuera de la máquina del Autor, o escuchara en otra interfaz que `127.0.0.1` |
 | U-18 | **Que los documentos digan la verdad sobre el dominio.** La familia §11e comprueba que el código y la especificación coinciden, no que lo que ambos dicen sea lo correcto: una tabla mal pensada y un registro fiel a ella pasan en verde | No hay técnica que decida si una decisión de diseño es buena; eso es juicio, y el juicio es del Autor | El grilling de cada documento antes de bajar al siguiente, que es donde se destapan los hilos sueltos, y la revisión del Autor al cerrar cada hito. Su clase de confianza es **I** | Si un fallo real resultara estar correctamente implementado según un documento equivocado |
+| U-19 | **G1 y G2 no corren solas.** Sin integración continua, nada impide integrar un cambio sin haber lanzado G1, y G2 corre solo cuando el Autor la lanza | Un servidor de integración avisaba en cada push de fallos que nadie más iba a ver, sobre una máquina distinta de la del Autor. En un ejercicio con una sola persona que integra, cuesta más de lo que protege (§17 arq.) | G0 sigue en cada *commit*: ruff, mypy y gitleaks. G3, G4 y G5 no dependen de G1, porque corren dentro del grafo en cada ejecución, así que ninguna novela se publica sin validar. Los comandos de G1 y G2 están en §4.7, y una etapa que no pudo correr se anota como no ejecutada | Si llega a una novela un fallo que G1 habría detectado, o si el proyecto pasa a tener más de una persona que integra |
+| U-20 | **La latencia en Langfuse depende de una vía interna del SDK.** La API pública de `langfuse` 4 no deja fijar el inicio de una observación, y el arnés solo sabe cuánto duró una invocación cuando ya ha terminado; el inicio se fija con el tracer interno del cliente | Reestructurar cada nodo para abrir la observación antes de invocar toca los catorce puntos de invocación por un dato de lectura | Si la vía interna falla, la observación se crea por la pública y la latencia queda a cero, sin tumbar el nodo; la duración viaja además como metadato `duracion_ms`. Clase **T** con un cliente falso que no expone la vía interna | Si una actualización del SDK deja la latencia a cero en una Ejecución real |
+| U-21 | **`render_visual` juzga la lectura candidata, no la interfaz de React.** Lo que el lector ve es la aplicación de React, y lo que el nodo abre en Chromium es el HTML de lectura con el que se imprime el PDF de respaldo | La versión todavía no existe cuando se juzga, así que la API no puede servirla y la interfaz no tendría qué pedir. Escribirla y deshacerla para poder abrirla en la interfaz rompería el orden que hace de G5 una puerta | Las dos lecturas salen de las mismas filas y enseñan las mismas tres piezas. La interfaz real se inspecciona en el navegador sobre versiones publicadas con la skill `inspeccion-visual`, y lo que encuentra queda en [`inspeccion-visual.md`](inspeccion-visual.md) | Si una inspección encuentra en la interfaz un defecto de render que la lectura candidata no podía ver |
 
 ---
 
@@ -485,11 +506,11 @@ Siete puertas. Cada una declara qué exige, qué evidencia produce y qué ocurre
 | Gate | Momento | Exige | Evidencia | Si falla |
 |---|---|---|---|---|
 | **G0 · Local** | Pre-commit | ruff, mypy rápido, gitleaks | Hook local | El *commit* no se crea |
-| **G1 · Integración** | Cada push a la rama de trabajo | Estática, unitarias, Hypothesis, contratos, TLC, `lake build` de *fixture*, integración con agente falso, red-team determinista y las cuatro pruebas de correspondencia de §3.9 | Build verde, más el informe de las dos que informan | No se integra. Las dos que informan no detienen nada |
-| **G2 · Nocturna** | Diaria y por hito | Mutación ≥ 80 % en `commons/validation/`, CrossHair, cinco evals con modelo real, varianza del juez, sesión manual de red-teaming por hito | Informe y *dataset run* en Langfuse | No bloquea; se abre defecto y se trata en el hito |
-| **G3 · Capítulo** | Tras cada `WriteChapter`, en ejecución, en dos pasadas | **Pasada determinista:** los validadores programáticos de §11a que actúan sobre el capítulo. **Pasada del extractor**, solo si la anterior queda limpia: los cuatro invariantes de Lean sobre la cronología acumulada, más `cobertura_capitulo`, `ejecucion_escaleta` y `arco_ejecutado` en calidad de aviso | Filas en `incidencia` y `score`, *scores* en la traza | Lo bloqueante vuelve al editor; agotados los dos reintentos, `Fail`. Los avisos no detienen el capítulo: viajan al encargo del siguiente y al informe de G4 |
-| **G4 · Fase** | Cinco gates humanos | La revisión de la escaleta —`cobertura_anclada`, que se repara sola, `arco_anclado` y la cronología— guardada y a la vista en el gate de Plotting, sin cerrarlo, y en los cinco la decisión explícita del Autor: aprobar, rehacer con comentario, editar o abortar | Fila en `gate`, `audit_log`, span en Langfuse | La ejecución se aparca. **Nunca se auto-aprueba** |
-| **G5 · Publicación** | Antes de `PublishVersion` | Lean sobre la cronología completa, umbral del juez, `cobertura_personalizacion`, y `render_visual` sobre la versión candidata antes del `commit` | `manifiesto` con hashes, prompts, modelos y versión del SDK | La versión **no se publica** |
+| **G1 · Integración** | A mano, en la máquina del Autor: antes de integrar y al cerrar cada hito (§4.7) | Estática, unitarias, Hypothesis, contratos, TLC, `lake build` de *fixture*, integración con agente falso, red-team determinista y las cuatro pruebas de correspondencia de §3.9 | Build verde, más el informe de las dos que informan | No se integra. Las dos que informan no detienen nada |
+| **G2 · Nocturna** | A mano, por hito (§4.7). Conserva el nombre, pero ya no corre cada noche | Mutación ≥ 80 % en `commons/validation/`, CrossHair, cinco evals con modelo real, varianza del juez, sesión manual de red-teaming por hito | Informe y *dataset run* en Langfuse | No bloquea; se abre defecto y se trata en el hito |
+| **G3 · Capítulo** | Tras cada `WriteChapter`, en ejecución, en dos pasadas | **Pasada determinista:** los validadores programáticos de §11a que actúan sobre el capítulo. **Pasada del extractor**, solo si la anterior queda limpia: los cuatro invariantes sobre la cronología acumulada —Lean, o Python sin `lake`—, bloqueantes para los eventos del intento, más `cobertura_capitulo`, `ejecucion_escaleta` y `arco_ejecutado` en calidad de aviso | Filas en `incidencia` y `score`, *scores* en la traza | Lo bloqueante vuelve al editor; agotados los dos reintentos, `Fail`. Un parche que no cambia el texto los agota: `Fail` con `reparacion_sin_cambios`. Los avisos no detienen el capítulo: viajan al encargo del siguiente y al informe de G4 |
+| **G4 · Fase** | Cinco gates humanos | La revisión de la escaleta —`cobertura_anclada`, que se repara sola y mirando la fecha, `arco_anclado`, la cronología, los anclajes resueltos por parecido y lo inventado sobre personajes históricos— guardada y a la vista en el gate de Plotting, sin cerrarlo; `cobertura_personalizacion`, en cada llegada al gate de Writing, con su *score*, y los rechazos de la publicación que devuelven capítulos; y en los cinco la decisión explícita del Autor: aprobar, rehacer con comentario, editar o abortar | Fila en `gate`, `audit_log`, span en Langfuse | La ejecución se aparca. **Nunca se auto-aprueba** |
+| **G5 · Publicación** | Antes de `PublishVersion` | La cronología completa de lo aprobado —Lean, o Python sin `lake`—, umbral del juez y `render_visual` en Chromium sobre la versión candidata, las dos antes de escribirla y las dos con su *score* | `manifiesto` con hashes, prompts, modelos y versión del SDK | La versión **no se publica** y la novela vuelve al gate de Writing con los capítulos citados, con el tope del juez |
 | **G6 · Post** | Tras publicar | Aserciones sobre la traza (§4.1), coste dentro de presupuesto, *scores* completos | Consulta a la API de Langfuse | Defecto abierto; la versión ya publicada no se retira |
 
 **Regla de suspensión.** Solo el Autor puede saltarse G4, y solo desactivando los gates enteros para una ejecución en modo batch, lo que queda registrado en el manifiesto. **G3 y G5 no admiten excepción**: son las dos puertas que impiden que salga una novela con un anacronismo duro o con un capítulo sin validar.
@@ -519,6 +540,13 @@ Lectura transversal: los siete modos de fallo que más importan y con qué se at
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-25 | Técnica 18: equidad **fuerte**, entorno acotado, `harness_batch.cfg` y el resultado de TLC con su mutación. G4: `cobertura_personalizacion` en cada llegada al gate de Writing y los rechazos de la publicación. G5: `render_visual` en Chromium, las dos comprobaciones antes de escribir la versión y con *score*, y el rechazo que vuelve al gate. §4.2 y §4.5: ocho criterios, y la hoja, el registro y el acta de la revisión humana. Entra U-21 | La validación de la novela contra arq. §9 y §11 tal como quedaron el 2026-09-25 ([spec](../specs/validacion/spec.md), It-38) |
+| 2026-09-25 | §4.2: el dataset pasa a `ejemplos/evals/`, cinco briefs, uno por ocasión del enunciado, más los dos adversariales de §4.9, cada uno con lo que se espera de él | El directorio `evals/` se retiró y el dataset no tenía sitio en el repositorio |
+| 2026-09-25 | Técnica 9: la observabilidad pasa a traza por generación, span por capítulo, latencia real, prompt enlazado y `tool` por llamada a herramienta; entra U-20, la latencia por la vía interna del SDK. Todo es **T** con cliente falso salvo la demostración con claves, **D** en G6 | Se propaga §14 de la arquitectura y la spec `observabilidad` |
+| 2026-09-24 | G3: la cronología de la pasada del extractor la calcula Lean o, sin `lake`, Python, bloqueante para los eventos del intento; un parche sin cambios agota los reintentos. G5: la cronología completa de lo aprobado, con el mismo respaldo. U-1 recoge que la evaluación en Python pasa a bloquear | Decisiones del Autor sobre G3 y Lean; se propagan §4 (Fase 4) y §11c de la arquitectura y la spec `escritura` |
+| 2026-09-24 | G4: la cronología de la escaleta lee las fechas en prosa con su precisión y solo cuenta lo fechado al día para estar en dos sitios; el aviso de invención sobre históricos no salta por nombres de lugar. U-1 recoge que, con Lean, el escenario desconocido no está exento de I3 como en Python; se admite porque en Plotting es aviso. Todo es **T** | Se propagan §4 (Fase 3), §11c y §17 de la arquitectura y la spec `trama-rehacible` §3.3 y §4.4 |
+| 2026-09-24 | **Se retiran los workflows de GitHub Actions**: G1 y G2 pasan a lanzarse a mano en la máquina del Autor. §4.7 se reescribe con la tubería local y sus comandos, y `pip-audit` gana `--skip-editable`. La técnica 15 pasa a «Reinterpretada», cambia el momento de G1 y G2 en §6, entra U-19, y §3.1, §3.2, §3.8 y §4.10 dejan de decir «en CI» | Decisión del Autor (§17 arq.). Los workflows avisaban de fallos en cada push, y en local `pip-audit --strict` fallaba siempre al intentar auditar el propio paquete |
+| 2026-09-24 | G4: la revisión de la escaleta gana dos avisos —`anclaje_por_parecido` e `invencion_sobre_historico`— y la reparación de la cobertura mira antes la fecha; la propiedad de `arco_anclado` pasa a hitos en capítulos que no retroceden. Todo es **T** y ninguno cierra el gate | Se propagan §4 (Fase 3), §11a y §19 de la arquitectura y la spec `trama-rehacible` §3.2, §3.5, §3.6, §4.4 y §4.5 |
 | 2026-09-24 | G4: la revisión de la escaleta se guarda y se enseña en el gate de Plotting sin cerrarlo, y la cobertura se repara sola; la técnica 4 gana la fila de rehacer la Trama; U-1 cubre también la evaluación en Python de la cronología de la escaleta | Se propagan §4 (Fase 3) y §11c de la arquitectura y la spec `trama-rehacible` |
 | 2026-09-24 | U-13 cubre también el veredicto parcial: qué considera el verificador dato central y qué añadido | Se propaga §4 de la arquitectura, que da al verificador un tercer veredicto |
 | 2026-09-24 | U-13: el veredicto del verificador **limita la firmeza** del hecho en lugar de degradar su estado epistémico, y cubre también los hechos de la micro-sesión de Plotting | Se propaga §7 de la arquitectura: la firmeza se calcula desde estado, respaldo y origen, y el estado declarado ya no se reescribe |

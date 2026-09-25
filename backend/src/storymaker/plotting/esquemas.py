@@ -16,7 +16,9 @@ personaje no se transforma es una decisión sobre él.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -114,7 +116,7 @@ class EscenaPropuesta(BaseModel):
     clave: str = Field(min_length=1)
     orden: int = Field(ge=1)
     escenario: str = ""
-    fecha_narrativa: str = ""
+    fecha_narrativa: str = Field(default="", description="AAAA, AAAA-MM o AAAA-MM-DD")
     pdv: str = ""
     objetivo: str = ""
     conflicto: str = ""
@@ -179,3 +181,37 @@ class SalidaArquitecto(BaseModel):
     @property
     def homenajeado(self) -> PersonajePropuesto | None:
         return next((p for p in self.personajes if p.es_homenajeado), None)
+
+
+def con_claves(hechos: Iterable[int], datos: Iterable[int]) -> type[SalidaArquitecto]:
+    """`SalidaArquitecto` con las claves de anclaje válidas **enumeradas en su JSON Schema**.
+
+    El contrato de salida se genera del esquema (`contrato_de_salida`), así que enumerar
+    ahí los `#id` del corpus y del encargo le enseña al arquitecto el universo cerrado al
+    que puede anclar, en el mismo sitio en que aprende los nombres de los campos. Sin la
+    enumeración escribía frases donde iban claves, y la mitad de los anclajes no apuntaba
+    a nada.
+
+    **La enumeración guía y no valida**: Pydantic sigue aceptando cualquier texto. Rechazar
+    un anclaje mal escrito tumbaría la salida entera y repetiría la llamada más cara de la
+    fase por un despiste; lo que no sea una clave se resuelve por texto o por parecido al
+    volcar, y lo que ni así se resuelva queda como aviso (trama-rehacible §3.5).
+    """
+    claves_de_hecho = [f"#{h}" for h in hechos]
+    claves_de_dato = [f"#{d}" for d in datos]
+
+    class SalidaConClaves(SalidaArquitecto):
+        @classmethod
+        def model_json_schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
+            esquema = super().model_json_schema(*args, **kwargs)
+            campos = esquema.get("$defs", {}).get("AnclajePropuesto", {}).get("properties", {})
+            for campo, claves in (("hecho", claves_de_hecho), ("dato", claves_de_dato)):
+                if campo in campos and claves:
+                    campos[campo] = {
+                        "anyOf": [{"type": "string", "enum": claves}, {"type": "null"}],
+                        "default": None,
+                    }
+            return esquema
+
+    SalidaConClaves.__name__ = SalidaArquitecto.__name__
+    return SalidaConClaves

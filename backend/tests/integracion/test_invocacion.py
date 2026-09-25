@@ -189,6 +189,26 @@ class TestRamificacion:
         assert procedencia["origen_db"] == "novela-1.db"
         assert procedencia["origen_fase_run_id"] == ejecucion
 
+    async def test_la_rama_hereda_el_checkpoint_en_su_propio_hilo(self, novela: Path) -> None:
+        """El hilo se llama como el fichero: sin mudarlo, la rama nacía sin checkpoint."""
+        async with abrir_novela(novela) as db:
+            await db.execute("CREATE TABLE checkpoints (thread_id TEXT, checkpoint_id TEXT)")
+            await db.execute("CREATE TABLE writes (thread_id TEXT, checkpoint_id TEXT)")
+            await db.execute("INSERT INTO checkpoints VALUES ('novela-1', 'c1')")
+            await db.execute("INSERT INTO writes VALUES ('novela-1', 'c1')")
+            await db.commit()
+
+        rama = await ramificar(novela, novela.with_name("novela-1b.db"))
+
+        async with abrir_novela(rama) as db:
+            for tabla in ("checkpoints", "writes"):
+                async with db.execute(f"SELECT DISTINCT thread_id FROM {tabla}") as cursor:
+                    hilos = [str(f[0]) for f in await cursor.fetchall()]
+                assert hilos == ["novela-1b"], tabla
+        async with abrir_novela(novela) as db:
+            async with db.execute("SELECT thread_id FROM checkpoints") as cursor:
+                assert [str(f[0]) for f in await cursor.fetchall()] == ["novela-1"]
+
     async def test_la_novela_original_no_se_toca(self, novela: Path) -> None:
         rama = await ramificar(novela, novela.with_name("novela-1b.db"))
         async with abrir_novela(rama) as db:

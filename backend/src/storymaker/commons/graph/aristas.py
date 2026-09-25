@@ -60,6 +60,8 @@ ARISTAS: Final[frozenset[tuple[str, str]]] = frozenset(
         ("Judge", "AwaitApproval4"),
         ("Judge", "Fail"),
         ("PublishVersion", "Idle"),
+        ("PublishVersion", "AwaitApproval4"),
+        ("PublishVersion", "Fail"),
         # Fase 6 · Regeneration
         ("Idle", "RequestChange"),
         ("RequestChange", "Invalidate"),
@@ -122,10 +124,29 @@ def tras_checkpoint(estado: EstadoNovela) -> str:
     el nodo entrega el estado, `capitulo` es el que falta por escribir, no el que se acaba
     de aprobar. Con `<` la última novela se quedaba siempre un capítulo corta y `PublishVersion`
     la rechazaba sin decir por qué — que es justo lo que destapó la prueba de extremo a extremo.
+
+    En regeneración el router es el mismo y lo que cambia es el nodo: `Checkpoint` no suma
+    uno, sino que saca el siguiente de `a_regenerar`, y con la cola vacía deja `capitulo`
+    más allá del último. Así la regeneración no reescribe en cascada lo posterior.
     """
     if estado["capitulo"] <= estado["n_capitulos"]:
         return _comprobada("Checkpoint", "WriteChapter")
     return _comprobada("Checkpoint", "AwaitApproval4")
+
+
+def tras_idle(estado: EstadoNovela) -> str:
+    """Publicada → fin de la invocación; con una petición aprobada → `RequestChange`.
+
+    `Idle` es un reposo y no un final, pero la Fase 6 entra como **invocación nueva**:
+    `regenerar` escribe en el checkpoint `pc = RequestChange` como salida de `Idle`, igual
+    que `reintentar` lo hace como salida de `SealCorpus`, y este router lo lee. Recién
+    publicada, `pc` es `Idle` y la invocación termina.
+    """
+    from langgraph.graph import END
+
+    if estado["pc"] == "RequestChange":
+        return _comprobada("Idle", "RequestChange")
+    return str(END)
 
 
 def tras_plan(estado: EstadoNovela) -> str:
@@ -151,6 +172,20 @@ def tras_judge(estado: EstadoNovela) -> str:
     if estado["rechazos_juez"] < estado["max_rechazos_juez"]:
         return _comprobada("Judge", "AwaitApproval4")
     return _comprobada("Judge", "Fail")
+
+
+def tras_publish(estado: EstadoNovela) -> str:
+    """Publicada → `Idle`; rechazada → al gate de Writing, con el tope del juez; → `Fail`.
+
+    Lean o `render_visual` rechazaron la candidata y no hay versión. El rechazo vuelve al
+    Autor como vuelve el del juez, y comparte su contador: un render que falla siempre y un
+    Autor que aprueba siempre serían el mismo ciclo que TLC encontró entre `Judge` y el gate.
+    """
+    if not estado["hay_bloqueantes"]:
+        return _comprobada("PublishVersion", "Idle")
+    if estado["rechazos_juez"] < estado["max_rechazos_juez"]:
+        return _comprobada("PublishVersion", "AwaitApproval4")
+    return _comprobada("PublishVersion", "Fail")
 
 
 def tras_gate(estado: EstadoNovela, *, gate: str, decision: str) -> str:

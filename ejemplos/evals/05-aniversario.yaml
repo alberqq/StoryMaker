@@ -1,0 +1,73 @@
+# EVAL 05 · Aniversario (bodas de oro) · brief deliberadamente tenso
+#
+# Ocasión: cincuenta años de casados. El comprador pide un tono festivo, y la época que
+# elige es la Valencia de la epidemia de cólera de 1885.
+#
+# Eje que cubre (verification.md §4.2): un brief tenso, tono festivo sobre un período
+# trágico. El Intake lo detecta por código (`contradiccion_del_brief`, tono contra período)
+# y lo deja como aviso; en batch no hay nadie a quien preguntar, así que la novela sigue y
+# el arquitecto tiene que resolver la tensión en la trama.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/05-aniversario.yaml --nombre eval-05-aniversario --batch
+
+espera:
+  termina: publicada
+  intake: una incidencia `contradiccion_del_brief` por tono festivo sobre epidemia
+  validadores_que_deben_pasar:
+    - schema_guard
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - cobertura_personalizacion
+    - lean_cronologia
+    - render_visual
+  juez: tono >= 6; es el criterio que este brief pone a prueba
+  notas: >
+    En interactivo este aviso se enseña en el gate de Intake para que el comprador lo
+    confirme. Aquí se mide qué hace el sistema cuando nadie contesta: avisar y seguir.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Amparo Soler Benlloch
+    fecha_nacimiento: 1952-06-24
+    rol_epoca: ayudante en la botica de su padre, en la calle de la Paz
+    ocasion: bodas de oro con Vicente
+    elementos_personalizacion:
+      - texto: conoció a su marido Vicente en una verbena de San Juan
+        obligatorio: true
+      - texto: cada domingo prepara una paella para toda la familia
+        obligatorio: true
+      - texto: colecciona abanicos pintados a mano
+        obligatorio: false
+
+  mundo:
+    periodo:
+      inicio: 1885
+      fin: 1886
+      denominacion: epidemia de cólera de 1885
+    lugar: Valencia
+    evento_ancla: la vacunación contra el cólera de Jaime Ferrán en 1885
+    personajes_historicos:
+      aparecen:
+        - Jaime Ferrán
+      se_evitan:
+        - Alfonso XII
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: costumbrista
+    tono: festivo y alegre, de celebración
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: moderado
+    arcaismo: minimo
+    contenido_admisible: sin escenas de agonía ni descripciones de enfermos graves
+    palabras_prohibidas:
+      novela:
+        - cadáver
+      destinatario:
+        - orfanato
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

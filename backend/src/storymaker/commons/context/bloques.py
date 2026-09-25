@@ -18,6 +18,7 @@ los tres que importan.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 import aiosqlite
@@ -101,11 +102,38 @@ async def encargo(db: aiosqlite.Connection, numero: int, settings: Settings) -> 
             + "; ".join(f"{h['personaje']}: {_valor(h, 'descripcion')}" for h in hitos)
         )
 
+    fijos = len(fragmentos)
+    motivos = await motivos_para_rehacer(db, numero)
+    if motivos:
+        fragmentos.append(
+            "Este capitulo se reescribe por lo siguiente, y la version nueva tiene que "
+            "corregirlo:\n- " + "\n- ".join(motivos)
+        )
+        fijos += 1
+
     pendientes = await avisos_pendientes(db, numero)
     if pendientes:
         fragmentos.append("Quedo pendiente del capitulo anterior:\n- " + "\n- ".join(pendientes))
 
-    return Bloque(1, tuple(fragmentos), fijos=len(fragmentos) - (1 if pendientes else 0))
+    return Bloque(1, tuple(fragmentos), fijos=fijos)
+
+
+_CAPITULO_CITADO = re.compile(r"cap(\d+)")
+
+
+async def motivos_para_rehacer(db: aiosqlite.Connection, numero: int) -> list[str]:
+    """Lo que el juez o la publicación le reprochan a este capítulo, citándolo.
+
+    Es el camino por el que un rechazo llega al escritor: `render_visual` o Lean rechazan la
+    versión, la incidencia cita `cap4`, el Autor rehace en el gate de Writing y el escritor
+    del capítulo 4 lo lee en su encargo. Va entre lo fijo del bloque, porque recortarlo
+    dejaría al escritor reescribiendo sin saber por qué.
+    """
+    return [
+        mensaje
+        for mensaje, ubicacion in await arnes.incidencias_que_devuelven_capitulos(db)
+        if numero in {int(n) for n in _CAPITULO_CITADO.findall(ubicacion)}
+    ]
 
 
 async def avisos_pendientes(db: aiosqlite.Connection, numero: int) -> list[str]:

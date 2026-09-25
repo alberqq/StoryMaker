@@ -2,6 +2,10 @@
 
 La lectura web, el PDF y `render_visual`.
 
+**`render_visual` mira la novela en un navegador.** Abre la lectura candidata en Chromium,
+recorre el índice capítulo a capítulo y comprueba que portada, índice y ficha de personajes
+se pintan. Lo que no se ve cita su pieza o su capítulo, y así vuelve a quien puede arreglarlo.
+
 **El render se comprueba antes de publicar, y eso es lo que lo hace una puerta.** G5 no
 admite excepción, y un índice roto detectado tras `PublishVersion` sería una versión ya
 publicada con la portada mal: no habría adónde volver. Por eso se arma el manifiesto de la
@@ -62,24 +66,48 @@ class Lectura:
 
 
 async def construir_lectura(db: aiosqlite.Connection, version_id: int) -> Lectura:
-    """Arma la lectura de una versión candidata a partir de su manifiesto.
+    """Arma la lectura de una versión ya escrita a partir de su manifiesto.
 
     Se arma desde `version_capitulo` y no desde «los capítulos aprobados», y la diferencia
     importa: una versión es exactamente la lista de `capitulo_version` que la componen, y
     renderizar otra cosa publicaría algo que el manifiesto no describe.
     """
+    filas = await texto.capitulos_de_version(db, version_id)
+    return await _lectura(db, [(int(f["capitulo_id"]), str(f["texto"])) for f in filas])
+
+
+async def construir_lectura_candidata(
+    db: aiosqlite.Connection, capitulo_version_ids: list[int]
+) -> Lectura:
+    """La lectura de la versión **candidata**, antes de que exista ninguna fila de versión.
+
+    Es la que juzga `render_visual` en `publicar`: se arma con la misma lista de
+    `capitulo_version` que después se escribirá en `version_capitulo`, así que lo que se
+    comprueba es exactamente lo que se publicaría. Armarla antes de insertar hace que un
+    rechazo no deje nada que deshacer.
+    """
+    capitulos: list[tuple[int, str]] = []
+    for version_id in capitulo_version_ids:
+        async with db.execute(
+            "SELECT capitulo_id, texto FROM capitulo_version WHERE id = ?", (version_id,)
+        ) as cursor:
+            fila = await cursor.fetchone()
+        if fila is not None:
+            capitulos.append((int(fila["capitulo_id"]), str(fila["texto"])))
+    return await _lectura(db, capitulos)
+
+
+async def _lectura(db: aiosqlite.Connection, filas: list[tuple[int, str]]) -> Lectura:
     obra = await canon.obra(db)
     titulo = str(obra["titulo"]) if obra is not None and obra["titulo"] else "Sin titulo"
 
     capitulos: list[tuple[int, str]] = []
-    for fila in await texto.capitulos_de_version(db, version_id):
+    for capitulo_id, cuerpo in filas:
         async with db.execute(
-            "SELECT numero FROM plan_capitulo WHERE id = ?", (fila["capitulo_id"],)
+            "SELECT numero FROM plan_capitulo WHERE id = ?", (capitulo_id,)
         ) as cursor:
             numero = await cursor.fetchone()
-        parrafos = "".join(
-            f"<p>{html.escape(p)}</p>" for p in str(fila["texto"]).split("\n") if p.strip()
-        )
+        parrafos = "".join(f"<p>{html.escape(p)}</p>" for p in cuerpo.split("\n") if p.strip())
         capitulos.append((int(numero["numero"]) if numero else 0, parrafos))
 
     indice = (
@@ -105,46 +133,142 @@ async def construir_lectura(db: aiosqlite.Connection, version_id: int) -> Lectur
     )
 
 
-def render_visual(lectura: Lectura) -> list[Incidencia]:
-    """Comprueba que el render tiene sus tres piezas. **Corre antes del `commit`.**
+def _incidencia(mensaje: str, ubicacion: str | None = None, *, bloquea: bool = True) -> Incidencia:
+    return Incidencia(
+        validador="render_visual",
+        severidad=Severidad.BLOQUEANTE if bloquea else Severidad.AVISO,
+        mensaje=mensaje,
+        ubicacion=ubicacion,
+    )
 
-    Esta es la comprobación estructural, que no necesita navegador: que el índice tenga
-    entradas, que la ficha de personajes no esté vacía y que la portada lleve título. La
-    comprobación visual con Playwright vive aparte porque necesita un navegador instalado, y
-    un navegador ausente es un error de entorno, no un render roto.
+
+def estructura(lectura: Lectura) -> list[Incidencia]:
+    """La mitad que no necesita navegador: que las piezas existan en el documento.
+
+    Que el índice tenga entradas, que haya capítulos y que portada, índice y ficha de
+    personajes estén en el HTML. Es lo único que se comprueba cuando no hay navegador.
     """
     documento = lectura.como_html()
-    incidencias = []
-
-    for pieza in PIEZAS_EXIGIDAS:
-        if f'id="{pieza}"' not in documento:
-            incidencias.append(
-                Incidencia(
-                    validador="render_visual",
-                    severidad=Severidad.BLOQUEANTE,
-                    mensaje=f"La lectura renderizada no tiene {pieza}.",
-                    ubicacion=pieza,
-                )
-            )
-
+    incidencias = [
+        _incidencia(f"La lectura renderizada no tiene {pieza}.", pieza)
+        for pieza in PIEZAS_EXIGIDAS
+        if f'id="{pieza}"' not in documento
+    ]
     if not lectura.capitulos:
         incidencias.append(
-            Incidencia(
-                validador="render_visual",
-                severidad=Severidad.BLOQUEANTE,
-                mensaje="La version candidata no tiene ningun capitulo que renderizar.",
-            )
+            _incidencia("La version candidata no tiene ningun capitulo que renderizar.")
         )
     if "<li>" not in lectura.indice:
         incidencias.append(
-            Incidencia(
-                validador="render_visual",
-                severidad=Severidad.BLOQUEANTE,
-                mensaje="El indice no tiene entradas: no seria navegable.",
-                ubicacion="indice",
-            )
+            _incidencia("El indice no tiene entradas: no seria navegable.", "indice")
         )
     return incidencias
+
+
+#: El tamaño de la ventana del navegador. Un lector de escritorio: lo que se comprueba es
+#: que las piezas se pintan y se alcanzan, no la maquetación en móvil.
+_VENTANA: Any = {"width": 1000, "height": 1200}
+
+
+async def en_navegador(lectura: Lectura) -> list[Incidencia] | None:
+    """Abre la lectura en Chromium, la recorre y dice qué no se ve. `None` si no hay navegador.
+
+    Mira lo que un lector vería, no lo que dice el HTML: que portada, índice y ficha de
+    personajes **se pintan** —visibles, con caja de tamaño no nulo y con texto—, que el
+    índice tiene un enlace por capítulo y que **cada enlace, pulsado, lleva a su capítulo**
+    y lo deja en pantalla con al menos un párrafo. Un capítulo que no se alcanza o que se
+    pinta vacío cita su número en `ubicacion` (`capN`), que es lo que permite devolverlo al
+    escritor desde el gate de Writing.
+    """
+    try:
+        from playwright.async_api import async_playwright
+    except ImportError:
+        return None
+
+    incidencias: list[Incidencia] = []
+    async with async_playwright() as playwright:
+        try:
+            navegador = await playwright.chromium.launch()
+        except Exception:  # sin binario de Chromium: es el entorno, no la novela
+            return None
+        try:
+            pagina = await navegador.new_page(viewport=_VENTANA)
+            await pagina.set_content(lectura.como_html())
+
+            for pieza in PIEZAS_EXIGIDAS:
+                zona = pagina.locator(f"#{pieza}")
+                if await zona.count() == 0 or not await zona.first.is_visible():
+                    incidencias.append(_incidencia(f"La {pieza} no se ve en el navegador.", pieza))
+                    continue
+                caja = await zona.first.bounding_box()
+                if caja is None or caja["height"] < 1 or caja["width"] < 1:
+                    incidencias.append(_incidencia(f"La {pieza} se pinta sin tamaño.", pieza))
+                elif not (await zona.first.inner_text()).strip():
+                    incidencias.append(_incidencia(f"La {pieza} se pinta vacia.", pieza))
+
+            enlaces = pagina.locator('#indice a[href^="#capitulo-"]')
+            total = await enlaces.count()
+            if total != len(lectura.capitulos):
+                incidencias.append(
+                    _incidencia(
+                        f"El indice tiene {total} enlace(s) para {len(lectura.capitulos)} "
+                        "capitulo(s).",
+                        "indice",
+                    )
+                )
+            for i in range(total):
+                enlace = enlaces.nth(i)
+                destino_id = str(await enlace.get_attribute("href") or "").lstrip("#")
+                numero = destino_id.removeprefix("capitulo-")
+                await enlace.click()
+                destino = pagina.locator(f'[id="{destino_id}"]')
+                if await destino.count() == 0:
+                    incidencias.append(
+                        _incidencia(
+                            f"El enlace del indice al capitulo {numero} no lleva a ninguna parte.",
+                            f"cap{numero}",
+                        )
+                    )
+                    continue
+                en_pantalla = await destino.first.evaluate(
+                    "e => { const r = e.getBoundingClientRect();"
+                    " return r.top < window.innerHeight && r.bottom > 0; }"
+                )
+                if not en_pantalla:
+                    incidencias.append(
+                        _incidencia(
+                            f"Pulsar el capitulo {numero} en el indice no lo deja en pantalla.",
+                            f"cap{numero}",
+                        )
+                    )
+                if await destino.first.locator("p").count() == 0:
+                    incidencias.append(
+                        _incidencia(f"El capitulo {numero} se pinta sin texto.", f"cap{numero}")
+                    )
+        finally:
+            await navegador.close()
+    return incidencias
+
+
+async def render_visual(lectura: Lectura) -> list[Incidencia]:
+    """El validador: la estructura, y después la lectura en un navegador. **Antes del `commit`.**
+
+    Sin navegador no se para la novela: queda la comprobación estructural y un aviso que lo
+    dice, porque un Chromium ausente es un defecto del entorno y no del render. Con
+    navegador, lo que decide es lo que el lector vería.
+    """
+    incidencias = estructura(lectura)
+    vista = await en_navegador(lectura)
+    if vista is None:
+        incidencias.append(
+            _incidencia(
+                "No hay navegador disponible: el render solo se ha comprobado en el HTML.",
+                bloquea=False,
+            )
+        )
+        return incidencias
+    vistas = {(i.mensaje, i.ubicacion) for i in incidencias}
+    return incidencias + [i for i in vista if (i.mensaje, i.ubicacion) not in vistas]
 
 
 async def imprimir_pdf(html_lectura: str, destino: str) -> None:

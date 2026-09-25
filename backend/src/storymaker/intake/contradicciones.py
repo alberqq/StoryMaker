@@ -55,10 +55,12 @@ def _edad_contra_periodo(brief: Brief) -> list[str]:
             f"Hace falta al menos el ano."
         ]
     if nacimiento > brief.periodo.fin:
+        # Es la fecha real de la persona, no la de su personaje: los briefs de ejemplo la
+        # traen así. No se pregunta; se dice qué se hará con ella (arq. §4, Fase 1).
         return [
             f"{brief.nombre_homenajeado} nace en {nacimiento} y el periodo termina en "
-            f"{brief.periodo.fin}: no puede ser personaje de esa epoca. Hay que mover el "
-            f"periodo o la fecha de nacimiento."
+            f"{brief.periodo.fin}: se toma como su fecha real, y el arquitecto le dara a su "
+            f"personaje una fecha de nacimiento de la epoca."
         ]
     edad_al_final = brief.periodo.fin - nacimiento
     if edad_al_final < EDAD_MINIMA_RAZONABLE:
@@ -80,7 +82,9 @@ def _nacimiento_contra_evento_ancla(brief: Brief) -> list[str]:
         return []
     fecha = anio_de(brief.fecha_evento_ancla)
     nacimiento = anio_de(brief.fecha_nacimiento)
-    if fecha is None or nacimiento is None:
+    if fecha is None or nacimiento is None or nacimiento > brief.periodo.fin:
+        # Una fecha de nacimiento posterior al periodo es la real, y la de época la pone el
+        # arquitecto: contrastarla con el evento ancla repetiría el aviso anterior.
         return []
     if fecha < nacimiento:
         return [

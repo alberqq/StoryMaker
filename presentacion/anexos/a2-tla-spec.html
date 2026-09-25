@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A2 · Máquina de estados TLA+</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  .cod-col { display: flex; gap: 14px; }
+  .glosa { font-size: 15px; }
+  .glosa p { margin: 0 0 7px 0; }
+  .tarjeta { display: flex; gap: 22px; align-items: stretch; margin-bottom: 12px; }
+  .tarjeta pre.codigo { flex: 0 0 612px; }
+  .tarjeta .glosa { flex: 1 1 auto; padding-top: 2px; }
+  .tarjeta h2 { font-size: 18px; margin-bottom: 4px; }
+  .corr { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 26px; row-gap: 0; }
+  .corr div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--tinta-12); padding: 3px 0; white-space: nowrap; }
+  .corr .a { font-family: var(--mono); font-weight: 500; }
+  .corr .b { font-family: var(--mono); color: var(--piedra); font-weight: 400; }
+</style>
+</head>
+<body data-anexo="A2">
+
+<!-- 1 · Diagrama de estados -->
+<section class="pagina" data-fuente="<code>formal/tla/harness.tla</code>, definición <code>Aristas</code> (24 estados, 38 aristas)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>Máquina de estados TLA+</div>
+    <h1>El arnés tiene 24 estados y 38 aristas, y ninguna acción puede mover el <span class="mono" style="font-size:26px">pc</span> fuera de ellas</h1>
+  </header>
+  <main class="cuerpo ancho" style="top:100px">
+<!-- BEGIN gen:estados -->
+<svg class="diag" width="1200" height="552" viewBox="0 0 1200 552" xmlns="http://www.w3.org/2000/svg"><defs><marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#1C2433"/></marker><marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#B23A2B"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#C9A34E"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#7D7869"/></marker><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#5E8C6A"/></marker></defs><rect x="0.0" y="43.0" width="109" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="54.5" y="65" text-anchor="middle" class="mono" fill="#1C2433">Configure</text><rect x="140.0" y="43.0" width="145" height="34" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="2"/><text x="212.5" y="65" text-anchor="middle" class="mono" fill="#1C2433">AwaitApproval</text><rect x="318.0" y="43.0" width="100" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="368.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">Research</text><rect x="450.0" y="43.0" width="136" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="518.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">VerifyCorpus</text><rect x="618.0" y="43.0" width="154" height="34" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="2"/><text x="695.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">AwaitApproval2</text><rect x="806.0" y="43.0" width="64" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="838.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">Plan</text><rect x="905.0" y="43.0" width="154" height="34" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="2"/><text x="982.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">AwaitApproval3</text><rect x="1082.0" y="43.0" width="118" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="1141.0" y="65" text-anchor="middle" class="mono" fill="#1C2433">SealCorpus</text><rect x="792.0" y="115.0" width="91" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="837.5" y="137" text-anchor="middle" class="mono" fill="#1C2433">FillGap</text><path d="M109,60 L139,60" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M285,60 L317,60" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/><path d="M418,60 L449,60" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M586,60 L617,60" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M772,60 L805,60" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/><path d="M870,60 L904,60" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M1059,60 L1081,60" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/><path d="M192.5,43.0 Q128.5,-15.0 64.5,42.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)"/><rect x="97.9" y="9.0" width="61.2" height="18" fill="#F5EFE3"/><text x="128.5" y="22.0" text-anchor="middle" fill="#1C2433" font-size="15">rehacer</text><path d="M665.0,43.0 Q521.5,-15.0 378.0,42.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)"/><rect x="490.9" y="9.0" width="61.2" height="18" fill="#F5EFE3"/><text x="521.5" y="22.0" text-anchor="middle" fill="#1C2433" font-size="15">rehacer</text><path d="M952.0,43.0 Q899.0,-15.0 846.0,42.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)"/><rect x="868.4" y="9.0" width="61.2" height="18" fill="#F5EFE3"/><text x="899.0" y="22.0" text-anchor="middle" fill="#1C2433" font-size="15">rehacer</text><rect x="180.5" y="115.0" width="64" height="34" rx="8" fill="rgba(178,58,43,0.12)" stroke="#B23A2B" stroke-width="2" stroke-dasharray="5 4"/><text x="212.5" y="137" text-anchor="middle" class="mono" fill="#B23A2B">Fail</text><path d="M212.5,77.0 L212.5,114.0" fill="none" stroke="#B23A2B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)" stroke-linejoin="round"/><text x="202.5" y="106" text-anchor="end" fill="#B23A2B">abortar</text><path d="M826.0,77.0 L826.0,114.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M850.0,115.0 L850.0,78.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><text x="893" y="137" text-anchor="start" class="mono" fill="#7D7869">huecos &gt; 0</text><path d="M1141.0,77.0 L1141.0,180 L68,180 L68,212.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><rect x="466.8" y="172" width="266.4" height="18" fill="#F5EFE3"/><text x="600" y="185" text-anchor="middle" fill="#7D7869" font-size="15">sello del corpus · empieza Writing</text><rect x="0.0" y="213.0" width="136" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="68.0" y="235" text-anchor="middle" class="mono" fill="#1C2433">WriteChapter</text><rect x="210.0" y="213.0" width="100" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="260.0" y="235" text-anchor="middle" class="mono" fill="#1C2433">Validate</text><rect x="612.0" y="213.0" width="91" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="657.5" y="235" text-anchor="middle" class="mono" fill="#1C2433">Extract</text><rect x="812.0" y="213.0" width="154" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="889.0" y="235" text-anchor="middle" class="mono" fill="#1C2433">ApproveChapter</text><rect x="1040.0" y="213.0" width="118" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="1099.0" y="235" text-anchor="middle" class="mono" fill="#1C2433">Checkpoint</text><rect x="419.0" y="295.0" width="82" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="460.0" y="317" text-anchor="middle" class="mono" fill="#1C2433">Repair</text><path d="M136,223 L209,223" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M310,230 L611,230" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><rect x="358.2" y="205" width="205.6" height="18" fill="#F5EFE3"/><text x="461.0" y="218" text-anchor="middle" fill="#1C2433" font-size="15">pasada determinista limpia</text><path d="M703,230 L811,230" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><rect x="696.5" y="205" width="122.0" height="18" fill="#F5EFE3"/><text x="757.5" y="218" text-anchor="middle" fill="#1C2433" font-size="15">sin bloqueantes</text><path d="M966,230 L1039,230" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M310,242 L429,294.0" fill="none" stroke="#B23A2B" stroke-width="2" marker-end="url(#al)" stroke-linejoin="round"/><path d="M419,318 L288,248.0" fill="none" stroke="#B23A2B" stroke-width="2" marker-end="url(#al)" stroke-linejoin="round"/><path d="M626,247.0 L502,306" fill="none" stroke="#B23A2B" stroke-width="2" marker-end="url(#al)" stroke-linejoin="round"/><text x="460.0" y="351.0" text-anchor="middle" fill="#B23A2B">máx. 2 intentos · un contador para las dos entradas</text><rect x="214.0" y="295.0" width="64" height="34" rx="8" fill="rgba(178,58,43,0.12)" stroke="#B23A2B" stroke-width="2" stroke-dasharray="5 4"/><text x="246.0" y="317" text-anchor="middle" class="mono" fill="#B23A2B">Fail</text><path d="M246.0,247.0 L246.0,294.0" fill="none" stroke="#B23A2B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)" stroke-linejoin="round"/><rect x="711.0" y="295.0" width="64" height="34" rx="8" fill="rgba(178,58,43,0.12)" stroke="#B23A2B" stroke-width="2" stroke-dasharray="5 4"/><text x="743" y="317" text-anchor="middle" class="mono" fill="#B23A2B">Fail</text><path d="M691,247.0 L731,294.0" fill="none" stroke="#B23A2B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)" stroke-linejoin="round"/><text x="204.0" y="317" text-anchor="end" fill="#B23A2B">agotados</text><text x="783" y="317" text-anchor="start" fill="#B23A2B">agotados</text><path d="M1070,247.0 L1070,364 L100,364 L100,248.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><rect x="835.2" y="356" width="129.6" height="18" fill="#F5EFE3"/><text x="900" y="369" text-anchor="middle" fill="#1C2433" font-size="15">quedan capítulos</text><rect x="0.0" y="431.0" width="190" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="95.0" y="453" text-anchor="middle" class="mono" fill="#1C2433">RegenerateAffected</text><rect x="222.0" y="431.0" width="118" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="281.0" y="453" text-anchor="middle" class="mono" fill="#1C2433">Invalidate</text><rect x="372.0" y="431.0" width="145" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="444.5" y="453" text-anchor="middle" class="mono" fill="#1C2433">RequestChange</text><rect x="562.0" y="431.0" width="64" height="34" rx="8" fill="rgba(94,140,106,0.15)" stroke="#5E8C6A" stroke-width="2"/><text x="594.0" y="453" text-anchor="middle" class="mono" fill="#1C2433">Idle</text><rect x="672.0" y="431.0" width="154" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="749.0" y="453" text-anchor="middle" class="mono" fill="#1C2433">PublishVersion</text><rect x="878.0" y="431.0" width="73" height="34" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="914.5" y="453" text-anchor="middle" class="mono" fill="#1C2433">Judge</text><rect x="1046.0" y="431.0" width="154" height="34" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="2"/><text x="1123.0" y="453" text-anchor="middle" class="mono" fill="#1C2433">AwaitApproval4</text><path d="M1142,247.0 L1142,430.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><text x="1156" y="300" text-anchor="start" fill="#1C2433" transform="rotate(90 1156 300)">fin de la pasada</text><path d="M1046,448 L952,448" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/><path d="M878,448 L827,448" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M672,448 L627,448" fill="none" stroke="#5E8C6A" stroke-width="2" marker-end="url(#as)" stroke-linejoin="round"/><path d="M562,448 L518,448" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M372,448 L341,448" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M222,448 L191,448" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M1100,431.0 L1100,386 L36,386 L36,248.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/><rect x="525.0" y="378" width="350.0" height="18" fill="#F5EFE3"/><text x="700" y="391" text-anchor="middle" fill="#1C2433" font-size="15">RehacerWriting: rehacer los capítulos citados</text><path d="M176,431.0 L176,239 L209,239" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M941,465.0 Q1018.5,515.0 1086,466.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)"/><rect x="941.1" y="482.0" width="144.8" height="18" fill="#F5EFE3"/><text x="1013.5" y="495.0" text-anchor="middle" fill="#1C2433" font-size="15">umbral no superado</text><path d="M769.0,431.0 Q914.5,395.0 1062,430.0" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)"/><text x="914.5" y="409.0" text-anchor="middle" fill="#1C2433">rechazo: Lean o render_visual</text><rect x="803.0" y="509.0" width="64" height="34" rx="8" fill="rgba(178,58,43,0.12)" stroke="#B23A2B" stroke-width="2" stroke-dasharray="5 4"/><text x="835" y="531" text-anchor="middle" class="mono" fill="#B23A2B">Fail</text><path d="M888,465.0 L852,508.0" fill="none" stroke="#B23A2B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)" stroke-linejoin="round"/><path d="M806,465.0 L818,508.0" fill="none" stroke="#B23A2B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)" stroke-linejoin="round"/><text x="875" y="531" text-anchor="start" fill="#B23A2B">rechazos agotados</text><rect x="553.0" y="509.0" width="82" height="34" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2" stroke-dasharray="5 4"/><text x="594.0" y="531" text-anchor="middle" class="mono" fill="#1C2433">Branch</text><path d="M594.0,465.0 L594.0,508.0" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><text x="584.0" y="500" text-anchor="end" fill="#1C2433">ramificar</text><rect x="0" y="507" width="44" height="22" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="2"/><text x="54" y="523" text-anchor="start" fill="#1C2433">gate del Autor (Intake · Investigation · Plotting · Writing)</text><rect x="0" y="537" width="44" height="22" rx="8" fill="rgba(178,58,43,0.12)" stroke="#B23A2B" stroke-width="2" stroke-dasharray="5 4"/><text x="54" y="553" text-anchor="start" fill="#1C2433">Fail: un solo estado, dibujado junto a cada origen</text></svg>
+<!-- END gen:estados -->
+  </main>
+</section>
+
+<!-- 2 · Mueve y Aristas -->
+<section class="pagina" data-fuente="<code>formal/tla/harness.tla</code> l. 82–149 · <code>docs/architecture.md</code> §9 y §11d">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>El operador Mueve y la definición Aristas</div>
+    <h1>Las transiciones se declaran una sola vez, y de ahí sale el <span class="mono" style="font-size:26px">Next</span> que TLC explora</h1>
+  </header>
+  <main class="cuerpo ancho">
+    <div class="fila" style="gap:18px">
+      <div style="flex:0 0 372px">
+<!-- BEGIN gen:mueve -->
+<pre class="codigo"><span class="c">\* Mover el pc es siempre lo mismo:</span>
+<span class="c">\* comprobar que la arista existe.</span>
+<span class="n">Mueve</span>(de, a) <span class="k">==</span>
+    <span class="k">/\</span> vivo
+    <span class="k">/\</span> pc = de
+    <span class="k">/\</span> &lt;&lt;de, a&gt;&gt; <span class="k">\in</span> Aristas
+    <span class="k">/\</span> pc&#x27; = a</pre>
+<!-- END gen:mueve -->
+        <div class="glosa" style="margin-top:12px">
+          <p><b>Cuatro condiciones y nada más.</b> El proceso está vivo, el <code>pc</code> está en el origen, el par <code>&lt;&lt;de, a&gt;&gt;</code> pertenece a <code>Aristas</code> y el <code>pc</code> pasa al destino. Cada acción añade sus guardas y su <code>UNCHANGED</code>.</p>
+          <p><b>Aristas gobierna, no acompaña.</b> Como toda acción pasa por <code>Mueve</code>, TLC no puede explorar una transición que no esté en el conjunto.</p>
+          <p><b>La prueba lee la misma relación.</b> <code>identidad_nodo_accion</code> compara los 24 nodos y la relación <code>ARISTAS</code> de <code>commons/graph/aristas.py</code> con esta definición. Bloquea en G1.</p>
+          <p><b><code>Reintentar</code> no es una arista:</b> escribe el checkpoint «como salida de <code>SealCorpus</code>» y exige <code>SealCorpus → WriteChapter</code>.</p>
+        </div>
+      </div>
+<!-- BEGIN gen:aristas -->
+<div class="cod-col" style="flex:1"><pre class="codigo" style="flex:1; font-size:15px; line-height:1.24; padding:10px 12px"><span class="n">Aristas</span> <span class="k">==</span>
+{ <span class="c">\* Fase 1 · Intake</span>
+  &lt;&lt;<span class="s">&quot;Configure&quot;</span>, <span class="s">&quot;AwaitApproval&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval&quot;</span>, <span class="s">&quot;Research&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval&quot;</span>, <span class="s">&quot;Configure&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval&quot;</span>, <span class="s">&quot;Fail&quot;</span>&gt;&gt;,
+  <span class="c">\* Fase 2 · Investigation</span>
+  &lt;&lt;<span class="s">&quot;Research&quot;</span>, <span class="s">&quot;VerifyCorpus&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;VerifyCorpus&quot;</span>, <span class="s">&quot;AwaitApproval2&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval2&quot;</span>, <span class="s">&quot;Plan&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval2&quot;</span>, <span class="s">&quot;Research&quot;</span>&gt;&gt;,
+  <span class="c">\* Fase 3 · Plotting</span>
+  &lt;&lt;<span class="s">&quot;Plan&quot;</span>, <span class="s">&quot;FillGap&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;FillGap&quot;</span>, <span class="s">&quot;Plan&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Plan&quot;</span>, <span class="s">&quot;AwaitApproval3&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval3&quot;</span>, <span class="s">&quot;SealCorpus&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval3&quot;</span>, <span class="s">&quot;Plan&quot;</span>&gt;&gt;,
+  <span class="c">\* Fase 4 · Writing</span>
+  &lt;&lt;<span class="s">&quot;SealCorpus&quot;</span>, <span class="s">&quot;WriteChapter&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;WriteChapter&quot;</span>, <span class="s">&quot;Validate&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Validate&quot;</span>, <span class="s">&quot;Repair&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Validate&quot;</span>, <span class="s">&quot;Extract&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Extract&quot;</span>, <span class="s">&quot;Repair&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Repair&quot;</span>, <span class="s">&quot;Validate&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Validate&quot;</span>, <span class="s">&quot;Fail&quot;</span>&gt;&gt;,</pre><pre class="codigo" style="flex:1; font-size:15px; line-height:1.24; padding:10px 12px">  &lt;&lt;<span class="s">&quot;Extract&quot;</span>, <span class="s">&quot;Fail&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Extract&quot;</span>, <span class="s">&quot;ApproveChapter&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;ApproveChapter&quot;</span>, <span class="s">&quot;Checkpoint&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Checkpoint&quot;</span>, <span class="s">&quot;WriteChapter&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Checkpoint&quot;</span>, <span class="s">&quot;AwaitApproval4&quot;</span>&gt;&gt;,
+  <span class="c">\* Fase 5 · Publication</span>
+  &lt;&lt;<span class="s">&quot;AwaitApproval4&quot;</span>, <span class="s">&quot;Judge&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;AwaitApproval4&quot;</span>, <span class="s">&quot;WriteChapter&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Judge&quot;</span>, <span class="s">&quot;PublishVersion&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Judge&quot;</span>, <span class="s">&quot;AwaitApproval4&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Judge&quot;</span>, <span class="s">&quot;Fail&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;PublishVersion&quot;</span>, <span class="s">&quot;Idle&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;PublishVersion&quot;</span>, <span class="s">&quot;AwaitApproval4&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;PublishVersion&quot;</span>, <span class="s">&quot;Fail&quot;</span>&gt;&gt;,
+  <span class="c">\* Fase 6 · Regeneration</span>
+  &lt;&lt;<span class="s">&quot;Idle&quot;</span>, <span class="s">&quot;RequestChange&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;RequestChange&quot;</span>, <span class="s">&quot;Invalidate&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Invalidate&quot;</span>, <span class="s">&quot;RegenerateAffected&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;RegenerateAffected&quot;</span>, <span class="s">&quot;Validate&quot;</span>&gt;&gt;,
+  &lt;&lt;<span class="s">&quot;Idle&quot;</span>, <span class="s">&quot;Branch&quot;</span>&gt;&gt;
+}</pre></div>
+<!-- END gen:aristas -->
+    </div>
+  </main>
+</section>
+
+<!-- 3 · Invariantes de seguridad -->
+<section class="pagina" data-fuente="<code>formal/tla/harness.tla</code> l. 345–350, 428–433, 636–662 · <code>formal/tla/README.md</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>Invariantes de seguridad</div>
+    <h1>Los invariantes interrogan al grafo, no a una guarda escrita para que pasen</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="tarjeta">
+<!-- BEGIN gen:nopublish -->
+<pre class="codigo" style="padding:9px 14px"><span class="n">PublishVersion</span> <span class="k">==</span>
+    <span class="k">\/</span> <span class="k">/\</span> Mueve(<span class="s">&quot;PublishVersion&quot;</span>, <span class="s">&quot;Idle&quot;</span>)
+       <span class="k">/\</span> versiones&#x27; = <span class="k">Append</span>(versiones, aprobados)
+       <span class="k">/\</span> publicoSinValidar&#x27; =
+            publicoSinValidar <span class="k">\/</span> (aprobados \ validados # {})
+    <span class="k">\/</span> ...   <span class="c">\* rechazo: vuelve a AwaitApproval4 o va a Fail</span>
+<span class="n">NoPublishUnvalidated</span> <span class="k">==</span> publicoSinValidar = <span class="k">FALSE</span></pre>
+<!-- END gen:nopublish -->
+      <div class="glosa">
+        <h2><span class="mono">NoPublishUnvalidated</span> · la puerta G5</h2>
+        <p><code>PublishVersion</code> <b>no lleva guarda de validación</b> a propósito: con ella, el invariante comprobaría la guarda recién escrita. Sin ella, TLC busca cualquier camino (reintentos, un gate que rehace, una regeneración a medias) que publique un capítulo fuera de <code>validados</code>.</p>
+        <p>El testigo es una <b>variable de historia</b>, <code>publicoSinValidar</code>, que nunca debe encenderse.</p>
+      </div>
+    </div>
+    <div class="tarjeta">
+<!-- BEGIN gen:retries -->
+<pre class="codigo" style="padding:9px 14px"><span class="n">Repair</span> <span class="k">==</span>
+    <span class="k">/\</span> Mueve(<span class="s">&quot;Repair&quot;</span>, <span class="s">&quot;Validate&quot;</span>)
+    <span class="k">/\</span> intentos &lt; MaxIntentos
+    <span class="k">/\</span> intentos&#x27; = intentos + 1
+<span class="n">RetriesBounded</span> <span class="k">==</span> intentos &lt;= MaxIntentos</pre>
+<!-- END gen:retries -->
+      <div class="glosa">
+        <h2><span class="mono">RetriesBounded</span> · dos entradas, un contador</h2>
+        <p><code>Repair</code> tiene dos aristas de entrada, desde <code>Validate</code> y desde <code>Extract</code>, que comparten <code>intentos</code>. Por eso <code>Extract</code> es una acción propia y no un detalle de <code>Validate</code>: plegarla dejaría sin comprobar justo esta interacción.</p>
+      </div>
+    </div>
+    <div class="tarjeta" style="margin-bottom:0">
+<!-- BEGIN gen:resume -->
+<pre class="codigo" style="padding:9px 14px; font-size:15px"><span class="n">EscribiendoPasadaInicial</span> <span class="k">==</span>
+    <span class="k">/\</span> ~regenerando
+    <span class="k">/\</span> pc <span class="k">\in</span> {<span class="s">&quot;WriteChapter&quot;</span>, <span class="s">&quot;Validate&quot;</span>, <span class="s">&quot;Extract&quot;</span>, <span class="s">&quot;Repair&quot;</span>}
+<span class="n">ResumeIsExactlyOnce</span> <span class="k">==</span>
+    EscribiendoPasadaInicial <span class="k">=&gt;</span> aprobados = 1 .. (capitulo - 1)
+<span class="n">CorpusSelladoNoSeToca</span> <span class="k">==</span>
+    sellado <span class="k">=&gt;</span> pc <span class="k">\notin</span> {<span class="s">&quot;Research&quot;</span>, <span class="s">&quot;FillGap&quot;</span>}</pre>
+<!-- END gen:resume -->
+      <div class="glosa">
+        <h2><span class="mono">ResumeIsExactlyOnce</span> y <span class="mono">CorpusSelladoNoSeToca</span></h2>
+        <p>En la pasada inicial, los aprobados son exactamente los capítulos anteriores al que se escribe: ni un hueco ni un repetido, también tras una <code>Caida</code> en cualquier nodo.</p>
+        <p>Tras el sello nadie vuelve a <code>Research</code> ni a <code>FillGap</code>, los dos únicos nodos que escriben en <code>mundo_*</code>. <code>TypeOK</code> completa los cinco.</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 4 · Liveness -->
+<section class="pagina" data-fuente="<code>formal/tla/harness.tla</code> l. 575–633, 668–682 · <code>formal/tla/README.md</code> «débil no basta»">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>Propiedades temporales y equidad</div>
+    <h1>Toda generación termina: el Autor puede rehacer cuanto quiera, pero no infinitas veces</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:26px">
+      <div style="flex:0 0 596px">
+<!-- BEGIN gen:spec -->
+<pre class="codigo" style="line-height:1.28"><span class="c">\* Las aprobaciones, por separado, para</span>
+<span class="c">\* poder exigirles equidad fuerte.</span>
+<span class="n">AutorAprueba</span> <span class="k">==</span>
+    <span class="k">\/</span> Aprobar(<span class="s">&quot;AwaitApproval&quot;</span>, <span class="s">&quot;Research&quot;</span>)
+    <span class="k">\/</span> Aprobar(<span class="s">&quot;AwaitApproval2&quot;</span>, <span class="s">&quot;Plan&quot;</span>)
+    <span class="k">\/</span> Aprobar(<span class="s">&quot;AwaitApproval3&quot;</span>, <span class="s">&quot;SealCorpus&quot;</span>)
+    <span class="k">\/</span> Aprobar(<span class="s">&quot;AwaitApproval4&quot;</span>, <span class="s">&quot;Judge&quot;</span>)
+
+<span class="n">Spec</span> <span class="k">==</span> Init <span class="k">/\</span> <span class="k">[]</span>[Next]_vars
+             <span class="k">/\</span> <span class="k">WF_vars</span>(Next)
+             <span class="k">/\</span> <span class="k">SF_vars</span>(AutorAprueba)
+
+<span class="c">\* Publica, ramifica o para con error.</span>
+<span class="n">Termina</span> <span class="k">==</span> <span class="k">&lt;&gt;</span>(pc <span class="k">\in</span> {<span class="s">&quot;Idle&quot;</span>, <span class="s">&quot;Fail&quot;</span>, <span class="s">&quot;Branch&quot;</span>})
+
+<span class="c">\* La secuencia de versiones es append-only.</span>
+<span class="n">PreviousVersionPreserved</span> <span class="k">==</span>
+    <span class="k">[]</span>[ <span class="k">\A</span> i <span class="k">\in</span> 1 .. <span class="k">Len</span>(versiones) :
+          <span class="k">/\</span> i <span class="k">\in</span> 1 .. <span class="k">Len</span>(versiones&#x27;)
+          <span class="k">/\</span> versiones&#x27;[i] = versiones[i] ]_vars</pre>
+<!-- END gen:spec -->
+      </div>
+      <div class="col glosa">
+        <h2>Por qué equidad fuerte y no débil</h2>
+        <p><code>WF</code> solo obliga a una acción <b>continuamente</b> habilitada. Aprobar en el gate de Writing no lo está: se deshabilita mientras dura el bucle de escritura que abre <code>RehacerWriting</code>. Bajo <code>WF</code>, el Autor que rehace para siempre es una traza admisible y <code>Termina</code> cae.</p>
+        <p><code>SF_vars(AutorAprueba)</code> dice: si la aprobación está habilitada infinitas veces, acaba ocurriendo. Los otros tres gates no lo necesitan, porque rehacer una fase sin capítulos vuelve a habilitar la aprobación enseguida.</p>
+        <p><b>La comprobación no es vacía.</b> Con <code>WF_vars(AutorAprueba)</code> en una copia, TLC viola <code>Termina</code> con la traza conocida.</p>
+        <h2 style="margin-top:12px">El entorno está acotado</h2>
+        <p><code>MaxCaidas</code>, <code>MaxReintentos</code> y <code>MaxCambiosLector</code> limitan caídas, reintentos manuales y peticiones del lector. Sin la cota del lector, <code>versiones</code> crece en cada regeneración y el espacio no se agota.</p>
+        <p><code>PreviousVersionPreserved</code> es una <b>propiedad de acción</b>: compara cada estado con el siguiente, sin variable de historia.</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 5 · Modelo y resultados de TLC -->
+<section class="pagina" data-fuente="<code>formal/tla/</code> (cfg y README) · <code>docs/GAP-REPORT.md</code> · <code>docs/.audit-state.json</code>, bloque 8">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>Modelo y resultado de TLC</div>
+    <h1>TLC agota los dos modelos, 12.650 y 4.425 estados distintos, sin una sola violación</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:30px">
+      <div style="flex:0 0 520px">
+        <h3>Constantes del modelo</h3>
+        <table class="t compacta">
+          <tr><th>Constante</th><th class="num">harness.cfg</th><th class="num">harness_batch.cfg</th></tr>
+          <tr><td class="nom">NCapitulos</td><td class="num">5</td><td class="num">5</td></tr>
+          <tr><td class="nom">MaxIntentos</td><td class="num">2</td><td class="num">2</td></tr>
+          <tr class="dest"><td class="nom">GatesActivos</td><td class="num">TRUE</td><td class="num">FALSE</td></tr>
+          <tr><td class="nom">MaxRechazosJuez</td><td class="num">2</td><td class="num">2</td></tr>
+          <tr><td class="nom">MaxCaidas</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="nom">MaxReintentos</td><td class="num">1</td><td class="num">1</td></tr>
+          <tr><td class="nom">MaxCambiosLector</td><td class="num">1</td><td class="num">1</td></tr>
+        </table>
+        <p class="nota" style="margin-top:8px">El modelo arranca con <code>huecos = 2</code> (<code>Init</code>); el sistema real topa en 5 por ejecución de Plotting. La cota no cambia lo que se verifica: que el ciclo <code>Plan ⇄ FillGap</code> descuente siempre.</p>
+        <h3 style="margin-top:12px">Comprobado en las dos configuraciones</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:7px">
+          <span class="chip pasa mono">TypeOK</span>
+          <span class="chip pasa mono">NoPublishUnvalidated</span>
+          <span class="chip pasa mono">ResumeIsExactlyOnce</span>
+          <span class="chip pasa mono">RetriesBounded</span>
+          <span class="chip pasa mono">CorpusSelladoNoSeToca</span>
+          <span class="chip pasa mono">PreviousVersionPreserved</span>
+          <span class="chip pasa mono">Termina</span>
+        </div>
+      </div>
+      <div class="col">
+        <h3>Resultado · TLC 2026.09.23 sobre JRE 21</h3>
+        <table class="t">
+          <tr><th>Configuración</th><th class="num">Generados</th><th class="num">Distintos</th><th class="num">Prof.</th><th class="num">Tiempo</th></tr>
+          <tr><td><span class="mono">harness.cfg</span><br><span class="sec">interactivo, SF sobre el Autor</span></td><td class="num">22.349</td><td class="num"><b>12.650</b></td><td class="num">71</td><td class="num">1 s</td></tr>
+          <tr><td><span class="mono">harness_batch.cfg</span><br><span class="sec">batch, sin Autor</span></td><td class="num">7.029</td><td class="num"><b>4.425</b></td><td class="num">66</td><td class="num">1 s</td></tr>
+        </table>
+        <div style="display:flex; gap:14px; margin-top:16px">
+          <div class="caja oro" style="flex:1"><div class="num-grande cifra" style="font-size:34px">12.650</div><div>estados distintos, interactivo</div></div>
+          <div class="caja oro" style="flex:1"><div class="num-grande cifra" style="font-size:34px">4.425</div><div>estados distintos, batch</div></div>
+          <div class="caja salvia" style="flex:0 0 150px; background:var(--salvia-15)"><div class="num-grande cifra" style="font-size:34px">0</div><div>violaciones</div></div>
+        </div>
+        <p class="nota" style="margin-top:14px">Las cifras de <code>formal/tla/README.md</code> coinciden con la última auditoría (<code>docs/.audit-state.json</code>, bloque 8, 2026-09-25). TLC no ejecuta el código: explora todos los estados alcanzables del modelo. Corre en desarrollo, no en cada novela.</p>
+        <p class="nota"><b>Por qué ahora termina.</b> Antes el lector podía pedir cambios sin límite y <code>versiones</code> crecía sin fin; <code>MaxCambiosLector</code> hace finito el espacio y deja comprobar la liveness en el modelo de cinco capítulos.</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 6 · Contraejemplos y correspondencia -->
+<section class="pagina" data-fuente="<code>formal/tla/README.md</code>, registro de contraejemplos · <code>backend/src/storymaker/commons/graph/nodos.py</code>, <code>NODOS</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A2</span><span class="sep"></span>Contraejemplos y correspondencia con el código</div>
+    <h1>TLC encontró tres errores de diseño que ninguna lectura del documento había visto</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t">
+      <tr><th style="width:118px">Fecha</th><th style="width:210px">Propiedad violada</th><th>Traza (resumen)</th><th style="width:390px">Qué se cambió</th></tr>
+      <tr><td class="nom">2026-09-23</td><td class="nom">ResumeIsExactlyOnce</td><td>35 estados. Se aprueban los 5 capítulos, el Autor pide rehacer en <code>AwaitApproval4</code> y se vuelve a <code>WriteChapter</code> con <code>aprobados = {1..5}</code>.</td><td><b>El modelo.</b> Rehacer Writing se trataba como pasada inicial. Nace <code>RehacerWriting</code>, que entra en modo regeneración.</td></tr>
+      <tr><td class="nom">2026-09-23</td><td class="nom">Termina (1.ª)</td><td>Ciclo <code>Judge → AwaitApproval4 → Judge</code>: el Autor aprueba y el juez vuelve a rechazar, sin fin.</td><td><b>Un tope que faltaba.</b> <code>rechazosJuez</code> con <code>MaxRechazosJuez</code> y la arista <code>Judge → Fail</code>.</td></tr>
+      <tr><td class="nom">2026-09-23</td><td class="nom">Termina (2.ª)</td><td>Ciclo <code>AwaitApproval4 → RehacerWriting → WriteChapter → … → AwaitApproval4</code>, indefinido.</td><td><b>La equidad.</b> <code>WF</code> no bastaba; <code>Spec</code> pasa a <code>SF_vars(AutorAprueba)</code>.</td></tr>
+    </table>
+    <h3 style="margin-top:14px">Acción TLA+ → implementación del nodo (<code>NODOS</code>)</h3>
+<!-- BEGIN gen:corr -->
+<div class="corr"><div><span class="a">Configure</span><span class="b">intake:configure</span></div><div><span class="a">AwaitApproval…4</span><span class="b">gates:await_approval</span></div><div><span class="a">Research</span><span class="b">investigation:research</span></div><div><span class="a">VerifyCorpus</span><span class="b">investigation:verify</span></div><div><span class="a">Plan</span><span class="b">plotting:plan</span></div><div><span class="a">FillGap</span><span class="b">plotting:fill_gap</span></div><div><span class="a">SealCorpus</span><span class="b">plotting:seal</span></div><div><span class="a">WriteChapter</span><span class="b">writing:write</span></div><div><span class="a">Validate</span><span class="b">writing:validate</span></div><div><span class="a">Extract</span><span class="b">writing:extract</span></div><div><span class="a">Repair</span><span class="b">writing:repair</span></div><div><span class="a">ApproveChapter</span><span class="b">writing:approve</span></div><div><span class="a">Checkpoint</span><span class="b">writing:checkpoint</span></div><div><span class="a">Judge</span><span class="b">publication:judge</span></div><div><span class="a">PublishVersion</span><span class="b">publication:publish</span></div><div><span class="a">Idle</span><span class="b">graph:idle</span></div><div><span class="a">RequestChange</span><span class="b">regeneration:request</span></div><div><span class="a">Invalidate</span><span class="b">regeneration:invalidate</span></div><div><span class="a">RegenerateAffected</span><span class="b">regeneration:regenerate</span></div><div><span class="a">Branch</span><span class="b">graph.branch:fork</span></div><div><span class="a">Fail</span><span class="b">graph:fail</span></div></div>
+<!-- END gen:corr -->
+    <p class="nota" style="margin-top:8px">Rutas sin el prefijo <code>storymaker.</code> ni el sufijo <code>.nodos</code>. Los cuatro <code>AwaitApproval</code> comparten <code>gates.nodos:await_approval</code>. <code>Caida</code> y <code>ResumeFromCheckpoint</code> son el proceso que muere y <code>storymaker continuar</code>; <code>Reintentar</code> es <code>storymaker reintentar</code>; <code>IdleRequest</code>, <code>regenerar</code>.</p>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

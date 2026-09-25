@@ -1,0 +1,77 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e497]:
+      - generic [ref=e498]:
+        - navigation [ref=e499]:
+          - link "Índice" [ref=e500] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e502] [cursor=pointer]:
+          - generic [ref=e503]: A
+          - generic [ref=e504]: a
+      - heading "Capítulo 8. El legado en construcción" [level=1] [ref=e505]
+      - article [ref=e506]:
+        - paragraph [ref=e507]: En los primeros días de marzo, cuando la primavera llegaba a la bahía de Cádiz con aromas que desmentían el luto que se llevaba en los corazones, Ramón fue convocado a la cámara de un hombre que se apagaba. El Teniente General Federico Gravina yacía en una habitación sombreada, las ventanas cerradas para que el aire no agitara las heridas que aún cicatrizaban. Había pasado cinco meses así, desde octubre, desde el día en que los navíos desaparecieron en el horizonte y no regresaron como esperaba.
+        - paragraph [ref=e508]: "Ramón entró con paso cuidadoso. Conocía esta habitación desde hacía años, pero nunca la había visto así: repleta de papeles de fortificaciones, planos de defensas para una bahía que ya nadie podía defender con la potencia que antes fue. Gravina levantó los ojos cuando escuchó los pasos."
+        - paragraph [ref=e509]: "\"Ramón.\" La voz era sombra de lo que fue, pero aún llevaba autoridad. \"Me dijeron que vendrías.\""
+        - paragraph [ref=e510]: "Ramón se acercó. Vio a un hombre que la guerra había reducido a esencia pura: voluntad sin cuerpo que la sostuviera."
+        - paragraph [ref=e511]: "\"Almirante,\" comenzó Ramón, pero Gravina levantó una mano con dificultad."
+        - paragraph [ref=e512]: "\"No fui almirante el día que perdimos los barcos. Fui soldado que obedecía órdenes de Madrid. Eso es lo que importa recordar: no fue fracaso de mar, sino de decisión en tierra.\" Hizo una pausa, respirando como quien sube escaleras. \"Pero tú, Ramón Iriarte, no obedeciste órdenes. Ofreciste tus navíos sabiendo el costo.\""
+        - paragraph [ref=e513]: "\"Ofrecí lo que tenía,\" respondió Ramón."
+        - paragraph [ref=e514]: "\"Exactamente. Y luego te quedaste cuando otros huyeron. Reparaste lo que se rompió. Eso es lo que España necesita ahora: hombres que reparen, no que busquen fortuna en tierras donde nadie conoce su nombre.\" Gravina cerró los ojos, agotado por el esfuerzo. \"Cádiz necesitará hombres así. Los ingleses no desaparecerán. Esta bahía seguirá siendo estratégica, y alguien debe defenderla desde adentro, manteniendo vivo el comercio, alimentando a los que quedan.\""
+        - paragraph [ref=e515]: "\"Estaré aquí, Almirante.\""
+        - paragraph [ref=e516]: "\"Lo sé.\" Gravina volvió a abrir los ojos, pero miraba ya más allá que a Ramón. \"Tienes un hijo.\""
+        - paragraph [ref=e517]: No era pregunta. En Cádiz, los armadores se conocían por sus hijos. Ramón asintió.
+        - paragraph [ref=e518]: "\"Enséñale. No le enseñes a ganar barcos como yo intenté. Enséñale a guardarlos. Hay más honor en eso.\" La respiración de Gravina se hizo más lenta. \"Cádiz no volverá a ser lo que fue. Pero puede ser algo que valga la pena. Dile a tu hijo que reconstruya esto. Que lo haga vivo.\""
+        - paragraph [ref=e519]: Ramón permaneció en silencio. No había palabras que responder a un acta de defunción que se redactaba a sí misma.
+        - paragraph [ref=e520]: Gravina cerró los ojos de nuevo. Ramón se quedó en la penumbra de la habitación un tiempo que no midió, escuchando la respiración del almirante volverse cada vez más laboriosa, hasta que dejó de distinguir si el pecho subía aún.
+        - paragraph [ref=e521]: Salió cuando comprendió que Gravina ya no le escuchaba.
+        - paragraph [ref=e522]: En junio, cuando la bahía estaba llena de luz dorada y los astilleros emitían el sonido de la reconstrucción, Ramón llamó a Andrés a su despacho. Su hijo tenía veintidós años, edad de ansias, edad en que cada día se sentía largo si no traía acción inmediata.
+        - paragraph [ref=e523]: "\"Quiero que veas algo,\" le dijo Ramón, abriendo los libros de cuentas donde se registraba cada expedición, cada gasto, cada ganancia que sus tres navíos —La Esperanza, La Rosa Dorada, La Santa Magdalena— habían traído desde hace treinta años."
+        - paragraph [ref=e524]: Andrés miró las columnas de cifras. Sus ojos barrieron páginas y más páginas, números que se repetían, se sumaban, se convertían en más números.
+        - paragraph [ref=e525]: "\"¿Ves solo cifras?\" preguntó Ramón."
+        - paragraph [ref=e526]: "\"Veo... una flota,\" respondió Andrés, intentando ver lo que su padre veía."
+        - paragraph [ref=e527]: Ramón sonrió. "Mira nuevamente. Mira con cuidado. En cada número hay una familia que comió porque ese viaje fue próspero. Hay un marinero que cobró su salario en marzo porque el viaje anterior llegó en febrero. Hay una viuda cuyo marido no regresó, pero cuyas ganancias de ese viaje la mantienen. En cada cifra hay una promesa cumplida o un deudor que espera."
+        - paragraph [ref=e528]: "Andrés pasó la página lentamente. Comenzó a ver diferente. Ya no eran abstracciones, sino peso: el peso de la confianza, de las inversiones, de las vidas que colgaban de que esos números fueran correctos."
+        - paragraph [ref=e529]: "\"El comercio no es ganancia,\" explicó Ramón. \"La ganancia es consecuencia. El comercio es responsabilidad. Es prometer que llevarás mercancías a tiempo, que cobrarás deudas sin crueldad, que el siguiente viaje será mejor que el anterior porque aprendiste del anterior.\""
+        - paragraph [ref=e530]: Pasaron horas así, Ramón mostrando a Andrés no solo qué números eran, sino qué significaban. Cuando salieron del despacho, Andrés llevaba en las manos una carta náutica nueva, sin trazar aún.
+        - paragraph [ref=e531]: "\"Esta es la tuya,\" le dijo Ramón. \"Ahora comienza a dibujar.\""
+        - paragraph [ref=e532]: En julio, cuando el viento era estable y la bahía mostraba su temperamento más amigable, Ramón llevó a Andrés a bordo de La Esperanza, ya reconstruida, lista para mostrar que podía navegar de nuevo. Fueron solo marineros de confianza, hombres que habían navegado con Ramón y que ahora veían a su hijo como promesa del puerto.
+        - paragraph [ref=e533]: Andrés estudió la carta como lo había hecho su padre años atrás. Sus dedos trazaban las líneas, sus ojos leían los márgenes donde Ramón anotaba las corrientes, los arrecifes que no figuraban en mapas oficiales. El aprendizaje del agua no era solo dirección, sino humildad.
+        - paragraph [ref=e534]: El viento cambió al atardecer. No era tormenta, pero las olas comenzaron a rizarse, pequeñas crestas que sugerían poder que se contenía. Andrés sintió miedo, la primera vez que lo sentía en el agua, más profundo que cualquier miedo en tierra porque no había tierra que alcanzar.
+        - paragraph [ref=e535]: "\"¿Qué hacemos?\" preguntó al capitán."
+        - paragraph [ref=e536]: El capitán miró a Ramón. Ramón no respondió. Solo esperó.
+        - paragraph [ref=e537]: "Andrés volvió a mirar la carta. Recordó lo que su padre le había enseñado: que la carta no es orden sino posibilidad, que los números que representan vientos y corrientes son sugerencias que la experiencia confirma o rechaza. Recordó que Ramón había permanecido en tierra coordinando suministros mientras los barcos iban a Trafalgar, y que ahora estaba allí, en el barco, sin intervenir."
+        - paragraph [ref=e538]: "\"Reducimos vela,\" ordenó Andrés. Su voz temblaba, pero la orden era correcta."
+        - paragraph [ref=e539]: Los marineros obedecieron. El capitán asintió a Ramón con la cabeza. La Esperanza cambió su rumbo, sus velas se cerraron, su andar se hizo más cauto. El viento siguió soplando, pero el barco ya no luchaba contra él, sino lo leía como lo hacía su padre.
+        - paragraph [ref=e540]: Cuando el mar se calmó de nuevo, Ramón puso una mano en el hombro de Andrés. No dijo nada. En los puertos, las palabras sobraban cuando el agua confirmaba que alguien había aprendido a hablar su lengua.
+        - paragraph [ref=e541]: "Esa noche, cuando regresaron a la bahía y Ramón vio a Andrés pisar de nuevo tierra firme, vio el reflejo de sí mismo: agotado, sabio por unas horas nuevas, capaz de ver que el agua no era enemigo sino maestro que exigía respeto antes de permitir que alguien viviera."
+        - paragraph [ref=e542]: "María los esperaba en el muelle. Cuando vio a Ramón y a Andrés juntos, como ahora lo eran siempre, los vio también como serían: una cadena de hombres que permanecían, que aprendían, que reparaban lo que se rompía, que entendían que la verdadera sucesión no era de oro sino de agua, de responsabilidad, de cifras que representaban vidas que dependían de decisiones tomadas en muelles oscuros y despachos donde los números hablaban más fuerte que las palabras."
+      - navigation "Navegación entre capítulos" [ref=e543]:
+        - link "← Capítulo anterior" [ref=e545] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/7
+        - link "Índice" [ref=e546] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e548] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/9
+      - generic [ref=e549]:
+        - heading "Pedir un cambio" [level=2] [ref=e550]
+        - generic [ref=e551]:
+          - paragraph [ref=e552]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e553]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e554]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e555]

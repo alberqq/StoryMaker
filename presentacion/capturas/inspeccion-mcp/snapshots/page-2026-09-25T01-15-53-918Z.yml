@@ -1,0 +1,57 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e571]:
+      - generic [ref=e572]:
+        - navigation [ref=e573]:
+          - link "Índice" [ref=e574] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e576] [cursor=pointer]:
+          - generic [ref=e577]: A
+          - generic [ref=e578]: a
+      - heading "Capítulo 9. El espejo de las cartas" [level=1] [ref=e579]
+      - article [ref=e580]:
+        - paragraph [ref=e581]: "En los últimos días del año que marcaba el ocaso de una era, Ramón descendió a las bodegas de su casa. El cofre de madera oscura estaba donde siempre, custodiando sus posesiones más valiosas. Cuando levantó la tapa, un aroma a sal marina escapó como un suspiro. Dentro estaban las cartas más preciadas: las del abuelo, modificadas en sus márgenes durante décadas, corregidas año tras año."
+        - paragraph [ref=e582]: Extrajo primero la más antigua. Amarillenta, con bordes roídos por el tiempo, reposaba en sus manos como un objeto sagrado. Manchas de agua salada, pliegues profundos, la firma desvanecida en la esquina. Ramón acercó el papel a la luz. En esa geografía amarillenta leía la bahía como la había visto a través de los ojos de su abuelo, con peligros marcados que nadie más veía, rutas trazadas con precisión que solo nace de navegar cien veces.
+        - paragraph [ref=e583]: "Cada línea traía una memoria heredada. Ese puerto donde aprendió que el agua hablaba un lenguaje de cuerpo y tiempo. Ese viaje donde comprendió que la carta era recuerdo, no presente. Esa decisión de quedarse en tierra buscando responsabilidad, no fortuna. Tocó la firma del abuelo con la punta del dedo. En ese contacto sintió el peso de dos generaciones: el abuelo que le enseñó el lenguaje del agua, él mismo que lo convirtió en cifras y responsabilidad, Andrés esperando su turno de leer lo que esa tinta desvanecida decía."
+        - paragraph [ref=e584]: "Una a una extrajo las demás cartas. Las de sus primeros viajes como aprendiz, cuando temblaba la mano al trazar correcciones. Las de sus expediciones como armador, con la confianza de quien aprendió que el mar es maestro. Las de después de Trafalgar, cuando decidió quedarse mientras otros huían. Colocó todas en orden, una autobiografía escrita en agua y geografía. Su vida entera: cada línea un lugar donde había estado, cada anotación algo aprendido, cada carta un momento en que decidió seguir adelante."
+        - paragraph [ref=e585]: "En junio, cuando el calor llegaba a la bahía, Ramón llamó a Andrés al despacho. Su hijo tenía veintitrés años, la edad en que creen que saben más de lo que saben. Pero había aprendido algo en La Esperanza: que el agua no es juez fácil. Ramón colocó el cofre sobre la mesa. Andrés lo observó con reverencia, comprendiendo que estaba a punto de recibir algo más pesado que el oro."
+        - paragraph [ref=e586]: "\"Abre,\" le dijo."
+        - paragraph [ref=e587]: Ramón extrajo las cartas una a una. La del abuelo primero, colocada en el centro como el corazón. Luego las otras. Mientras las sacaba, explicaba. Este puerto donde aprendió que la precisión es economía. Ese viaje donde entendió que cada cifra representa una familia. Aquella expedición donde ofreció sus navíos sin esperar. Esta más reciente, llena de notas sobre corrientes nuevas, arrecifes que habían cambiado, todo lo que el agua seguía enseñando.
+        - paragraph [ref=e588]: "\"¿Cómo sabías siempre la ruta correcta?\" preguntó Andrés. Su voz temblaba. En sus ojos Ramón veía el miedo: a no ser lo suficientemente capaz, a decepcionar, a que el legado fuera más grande de lo que sus hombros podían cargar."
+        - paragraph [ref=e589]: "Ramón levantó la vista. \"No siempre,\" respondió. \"Me equivoqué muchas veces. Pero aprendí que no necesitas saber la ruta correcta. Solo necesitas confiar en lo que conoces. Necesitas leer el agua como tu abuelo me enseñó. La carta es solo el comienzo. El resto es responsabilidad: que los hombres lleguen a casa, que las familias coman, que cada viaje sea mejor porque aprendiste del anterior.\""
+        - paragraph [ref=e590]: Ramón acercó la carta del abuelo hacia Andrés. Esa firma fantasmal, esa tinta desvanecida. "Tu turno de dibujar tu viaje. Este cofre es tuyo. Estas cartas son tuyas. Pero la que importa es la que aún no has trazado. La que solo tú puedes trazar porque eres tú quien navegará."
+        - paragraph [ref=e591]: Andrés tomó la carta con ambas manos. Sus dedos tocaron esa tinta desvanecida como si tocara algo sagrado. Lo era. Era la vida entera de su familia, reducida a líneas en papel, firmas fantasmales, la promesa de que alguien seguiría después, que la responsabilidad se transmitiría de generación en generación.
+        - paragraph [ref=e592]: En septiembre, cuando el viento comenzaba a cambiar de dirección, Ramón subió a la azotea de su casa. Desde allí veía toda la bahía. Reconocía a cada capitán por el movimiento particular de sus velas. Conocía a esos hombres. Algunos eran marineros que había entrenado. Otros eran hijos de marineros que había conocido. La bahía era su biblioteca, el puerto su despacho.
+        - paragraph [ref=e593]: "Sentía que estaba diciendo adiós. No a la vida, sino a algo más preciso: al riesgo, a las noches sin dormir esperando noticias de buques retrasados, a la carga de saber que cada decisión afectaba vidas que no siempre recordaba pero que sí importaban. Pero también sentía alivio. Un alivio profundo, como si después de treinta y cinco años de llevar pesos sobre los hombros, finalmente le permitieran descansar."
+        - paragraph [ref=e594]: Comprendió algo que no había entendido antes. No estaba dejando el mar. Solo estaba cambiando de posición en el barco. Ya no sería quien trazaba la ruta, pero seguiría siendo parte de la travesía. Seguiría viendo desde la azotea, leyendo noticias de viajes, entendiendo lo que cada vela en la bahía significaba. Ahora sería espectador de una obra que había ayudado a escribir, guardián de cartas que ya no necesitaba llevar consigo.
+        - paragraph [ref=e595]: El atardecer llegó despacio, como todo lo importante en la bahía. El cielo se tiñó de dorado profundo que se reflejaba en el agua, y por un momento la bahía se convirtió en un espejo donde lo que estaba arriba era indistinguible de lo que estaba abajo. Ramón sonrió. Era un final, ciertamente. Pero se sentía como un comienzo también, como esos cambios de viento que no son el fin de la navegación sino un reposicionamiento de velas, una forma nueva de existir en el agua que seguía siendo, después de toda una vida, la única verdad que importaba.
+        - paragraph [ref=e596]: "La bahía respiraría sin él durante algunos años más. Pero respiraría con lo que había dejado: una red de comercio que funcionaba porque entendía que las cifras representaban vidas, un hijo que aprendía a leer el agua como su abuelo había enseñado, cartas náuticas que guardaban el conocimiento acumulado de tres generaciones. Y eso, Ramón comprendió en ese atardecer dorado, era más de lo que cualquier hombre podía pedir."
+      - navigation "Navegación entre capítulos" [ref=e597]:
+        - link "← Capítulo anterior" [ref=e599] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/8
+        - link "Índice" [ref=e600] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e602] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/10
+      - generic [ref=e603]:
+        - heading "Pedir un cambio" [level=2] [ref=e604]
+        - generic [ref=e605]:
+          - paragraph [ref=e606]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e607]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e608]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e609]

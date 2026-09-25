@@ -1,0 +1,57 @@
+# FASE 1 · Intake · contradicciones
+#
+# Se queda parada en: el gate de Intake, con las contradicciones del brief.
+#
+# El brief está completo, pero se contradice de tres maneras, y las tres las detecta
+# **código, no un modelo** (backend/src/storymaker/intake/contradicciones.py):
+#   1. Edad contra período: nace en 1644 y el período acaba en 1649, así que tendría
+#      cinco años siendo maestra vidriera.
+#   2. Tono contra período: pide un tono festivo para la peste de Sevilla de 1649.
+#   3. Dato contra prohibida: el elemento obligatorio habla del anillo de su abuela, y
+#      «anillo» está en su lista de palabras prohibidas. El guardrail rechazaría justo
+#      los capítulos que cumplen el encargo.
+#
+# Qué se enseña en la presentación: la pantalla del gate de Intake con los tres avisos
+# `contradiccion_del_brief`. Es la única fase donde cabe «abortar».
+#
+# Reproducir (se detiene sola en el gate):
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/fases/f1b-intake-contradiccion.yaml --nombre fase-1b-intake
+
+fase:
+  se_detiene_en: gate de Intake
+  se_ve: tres avisos contradiccion_del_brief (edad, tono y prohibida)
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Elena Marín Cuesta
+    fecha_nacimiento: 1644-09-12
+    rol_epoca: maestra vidriera del barrio de Triana
+    ocasion: jubilación
+    elementos_personalizacion:
+      - texto: siempre lleva puesto el anillo de su abuela
+        obligatorio: true
+      - texto: sopla el primer vidrio de cada día con los ojos cerrados
+        obligatorio: true
+  mundo:
+    periodo:
+      inicio: 1647
+      fin: 1649
+      denominacion: la gran peste de Sevilla
+    lugar: Sevilla
+  obra:
+    genero:
+      principal: histórica
+      subgenero: de oficio
+    tono: festivo y alegre
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: moderado
+    arcaismo: moderado
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - epidemia
+      destinatario:
+        - anillo
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

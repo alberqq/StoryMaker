@@ -28,6 +28,7 @@ from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela, ruta_de_novela
 from storymaker.commons.errores import NovelaNoEncontrada
 from storymaker.commons.graph import cerrojo
+from storymaker.commons.graph.nodos import NOMBRE_DE_FASE
 
 router = APIRouter(prefix="/novelas", tags=["seguimiento"])
 
@@ -403,10 +404,23 @@ async def fases_de(db: aiosqlite.Connection) -> list[FaseDelPanel]:
 
 
 def fase_actual(fases: list[FaseDelPanel]) -> str:
-    """La más avanzada que ha trabajado o dejado salida; Regeneración si está abierta."""
+    """La más avanzada que ha trabajado o dejado salida; Regeneración si está abierta.
+
+    **Tras publicar, la de la última ejecución si sigue abierta.** Una reescritura vuelve a
+    Writing con Publication ya trabajada, y «la más avanzada» dejaba la tarjeta en la
+    columna de Publicación mientras se reescribían capítulos. Antes de publicar la novela
+    solo avanza, y la regla de siempre basta —también con las novelas antiguas, cuya única
+    fila de fase se quedó abierta—.
+    """
     regeneracion = fases[-1]
     if regeneracion.ejecuciones and regeneracion.estado not in ("completada", "abortada"):
         return "regeneration"
+    publicacion = next(f for f in fases if f.fase == "publication")
+    if publicacion.ejecuciones or publicacion.tiene_salida:
+        todas = [e for f in fases for e in f.ejecuciones]
+        ultima = max(todas, key=lambda e: e.id) if todas else None
+        if ultima is not None and ultima.fin is None and ultima.fase in FASES[:5]:
+            return ultima.fase
     actual = "intake"
     for fase in fases[:5]:
         if fase.ejecuciones or fase.tiene_salida:
@@ -551,14 +565,7 @@ async def _capitulos(db: aiosqlite.Connection) -> list[CapituloDelPanel]:
     return capitulos
 
 
-_NOMBRE_DE_FASE = {
-    "intake": "Encargo",
-    "investigation": "Investigación",
-    "plotting": "Trama",
-    "writing": "Escritura",
-    "publication": "Publicación",
-    "regeneration": "Regeneración",
-}
+_NOMBRE_DE_FASE = NOMBRE_DE_FASE
 
 _NOMBRE_DE_ESTADO = {
     "en_curso": "en curso",

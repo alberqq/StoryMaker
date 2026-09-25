@@ -26,8 +26,30 @@ from pydantic import BaseModel
 from storymaker.commons.agents.hooks import CuotaDeHerramientas
 from storymaker.commons.agents.presupuesto import guarda_techo
 from storymaker.commons.agents.schema_guard import SalidaInvalida, validar
-from storymaker.commons.agents.techos import TECHOS, Perfil, herramientas_de, turnos_de
+from storymaker.commons.agents.techos import (
+    TECHOS,
+    Perfil,
+    herramientas_de,
+    propias_de,
+    turnos_de,
+)
 from storymaker.commons.config import Rol, Settings
+
+
+@dataclass(frozen=True)
+class LlamadaAHerramienta:
+    """Una llamada a herramienta dentro de una invocación, tal como la vio el transporte.
+
+    Los tiempos son segundos de época: la llegada del `ToolUseBlock` y la de su resultado.
+    La salida no se guarda, y es deliberado (arq. §14): una página de WebFetch pesa miles de
+    tokens y no explica nada que la entrada no diga.
+    """
+
+    nombre: str
+    entrada: str
+    inicio: float
+    fin: float
+    error: bool = False
 
 
 @dataclass(frozen=True)
@@ -36,17 +58,24 @@ class Consumo:
 
     `coste_usd` es una **estimación en cliente**, no facturación (U-7), y se etiqueta así
     en toda salida que lo enseñe.
+
+    La duración y las herramientas viajan aquí y no en `Resultado` porque `Consumo` es lo
+    que los nodos ya pasan al `Span`: así llegan a la traza sin tocar ningún nodo.
     """
 
     tokens_in: int = 0
     tokens_out: int = 0
     coste_usd: float = 0.0
+    duracion_ms: int = 0
+    herramientas: tuple[LlamadaAHerramienta, ...] = ()
 
     def __add__(self, otro: Consumo) -> Consumo:
         return Consumo(
             self.tokens_in + otro.tokens_in,
             self.tokens_out + otro.tokens_out,
             self.coste_usd + otro.coste_usd,
+            self.duracion_ms + otro.duracion_ms,
+            self.herramientas + otro.herramientas,
         )
 
 
@@ -137,7 +166,7 @@ async def invocar_rol[T: BaseModel](
             modelo=modelo,
             prompt=prompt_completo,
             sistema=sistema,
-            herramientas=herramientas_de(perfil),
+            herramientas=herramientas_de(perfil) + propias_de(perfil),
             max_turns=turnos_de(perfil),
             cuota=cuota,
         )

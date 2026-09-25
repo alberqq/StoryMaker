@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import asyncio
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -53,13 +54,24 @@ class Veredicto:
     salida: str = ""
 
 
+class AveriaDeLean(ErrorDeEntorno):
+    """`verificar` salió con fallo sin nombrar ningún invariante: no juzgó la cronología.
+
+    Es lo que se ve cuando el fichero generado no compila o el sistema no deja ejecutar el
+    binario —en Windows, Smart App Control lo bloquea a veces con el error 4551—. No es un
+    veredicto negativo, y tratarlo como tal tumbaba novelas coherentes en la publicación.
+    Viaja como error de entorno para que `verificar_cronologia` caiga a la evaluación en
+    Python (arq. §11c), que juzga los mismos invariantes con la misma severidad.
+    """
+
+
 def interpretar(codigo: int, salida: str) -> Veredicto:
     """Traduce el código de salida y la prosa de `verificar` a incidencias.
 
-    El código manda: cualquier valor distinto de cero es un fallo, aunque la salida no se
-    reconozca. Las etiquetas `I1`…`I4` solo sirven para decir **cuál** y con qué eventos, y
-    si no se reconoce ninguna se abre una incidencia genérica con la salida entera dentro —
-    perder el detalle es aceptable; dar por bueno lo que fallo, no.
+    El código manda: con un valor distinto de cero, nada se da por bueno. Las etiquetas
+    `I1`…`I4` dicen **cuál** cae y con qué eventos. Si no se reconoce ninguna, Lean no llegó
+    a juzgar —no compiló o no se pudo ejecutar— y eso es una avería, que se lanza como
+    `AveriaDeLean` en lugar de disfrazarse de invariante violado.
     """
     if codigo == 0:
         return Veredicto(correcto=True, salida=salida)
@@ -83,16 +95,9 @@ def interpretar(codigo: int, salida: str) -> Veredicto:
             )
 
     if not incidencias:
-        incidencias.append(
-            Incidencia(
-                validador="lean_cronologia",
-                severidad=Severidad.BLOQUEANTE,
-                mensaje=(
-                    "La cronologia no supera la verificacion formal y la salida no nombra "
-                    "ningun invariante conocido."
-                ),
-                propuesta=salida[:400] or None,
-            )
+        raise AveriaDeLean(
+            f"Lean salio con codigo {codigo} sin nombrar ningun invariante: no ha juzgado la "
+            f"cronologia. Salida: {salida[-400:]}"
         )
     return Veredicto(correcto=False, incidencias=tuple(incidencias), salida=salida)
 
@@ -105,15 +110,28 @@ def escribir_generado(novela: NovelaLean, *, proyecto: Path = PROYECTO_POR_DEFEC
     return destino
 
 
-async def verificar(
-    novela: NovelaLean, *, proyecto: Path = PROYECTO_POR_DEFECTO
-) -> Veredicto:
+async def verificar(novela: NovelaLean, *, proyecto: Path | None = None) -> Veredicto:
     """Genera, compila y ejecuta. No cuesta un token: es aritmética.
 
     Por eso Lean es uno de los dos validadores de coste cero que la Fase 6 corre sobre los
     capítulos invalidados, y por eso puede correr en tres sitios sin que nadie mire el
     presupuesto de contexto.
+
+    **Sin `proyecto`, trabaja sobre una copia temporal de `formal/lean`**, con su `.lake`
+    ya compilado: el generador escribe `Generado.lean`, y hacerlo sobre el del repositorio
+    pisaría el caso de ejemplo versionado en cada capítulo y haría chocar dos novelas que
+    verificaran a la vez. La copia solo recompila `Generado` y el ejecutable.
     """
+    if proyecto is None:
+        with tempfile.TemporaryDirectory(prefix="storymaker-lean-") as carpeta:
+            copia = Path(carpeta) / "lean"
+            if (PROYECTO_POR_DEFECTO / "lakefile.toml").exists():
+                shutil.copytree(PROYECTO_POR_DEFECTO, copia)
+            return await _ejecutar(novela, copia)
+    return await _ejecutar(novela, proyecto)
+
+
+async def _ejecutar(novela: NovelaLean, proyecto: Path) -> Veredicto:
     if shutil.which("lake") is None:
         raise ErrorDeEntorno(
             "No se encuentra `lake` en el PATH. Sin el, la cronologia no se puede verificar, "

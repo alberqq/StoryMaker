@@ -123,6 +123,17 @@ class TestCatalogoDelExtractor:
         assert novela.dato_obligatorio in escaleta.dominio.datos
         assert novela.hito in escaleta.dominio.hitos
 
+    async def test_dice_que_quien_solo_se_recuerda_no_participa(
+        self, db: aiosqlite.Connection, novela: NovelaDePrueba, vectorizador: VectorizadorFalso
+    ) -> None:
+        """Un muerto recordado como participante tumbaba por cronología un capítulo correcto."""
+        escaleta = await extraccion.catalogo(db, vectorizador, 2, Settings(_env_file=None))
+        assert "solo los personajes presentes en el evento" in escaleta.texto
+        descripcion = SalidaExtractorDeCapitulo.model_json_schema()["$defs"]["EventoNarrativo"][
+            "properties"
+        ]["participantes"]["description"]
+        assert "ya ha muerto no participa" in descripcion
+
     def test_un_identificador_fuera_de_dominio_invalida_la_salida(self) -> None:
         """Falla en schema_guard, donde se reintenta, y no en una clave foranea."""
         dominio = Dominio(personajes=frozenset({1, 2}), hechos=frozenset({7}))

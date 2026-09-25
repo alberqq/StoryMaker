@@ -1,0 +1,492 @@
+{
+  "_nota": "Todas las cifras y los datos de portada del deck. index.html los lee al cargar: se cambia aquí un número y se vuelve a ejecutar construir.py. Los importes van como números (punto decimal); el deck los formatea en castellano.",
+  "empresa": "Qapítulo",
+  "lema": "Cada persona merece su capítulo",
+  "iniciativa": "una iniciativa de Qaracter",
+  "cliente": "Relicario",
+  "producto": "Novela Relicario",
+  "subtitulo": "Novelas históricas personalizadas, verificadas antes de regalarse",
+  "ocasion": "Propuesta técnico-comercial para Relicario",
+  "fecha": "[FECHA DE LA PRESENTACIÓN]",
+  "estudiante": "[TU NOMBRE]",
+  "email": "[TU EMAIL]",
+  "repositorio": "https://github.com/alberqq/StoryMaker",
+  "ejemplos": [
+    {
+      "anio": "1188",
+      "texto": "una cerera en la Santiago del Pórtico de la Gloria"
+    },
+    {
+      "anio": "1788",
+      "texto": "un aprendiz de relojero en el Madrid de Carlos III"
+    },
+    {
+      "anio": "1929",
+      "texto": "una ayudante de iluminación en la Fuente Mágica de Montjuïc"
+    }
+  ],
+  "ejemplos_pie": "Tres novelas reales de diez capítulos, escritas por el sistema y publicadas.",
+  "cambio_usd_eur": 0.9,
+  "coste": {
+    "novelas_mes": 300,
+    "medidas": [
+      {
+        "novela": "Cádiz, 1803–1806",
+        "usd": 3.62,
+        "nota": "publicada; texto ajeno en dos capítulos, RT-08"
+      },
+      {
+        "novela": "Santiago, 1180–1188",
+        "usd": 2.31,
+        "nota": "publicada"
+      },
+      {
+        "novela": "Madrid, 1787–1789",
+        "usd": 3.32,
+        "nota": "hasta su primer intento de publicación"
+      }
+    ],
+    "media_usd": 3.08,
+    "tokens_eur": 2.77,
+    "langfuse_prueba_usd": 1.7172,
+    "revision_usd": 0.6,
+    "revision_eur": 0.54,
+    "revision_min": 10,
+    "revisiones_media": 1.5,
+    "revisiones_eur": 0.81,
+    "supervision_min": 20,
+    "supervision_eur_h": 25,
+    "supervision_eur": 8.35,
+    "infra_mes_eur": 70,
+    "mantenimiento_mes_eur": 520,
+    "infra_eur": 1.97,
+    "total_eur": 13.9,
+    "pvp_iva_eur": 59,
+    "pvp_sin_iva_eur": 48.76,
+    "revisiones_incluidas": 3,
+    "margen_eur": 34.86,
+    "margen_pct": 71.5,
+    "revision_alternativa": {
+      "_nota": "Alternativa no usada: media de las dos demos. Si se adopta, hay que recalcular todo el bloque coste, escenarios y sensibilidad.",
+      "usd": 0.77,
+      "eur": 0.69,
+      "de": "(0,60 $ Cádiz 1805 + 0,94 $ Madrid 1858) / 2"
+    }
+  },
+  "proyecto": {
+    "tarifa_eur_h": 65,
+    "fases": [
+      {
+        "fase": "Diseño",
+        "detalle": "arquitectura, specs, TLA+, Lean",
+        "horas": 90
+      },
+      {
+        "fase": "Desarrollo",
+        "detalle": "harness, 9 roles, validadores, web",
+        "horas": 220
+      },
+      {
+        "fase": "Validación",
+        "detalle": "evals, revisión humana, red-team, tuning",
+        "horas": 70
+      },
+      {
+        "fase": "Despliegue",
+        "detalle": "API propia, infra, Langfuse, formación",
+        "horas": 40
+      }
+    ],
+    "total_horas": 420,
+    "total_eur": 27300
+  },
+  "escenarios": {
+    "ingreso_eur": 48.76,
+    "variable_eur": 11.93,
+    "fijo_eur": 590,
+    "fijo_1000_eur": 720,
+    "filas": [
+      {
+        "novelas": 50,
+        "margen_eur": 1251,
+        "margen_pct": 51
+      },
+      {
+        "novelas": 300,
+        "margen_eur": 10459,
+        "margen_pct": 71.5
+      },
+      {
+        "novelas": 1000,
+        "margen_eur": 36110,
+        "margen_pct": 74
+      }
+    ]
+  },
+  "sensibilidad": {
+    "base_eur": 34.86,
+    "casos": [
+      {
+        "caso": "Tokens +50 %",
+        "margen_eur": 33.07,
+        "delta_pct": -5.1,
+        "tono": "oro"
+      },
+      {
+        "caso": "6 revisiones por novela en vez de 1,5",
+        "margen_eur": 23.07,
+        "delta_pct": -33.8,
+        "tono": "lacre"
+      }
+    ],
+    "mitigacion": "Desde la 4.ª revisión, 4,90 € cada una: el margen vuelve a ≈ 35 €"
+  },
+  "evals": {
+    "extraido": "25-09-2026, 03:44",
+    "media_juez": 7.49,
+    "versiones_publicadas": 10,
+    "caps_ok": 60,
+    "caps_total": 60,
+    "filas": [
+      {
+        "novela": "Cádiz, 1803–1806",
+        "ocasion": "jubilación",
+        "tipo": "eval",
+        "caps": 10,
+        "estado": "publicada",
+        "intentos": 14,
+        "nombres": "pasa",
+        "longitud": "rep:3",
+        "prohibidas": "pasa",
+        "lean": "rep:1",
+        "juez": 7.12,
+        "cont": 6,
+        "tokens": "1,05 M",
+        "usd": 3.62,
+        "alerta": "RT-08: texto de la política de privacidad colado en los capítulos 6 y 7; ningún validador lo vio. Regenerada como eval-01b: limpia, 7,38 del juez y 3,15 $; es la novela de ejemplo.",
+        "alerta_corta": "RT-08 · texto ajeno en los caps. 6 y 7"
+      },
+      {
+        "novela": "Madrid, 1787–1789",
+        "ocasion": "18 cumpleaños",
+        "tipo": "eval",
+        "caps": 10,
+        "estado": "publicada",
+        "intentos": 16,
+        "nombres": "rep:1",
+        "longitud": "rep:2",
+        "prohibidas": "rep:1",
+        "lean": "rep:2",
+        "juez": 7.75,
+        "cont": 7,
+        "tokens": "1,03 M",
+        "usd": 3.68
+      },
+      {
+        "novela": "Santiago, 1180–1188",
+        "ocasion": "diez años de pareja",
+        "tipo": "eval",
+        "caps": 10,
+        "estado": "publicada",
+        "intentos": 11,
+        "nombres": "pasa",
+        "longitud": "rep:1",
+        "prohibidas": "pasa",
+        "lean": "pasa",
+        "juez": 7.0,
+        "cont": 5,
+        "tokens": "612 K",
+        "usd": 2.31
+      },
+      {
+        "novela": "Barcelona, 1928–1929",
+        "ocasion": "boda",
+        "tipo": "eval",
+        "caps": 10,
+        "estado": "publicada",
+        "intentos": 14,
+        "nombres": "pasa",
+        "longitud": "rep:4",
+        "prohibidas": "pasa",
+        "lean": "pasa",
+        "juez": 7.88,
+        "cont": 7,
+        "tokens": "825 K",
+        "usd": 2.99
+      },
+      {
+        "novela": "Valencia, 1885–1886",
+        "ocasion": "bodas de oro",
+        "tipo": "eval",
+        "caps": 10,
+        "estado": "publicada",
+        "intentos": 11,
+        "nombres": "pasa",
+        "longitud": "rep:1",
+        "prohibidas": "pasa",
+        "lean": "aviso:1",
+        "juez": 7.625,
+        "cont": 6,
+        "tokens": "780 K",
+        "usd": 2.76
+      },
+      {
+        "novela": "Córdoba, 965–970",
+        "ocasion": "adversarial · injection",
+        "tipo": "eval",
+        "caps": 5,
+        "estado": "publicada",
+        "intentos": 11,
+        "nombres": "rep:1",
+        "longitud": "rep:3",
+        "prohibidas": "rep:3",
+        "lean": "aviso:1",
+        "juez": 8.75,
+        "cont": 9,
+        "tokens": "621 K",
+        "usd": 2.22
+      },
+      {
+        "novela": "Cádiz, 1805–1808",
+        "ocasion": "adversarial · temporal",
+        "tipo": "eval",
+        "caps": 5,
+        "estado": "publicada",
+        "intentos": 6,
+        "nombres": "pasa",
+        "longitud": "rep:1",
+        "prohibidas": "pasa",
+        "lean": "falla",
+        "juez": 7.625,
+        "cont": 8,
+        "tokens": "576 K",
+        "usd": 2.04,
+        "fallo": true,
+        "alerta": "Lean no lo detecta: la fecha de muerte del canon la inventó el arquitecto (RT-09).",
+        "alerta_corta": "RT-09 · Lean no lo detecta: la fecha de muerte del canon la inventó el arquitecto"
+      },
+      {
+        "novela": "Madrid, 1856–1858",
+        "ocasion": "referencia · solo v1",
+        "tipo": "ref",
+        "caps": 5,
+        "estado": "publicada",
+        "intentos": 7,
+        "nombres": "pasa",
+        "longitud": "rep:2",
+        "prohibidas": "rep:1",
+        "lean": "aviso:1",
+        "juez": 7.71,
+        "cont": 8,
+        "tokens": "508 K",
+        "usd": 1.93
+      },
+      {
+        "novela": "Madrid, 1917–1919",
+        "ocasion": "referencia",
+        "tipo": "ref",
+        "caps": 5,
+        "estado": "publicada",
+        "intentos": 9,
+        "nombres": "rep:4",
+        "longitud": "pasa",
+        "prohibidas": "pasa",
+        "lean": "aviso:6",
+        "juez": 7.14,
+        "cont": 6,
+        "tokens": "645 K",
+        "usd": 2.39
+      },
+      {
+        "novela": "Cádiz, 1810–1812",
+        "ocasion": "referencia",
+        "tipo": "ref",
+        "caps": 5,
+        "estado": "publicada",
+        "intentos": 6,
+        "nombres": "pasa",
+        "longitud": "rep:1",
+        "prohibidas": "pasa",
+        "lean": "pasa",
+        "juez": 6.29,
+        "cont": 4,
+        "tokens": "512 K",
+        "usd": 1.91
+      }
+    ],
+    "publicadas": 10
+  },
+  "tuning": {
+    "_nota": "Slide 13. Para sustituirla por el tuning del prompt del escritor v2, cambia este bloque: titulo, antes, despues, barras y pie.",
+    "id": "It-26",
+    "titulo": "La lectura humana destapó un juez demasiado generoso; el tuning lo corrigió",
+    "antes_titulo": "Antes · novela de Sevilla, 10 capítulos",
+    "antes": [
+      "Juez: 7,4 de media y 8 en continuidad",
+      "Lectura humana: la firma del mapa se contradice en 5 capítulos",
+      "«Precisión» aparece 63 veces; dos capítulos cierran con el mismo párrafo",
+      "Causa: el writer solo veía el capítulo N−1; la nota no dependía de las contradicciones"
+    ],
+    "despues_titulo": "Después · It-26",
+    "despues": [
+      "El juez enumera las contradicciones antes de puntuar",
+      "Python topa la continuidad: 10 − 2 × nº de contradicciones",
+      "El writer recibe «lo que ya pasó» y las palabras ya gastadas"
+    ],
+    "barras_titulo": "Continuidad tras el ajuste, con las contradicciones que enumeró el juez",
+    "barras": [
+      {
+        "etiqueta": "Madrid, 1858",
+        "contradicciones": 1,
+        "valor": 8
+      },
+      {
+        "etiqueta": "Madrid, 1919",
+        "contradicciones": 1,
+        "valor": 6
+      },
+      {
+        "etiqueta": "Cádiz, 1812",
+        "contradicciones": 3,
+        "valor": 4
+      }
+    ],
+    "pie": "Segundo ajuste medido (It-25): el guardrail cazaba «hereje» pero dejaba pasar «herejía»; ahora busca la raíz dentro de cada palabra."
+  },
+  "lean": {
+    "novela": "Madrid, 1919",
+    "escenas": 9,
+    "eventos": 26,
+    "nacimiento": 1967,
+    "situada": 1917,
+    "juez": 7.14
+  },
+  "tlc": {
+    "estados_interactivo": 12650,
+    "estados_batch": 4425,
+    "violaciones": 0
+  },
+  "langfuse": {
+    "_nota": "Slide 16. Recorte de presentacion/capturas/langfuse-sesion.png sin el panel de metadatos (deck/img/langfuse-sesion-recorte.png). Coste por fase: evals.json, eval-01-jubilacion.",
+    "captura": "img/langfuse-sesion-recorte.png",
+    "etiqueta": "Traza de una novela completa de 10 capítulos (Cádiz, 1805)",
+    "es_langfuse": true,
+    "novela": "Cádiz, 1803–1806 (eval-01)",
+    "etiquetas": [
+      "coste 3,621496 $, idéntico al registrado por fase en la base",
+      "1.048.287 tokens · 1 h 06 min",
+      "un span por rol, con sus herramientas: WebSearch, WebFetch y las tools del arquitecto con schema (edad_en_fecha)",
+      "scores de todos los validadores, juez incluido: 7,25 · 7,63 · 7,38 · 7,13",
+      "prompt_nombre y prompt_version en cada span"
+    ],
+    "nota_rt08": "Es la novela con texto ajeno en los capítulos 6 y 7 (RT-08): se usa aquí solo como traza, no como novela de ejemplo.",
+    "fases": [
+      {
+        "fase": "Intake",
+        "usd": 0.0458
+      },
+      {
+        "fase": "Investigation",
+        "usd": 0.2698
+      },
+      {
+        "fase": "Plotting",
+        "usd": 0.8115
+      },
+      {
+        "fase": "Writing",
+        "usd": 1.8111
+      },
+      {
+        "fase": "Publication",
+        "usd": 0.6833
+      }
+    ],
+    "total_usd": 3.62
+  },
+  "demo": {
+    "rama": "lozoya",
+    "novela": "Madrid, 1858",
+    "capitulos": 5,
+    "version_origen": 2,
+    "version_nueva": 3,
+    "seleccion": "«Cayetano»",
+    "seleccion_donde": "capítulo 1 de la versión 2",
+    "peticion": "«no se llama Cayetano, se llama Amancio»",
+    "aviso": "Se regeneran 4 capítulos: 1, 2, 4, 5. Se revisa 1 con validadores de coste cero: 3",
+    "gate": "personaje:4 nombre=Amancio",
+    "celdas": 7,
+    "previstos": "1, 2, 4 y 5",
+    "revisado": "3",
+    "reescritos_final": 5,
+    "cap3_palabras": 1274,
+    "cap3_maximo": 1250,
+    "manifiesto": [
+      {
+        "cap": 1,
+        "v2": 8,
+        "v3": 12,
+        "tipo": "previsto"
+      },
+      {
+        "cap": 2,
+        "v2": 9,
+        "v3": 13,
+        "tipo": "previsto"
+      },
+      {
+        "cap": 3,
+        "v2": 4,
+        "v3": 15,
+        "tipo": "reparado",
+        "nota": "1.274 pal."
+      },
+      {
+        "cap": 4,
+        "v2": 10,
+        "v3": 16,
+        "tipo": "previsto"
+      },
+      {
+        "cap": 5,
+        "v2": 11,
+        "v3": 18,
+        "tipo": "previsto"
+      }
+    ],
+    "coste_usd": 0.94,
+    "coste_fases": "regeneration 0,05 + writing 0,80 + publication 0,10",
+    "minutos": 36,
+    "captura_indice": "../capturas/lozoya-v3-indice.png",
+    "captura_versiones": "../capturas/lozoya-versiones.png",
+    "apoyo": {
+      "novela": "Cádiz, 1805",
+      "rama": "fase-6-regenerada",
+      "capitulos": 10,
+      "texto": "un cambio de nombre reescribió 3 capítulos de 10 y reutilizó 7, por 0,60 $",
+      "reescritos": [
+        5,
+        6,
+        10
+      ],
+      "revalidados": [
+        7,
+        8,
+        9
+      ],
+      "coste_usd": 0.6,
+      "minutos": 10,
+      "captura_indice": "../capturas/fase6-v2-indice.png",
+      "captura_versiones": "../capturas/fase6-versiones.png",
+      "nota": "rama de la novela de Cádiz, 1803–1806, que tiene texto ajeno en los capítulos 6 y 7 (RT-08)"
+    }
+  },
+  "revision_humana": {
+    "novela": "Barcelona 1929",
+    "persona": 8.75,
+    "juez": 7.88,
+    "divergencias": 1
+  },
+  "rt09": "Y el límite: Lean solo es tan fiable como sus fechas. En el brief adversarial temporal, el arquitecto movió la muerte de Gravina de 1806 a 1809 y Lean validó contra la fecha inventada (RT-09). Mitigación propuesta: exigir que las fechas vitales de un personaje histórico salgan del corpus sellado.",
+  "siguientes_pasos_pie": "Los tokens son ~20 % del coste unitario: aun triplicándolos, el margen se queda en el 57 %."
+}

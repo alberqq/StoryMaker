@@ -1,0 +1,168 @@
+- generic [ref=f5e3]:
+  - banner [ref=f5e4]:
+    - link "StoryMaker, al taller" [ref=f5e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f5e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f5e7]:
+      - link "Taller" [ref=f5e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f5e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f5e10]:
+      - radio "Tema del sistema" [checked] [ref=f5e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f5e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f5e13] [cursor=pointer]: ☾
+  - main [ref=f5e14]:
+    - article [ref=f5e16]:
+      - generic [ref=f5e17]:
+        - navigation [ref=f5e18]:
+          - link "Índice" [ref=f5e19] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f5e21] [cursor=pointer]:
+          - generic [ref=f5e22]: A
+          - generic [ref=f5e23]: a
+      - heading "Personajes y lugares" [level=1] [ref=f5e24]
+      - generic [ref=f5e25]:
+        - heading "Personajes" [level=2] [ref=f5e26]
+        - generic [ref=f5e27]:
+          - heading "Tomás Ibarra Lucena" [level=2] [ref=f5e28]
+          - paragraph [ref=f5e29]: Inventado · homenajeado
+          - paragraph [ref=f5e30]: No aparece en ningún capítulo de esta versión.
+        - generic [ref=f5e31]:
+          - heading "Lucio del Valle" [level=2] [ref=f5e32]
+          - paragraph [ref=f5e33]: Histórico ficcionalizado
+          - paragraph [ref=f5e34]:
+            - text: "Aparece en:"
+            - link "capítulo 2" [ref=f5e36] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/2
+            - generic [ref=f5e37]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e38] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+        - generic [ref=f5e39]:
+          - heading "Doña Martina" [level=2] [ref=f5e40]
+          - paragraph [ref=f5e41]: Inventado
+          - paragraph [ref=f5e42]:
+            - text: "Aparece en:"
+            - link "capítulo 1" [ref=f5e44] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/1
+            - generic [ref=f5e45]:
+              - text: ","
+              - link "capítulo 2" [ref=f5e46] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/2
+            - generic [ref=f5e47]:
+              - text: ","
+              - link "capítulo 3" [ref=f5e48] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/3
+            - generic [ref=f5e49]:
+              - text: ","
+              - link "capítulo 5" [ref=f5e50] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/5
+        - generic [ref=f5e51]:
+          - heading "Amancio" [level=2] [ref=f5e52]
+          - paragraph [ref=f5e53]: Inventado
+          - paragraph [ref=f5e54]:
+            - text: "Aparece en:"
+            - link "capítulo 1" [ref=f5e56] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/1
+            - generic [ref=f5e57]:
+              - text: ","
+              - link "capítulo 2" [ref=f5e58] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/2
+            - generic [ref=f5e59]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e60] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+            - generic [ref=f5e61]:
+              - text: ","
+              - link "capítulo 5" [ref=f5e62] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/5
+        - generic [ref=f5e63]:
+          - heading "Pepino" [level=2] [ref=f5e64]
+          - paragraph [ref=f5e65]: Inventado
+          - paragraph [ref=f5e66]:
+            - text: "Aparece en:"
+            - link "capítulo 3" [ref=f5e68] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/3
+            - generic [ref=f5e69]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e70] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+            - generic [ref=f5e71]:
+              - text: ","
+              - link "capítulo 5" [ref=f5e72] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/5
+        - generic [ref=f5e73]:
+          - heading "Maestro Ceramista" [level=2] [ref=f5e74]
+          - paragraph [ref=f5e75]: Inventado
+          - paragraph [ref=f5e76]:
+            - text: "Aparece en:"
+            - link "capítulo 5" [ref=f5e78] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/5
+        - heading "Lugares" [level=2] [ref=f5e79]
+        - generic [ref=f5e80]:
+          - heading "Taller artesanal de cerámica" [level=2] [ref=f5e81]
+          - paragraph [ref=f5e82]: Taller artesanal de cerámica, mesa de trabajo, rueda de alfarero, arcilla
+          - paragraph [ref=f5e83]:
+            - text: "Aparece en:"
+            - link "capítulo 1" [ref=f5e85] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/1
+        - generic [ref=f5e86]:
+          - heading "Barrio popular" [level=2] [ref=f5e87]
+          - paragraph [ref=f5e88]: Barrio popular, calles estrechas, posadas, fondas, comercios pequeños
+          - paragraph [ref=f5e89]:
+            - text: "Aparece en:"
+            - link "capítulo 1" [ref=f5e91] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/1
+            - generic [ref=f5e92]:
+              - text: ","
+              - link "capítulo 3" [ref=f5e93] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/3
+            - generic [ref=f5e94]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e95] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+            - generic [ref=f5e96]:
+              - text: ","
+              - link "capítulo 5" [ref=f5e97] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/5
+        - generic [ref=f5e98]:
+          - heading "Calle en obras del Canal Isabel…" [level=2] [ref=f5e99]
+          - paragraph [ref=f5e100]: Calle en obras del Canal Isabel II, andamios, obreros, tuberías
+          - paragraph [ref=f5e101]:
+            - text: "Aparece en:"
+            - link "capítulo 2" [ref=f5e103] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/2
+            - generic [ref=f5e104]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e105] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+        - generic [ref=f5e106]:
+          - heading "Fuente pública" [level=2] [ref=f5e107]
+          - paragraph [ref=f5e108]: Fuente pública, punto de encuentro de aguadores
+          - paragraph [ref=f5e109]:
+            - text: "Aparece en:"
+            - link "capítulo 1" [ref=f5e111] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/1
+            - generic [ref=f5e112]:
+              - text: ","
+              - link "capítulo 3" [ref=f5e113] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/3
+            - generic [ref=f5e114]:
+              - text: ","
+              - link "capítulo 4" [ref=f5e115] [cursor=pointer]:
+                - /url: /novelas/lozoya/v/3/capitulos/4
+        - generic [ref=f5e116]:
+          - heading "Taberna popular" [level=2] [ref=f5e117]
+          - paragraph [ref=f5e118]: Taberna popular, mesas de madera, barriles de vino
+          - paragraph [ref=f5e119]:
+            - text: "Aparece en:"
+            - link "capítulo 2" [ref=f5e121] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/2
+        - generic [ref=f5e122]:
+          - heading "Cuarto modesto" [level=2] [ref=f5e123]
+          - paragraph [ref=f5e124]: Cuarto modesto con botijos guardados, ventana a Lavapiés
+          - paragraph [ref=f5e125]:
+            - text: "Aparece en:"
+            - link "capítulo 3" [ref=f5e127] [cursor=pointer]:
+              - /url: /novelas/lozoya/v/3/capitulos/3

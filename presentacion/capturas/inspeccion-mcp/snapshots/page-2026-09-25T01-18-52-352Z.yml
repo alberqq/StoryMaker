@@ -1,0 +1,50 @@
+- generic [ref=f8e3]:
+  - banner [ref=f8e4]:
+    - link "StoryMaker, al taller" [ref=f8e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f8e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f8e7]:
+      - link "Taller" [ref=f8e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f8e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f8e10]:
+      - radio "Tema del sistema" [checked] [ref=f8e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f8e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f8e13] [cursor=pointer]: ☾
+  - main [ref=f8e14]:
+    - article [ref=f8e30]:
+      - generic [ref=f8e31]:
+        - navigation [ref=f8e32]:
+          - link "Índice" [ref=f8e33] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/2
+        - button "Ajustes de lectura" [ref=f8e35] [cursor=pointer]:
+          - generic [ref=f8e36]: A
+          - generic [ref=f8e37]: a
+      - heading "Capítulo 1. El Taller del Abuelo" [level=1] [ref=f8e38]
+      - article [ref=f8e39]:
+        - paragraph [ref=f8e40]: "Tomás tenía seis años cuando descubrió que el espacio bajo la mesa del taller era su refugio. La grande, de roble grueso, donde su abuelo modelaba la arcilla, ofrecía sombra y misterio. Se deslizaba bajo ella en las mañanas, cuando la luz atravesaba las rendijas de la ventana y dibujaba rectángulos dorados en el suelo de tierra batida. Desde allí, invisible, contemplaba las manos nudosas de su abuelo: manos de ceramista que sabía el secreto del agua y la tierra cocida."
+        - paragraph [ref=f8e41]: Las manos descendían sobre el barro blando, lo moldeaban en rotaciones precisas, lo estiraban hasta que surgía la forma del botijo, ese vaso mágico que guardaba agua fresca durante los calores de Madrid. El abuelo trabajaba en silencio, pero sus gestos hablaban de una sabiduría que Tomás intuía sin comprenderla. Cuando el muchacho se atrevía a respirar fuerte desde su escondite, el abuelo levantaba los ojos y sonreía apenas, continuando su labor como si nada. No lo rechazaba. Quizá hasta lo esperaba.
+        - paragraph [ref=f8e42]: "Una mañana el abuelo dejó de trabajar. Extendió la mano bajo la mesa, la cerró suavemente en el aire, y habló: «Ven, que estos botijos tienen historia». Tomás salió lentamente, temeroso de haber cometido una falta. Pero el abuelo lo sentó sobre un taburete y le mostró un botijo terminado, oscuro como la tierra mojada. «Tu bisabuelo llevaba agua de la Puerta del Ángel hasta San Isidro», dijo. «Tu padre aprendió el oficio viendo cómo yo tallaba. Y tú...» —miró al niño con unos ojos que parecían guardar toda Madrid dentro— «tú aprenderás de otras maneras, pero el agua y la arcilla son lo que tu familia sabe». Luego continuó modelando, y Tomás permaneció en la mesa, ahora como miembro del taller, no como intruso. Años después recordaría ese momento como el instante en que supo quién era."
+        - paragraph [ref=f8e43]: "El muchacho que Tomás se convirtió trabajaba en las calles de Lavapiés cuando la madrugada aún era de tinieblas. Había aprendido de su padre las rutas, los clientes, los horarios: cubría la zona desde la Cebada hasta la Ronda de Atocha, conocía cada posada, cada fonda, cada convento que necesitaba agua. En la primavera de 1856, su vigésimo sexto año, Tomás cargaba los botijos con la soltura de quien dominaba un oficio. Los llenaba en la fuente pública —su fuente, que sus clientes respetaban como suya— y salía mientras Madrid dormía."
+        - paragraph [ref=f8e44]: "Cayetano lo esperaba junto a la fuente, como siempre. Competidor y cómplice: los dos cubrían territorios cercanos, y aunque cada uno defendía su clientela con fiereza silenciosa, había entre ellos el respeto de los hombres que comparten el mismo peso. «Madrugada fría», dijo Cayetano. Tomás asintió. «El agua saldrá fresca hoy». Intercambiaron un gesto que significaba todo: buena jornada para ambos, aunque les robara clientes mutuamente."
+        - paragraph [ref=f8e45]: Tomás realizó su ronda por las callejuelas adoquinadas, dejando botijos. En casa de Doña Martina, una viuda que compraba agua cada día desde hacía años, la mujer le pasó la moneda habitual y luego bajó la voz. «El agua que viene, Tomás. Dicen que por Calle San Bernardo van a abrir unos grifos. Del Canal que traen desde la sierra». Tomás sonrió con cortesía, como se sonríe a los antiguos cuando dicen necedades. «El agua siempre viene de donde siempre, señora. De la fuente». Pero algo en el tono de Doña Martina —esa mezcla de temor y certeza— quedó anudado en su pecho mientras continuaba la ronda.
+        - paragraph [ref=f8e46]: La tarde lo encontró llenando botijos de nuevo en la fuente. Fue entonces cuando Cayetano llegó con otros dos aguadores, bajando las voces. Tomás fingió no escuchar, pero sus oídos se afilaron. «Dicen que es un plan del gobierno», murmuraba Cayetano. «El Narváez, que acaba de llegar, quiere modernizar. Tuberías. Grifos públicos». Otro hombre escupió. «Los ingenieros que trabajan con Lucio del Valle ya andan midiendo Calle San Bernardo. Van a inaugurar en junio. Agua corriente para los ricos, y nosotros...» No acabó la frase.
+        - paragraph [ref=f8e47]: "Tomás siguió llenando botijos con movimientos meticulosos. El nervio le trepaba por el pecho. Sin darse cuenta, comenzó a silbar: una copla que su madre le enseñó, la que entonaba siempre cuando el miedo tocaba su puerta."
+        - paragraph [ref=f8e48]: Que vueltas da la rueda, que vueltas da la fortuna, que hoy eres luz y mañana no eres ni sombra ninguna.
+        - paragraph [ref=f8e49]: Cayetano se detuvo en medio de una palabra. Los tres hombres miraron a Tomás. Su amigo comprendió en ese silencio que lo que Tomás había escuchado lo perturbaba más de lo que parecía. «Bah», dijo Tomás rápidamente, sin dejar de trabajar. «Historias. El agua vendrá del mismo lugar en junio que en mayo». Pero su voz no sonó entera.
+        - paragraph [ref=f8e50]: "Se retiró con los botijos antes de que alguien respondiera, cargando el peso no solo de la cerámica llena, sino de algo más: la sensación de que el Madrid de sus abuelos, el que giraba bajo una rueda desde hace generaciones, estaba comenzando a cambiar de manera irreversible. Los botijos en sus manos seguían siendo tierra cocida y trabajo honesto. Pero la ciudad alrededor parecía estar siendo reescrita por hombres que no conocían el secreto que su abuelo le había mostrado bajo una mesa. Mientras subía hacia sus clientes por las calles estrechas de Lavapiés, Tomás se preguntaba si su oficio, como todo en Madrid, estaba a punto de girar hacia un destino que nadie podía prever."
+      - navigation "Navegación entre capítulos" [ref=f8e51]:
+        - link "Índice" [ref=f8e52] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/2
+        - link "Capítulo siguiente →" [ref=f8e54] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/2/capitulos/2
+      - generic [ref=f8e55]:
+        - heading "Pedir un cambio" [level=2] [ref=f8e56]
+        - generic [ref=f8e57]:
+          - paragraph [ref=f8e58]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f8e59]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f8e60]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f8e61]

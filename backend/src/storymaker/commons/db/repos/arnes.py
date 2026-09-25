@@ -264,6 +264,22 @@ async def retirar_incidencias_sin_capitulo(db: aiosqlite.Connection, validador: 
     )
 
 
+#: Las incidencias de la novela que devuelven capítulos al escritor: las contradicciones del
+#: juez y los rechazos de `PublishVersion`. Todas citan capítulos en `ubicacion` (`cap1, cap5`).
+QUE_DEVUELVEN_CAPITULOS = ("juez_contradiccion", "cronologia_publicacion", "render_visual")
+
+
+async def incidencias_que_devuelven_capitulos(
+    db: aiosqlite.Connection,
+) -> list[tuple[str, str]]:
+    """`(mensaje, ubicacion)` de cada incidencia de la novela que cita capítulos."""
+    marcas = ", ".join("?" for _ in QUE_DEVUELVEN_CAPITULOS)
+    # Solo se interpolan marcadores `?`; los valores van como parámetros.
+    consulta = f"SELECT mensaje, ubicacion FROM incidencia WHERE capitulo_version_id IS NULL AND validador IN ({marcas}) ORDER BY id"  # noqa: S608, E501
+    async with db.execute(consulta, QUE_DEVUELVEN_CAPITULOS) as cursor:
+        return [(str(f["mensaje"]), str(f["ubicacion"] or "")) for f in await cursor.fetchall()]
+
+
 async def incidencias_sin_capitulo(db: aiosqlite.Connection, validador: str) -> list[str]:
     async with db.execute(
         "SELECT mensaje FROM incidencia WHERE validador = ? AND capitulo_version_id IS NULL "

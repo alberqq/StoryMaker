@@ -18,6 +18,8 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+import aiosqlite
+
 from storymaker.commons.db.apertura import abrir_novela
 from storymaker.commons.errores import NovelaNoEncontrada, NovelaOcupada
 from storymaker.commons.graph import cerrojo
@@ -51,6 +53,26 @@ async def ramificar(origen: Path, destino: Path, *, fase_run_id: int | None = No
             "INSERT INTO procedencia (origen_db, origen_fase_run_id) VALUES (?, ?)",
             (origen.name, fase_run_id),
         )
+        await _mudar_de_hilo(db, desde=origen.stem, hacia=destino.stem)
         await db.commit()
 
     return destino
+
+
+async def _mudar_de_hilo(db: aiosqlite.Connection, *, desde: str, hacia: str) -> None:
+    """Lleva el checkpoint copiado al hilo de la rama.
+
+    El hilo de LangGraph se llama como el fichero (`run._hilo`), así que la copia traía el
+    checkpoint bajo el nombre del origen y abría uno vacío con el suyo: la rama no se podía
+    continuar ni regenerar, que es justo para lo que se ramifica. Una novela que nunca
+    corrió no tiene tablas de checkpoint, y entonces no hay nada que mudar.
+    """
+    async with db.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('checkpoints', 'writes')"
+    ) as cursor:
+        tablas = [str(fila[0]) for fila in await cursor.fetchall()]
+    for tabla in tablas:
+        await db.execute(
+            f"UPDATE {tabla} SET thread_id = ? WHERE thread_id = ?",  # noqa: S608 — lista cerrada
+            (hacia, desde),
+        )

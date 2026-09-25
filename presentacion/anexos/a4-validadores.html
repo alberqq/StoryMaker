@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A4 · Validadores</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  table.mapa { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.mapa th { background: var(--tinta); color: var(--pergamino); font-weight: 600; padding: 5px 4px; text-align: center; line-height: 1.15; vertical-align: bottom; }
+  table.mapa th.izq { text-align: left; padding-left: 10px; }
+  table.mapa td { border-bottom: 1px solid var(--tinta-12); padding: 2px 4px; text-align: center; height: 25px; }
+  table.mapa td.v { text-align: left; font-family: var(--mono); font-weight: 500; padding-left: 10px; white-space: nowrap; }
+  table.mapa td.fam { text-align: left; font-weight: 600; background: var(--tinta-06); padding-left: 10px; vertical-align: middle; border-right: 1px solid var(--tinta-12); width: 150px; }
+  table.mapa td.fam span { display: block; font-weight: 400; color: var(--piedra); }
+  table.mapa td + td { }
+  .b { display: inline-block; width: 14px; height: 14px; border-radius: 7px; background: var(--tinta); vertical-align: middle; }
+  .a { display: inline-block; width: 14px; height: 14px; border-radius: 7px; background: var(--oro); vertical-align: middle; }
+  .ley { display: flex; gap: 22px; align-items: center; margin-top: 8px; font-size: 15px; color: var(--tinta); }
+  .ley i { margin-right: 7px; }
+  table.val td:first-child { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+  table.val td:nth-child(3) { font-family: var(--mono); font-weight: 400; white-space: nowrap; }
+  table.val td.chipcel { white-space: nowrap; }
+  table.val td { padding-top: 5px; padding-bottom: 5px; }
+  table.rub td:first-child { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+</style>
+</head>
+<body data-anexo="A4">
+
+<!-- 1 · Mapa -->
+<section class="pagina" data-fuente="<code>commons/validation/registro.py</code> · <code>docs/architecture.md</code> §11a–§11d">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A4</span><span class="sep"></span>Validadores y punto de ejecución</div>
+    <h1>Dieciocho comprobaciones en cuatro familias, cada una en su punto del harness</h1>
+  </header>
+  <main class="cuerpo ancho">
+    <table class="mapa">
+      <tr>
+        <th class="izq">Familia</th><th class="izq">Validador</th>
+        <th>Salida<br>de agente</th><th>Investig.<br>· FillGap</th><th>Gate de<br>Plotting</th><th>Post<br>WriteChapter</th><th>Post<br>Extract</th><th>Gate de<br>Writing</th><th>Judge</th><th>Publish<br>Version</th><th>Fuera<br>de línea</th>
+      </tr>
+      <tr><td class="fam" rowspan="11">Programáticos<span>11, en el registro</span></td><td class="v">schema_guard</td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">nombres_exactos</td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">longitud_capitulo</td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">guardrail_prohibidas</td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">anacronismo_fechado</td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">anclaje_valido</td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">cobertura_anclada</td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">arco_anclado</td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">cobertura_capitulo</td><td></td><td></td><td></td><td></td><td><i class="a"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">cobertura_personalizacion</td><td></td><td></td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">render_visual</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><i class="b"></i></td><td></td></tr>
+      <tr><td class="fam" rowspan="5">Semánticos<span>juicio de un modelo o de una persona</span></td><td class="v">juez_rubrica</td><td></td><td></td><td></td><td></td><td></td><td></td><td><i class="b"></i></td><td></td><td></td></tr>
+      <tr><td class="v">respaldo_fuente</td><td></td><td><i class="a"></i></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">ejecucion_escaleta</td><td></td><td></td><td></td><td></td><td><i class="a"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">arco_ejecutado</td><td></td><td></td><td></td><td></td><td><i class="a"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="v">revision_humana</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><i class="a"></i></td></tr>
+      <tr><td class="fam">Formal · Lean 4</td><td class="v">I1–I4 cronología</td><td></td><td></td><td><i class="a"></i></td><td></td><td><i class="b"></i></td><td></td><td></td><td><i class="b"></i></td><td></td></tr>
+      <tr><td class="fam">Formal · TLA+</td><td class="v">TLC</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><i class="a"></i></td></tr>
+    </table>
+    <div class="ley">
+      <span><i class="b i"></i>bloquea o devuelve la novela</span>
+      <span><i class="a i"></i>avisa o informa, no para</span>
+      <span class="sec">Los puntos de los programáticos salen del registro; los demás, de §11b–§11d.</span>
+    </div>
+  </main>
+</section>
+
+<!-- 2 · Programáticos -->
+<section class="pagina" data-fuente="<code>backend/src/storymaker/commons/validation/registro.py</code> (<code>REGISTRO</code>) · <code>docs/architecture.md</code> §11a">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A4</span><span class="sep"></span>Programáticos (deterministas)</div>
+    <h1>Once validadores de código: primero lo gratis, luego la llamada al modelo</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t val">
+      <tr><th>Nombre</th><th>Qué comprueba</th><th>Punto (registro)</th><th>Bloquea</th></tr>
+      <tr><td>schema_guard</td><td>La salida de cada rol cumple su modelo Pydantic</td><td>salida_de_nodo_agente</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>nombres_exactos</td><td>Homenajeado y personajes escritos como en el canon (la inicial no cuenta)</td><td>post_write_chapter</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>longitud_capitulo</td><td>Palabras dentro del rango del brief</td><td>post_write_chapter</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>guardrail_prohibidas</td><td>Prohibidas en tres niveles, normalizadas y con derivadas («herejía» por «hereje»)</td><td>post_write_chapter</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>anacronismo_fechado</td><td>Nada con <code>fecha_inicio</code> posterior a la fecha narrativa</td><td>post_write_chapter</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>anclaje_valido</td><td>Todo anclaje apunta al corpus sellado o a una Licencia declarada</td><td>post_write_chapter</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>cobertura_anclada</td><td>Cada elemento obligatorio está anclado a ≥ 1 escena</td><td>gate_plotting</td><td class="chipcel"><span class="chip neutro solo">sí*</span></td></tr>
+      <tr><td>arco_anclado</td><td>Personaje en ≥ 3 escenas tiene arco; el homenajeado, no plano y con cierre final</td><td>gate_plotting</td><td class="chipcel"><span class="chip neutro solo">sí*</span></td></tr>
+      <tr class="dest"><td>cobertura_capitulo</td><td>Lo que la escaleta encomendó al capítulo aparece en él</td><td>post_extract</td><td class="chipcel"><span class="chip aviso">avisa</span></td></tr>
+      <tr><td>cobertura_personalizacion</td><td>Cada obligatorio aparece en ≥ 1 capítulo, también en batch</td><td>gate_writing</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+      <tr><td>render_visual</td><td>Portada, índice y fichas se pintan en Chromium; cada enlace abre su capítulo</td><td>publish_version</td><td class="chipcel"><span class="chip neutro solo">sí</span></td></tr>
+    </table>
+    <p class="nota" style="margin-top:10px"><b>El registro es el cableado.</b> El grafo y el hook de <code>.claude/</code> sacan de <code>REGISTRO</code> qué validadores componen cada pasada; <code>registro_de_validadores</code> lo compara con §11a y §7.2 de la spec, y bloquea en G1. * En el gate de Plotting la revisión de la escaleta no cierra el gate: lo grave se enseña primero y el Autor puede aprobar con avisos.</p>
+  </main>
+</section>
+
+<!-- 3 · Semánticos y formales -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §11b, §11c y §11d · <code>backend/src/storymaker/publication/nodos.py</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A4</span><span class="sep"></span>Semánticos y formales</div>
+    <h1>El juicio de un modelo sobre si algo ocurrió avisa; solo el umbral del juez y Lean detienen</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t val">
+      <tr><th>Nombre</th><th>Qué comprueba</th><th>Dónde corre</th><th>Efecto</th></tr>
+      <tr><td>juez_rubrica</td><td>Ocho criterios 1–10; enumera antes las contradicciones y Python topa la continuidad</td><td>Judge</td><td class="chipcel"><span class="chip neutro solo">media ≥ 6,0</span></td></tr>
+      <tr><td>respaldo_fuente</td><td>Que la cita (≤ 300 caracteres) sostenga el enunciado del hecho</td><td>VerifyCorpus · FillGap</td><td class="chipcel"><span class="chip aviso">baja la firmeza</span></td></tr>
+      <tr><td>ejecucion_escaleta</td><td>Que los beats planificados de este capítulo hayan ocurrido</td><td>post Extract</td><td class="chipcel"><span class="chip aviso">avisa y viaja</span></td></tr>
+      <tr><td>arco_ejecutado</td><td>Que los hitos de arco anclados a este capítulo hayan ocurrido</td><td>post Extract</td><td class="chipcel"><span class="chip aviso">avisa y viaja</span></td></tr>
+      <tr><td>revision_humana</td><td>La misma rúbrica, aplicada por una persona a ≥ 1 novela</td><td>fuera de línea</td><td class="chipcel"><span class="chip neutro solo">score al lado</span></td></tr>
+      <tr><td>Lean I1–I4</td><td>Cronología de la escaleta, la acumulada del texto y la completa</td><td>gate Plotting · post Extract · PublishVersion</td><td class="chipcel"><span class="chip aviso">avisa</span> <span class="chip neutro solo">bloquea</span></td></tr>
+      <tr><td>TLC</td><td>Cinco invariantes y dos propiedades temporales del arnés</td><td>desarrollo</td><td class="chipcel"><span class="chip pasa">0 violaciones</span></td></tr>
+    </table>
+    <div class="fila" style="gap:16px; margin-top:12px">
+      <div class="caja fina col"><b>«Avisa y viaja».</b> Los tres avisos más recientes entran en el bloque 1 del paquete del capítulo siguiente. En el último capítulo se convierten en entrada destacada del gate de Writing.</div>
+      <div class="caja fina col"><b>Umbral en Python.</b> La novela pasa si la media de las ocho notas es ≥ 6,0. La continuidad no pasa de <span class="mono">max(1, 10 − 2·n)</span> con <i>n</i> contradicciones. En batch, el umbral informa y no detiene.</div>
+      <div class="caja fina col"><b>Lean, en tres puntos.</b> Avisa en Plotting, antes de escribir; bloquea en la pasada del extractor y en la publicación. Sin <code>lake</code>, los mismos invariantes en Python con la misma severidad.</div>
+    </div>
+  </main>
+</section>
+
+<!-- 4 · Rúbrica -->
+<section class="pagina" data-fuente="<code>backend/src/storymaker/publication/rubrica.yaml</code> (el mismo fichero para el juez y para la revisión humana)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A4</span><span class="sep"></span>La rúbrica del juez</div>
+    <h1>El juez y la persona puntúan con el mismo fichero, y por eso sus notas se comparan</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t rub">
+      <tr><th>Criterio</th><th>Qué se pregunta (resumen de <code style="color:var(--oro)">rubrica.yaml</code>)</th></tr>
+      <tr><td>continuidad</td><td>¿Lo que dice un capítulo sigue siendo cierto en los siguientes? Objetos, saberes, heridas.</td></tr>
+      <tr><td>arco</td><td>¿La transformación del homenajeado está ganada o solamente anunciada?</td></tr>
+      <tr><td>coherencia_de_personajes</td><td>¿Cada personaje habla y actúa como quien es?</td></tr>
+      <tr><td>ritmo</td><td>¿La novela avanza? Escenas que no mueven nada, capítulos que repiten función, finales sin gancho.</td></tr>
+      <tr><td>tono</td><td>¿Suena como pidió el encargo de principio a fin, sin saltos, y es compatible con el período?</td></tr>
+      <tr><td>prosa</td><td>¿Se lee bien? Frases mecánicas, adjetivación repetida, transiciones bruscas.</td></tr>
+      <tr><td>naturalidad_de_la_personalizacion</td><td>¿Los elementos del comprador están tejidos o pegados?</td></tr>
+      <tr><td>autenticidad_de_epoca</td><td>¿El mundo se sostiene frente a la licencia, el arcaísmo y el contenido declarados?</td></tr>
+    </table>
+    <div class="fila" style="gap:14px; margin-top:14px">
+      <div class="caja oro" style="flex:0 0 200px"><div class="num-grande cifra" style="font-size:34px">1–10</div><div>por criterio, con justificación</div></div>
+      <div class="caja oro" style="flex:0 0 200px"><div class="num-grande cifra" style="font-size:34px">6,0</div><div>umbral de publicación sobre la media</div></div>
+      <div class="franja col" style="display:flex; align-items:center"><div><b>El juez no edita.</b> Su única salida son las ocho notas con su justificación. Si el agente que optimiza la métrica fuera el que la produce, los scores dejarían de significar nada.</div></div>
+    </div>
+  </main>
+</section>
+
+<!-- 5 · Lean -->
+<section class="pagina" data-fuente="<code>formal/lean/Cronologia/Basico.lean</code> · <code>docs/architecture.md</code> §11c">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A4</span><span class="sep"></span>Formal de la historia · Lean 4</div>
+    <h1>Cuatro invariantes decidibles sobre la cronología concreta de cada novela</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:24px">
+      <div class="col">
+        <table class="t compacta">
+          <tr><th style="width:62px">Id</th><th>Invariante en <code style="color:var(--oro)">Basico.lean</code></th></tr>
+          <tr><td class="nom">I1</td><td><b>Nadie participa en un evento antes de nacer</b> <span class="mono sec">I1_NadieAntesDeNacer</span></td></tr>
+          <tr><td class="nom">I2</td><td><b>Nadie participa después de morir</b> <span class="mono sec">I2_NadieDespuesDeMorir</span></td></tr>
+          <tr><td class="nom">I3</td><td><b>Nadie está en dos lugares el mismo momento</b> <span class="mono sec">I3_NoEnDosLugares</span></td></tr>
+          <tr><td class="nom">I4</td><td><b>Ningún objeto antes de existir ni tras desaparecer</b> <span class="mono sec">I4_SinAnacronismos</span></td></tr>
+        </table>
+        <p class="nota" style="margin-top:10px">El generador solo vuelca <b>datos</b> a <code>Generado.lean</code> desde <code>cronologia_*</code>, <code>canon_personaje</code> y <code>mundo_entidad</code>; los teoremas no cambian entre novelas. El momento es un entero de días: I3 compara el mismo día, no distancias.</p>
+        <table class="t compacta" style="margin-top:6px">
+          <tr><th>Dónde</th><th>Sobre qué</th><th>Si falla</th></tr>
+          <tr><td>Gate de Plotting</td><td>La cronología de la escaleta</td><td><span class="chip aviso">aviso al Autor</span></td></tr>
+          <tr><td>Pasada del extractor</td><td>La acumulada, con el texto nuevo</td><td><span class="chip falla">vuelve al editor</span></td></tr>
+          <tr><td>PublishVersion</td><td>La cronología completa</td><td><span class="chip falla">no se publica</span></td></tr>
+        </table>
+      </div>
+      <div style="flex:0 0 530px">
+<!-- BEGIN gen:lean -->
+<pre class="codigo" style="line-height:1.3"><span class="c">-- I1 · Nadie participa en un evento antes de nacer</span>
+<span class="k">def</span> <span class="n">participanteNacido</span> (e : Evento)
+    (p : PersonaId) : Bool <span class="k">:=</span>
+  <span class="k">match</span> n.persona? p <span class="k">with</span>
+  | <span class="k">none</span> <span class="k">=&gt;</span> <span class="k">true</span>   <span class="c">-- sin persona: nada que afirmar</span>
+  | <span class="k">some</span> q <span class="k">=&gt;</span> q.nacimiento <span class="k">≤</span> e.momento
+
+<span class="k">def</span> <span class="n">I1_NadieAntesDeNacer</span> : Bool <span class="k">:=</span>
+  n.eventos.all <span class="k">fun</span> e <span class="k">=&gt;</span>
+    e.participantes.all (n.participanteNacido e)
+
+<span class="c">-- PublishVersion no publica si esto es false</span>
+<span class="k">def</span> <span class="n">Coherente</span> : Bool <span class="k">:=</span>
+  n.I1_NadieAntesDeNacer <span class="k">&amp;&amp;</span>
+  n.I2_NadieDespuesDeMorir <span class="k">&amp;&amp;</span>
+  n.I3_NoEnDosLugares <span class="k">&amp;&amp;</span>
+  n.I4_SinAnacronismos</pre>
+<!-- END gen:lean -->
+        <div class="caja lacre" style="margin-top:12px"><b>El caso real.</b> En una novela publicada de Madrid 1919, la protagonista tenía en el canon su nacimiento real, de 1967. Lean lo rechaza sobre la prosa (I1, 26 eventos) y sobre la escaleta; ni los deterministas ni el juez lo vieron. Con Lean en la publicación, no se habría publicado.</div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

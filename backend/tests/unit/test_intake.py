@@ -104,7 +104,7 @@ class TestContradicciones:
     def test_el_homenajeado_nace_despues_del_periodo(self) -> None:
         problemas = contradicciones.revisar(brief(fecha_nacimiento="1850-01-01"))
         assert len(problemas) == 1
-        assert "no puede ser personaje de esa epoca" in problemas[0]
+        assert "se toma como su fecha real" in problemas[0]
 
     def test_el_homenajeado_seria_un_nino(self) -> None:
         problemas = contradicciones.revisar(brief(fecha_nacimiento="1805-01-01"))

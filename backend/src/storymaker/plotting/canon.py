@@ -22,8 +22,27 @@ import aiosqlite
 from storymaker.commons.db.repos import id_insertado
 from storymaker.commons.embeddings import indice
 from storymaker.commons.embeddings.modelo import Vectorizador
+from storymaker.commons.validation.puras import anio_de
+from storymaker.intake.contradicciones import EDAD_MINIMA_RAZONABLE
 from storymaker.intake.esquemas import Brief
 from storymaker.plotting.esquemas import SalidaArquitecto
+
+
+def nacimiento_de_epoca(propuesta: str | None, brief: Brief) -> str | None:
+    """La fecha de nacimiento del homenajeado **dentro de la novela** (arq. §4, Fase 3).
+
+    El encargo puede traer la fecha real de la persona, y los briefs de ejemplo la traen: un
+    homenajeado de 1958 en el Cádiz de 1805. Copiada al canon, dejaba al protagonista sin
+    nacer en todas sus escenas, y la cronología de la publicación —que sí bloquea— no habría
+    dejado publicar. Vale la del arquitecto si le da edad en el periodo; si no, la del
+    encargo si se la da; y si ninguna, ninguna: sin fecha no hay restricción, que es mejor
+    que una restricción falsa.
+    """
+    for candidata in (propuesta, brief.fecha_nacimiento):
+        anio = anio_de(candidata)
+        if anio is not None and brief.periodo.fin - anio >= EDAD_MINIMA_RAZONABLE:
+            return candidata
+    return None
 
 
 async def volcar_canon(
@@ -59,7 +78,11 @@ async def volcar_canon(
                 personaje.miedo,
                 personaje.voz,
                 personaje.estatus,
-                personaje.fecha_nacimiento,
+                (
+                    nacimiento_de_epoca(personaje.fecha_nacimiento, brief)
+                    if personaje.es_homenajeado
+                    else personaje.fecha_nacimiento
+                ),
                 personaje.fecha_muerte,
             ),
         )
@@ -131,13 +154,25 @@ async def volcar_canon(
 
 
 async def volcar_prohibidas(db: aiosqlite.Connection, brief: Brief) -> None:
-    """Los términos vetados, ya normalizados para que el guardrail compare rápido."""
+    """Los términos vetados, ya normalizados para que el guardrail compare rápido.
+
+    A los del brief se suma la lista global del arnés, salvo los términos que el brief ya
+    trae: una fila repetida daría dos incidencias por la misma palabra.
+    """
+    from storymaker.commons.validation.policy_checker import PROHIBIDAS_GLOBALES
     from storymaker.commons.validation.puras import normalizar
 
-    for prohibida in brief.palabras_prohibidas:
+    filas = [(p.nivel.value, p.termino, normalizar(p.termino)) for p in brief.palabras_prohibidas]
+    vistos = {normalizado for _, _, normalizado in filas}
+    for termino in PROHIBIDAS_GLOBALES:
+        normalizado = normalizar(termino)
+        if normalizado not in vistos:
+            vistos.add(normalizado)
+            filas.append(("global", termino, normalizado))
+
+    for fila in filas:
         await db.execute(
-            "INSERT INTO canon_prohibida (nivel, termino, normalizado) VALUES (?, ?, ?)",
-            (prohibida.nivel.value, prohibida.termino, normalizar(prohibida.termino)),
+            "INSERT INTO canon_prohibida (nivel, termino, normalizado) VALUES (?, ?, ?)", fila
         )
 
 

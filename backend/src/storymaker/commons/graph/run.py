@@ -22,6 +22,8 @@ from __future__ import annotations
 import os
 import sys
 import traceback
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -31,7 +33,7 @@ from storymaker.commons.agents.invocacion import Consumo
 from storymaker.commons.config import Settings
 from storymaker.commons.db.apertura import abrir_novela
 from storymaker.commons.db.repos import arnes
-from storymaker.commons.errores import NadaQueReintentar
+from storymaker.commons.errores import NadaQueRegenerar, NadaQueReintentar
 from storymaker.commons.graph import cerrojo
 from storymaker.commons.graph.construccion import construir
 from storymaker.commons.graph.dependencias import Dependencias, usando
@@ -45,6 +47,8 @@ from storymaker.gates.notifier import (
 from storymaker.gates.notifier import construir as construir_notifier
 
 if TYPE_CHECKING:
+    import aiosqlite
+
     from storymaker.commons.agents.invocacion import Transporte
     from storymaker.commons.embeddings.modelo import Vectorizador
     from storymaker.commons.obs.trazas import Observador
@@ -95,6 +99,9 @@ class ResultadoInvocacion:
     gate_abierto: int | None = None
     consumo: Consumo = field(default_factory=Consumo)
     error: str | None = None
+    #: Lo que hay que contar cuando no se ejecutó el grafo, como una petición de cambio que
+    #: no nombraba fila o que ningún capítulo usa.
+    nota: str | None = None
 
     @property
     def espera_al_autor(self) -> bool:
@@ -136,6 +143,32 @@ def _por_defecto(
     return transporte, vectorizador, observador or trazas.construir(settings)
 
 
+async def version_objetivo(db: aiosqlite.Connection) -> int:
+    """La versión que esta invocación va a publicar: la última publicada más uno.
+
+    Es lo que identifica la traza de una generación (arq. §14). No cambia entre el arranque
+    y las reanudaciones de una misma generación, porque solo sube al publicar.
+    """
+    async with db.execute(
+        "SELECT COALESCE(MAX(numero), 0) + 1 AS siguiente FROM version_novela"
+    ) as cursor:
+        fila = await cursor.fetchone()
+    return int(fila["siguiente"]) if fila is not None else 1
+
+
+@contextmanager
+def _vaciando(observador: Observador) -> Iterator[None]:
+    """Envía lo pendiente al salir, también si un nodo revienta.
+
+    El SDK de Langfuse exporta en segundo plano; la CLI es un proceso por comando y, sin
+    esto, las últimas trazas de una invocación podían no salir antes de que terminara.
+    """
+    try:
+        yield
+    finally:
+        observador.cerrar()
+
+
 async def invocar(
     novela: Path,
     entrada: Arranque | Reanudacion,
@@ -161,8 +194,12 @@ async def invocar(
     """
     piezas = _por_defecto(settings, transporte, vectorizador, observador)
 
-    with cerrojo.tomar(novela):
+    with cerrojo.tomar(novela), _vaciando(piezas[2]):
         async with abrir_novela(novela) as db:
+            # Una sesión por novela: todas las invocaciones de la misma novela —arranque,
+            # reanudaciones, regeneraciones— caen en la misma, y su coste es el de la
+            # novela. Y una traza por generación: la de la versión que se va a publicar.
+            piezas[2].abrir_sesion(novela.stem, generacion=await version_objetivo(db))
             from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
             checkpointer = AsyncSqliteSaver(db)
@@ -301,6 +338,133 @@ async def reintentar(
     )
 
 
+async def regenerar(
+    novela: Path,
+    *,
+    settings: Settings,
+    aprobada: bool = True,
+    transporte: Transporte | None = None,
+    vectorizador: Vectorizador | None = None,
+    observador: Observador | None = None,
+    notifier: Notifier | None = None,
+) -> ResultadoInvocacion:
+    """Entra en la Fase 6 tras decidir su gate (arq. §4, Fase 6).
+
+    El gate de Regeneración lo abre la API y no un `interrupt()`, así que al decidirlo no hay
+    nada que reanudar: el grafo terminó en `Idle`. Aquí se escribe en el checkpoint
+    `pc = RequestChange` **como salida de `Idle`**, cuyo router lo lleva a `RequestChange`,
+    y se reanuda por el camino de siempre — el mismo truco que `reintentar`.
+
+    Antes de entrar se resuelve la petición, porque las aristas del modelo obligan a que
+    `RegenerateAffected` lleve a `Validate` y el grafo no se puede recorrer con el alcance
+    vacío. Sin fila ni valor no se cambia nada; con una fila que ningún capítulo usa, el
+    cambio se aplica sin grafo y sin versión nueva. Cualquier decisión que no sea aprobar
+    descarta la petición.
+    """
+    from storymaker.regeneration import cambio, retirados
+    from storymaker.regeneration import nodos as regeneracion
+    from storymaker.regeneration.esquemas import ObjetoDelCambio
+
+    if vectorizador is None:
+        from storymaker.commons.embeddings.modelo import FastEmbedVectorizador
+
+        vectorizador = FastEmbedVectorizador(settings.modelo_embeddings)
+    with cerrojo.tomar(novela):
+        async with abrir_novela(novela) as db:
+            from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+            grafo = construir(checkpointer=AsyncSqliteSaver(db))
+            foto = await grafo.aget_state(_hilo(novela))
+            valores = foto.values
+            if not aprobada:
+                await arnes.cerrar_abierta(db, "abortada")
+                await db.commit()
+                return ResultadoInvocacion(
+                    nodo_final="Idle", nota="Peticion descartada: no se ha cambiado nada."
+                )
+            if foto.next or valores.get("pc") != "Idle":
+                raise NadaQueRegenerar(
+                    "La novela no esta publicada y en reposo: no hay version que regenerar."
+                )
+            if await arnes.gate_pendiente(db) is not None:
+                raise NadaQueRegenerar("La novela espera tu decision en otro gate.")
+
+            peticion = await regeneracion.peticion_aprobada(db)
+            resuelto = await cambio.resolver(db, vectorizador, peticion) if peticion else None
+            if resuelto is None:
+                await arnes.cerrar_abierta(db, "completada")
+                await db.commit()
+                return ResultadoInvocacion(
+                    nodo_final="Idle",
+                    nota=(
+                        "La aprobacion no nombra fila y valor (<objeto>:<fila> <campo>=<valor>)"
+                        ": no se ha cambiado nada."
+                    ),
+                )
+            if resuelto.objeto is ObjetoDelCambio.HECHO and await _hay_sello(db):
+                # Un trigger hace el corpus de solo lectura tras el sello, y `/ediciones` ya
+                # lo rechaza igual. Entrar en el grafo lo haría reventar en `RequestChange`.
+                await arnes.cerrar_abierta(db, "completada")
+                await db.commit()
+                return ResultadoInvocacion(
+                    nodo_final="Idle",
+                    nota="El corpus esta sellado: sus hechos no se cambian. No se ha tocado nada.",
+                )
+            alcance = await regeneracion.calcular_alcance(
+                db,
+                objeto=resuelto.objeto,
+                fila_id=resuelto.fila_id,
+                pares=retirados.pares(
+                    resuelto.objeto, resuelto.campo, resuelto.antes, resuelto.despues
+                ),
+            )
+            if not alcance.a_regenerar:
+                abierta = await arnes.fase_run_abierta(db)
+                await cambio.aplicar(
+                    db,
+                    vectorizador,
+                    resuelto,
+                    actor="autor",
+                    fase_run_id=int(abierta["id"]) if abierta is not None else None,
+                )
+                await arnes.cerrar_abierta(db, "completada")
+                await db.commit()
+                return ResultadoInvocacion(
+                    nodo_final="Idle",
+                    nota=(
+                        f"Cambio aplicado en {resuelto.objeto.value}:{resuelto.fila_id}. "
+                        "Ningun capitulo lo usa: no hay version nueva."
+                    ),
+                )
+
+            await grafo.aupdate_state(
+                _hilo(novela),
+                {
+                    "pc": "RequestChange",
+                    "intentos": 0,
+                    "capitulo_version_id": None,
+                    "hay_bloqueantes": False,
+                    "rechazos_juez": 0,
+                    "gate_id": None,
+                },
+                as_node="Idle",
+            )
+    return await invocar(
+        novela,
+        Reanudacion(),
+        settings=settings,
+        transporte=transporte,
+        vectorizador=vectorizador,
+        observador=observador,
+        notifier=notifier,
+    )
+
+
+async def _hay_sello(db: Any) -> bool:
+    async with db.execute("SELECT 1 FROM mundo_sello LIMIT 1") as cursor:
+        return await cursor.fetchone() is not None
+
+
 def _ultimo_nodo(fallo: BaseException) -> str:
     """El nodo del grafo en el que reventó la invocación, leído de la traza.
 
@@ -349,9 +513,19 @@ async def _avisar(
         async with db.execute("SELECT MAX(numero) AS n FROM version_novela") as cursor:
             fila = await cursor.fetchone()
         version = int(fila["n"]) if fila is not None and fila["n"] is not None else None
+        async with db.execute(
+            "SELECT COUNT(*) AS n FROM incidencia "
+            "WHERE validador = 'juez_contradiccion' AND capitulo_version_id IS NULL"
+        ) as cursor:
+            cuenta = await cursor.fetchone()
         await avisar_sin_fallar(
             notifier,
-            aviso_de_terminada(nombre, version=version, coste_usd=resultado.consumo.coste_usd),
+            aviso_de_terminada(
+                nombre,
+                version=version,
+                coste_usd=resultado.consumo.coste_usd,
+                contradicciones=int(cuenta["n"]) if cuenta is not None else 0,
+            ),
         )
 
 

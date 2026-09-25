@@ -85,6 +85,12 @@ class EstadoNovela(TypedDict):
     a_regenerar: list[int]
     a_invalidar: list[int]
 
+    #: Los pares `[viejo, nuevo]` de un cambio de nombre en curso. Mientras dure la
+    #: regeneración, que un capítulo conserve el viejo es bloqueante: sin esto el escritor
+    #: siguió a la escaleta y a la prosa anterior y la versión nueva salió con el nombre de
+    #: siempre.
+    retirados: list[list[str]]
+
     #: Veces que el juez ha devuelto la novela al gate. Sin tope, el juez y el gate se la
     #: pasan para siempre — lo descubrió TLC, no una revisión.
     rechazos_juez: int
@@ -154,6 +160,7 @@ def estado_inicial(
         regenerando=False,
         a_regenerar=[],
         a_invalidar=[],
+        retirados=[],
         rechazos_juez=0,
         max_rechazos_juez=max_rechazos_juez,
         gate_id=None,

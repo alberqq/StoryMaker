@@ -28,7 +28,7 @@ Se recorre en las dos direcciones porque los dos fallos son distintos y ninguno 
 | A-12 | Presupuesto de 100.000 tokens concurrentes, garantizado por construcción | P-28, P-32 | Cubierto |
 | A-13 | Pila: FastAPI *package by feature* con `commons`; React en FSD v2.1 | P-01 · frontend en §3 | Cubierto en su mitad |
 | A-14 | Embeddings FastEmbed local, 384 dimensiones, indexados con `sqlite-vec` | P-22, P-23 | Cubierto |
-| A-111 | Correspondencia documento↔código comprobada por **tests de trazabilidad y no por lectura**: lo que la spec declara y el plan nombra tiene quien lo compruebe en CI | P-62, P-129, P-130, P-131, P-132, P-133, P-137 | Cubierto |
+| A-111 | Correspondencia documento↔código comprobada por **tests de trazabilidad y no por lectura**: lo que la spec declara y el plan nombra tiene quien lo compruebe en G1 | P-62, P-129, P-130, P-131, P-132, P-133, P-137 | Cubierto |
 | A-117 | Cada spec **enumera sus requisitos con identificador propio** —`REQ-BE-nn` y `REQ-FE-nn`—, derivados de su propio contenido, con el apartado del que nacen y los ítems que los realizan en su propia fila | P-139 | Cubierto |
 
 ### §2 · Principios
@@ -363,6 +363,7 @@ Lo que la comparación destapó, con lo que se hizo. Cuatro eran contradicciones
 
 | Fecha | Cambio | Motivo |
 |---|---|---|
+| 2026-09-24 | `A-111` dice «en G1» en lugar de «en CI» | Se mueve con §1 de la arquitectura. Decisión del Autor: se retiran los workflows de GitHub Actions y G1 y G2 pasan a lanzarse a mano (arq. §17, verif. §4.7) |
 | 2026-09-24 | A-33 y A-53 recogen el veredicto parcial y `sin_respaldo` | Se propagan §4 y §7 de la arquitectura en la misma operación que el plan |
 | 2026-09-24 | A-33, A-36 y A-53 se reescriben: el verificador escribe solo `respaldo`, los hechos de la micro-sesión pasan por él y la firmeza se calcula al leer; A-53 gana P-72 | Se propagan §4 y §7 de la arquitectura en la misma operación que el plan |
 | 2026-09-24 | `A-43` suma `P-186`: los candidatos del gate, elegibles desde la pantalla | Confirmar pasa a ser elegir una fila |

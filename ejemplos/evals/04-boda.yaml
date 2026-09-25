@@ -1,0 +1,88 @@
+# EVAL 04 · Boda · lista larga de palabras prohibidas
+#
+# Ocasión: la boda de Lucía con Andrés. La novela se sitúa en la Barcelona de la
+# Exposición Internacional de 1929, con la homenajeada en el equipo que ilumina Montjuïc.
+#
+# Eje que cubre (verification.md §4.2): una lista de prohibidas larga, en los dos niveles
+# que define el comprador. En `destinatario` va el nombre de una expareja —el ejemplo que
+# pone el enunciado— y una palabra que la homenajeada no quiere leer. La lista global de
+# insultos la pone el sistema desde SQLite.
+#
+# Las palabras están elegidas para que la novela se pueda escribir: el guardrail casa por
+# raíz dentro de cualquier palabra, así que «luto» cazaría «absoluto» y «Marcos» cazaría
+# «marcha». Una lista que hace imposible escribir no mide el guardrail, mide la paciencia.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/04-boda.yaml --nombre eval-04-boda --batch
+
+espera:
+  termina: publicada
+  validadores_que_deben_pasar:
+    - schema_guard
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - cobertura_personalizacion
+    - lean_cronologia
+    - render_visual
+  guardrail: >
+    Puede rechazar algún intento y devolverlo al editor; lo que no puede es publicar un
+    capítulo con una coincidencia. Cada coincidencia queda en audit_log y en Langfuse.
+  notas: >
+    Es el eval que más reintentos debería gastar. Si ninguno salta, la lista no estaba
+    tensando al escritor.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Lucía Ferrer Albiol
+    fecha_nacimiento: 1996-05-03
+    rol_epoca: ayudante de iluminación en el equipo de Carles Buïgas
+    ocasion: su boda con Andrés Salcedo Mir
+    elementos_personalizacion:
+      - texto: Andrés Salcedo Mir le pidió matrimonio en lo alto de Montjuïc
+        obligatorio: true
+      - texto: le encantan las luces de colores y los fuegos artificiales
+        obligatorio: true
+      - texto: baila fatal pero baila siempre
+        obligatorio: false
+
+  mundo:
+    periodo:
+      inicio: 1928
+      fin: 1929
+      denominacion: Exposición Internacional de Barcelona
+    lugar: Barcelona
+    evento_ancla: el primer encendido de la Fuente Mágica de Montjuïc en mayo de 1929
+    personajes_historicos:
+      aparecen:
+        - Carles Buïgas
+      se_evitan:
+        - Miguel Primo de Rivera
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: romántica
+    tono: festivo y romántico
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: moderado
+    arcaismo: minimo
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - divorcio
+        - infidelidad
+        - traición
+        - entierro
+        - cementerio
+        - viuda
+        - deuda
+        - huelga
+        - anarquista
+        - pistolero
+      destinatario:
+        - Gonzalo
+        - suegra
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

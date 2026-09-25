@@ -34,6 +34,11 @@ def resultado(invocacion: Any) -> None:
         aviso("El ultimo checkpoint queda intacto. `storymaker continuar` retoma por ahi.")
         return
 
+    nota = getattr(invocacion, "nota", None)
+    if nota:
+        aviso(nota)
+        return
+
     gate = getattr(invocacion, "gate_abierto", None)
     if gate is not None:
         aviso(f"La invocacion termino en un gate (#{gate}) y espera tu decision.")

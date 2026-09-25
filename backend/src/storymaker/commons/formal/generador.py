@@ -25,32 +25,110 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Final
 
+from storymaker.commons.validation.puras import normalizar
+
 #: La época común: 1800-01-01. Se elige dentro del rango del dominio para que los números
 #: del fichero generado sean legibles a ojo y un contraejemplo se pueda seguir a mano.
 EPOCA: Final = date(1800, 1, 1)
 
-_FECHA = re.compile(r"^(-?\d{1,4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?")
+_ISO = re.compile(r"^(-?\d{1,4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$")
+_PREFIJO = re.compile(r"^(-?\d{1,4})\b")
+_ANIO = re.compile(r"\b(\d{4})\b")
+
+_MESES: Final = {
+    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6, "julio": 7,
+    "agosto": 8, "septiembre": 9, "setiembre": 9, "octubre": 10, "noviembre": 11,
+    "diciembre": 12,
+}  # fmt: skip
+#: Una estación es un mes aproximado: vale para ordenar y para nacer, no para coincidir.
+_ESTACIONES: Final = {"invierno": 1, "primavera": 4, "verano": 7, "otono": 10}
+
+#: Cuánto dice una fecha. Solo lo fechado al día puede coincidir con otro evento el mismo
+#: día; «1856» no es el 1 de enero de 1856 (spec trama-rehacible §3.3).
+DIA: Final = "dia"
+MES: Final = "mes"
+ANIO: Final = "anio"
+
+
+@dataclass(frozen=True)
+class FechaLeida:
+    momento: int | None
+    precision: str = ""
+
+
+def leer_fecha(fecha: str | None) -> FechaLeida:
+    """Lee una fecha en ISO o en prosa castellana, y dice cuánto precisa.
+
+    El corpus trae ISO —«1805», «1805-04», «1805-04-11»—, pero la escaleta la escribe el
+    arquitecto y la escribía en prosa: «24 junio 1858, madrugada», «Primavera 1856». El
+    lector anterior solo miraba el principio y leía ahí el año 24. Ahora, fuera del ISO,
+    **el año es el primer número de cuatro cifras**, el mes su nombre o una estación, y el
+    día el número que va delante del mes. Un rango —«1846-1850»— se lee por su principio.
+    Sin año de cuatro cifras queda el número del principio, salvo que sea un día seguido de
+    un mes, que sin año no es una fecha.
+    """
+    if not fecha or not fecha.strip():
+        return FechaLeida(None)
+    limpia = fecha.strip()
+    if (iso := _ISO.match(limpia)) is not None:
+        precision = DIA if iso.group(3) else MES if iso.group(2) else ANIO
+        return FechaLeida(_dias(int(iso.group(1)), iso.group(2), iso.group(3)), precision)
+
+    palabras = normalizar(limpia).split()
+    mes = next((i for i, p in enumerate(palabras) if p in _MESES), None)
+    if (anio := _ANIO.search(limpia)) is None:
+        if mes is not None or (prefijo := _PREFIJO.match(limpia)) is None:
+            return FechaLeida(None)
+        return FechaLeida(_dias(int(prefijo.group(1)), None, None), ANIO)
+
+    if mes is not None:
+        numero_mes = _MESES[palabras[mes]]
+        anterior = palabras[mes - 1] if mes >= 1 else ""
+        if anterior == "de" and mes >= 2:
+            anterior = palabras[mes - 2]
+        dia = int(anterior) if anterior.isdigit() and 1 <= int(anterior) <= 31 else None
+        return FechaLeida(
+            _dias(int(anio.group(1)), str(numero_mes), str(dia) if dia else None),
+            DIA if dia else MES,
+        )
+    estacion = next((_ESTACIONES[p] for p in palabras if p in _ESTACIONES), None)
+    if estacion is not None:
+        return FechaLeida(_dias(int(anio.group(1)), str(estacion), None), MES)
+    return FechaLeida(_dias(int(anio.group(1)), None, None), ANIO)
+
+
+def _dias(anio: int, mes: str | None, dia: str | None) -> int | None:
+    numero_mes = min(max(int(mes or 1), 1), 12)
+    numero_dia = min(max(int(dia or 1), 1), 28)
+    try:
+        return (date(anio, numero_mes, numero_dia) - EPOCA).days
+    except ValueError:
+        return None
 
 
 def a_momento(fecha: str | None) -> int | None:
-    """Convierte una fecha del corpus a días desde la época. `None` si no hay fecha.
+    """Convierte una fecha a días desde la época. `None` si no hay fecha.
 
     Un `None` no es un hueco que rellenar: en el modelo de Lean significa que no hay
     restricción por ese lado, que es exactamente lo que quiere decir no saber cuándo murió
     alguien.
     """
-    if not fecha:
-        return None
-    casa = _FECHA.match(fecha.strip())
-    if casa is None:
-        return None
-    anio = int(casa.group(1))
-    mes = min(max(int(casa.group(2) or 1), 1), 12)
-    dia = min(max(int(casa.group(3) or 1), 1), 28)
-    try:
-        return (date(anio, mes, dia) - EPOCA).days
-    except ValueError:
-        return None
+    return leer_fecha(fecha).momento
+
+
+#: El nacimiento de quien no tiene fecha: tan atrás que ninguna escena cae antes. Con `0`
+#: —el 1 de enero de 1800— toda escena del siglo XVI ponía a sus personajes antes de nacer.
+NACIMIENTO_DESCONOCIDO = -(10**7)
+
+
+def nacimiento_de(fecha: object) -> int:
+    """El momento de nacer, o `NACIMIENTO_DESCONOCIDO` si no hay fecha que leer.
+
+    Lo usan la revisión de la escaleta y la cronología de la publicación, para que «no se
+    sabe» signifique lo mismo en los dos: ninguna restricción, no «nació en 1800».
+    """
+    momento = a_momento(str(fecha)) if fecha else None
+    return NACIMIENTO_DESCONOCIDO if momento is None else momento
 
 
 @dataclass(frozen=True)
@@ -106,7 +184,15 @@ def _cadena(valor: str) -> str:
 
 
 def _opcional(valor: int | None) -> str:
-    return "none" if valor is None else f"some {valor}"
+    """`some n`, con paréntesis si `n` es negativo.
+
+    Sin ellos Lean lee `some -4035` como una resta y el fichero no compila. Pasa con todo
+    personaje histórico que muere antes del origen de la cronología, como Carlos III en una
+    novela de 1787.
+    """
+    if valor is None:
+        return "none"
+    return f"some ({valor})" if valor < 0 else f"some {valor}"
 
 
 def _lista(valores: tuple[int, ...]) -> str:

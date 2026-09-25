@@ -1,0 +1,66 @@
+# FASE 3 · Plotting (la Trama)
+#
+# Se queda parada en: el gate de Plotting, con la escaleta y su revisión.
+#
+# Intake e Investigation se aprueban. El arquitecto escribe Premisa, Tema, canon y
+# escaleta; los huecos del corpus se cubren con micro-investigación y el corpus se sella.
+# Antes de abrir el gate corren sin gastar tokens `cobertura_anclada`, `arco_anclado` y la
+# cronología de la escaleta en Lean: un personaje en dos sitios el mismo día, o vivo
+# después de su muerte, se ve aquí antes de redactar una línea.
+#
+# Qué se enseña en la presentación: la pantalla del gate de Plotting —escaleta por
+# capítulo y escena, anclajes de cada elemento del homenajeado, huecos cubiertos, avisos
+# de la revisión— y que «rehacer» sustituye la Trama con la anterior delante.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/fases/f3-trama.yaml --nombre fase-3-trama
+#   uv run storymaker decidir fase-3-trama aprobar     # Intake
+#   uv run storymaker decidir fase-3-trama aprobar     # Investigation
+
+fase:
+  se_detiene_en: gate de Plotting
+  gates_aprobados: [intake, investigation]
+  se_ve: la escaleta, los anclajes, los huecos y los avisos de la revisión (incluida Lean)
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Javier Almansa Ruiz
+    fecha_nacimiento: 1961-01-19
+    rol_epoca: guarda de la Alhambra y guía de viajeros
+    ocasion: jubilación tras treinta años como guía turístico
+    elementos_personalizacion:
+      - texto: se sabe de memoria la historia de cada azulejo del Patio de los Leones
+        obligatorio: true
+      - texto: siempre lleva caramelos de limón en el bolsillo para los niños
+        obligatorio: true
+      - texto: toca la guitarra por las noches
+        obligatorio: false
+  mundo:
+    periodo:
+      inicio: 1829
+      fin: 1829
+      denominacion: Granada romántica
+    lugar: Granada
+    evento_ancla: la estancia de Washington Irving en la Alhambra en 1829
+    personajes_historicos:
+      aparecen:
+        - Washington Irving
+      se_evitan:
+        - Fernando VII
+  obra:
+    genero:
+      principal: histórica
+      subgenero: de viajes
+    tono: evocador y con humor
+    punto_de_vista: tercera persona con focalización en el homenajeado
+    grado_licencia: moderado
+    arcaismo: moderado
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - bandolero
+      destinatario:
+        - despido
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

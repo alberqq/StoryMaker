@@ -25,7 +25,7 @@ from storymaker.commons.db.repos import arnes
 from storymaker.commons.embeddings.modelo import FastEmbedVectorizador
 from storymaker.commons.errores import NovelaOcupada
 from storymaker.commons.graph import cerrojo
-from storymaker.regeneration import cambio, nodos
+from storymaker.regeneration import cambio, nodos, retirados
 from storymaker.regeneration.esquemas import PeticionDeCambio
 
 router = APIRouter(prefix="/novelas", tags=["regeneracion"])
@@ -90,8 +90,15 @@ async def pedir_cambio(
 
         alcances = []
         for candidato in candidatos[:3]:
+            # El valor nuevo aún no se sabe, pero el viejo basta para buscar en el texto
+            # dónde se nombra: sin esto el gate enseñaba un alcance más corto que el real.
+            campo = cambio.CAMPO_POR_DEFECTO[candidato.objeto]
+            es_nombre = bool(retirados.pares(candidato.objeto, campo, candidato.descripcion, ""))
             alcance = await nodos.calcular_alcance(
-                db, objeto=candidato.objeto, fila_id=candidato.fila_id
+                db,
+                objeto=candidato.objeto,
+                fila_id=candidato.fila_id,
+                pares=[(candidato.descripcion, "")] if es_nombre else None,
             )
             alcances.append(
                 CandidatoDeCambio(

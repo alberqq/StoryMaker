@@ -49,6 +49,19 @@ describe('el gate de la Trama', () => {
     expect(screen.getByText('Bancos de pino.')).toBeInTheDocument()
   })
 
+  it('nombra lo anclado por parecido y lo inventado sobre un histórico', async () => {
+    conRevision({
+      ...revision,
+      avisos: [
+        { validador: 'anclaje_por_parecido', grave: false, mensaje: 'escena C2_E3 → #13', ubicacion: null },
+        { validador: 'invencion_sobre_historico', grave: false, mensaje: 'El hecho inventado #13…', ubicacion: 'hecho #13' },
+      ],
+    })
+    montar('/novelas/rio/gate')
+    expect(await screen.findByText('Anclado por parecido')).toBeInTheDocument()
+    expect(screen.getByText('Invención sobre un histórico')).toBeInTheDocument()
+  })
+
   it('sin avisos lo dice en verde', async () => {
     conRevision({ ...revision, avisos: [], huecos: [] })
     montar('/novelas/rio/gate')

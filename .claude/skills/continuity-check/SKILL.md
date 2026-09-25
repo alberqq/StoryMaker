@@ -32,3 +32,16 @@ existe, se validan solo las reglas que no lo necesitan.
 Lo que esta skill **no** comprueba es lo que necesita la base de datos o un modelo: la
 cobertura de personalizacion, la ejecucion de la escaleta y el arco, y los invariantes de
 Lean sobre la cronologia acumulada.
+
+## Los dos hooks que la acompanan
+
+`.claude/settings.json` ejecuta estas mismas reglas sin que nadie las pida, solo sobre
+ficheros de capitulo (Markdown con su `.contexto.json` al lado, o `capitulo*.md`):
+
+- **Policy, antes de escribir** (`PreToolUse`, `cli_policy`): si el texto que un `Write`,
+  `Edit` o `MultiEdit` introduce trae un termino prohibido, la edicion se deniega.
+- **Validacion, despues de escribir** (`PostToolUse`, `cli_hook`): el capitulo entero pasa
+  por los validadores; si algo bloquea, el informe vuelve al agente para que lo corrija.
+
+Los dos reciben el evento de Claude Code por la entrada estandar. La skill, en cambio, pasa
+la ruta como argumento.

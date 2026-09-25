@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A6 · Juez frente a revisión humana</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  .leyenda-pts { display: flex; gap: 22px; align-items: center; font-size: 15px; margin: 0 0 6px 0; }
+  .leyenda-pts i { display: inline-block; width: 13px; height: 13px; border-radius: 7px; margin-right: 7px; vertical-align: -1px; }
+  .medias { display: flex; gap: 14px; }
+  .medias .caja { flex: 1 1 0; }
+  .medias .num-grande { font-size: 44px; }
+  table.jus td:first-child { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+  table.jus td.num { width: 56px; }
+  table.jus td { padding-top: 4px; padding-bottom: 4px; line-height: 1.28; }
+  table.jus tr.dest td { background: var(--oro-18); }
+  table.cmp td:first-child { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+</style>
+</head>
+<body data-anexo="A6">
+
+<!-- 1 · Comparación -->
+<section class="pagina" data-fuente="<code>docs/revision-humana.md</code> §5, acta del 2026-09-25 · score <code>juez_rubrica</code> de <code>eval-04-boda</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A6</span><span class="sep"></span>Juez frente a revisión humana</div>
+    <h1>La persona puntúa más alto que el juez, y solo diverge más de 2 puntos en un criterio</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:36px">
+      <div style="flex:0 0 640px">
+        <p class="lead" style="margin-bottom:8px">Novela de Barcelona, 1928–1929 (boda), versión 1. Cada criterio, de 1 a 10.</p>
+        <div class="leyenda-pts"><span><i style="background:#1C2433"></i>Persona</span><span><i style="background:#C9A34E"></i>Juez</span><span class="sec">La línea une las dos notas del mismo criterio.</span></div>
+        <svg class="diag" width="640" height="392" viewBox="0 0 640 392">
+          <g stroke="rgba(28,36,51,0.12)" stroke-width="1">
+            <line x1="300" y1="6" x2="300" y2="366"/><line x1="345" y1="6" x2="345" y2="366"/><line x1="390" y1="6" x2="390" y2="366"/><line x1="435" y1="6" x2="435" y2="366"/><line x1="480" y1="6" x2="480" y2="366"/><line x1="525" y1="6" x2="525" y2="366"/><line x1="570" y1="6" x2="570" y2="366"/><line x1="615" y1="6" x2="615" y2="366"/>
+          </g>
+          <g class="mono" fill="#7D7869" text-anchor="middle">
+            <text x="300" y="386">3</text><text x="345" y="386">4</text><text x="390" y="386">5</text><text x="435" y="386">6</text><text x="480" y="386">7</text><text x="525" y="386">8</text><text x="570" y="386">9</text><text x="615" y="386">10</text>
+          </g>
+          <line x1="435" y1="6" x2="435" y2="366" stroke="#B23A2B" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="440" y="18" fill="#B23A2B">umbral 6,0 (sobre la media)</text>
+          <!-- filas: y = 30 + 44·i ; x(v) = 300 + 45·(v − 3) -->
+          <g class="mono" fill="#1C2433" font-size="14">
+            <text x="0" y="45">continuidad</text>
+            <text x="0" y="89">arco</text>
+            <text x="0" y="133">coherencia_de_personajes</text>
+            <text x="0" y="177">ritmo</text>
+            <text x="0" y="221">tono</text>
+            <text x="0" y="265">prosa</text>
+            <text x="0" y="309" font-weight="700">naturalidad_de_la_personalizacion</text>
+            <text x="0" y="353">autenticidad_de_epoca</text>
+          </g>
+          <g stroke="#7D7869" stroke-width="2">
+            <line x1="480" y1="40" x2="570" y2="40"/>
+            <line x1="525" y1="84" x2="570" y2="84"/>
+            <line x1="525" y1="172" x2="525" y2="172"/>
+            <line x1="525" y1="216" x2="570" y2="216"/>
+            <line x1="480" y1="260" x2="525" y2="260"/>
+            <line x1="480" y1="304" x2="615" y2="304" stroke="#B23A2B" stroke-width="2.5"/>
+            <line x1="525" y1="348" x2="570" y2="348"/>
+          </g>
+          <!-- juez (Oro viejo) -->
+          <g fill="#C9A34E">
+            <circle cx="480" cy="40" r="8"/><circle cx="570" cy="84" r="8"/><circle cx="570" cy="128" r="8"/><circle cx="525" cy="172" r="8"/>
+            <circle cx="525" cy="216" r="8"/><circle cx="480" cy="260" r="8"/><circle cx="480" cy="304" r="8"/><circle cx="525" cy="348" r="8"/>
+          </g>
+          <!-- persona (Tinta) -->
+          <g fill="#1C2433">
+            <circle cx="570" cy="40" r="6"/><circle cx="525" cy="84" r="6"/><circle cx="570" cy="128" r="6"/><circle cx="525" cy="172" r="6"/>
+            <circle cx="570" cy="216" r="6"/><circle cx="525" cy="260" r="6"/><circle cx="615" cy="304" r="6"/><circle cx="570" cy="348" r="6"/>
+          </g>
+          <text x="548" y="296" text-anchor="middle" fill="#B23A2B" font-weight="600">+3</text>
+        </svg>
+      </div>
+      <div class="col">
+        <div class="medias">
+          <div class="caja"><h3>Persona</h3><div class="num-grande cifra">8,75</div><div class="sec">media de 8 criterios</div></div>
+          <div class="caja oro"><h3>Juez</h3><div class="num-grande cifra">7,88</div><div class="sec">media de 8 criterios</div></div>
+        </div>
+        <div class="caja lacre" style="margin-top:14px">
+          <h2 style="font-size:17px; margin-bottom:4px">Divergencias de más de 2 puntos: una</h2>
+          <p style="margin:0"><code>naturalidad_de_la_personalizacion</code>: persona 10, juez 7 (<b>+3</b>). En menor medida, continuidad: 9 frente a 7.</p>
+        </div>
+        <div class="caja fina" style="margin-top:14px">
+          <h2 style="font-size:17px; margin-bottom:4px">Qué se hace con ella</h2>
+          <p style="margin:0 0 6px 0">Va en la dirección contraria a la que prevé §4: la persona puntúa <b>más alto</b>, no más bajo. Con un solo punto no hay nada sistemático que corregir, así que <b>no se sube una versión nueva del prompt del juez</b>.</p>
+          <p style="margin:0">Queda como hipótesis para la siguiente revisión: el juez puede estar penalizando que los homenajeados sean protagonistas explícitos, justo lo que la persona valora más. Los dos superan el umbral de 6,0: la decisión de publicar habría sido la misma.</p>
+        </div>
+        <div class="franja" style="margin-top:14px">La rúbrica sale del mismo fichero, <code>rubrica.yaml</code>, para los dos.</div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 2 · Justificaciones -->
+<section class="pagina" data-fuente="<code>docs/revision-humana.md</code> §5, acta del 2026-09-25 (eval-04-boda, versión 1; revisor: el Autor)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A6</span><span class="sep"></span>El acta, criterio a criterio (1 de 2)</div>
+    <h1>En la historia y los personajes, la persona y el juez casi coinciden</h1>
+  </header>
+  <main class="cuerpo ancho">
+    <table class="t jus">
+      <tr><th>Criterio</th><th class="num">Persona</th><th class="num">Juez</th><th>Justificación de la persona</th></tr>
+      <tr><td>continuidad</td><td class="num">9</td><td class="num">7</td><td>La trama fluye sin fisuras lógicas desde la llegada de la protagonista en el tren hasta la culminación del proyecto y la boda. Los saltos temporales siguen el avance real de la construcción de la Exposición.</td></tr>
+      <tr><td>arco</td><td class="num">8</td><td class="num">9</td><td>La protagonista tiene una evolución sólida: empieza como una técnica asustada que busca pasar desapercibida y termina asumiendo su genialidad como ingeniera principal sin renunciar a su identidad para casarse.</td></tr>
+      <tr><td>coherencia_de_personajes</td><td class="num">9</td><td class="num">9</td><td>Las motivaciones se mantienen firmes. La protagonista siempre mide sus pasos desde la lógica técnica; su pareja es un apoyo constante y respetuoso con su espacio; y Carles Buïgas actúa consistentemente como un genio estricto pero justo.</td></tr>
+      <tr><td>ritmo</td><td class="num">8</td><td class="num">8</td><td>Los saltos de meses (de junio a agosto, y luego a la urgencia de abril) están bien gestionados para no estancar la obra. El clímax del encendido es excelente, aunque la transición hacia los preparativos de la boda se siente ligeramente apresurada.</td></tr>
+    </table>
+    <p class="nota" style="margin-top:10px">Justificaciones copiadas del acta, que ya va sin nombres de los homenajeados.</p>
+  </main>
+</section>
+
+<!-- 3 · Justificaciones -->
+<section class="pagina" data-fuente="<code>docs/revision-humana.md</code> §5, acta del 2026-09-25 (eval-04-boda, versión 1; revisor: el Autor)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A6</span><span class="sep"></span>El acta, criterio a criterio (2 de 2)</div>
+    <h1>La mayor distancia está en la personalización, que la persona premia</h1>
+  </header>
+  <main class="cuerpo ancho">
+    <table class="t jus">
+      <tr><th>Criterio</th><th class="num">Persona</th><th class="num">Juez</th><th>Justificación de la persona</th></tr>
+      <tr><td>tono</td><td class="num">9</td><td class="num">8</td><td>Mantiene un registro épico, romántico y contenido. El tono equilibra muy bien la frialdad de la ingeniería (cables, relés, sincronización) con la calidez de la superación personal y el romance.</td></tr>
+      <tr><td>prosa</td><td class="num">8</td><td class="num">7</td><td>Las descripciones visuales del agua y los colores son inmersivas e impactantes («arco iris controlado», «fuego que quema pero no destruye»). Sin embargo, abusa ligeramente del recurso de comparar los sentimientos con circuitos eléctricos y sincronizaciones técnicas en los diálogos finales.</td></tr>
+      <tr class="dest"><td>naturalidad_de_la_personalizacion</td><td class="num">10</td><td class="num">7</td><td>La novela es un regalo por la boda de la pareja homenajeada. La integración de sus nombres como los ingenieros protagonistas del relato es impecable, orgánica y central para la historia, sin sentirse como variables insertadas a la fuerza.</td></tr>
+      <tr><td>autenticidad_de_epoca</td><td class="num">9</td><td class="num">8</td><td>Ancla la historia perfectamente en la Barcelona de 1928-1929. La inclusión de la figura histórica de Carles Buïgas, la construcción en Montjuïc, la alusión a la sombra de Primo de Rivera y el escepticismo inicial ante una mujer técnico dotan al texto de gran verosimilitud.</td></tr>
+      <tr class="total"><td>Media</td><td class="num">8,75</td><td class="num">7,88</td><td>Las dos por encima del umbral de publicación, 6,0.</td></tr>
+    </table>
+    <p class="nota" style="margin-top:10px">Sesión de red-teaming asociada: la segunda ronda de <code>docs/red-team.md</code>, del mismo día (RT-07 y RT-08).</p>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

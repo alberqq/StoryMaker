@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Anexo A1 · Arquitectura detallada</title>
+<link rel="stylesheet" href="marca.css">
+<style>
+  table.dec td:first-child { font-weight: 600; width: 200px; }
+  table.dec td:nth-child(2) { width: 330px; }
+  table.dec td { padding-top: 6px; padding-bottom: 6px; }
+  table.roles td:first-child { font-weight: 600; white-space: nowrap; }
+  .barra-techo { display: inline-block; height: 12px; border-radius: 3px; background: var(--tinta); vertical-align: middle; }
+  .barra-techo.max { background: var(--oro); }
+  .celda-barra { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .celda-barra .cifra { width: 58px; text-align: right; }
+  .carril { width: 180px; height: 12px; background: var(--tinta-06); border-radius: 3px; position: relative; }
+  .carril .barra-techo { position: absolute; left: 0; top: 0; }
+  .carril .limite { position: absolute; top: -3px; bottom: -3px; right: 0; border-right: 2px solid var(--lacre); }
+</style>
+</head>
+<body data-anexo="A1">
+
+<!-- 1 · Topología -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §3 (topología) y §5 (los nueve roles)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Arquitectura detallada del harness</div>
+    <h1>Un orquestador sin memoria propia: todo vive en el SQLite de cada novela</h1>
+  </header>
+  <main class="cuerpo ancho" style="top:100px">
+<!-- BEGIN gen:topologia -->
+<svg class="diag" width="1200" height="556" viewBox="0 0 1200 556" xmlns="http://www.w3.org/2000/svg"><defs><marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#1C2433"/></marker><marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#B23A2B"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#C9A34E"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#7D7869"/></marker><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#5E8C6A"/></marker></defs><rect x="0" y="10" width="210" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="105.0" y="34" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Humano</text><text x="105.0" y="55" text-anchor="middle" fill="#7D7869">comprador · Autor</text><rect x="0" y="150" width="210" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="105.0" y="174" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Interfaz web</text><text x="105.0" y="195" text-anchor="middle" fill="#7D7869">127.0.0.1, en el PC del Autor</text><rect x="0" y="290" width="210" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="105.0" y="314" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">CLI storymaker</text><text x="105.0" y="335" text-anchor="middle" fill="#7D7869">la misma que teclea el Autor</text><rect x="0" y="412" width="210" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="105.0" y="436" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Langfuse</text><text x="105.0" y="457" text-anchor="middle" fill="#7D7869">trazas · scores · prompts</text><rect x="0" y="490" width="210" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="105.0" y="514" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">PDF + lectura web</text><text x="105.0" y="535" text-anchor="middle" fill="#7D7869">+ informe de trazabilidad</text><rect x="290" y="10" width="250" height="64" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2"/><text x="415.0" y="34" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Bot de Telegram</text><text x="415.0" y="55" text-anchor="middle" fill="#7D7869">solo avisa: se decide en el PC</text><rect x="290" y="150" width="250" height="150" rx="8" fill="#1C2433" stroke="#1C2433" stroke-width="2"/><text x="415.0" y="174" text-anchor="middle" class="serif" fill="#F5EFE3" font-size="17">Orquestador LangGraph</text><text x="415.0" y="195" text-anchor="middle" fill="#F5EFE3">estado explícito</text><text x="415.0" y="214" text-anchor="middle" fill="#F5EFE3">un nodo por acción TLA+</text><text x="415.0" y="233" text-anchor="middle" fill="#F5EFE3">24 nodos · 38 aristas</text><text x="415.0" y="252" text-anchor="middle" fill="#F5EFE3">validadores como nodos</text><path d="M350,392 A95.0,12 0 0 1 540,392 L540,518 A95.0,12 0 0 1 350,518 Z" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><path d="M350,392 A95.0,12 0 0 0 540,392" fill="none" stroke="#1C2433" stroke-width="2"/><text x="445.0" y="428" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">SQLite</text><text x="445.0" y="449" text-anchor="middle" fill="#7D7869">una novela = un fichero</text><text x="445.0" y="468" text-anchor="middle" fill="#7D7869">checkpoint y dominio</text><text x="445.0" y="487" text-anchor="middle" fill="#7D7869">en la misma transacción</text><rect x="610" y="10" width="250" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="735.0" y="34" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Ensamblador de paquetes</text><text x="735.0" y="55" text-anchor="middle" fill="#7D7869">código, no agente · 7 bloques</text><rect x="610" y="205" width="250" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="735.0" y="229" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Validadores</text><text x="735.0" y="250" text-anchor="middle" fill="#7D7869">Core Domain en Python puro</text><rect x="610" y="318" width="150" height="64" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="685.0" y="342" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Lean 4</text><text x="685.0" y="363" text-anchor="middle" fill="#7D7869">cronología, decide</text><rect x="610" y="432" width="250" height="122" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2"/><text x="735.0" y="456" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">.claude/ · .mcp.json</text><text x="735.0" y="477" text-anchor="middle" fill="#7D7869">skill continuity-check</text><text x="735.0" y="496" text-anchor="middle" fill="#7D7869">hooks PreToolUse y</text><text x="735.0" y="515" text-anchor="middle" fill="#7D7869">PostToolUse</text><text x="735.0" y="534" text-anchor="middle" fill="#7D7869">MCP de Playwright</text><rect x="912" y="118" width="272" height="436" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="2"/><text x="1048.0" y="144" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">9 roles · Agent SDK</text><text x="1048.0" y="164" text-anchor="middle" fill="#7D7869">todos en Haiku 4.5</text><rect x="926" y="180" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="201" text-anchor="start" fill="#1C2433">entrevistador</text><text x="1158" y="201" text-anchor="end" class="mono" fill="#7D7869">F1</text><rect x="926" y="220" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="241" text-anchor="start" fill="#1C2433">extractor de intake</text><text x="1158" y="241" text-anchor="end" class="mono" fill="#7D7869">F1</text><rect x="926" y="260" width="244" height="32" rx="8" fill="rgba(201,163,78,0.18)" stroke="#C9A34E" stroke-width="1.5"/><text x="938" y="281" text-anchor="start" fill="#1C2433">investigador</text><text x="1158" y="281" text-anchor="end" class="mono" fill="#7D7869">F2 · F3</text><rect x="926" y="300" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="321" text-anchor="start" fill="#1C2433">verificador</text><text x="1158" y="321" text-anchor="end" class="mono" fill="#7D7869">F2 · F3</text><rect x="926" y="340" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="361" text-anchor="start" fill="#1C2433">arquitecto</text><text x="1158" y="361" text-anchor="end" class="mono" fill="#7D7869">F3</text><rect x="926" y="380" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="401" text-anchor="start" fill="#1C2433">escritor</text><text x="1158" y="401" text-anchor="end" class="mono" fill="#7D7869">F4 · F6</text><rect x="926" y="420" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="441" text-anchor="start" fill="#1C2433">editor</text><text x="1158" y="441" text-anchor="end" class="mono" fill="#7D7869">F4 · F6</text><rect x="926" y="460" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="481" text-anchor="start" fill="#1C2433">extractor de capítulo</text><text x="1158" y="481" text-anchor="end" class="mono" fill="#7D7869">F4 · F6</text><rect x="926" y="500" width="244" height="32" rx="8" fill="#F5EFE3" stroke="#1C2433" stroke-width="1.5"/><text x="938" y="521" text-anchor="start" fill="#1C2433">juez</text><text x="1158" y="521" text-anchor="end" class="mono" fill="#7D7869">F5</text><rect x="1000" y="10" width="200" height="64" rx="8" fill="#F5EFE3" stroke="#7D7869" stroke-width="2"/><text x="1100.0" y="34" text-anchor="middle" class="serif" fill="#1C2433" font-size="17">Internet</text><text x="1100.0" y="55" text-anchor="middle" fill="#7D7869">WebSearch · WebFetch</text><path d="M105,74 L105,149" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><text x="115" y="117" text-anchor="start" fill="#1C2433">encarga · decide</text><path d="M105,214 L105,289" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><text x="115" y="257" text-anchor="start" fill="#1C2433">lanza la CLI</text><path d="M210,322 L289,280" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M415,150 L415,75" fill="none" stroke="#7D7869" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ap)" stroke-linejoin="round"/><text x="425" y="118" text-anchor="start" fill="#7D7869">notifica</text><path d="M290,42 L211,42" fill="none" stroke="#7D7869" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ap)" stroke-linejoin="round"/><path d="M445,300 L445,379" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M310,300 L310,444 L211,444" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M326,300 L326,522 L211,522" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M540,160 L575,160 L575,42 L609,42" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M540,237 L609,237" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M685,269 L685,317" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><path d="M830,432 L830,270" fill="none" stroke="#7D7869" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ap)" stroke-linejoin="round"/><text x="840" y="350" text-anchor="start" fill="#7D7869">mismo</text><text x="840" y="369" text-anchor="start" fill="#7D7869">Core</text><text x="840" y="388" text-anchor="start" fill="#7D7869">Domain</text><path d="M540,180 L911,180" fill="none" stroke="#1C2433" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#at)" stroke-linejoin="round"/><rect x="539.6" y="172" width="372.8" height="18" fill="#F5EFE3"/><text x="726" y="185" text-anchor="middle" fill="#1C2433" font-size="15">Agent SDK: modelo, tools y turnos por invocación</text><path d="M860,42 L948,42 L948,117" fill="none" stroke="#1C2433" stroke-width="2" marker-end="url(#at)" stroke-linejoin="round"/><rect x="873.4" y="87" width="61.2" height="18" fill="#F5EFE3"/><text x="904" y="100" text-anchor="middle" fill="#1C2433" font-size="15">paquete</text><path d="M1170,276 L1192,276 L1192,75" fill="none" stroke="#C9A34E" stroke-width="2" marker-end="url(#ao)" stroke-linejoin="round"/></svg>
+<!-- END gen:topologia -->
+  </main>
+</section>
+
+<!-- 2 · Decisiones fijadas, I -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §1, «Decisiones fijadas» (filas 1–9 de 18)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Decisiones fijadas · I</div>
+    <h1>Dieciocho decisiones fijadas gobiernan el resto del sistema</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t dec">
+      <tr><th>Decisión</th><th>Elegida</th><th>Consecuencia principal</th></tr>
+      <tr><td>Dominio</td><td>Novela histórica personalizada</td><td>La investigación y la validación formal tienen materia real que verificar.</td></tr>
+      <tr><td>Motor de orquestación</td><td>LangGraph con estado explícito</td><td>Un nodo por acción de la especificación TLA+, con el mismo nombre: la correspondencia es literal.</td></tr>
+      <tr><td>Agentes</td><td>Claude Agent SDK (Python), todos en Haiku 4.5</td><td>Modelo, herramientas y turnos se fijan por invocación; internet entra por <code>WebSearch</code> y <code>WebFetch</code>.</td></tr>
+      <tr><td>Roles</td><td>Nueve, con funciones separadas</td><td>El editor repara dentro del bucle, el juez mide fuera, el verificador comprueba el corpus y los extractores miden lo que no puede declarar quien lo produjo.</td></tr>
+      <tr class="dest"><td>Validadores</td><td>Nodos del grafo, nunca herramientas de un agente</td><td>Ningún modelo puede saltarse una validación: las aristas condicionales leen booleanos de Python.</td></tr>
+      <tr><td>Paso de contexto</td><td>Empuje determinista en siete bloques</td><td>El escritor no tiene herramientas de recuperación: contexto acotado, reproducible y auditable.</td></tr>
+      <tr><td>Estado</td><td>Un único fichero SQLite por novela</td><td>Checkpoint del grafo y datos de dominio en la misma transacción: no pueden desincronizarse.</td></tr>
+      <tr><td>Versiones</td><td>Capítulos inmutables + manifiesto</td><td>Conservar la versión anterior es una propiedad de la estructura, no una disciplina.</td></tr>
+      <tr><td>Ejecuciones de fase</td><td>Grafo de <code>fase_run</code> inmutables</td><td>Rehacer, reanudar, ramificar y regenerar son la misma operación con distinto punto de entrada.</td></tr>
+    </table>
+  </main>
+</section>
+
+<!-- 3 · Decisiones fijadas, II -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §1, «Decisiones fijadas» (filas 10–18) y «La decisión de la que cuelga todo»">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Decisiones fijadas · II</div>
+    <h1>El humano decide en su PC, y el límite de contexto se garantiza sumando techos</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t dec">
+      <tr><th>Decisión</th><th>Elegida</th><th>Consecuencia principal</th></tr>
+      <tr><td>Intervención humana</td><td>Cinco gates bloqueantes; Telegram solo avisa</td><td>La máquina duerme en disco; nada fuera del PC del Autor reanuda: la API solo escucha en 127.0.0.1. Desactivables en batch.</td></tr>
+      <tr><td>Operación del arnés</td><td>La interfaz lanza la CLI como proceso aparte</td><td>El servidor no guarda nada en memoria: reiniciarlo no mata ninguna ejecución.</td></tr>
+      <tr><td>Validación formal</td><td>Lean 4 (la historia) + TLA+ (el arnés)</td><td>Lean verifica la cronología concreta; TLC, el comportamiento del sistema.</td></tr>
+      <tr><td>Observabilidad</td><td>Langfuse, spans manuales + OTLP opcional</td><td>La semántica la pone el orquestador: sesión = novela, span = capítulo, rol e intento.</td></tr>
+      <tr class="dest"><td>Presupuesto de contexto</td><td>100.000 tokens concurrentes, por construcción</td><td>No se puede medir en vivo, así que se acota a priori (§12).</td></tr>
+      <tr><td>Pila</td><td>FastAPI <i>package by feature</i> + React y Vite en FSD v2.1</td><td>En el backend, una fase es una carpeta.</td></tr>
+      <tr><td>Embeddings</td><td>FastEmbed local, MiniLM-L12 multilingüe, 384d, <code>sqlite-vec</code></td><td>Deciden qué material entra en cada paquete; locales, sin red y deterministas.</td></tr>
+      <tr><td>Correspondencia documento↔código</td><td>Tests de trazabilidad en G1</td><td>Un apartado sin implementar o un validador que deja de bloquear se ven en cuanto corre G1.</td></tr>
+      <tr><td>Requisitos de la spec</td><td><code>REQ-BE-nn</code> y <code>REQ-FE-nn</code> derivados del documento</td><td>La spec se lee como una lista de compromisos comprobables.</td></tr>
+    </table>
+    <div class="franja" style="margin-top:14px"><b>La decisión de la que cuelga todo:</b> los validadores son nodos del grafo, no herramientas que un agente elige llamar. El editor recibe el informe de incidencias ya producido y solo emite el parche; las transiciones dependen de valores de Python, que es lo que TLC puede verificar.</div>
+  </main>
+</section>
+
+<!-- 4 · Nueve roles -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §5 · <code>backend/src/storymaker/commons/agents/techos.py</code> (herramientas)">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Los nueve roles</div>
+    <h1>Quien escribe no aprueba: el escritor no valida, el editor no puntúa, el juez no edita</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t roles">
+      <tr><th>Rol</th><th class="c" style="width:84px">Fase</th><th>Entrada</th><th>Salida</th><th>Herramientas</th></tr>
+      <tr><td>entrevistador</td><td class="c mono">1</td><td>Premisa libre, respuestas, texto pegado</td><td><code>Brief</code> Pydantic</td><td>—</td></tr>
+      <tr><td>extractor de intake</td><td class="c mono">1</td><td>Texto pegado en cuarentena</td><td>Filas tipadas de <code>intake_dato</code></td><td>—</td></tr>
+      <tr class="dest"><td>investigador</td><td class="c mono" style="white-space:nowrap">2 · 3</td><td>Período y lugar del brief; en Plotting, un hueco</td><td><code>mundo_hecho</code> + <code>mundo_fuente</code>, o <code>no_encontrado</code></td><td><code>WebSearch</code>, <code>WebFetch</code>: la única salida a la red</td></tr>
+      <tr><td>verificador</td><td class="c mono" style="white-space:nowrap">2 · 3</td><td>Pares enunciado–cita (≤ 300 caracteres)</td><td>Veredicto de respaldo por hecho</td><td>—</td></tr>
+      <tr><td>arquitecto</td><td class="c mono">3</td><td>Brief + corpus</td><td>Premisa, tema, canon, escaleta</td><td>—*</td></tr>
+      <tr><td>escritor</td><td class="c mono" style="white-space:nowrap">4 · 6</td><td>Paquete de contexto de 7 bloques</td><td>Prosa del capítulo</td><td>—</td></tr>
+      <tr><td>editor</td><td class="c mono" style="white-space:nowrap">4 · 6</td><td>Capítulo + informe de incidencias</td><td>Parche de corrección</td><td>—</td></tr>
+      <tr><td>extractor de capítulo</td><td class="c mono" style="white-space:nowrap">4 · 6</td><td>Capítulo + escaleta de sus escenas</td><td>Resumen, continuidad, usos, cronología, ejecución</td><td>—</td></tr>
+      <tr><td>juez</td><td class="c mono">5</td><td>Novela completa + rúbrica</td><td>Ocho notas 1–10 con justificación</td><td>—</td></tr>
+    </table>
+    <div class="fila" style="margin-top:12px; gap:18px">
+      <div class="caja fina col"><b>El contrato viaja con la llamada.</b> Cada salida es un modelo Pydantic; su JSON Schema va en el prompt y <code>schema_guard</code> valida contra el mismo modelo.</div>
+      <div class="caja fina col"><b>Los extractores son roles</b> porque consumen contexto y necesitan techo, y porque miden lo que no puede declarar quien lo produjo.</div>
+      <div class="caja fina col">* El código concede al arquitecto dos herramientas propias sin red, <code>sumar_dias</code> y <code>edad_en_fecha</code>, que §5 no lista.</div>
+    </div>
+  </main>
+</section>
+
+<!-- 5 · Paso de contexto -->
+<section class="pagina" data-fuente="<code>docs/architecture.md</code> §6 · <code>backend/src/storymaker/commons/context/paquete.py</code>">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Paso de contexto</div>
+    <h1>El escritor no busca su contexto: lo recibe en siete bloques y 12.000 tokens</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:30px">
+      <div style="flex:0 0 300px">
+<!-- BEGIN gen:bloques -->
+<svg class="diag" width="300" height="552" viewBox="0 0 300 552" xmlns="http://www.w3.org/2000/svg"><defs><marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#1C2433"/></marker><marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#B23A2B"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#C9A34E"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#7D7869"/></marker><marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#5E8C6A"/></marker></defs><rect x="0" y="10.0" width="86" height="33.3" fill="rgba(28,36,51,0.06)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="31.666666666666668" text-anchor="middle" class="mono" fill="#1C2433">1</text><text x="100" y="31.666666666666668" text-anchor="start" fill="#1C2433">Encargo</text><text x="300" y="31.666666666666668" text-anchor="end" class="mono" fill="#1C2433">800</text><rect x="0" y="43.3" width="86" height="104.2" fill="rgba(28,36,51,0.12)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="100.41666666666667" text-anchor="middle" class="mono" fill="#1C2433">2</text><text x="100" y="100.41666666666667" text-anchor="start" fill="#1C2433">Canon relevante</text><text x="300" y="100.41666666666667" text-anchor="end" class="mono" fill="#1C2433">2.500</text><rect x="0" y="147.5" width="86" height="104.2" fill="rgba(201,163,78,0.30)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="204.58333333333334" text-anchor="middle" class="mono" fill="#1C2433">3</text><text x="100" y="204.58333333333334" text-anchor="start" fill="#1C2433">Continuidad</text><text x="300" y="204.58333333333334" text-anchor="end" class="mono" fill="#1C2433">2.500</text><rect x="0" y="251.7" width="86" height="125.0" fill="rgba(28,36,51,0.12)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="319.1666666666667" text-anchor="middle" class="mono" fill="#1C2433">4</text><text x="100" y="319.1666666666667" text-anchor="start" fill="#1C2433">Memoria</text><text x="300" y="319.1666666666667" text-anchor="end" class="mono" fill="#1C2433">3.000</text><rect x="0" y="376.7" width="86" height="62.5" fill="rgba(28,36,51,0.06)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="412.9166666666667" text-anchor="middle" class="mono" fill="#1C2433">5</text><text x="100" y="412.9166666666667" text-anchor="start" fill="#1C2433">Anclajes</text><text x="300" y="412.9166666666667" text-anchor="end" class="mono" fill="#1C2433">1.500</text><rect x="0" y="439.2" width="86" height="50.0" fill="rgba(28,36,51,0.12)" stroke="#1C2433" stroke-width="1.5"/><text x="43.0" y="469.1666666666667" text-anchor="middle" class="mono" fill="#1C2433">6</text><text x="100" y="469.1666666666667" text-anchor="start" fill="#1C2433">Reglas</text><text x="300" y="469.1666666666667" text-anchor="end" class="mono" fill="#1C2433">1.200</text><rect x="0" y="489.2" width="86" height="20.8" fill="rgba(28,36,51,0.06)" stroke="#1C2433" stroke-width="1.5"/><text x="100" y="504.58333333333337" text-anchor="start" fill="#1C2433">Personalización</text><text x="300" y="504.58333333333337" text-anchor="end" class="mono" fill="#1C2433">500</text><rect x="0" y="10" width="86" height="500" fill="none" stroke="#1C2433" stroke-width="2" rx="4"/><text x="100" y="536" text-anchor="start" fill="#1C2433" font-weight="600">Total</text><text x="300" y="536" text-anchor="end" class="mono" fill="#1C2433" font-weight="700">12.000</text></svg>
+<!-- END gen:bloques -->
+      </div>
+      <div class="col">
+        <table class="t compacta">
+          <tr><th class="c">#</th><th>Bloque</th><th>Contenido</th><th class="num">Techo</th></tr>
+          <tr><td class="c mono">1</td><td><b>Encargo</b></td><td>Capítulo N: escenas, beats, objetivo, extensión, hitos de arco y lo pendiente de N−1</td><td class="num">800</td></tr>
+          <tr><td class="c mono">2</td><td><b>Canon relevante</b></td><td>Fichas de personajes y escenarios presentes, más los vecinos semánticos</td><td class="num">2.500</td></tr>
+          <tr><td class="c mono">3</td><td><b>Continuidad</b></td><td>Estado al cierre de N−1 y lo que ya ha pasado, un evento por línea</td><td class="num">2.500</td></tr>
+          <tr><td class="c mono">4</td><td><b>Memoria</b></td><td>Texto íntegro de N−1 + resúmenes previos por similitud</td><td class="num">3.000</td></tr>
+          <tr><td class="c mono">5</td><td><b>Anclajes</b></td><td>Hechos anclados y vecinos del corpus sellado, con firmeza y fuente</td><td class="num">1.500</td></tr>
+          <tr><td class="c mono">6</td><td><b>Reglas</b></td><td>Voz, estilo, glosario, prohibidas, licencia; repeticiones y cierres ya gastados</td><td class="num">1.200</td></tr>
+          <tr><td class="c mono">7</td><td><b>Personalización</b></td><td>Elementos del brief que este capítulo tiene que tocar</td><td class="num">500</td></tr>
+          <tr class="total"><td></td><td>Total</td><td></td><td class="num">12.000</td></tr>
+        </table>
+        <div class="fila" style="margin-top:12px; gap:16px">
+          <div class="caja fina col"><b>Relevancia, no recencia.</b> Los bloques 2, 4 y 5 se llenan con una consulta derivada de la escaleta, vectorizada con FastEmbed y resuelta por KNN exhaustivo en <code>sqlite-vec</code>. La hace el ensamblador, no el agente.</div>
+          <div class="caja fina col"><b>Orden de recorte:</b> <span class="mono">4 · 2 · 5 · 7 · 6 · 1 · 3</span>. La memoria se recorta la primera; la continuidad, la última. Cada paquete se persiste en <code>paquete_contexto</code> y se enlaza desde su span.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 6 · Presupuesto de contexto -->
+<section class="pagina" data-fuente="<code>backend/src/storymaker/commons/agents/techos.py</code> (techos, cuotas y turnos) · <code>docs/architecture.md</code> §12">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A1</span><span class="sep"></span>Presupuesto de contexto</div>
+    <h1>El límite de 100.000 tokens no se vigila: se garantiza con una suma de techos</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t compacta">
+      <tr><th>Perfil</th><th class="num">Prompt + skills</th><th class="num">Contexto</th><th class="num">Salida</th><th class="num">Techo sobre 100.000</th><th>Cuota de herramientas</th><th class="num">Turnos</th></tr>
+<!-- BEGIN gen:techos -->
+<tr><td>entrevistador</td><td class="num">2.000</td><td class="num">4.000</td><td class="num">2.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:14px"></span><span class="limite"></span></div><span class="cifra"><b>8.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr><td>extractor de intake</td><td class="num">1.500</td><td class="num">3.000</td><td class="num">1.500</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:11px"></span><span class="limite"></span></div><span class="cifra"><b>6.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr class="dest"><td>investigador · sesión inicial</td><td class="num">2.000</td><td class="num">31.000</td><td class="num">6.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo max" style="width:81px"></span><span class="limite"></span></div><span class="cifra"><b>45.000</b></span></div></td><td class="mono" style="font-weight:400">WebSearch ×3 · WebFetch ×3</td><td class="num">20</td></tr>
+<tr><td>investigador · micro (Plotting)</td><td class="num">2.000</td><td class="num">11.000</td><td class="num">1.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:25px"></span><span class="limite"></span></div><span class="cifra"><b>14.000</b></span></div></td><td class="mono" style="font-weight:400">WebSearch ×1 · WebFetch ×1</td><td class="num">2</td></tr>
+<tr><td>investigador · dirigido (exhaustivo)</td><td class="num">2.000</td><td class="num">11.000</td><td class="num">2.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:27px"></span><span class="limite"></span></div><span class="cifra"><b>15.000</b></span></div></td><td class="mono" style="font-weight:400">WebSearch ×1 · WebFetch ×1</td><td class="num">4</td></tr>
+<tr><td>verificador</td><td class="num">2.000</td><td class="num">8.000</td><td class="num">2.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:22px"></span><span class="limite"></span></div><span class="cifra"><b>12.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr><td>arquitecto</td><td class="num">2.000</td><td class="num">15.000</td><td class="num">8.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:45px"></span><span class="limite"></span></div><span class="cifra"><b>25.000</b></span></div></td><td class="mono" style="font-weight:400">sumar_dias ×4 · edad_en_fecha ×4</td><td class="num">6</td></tr>
+<tr><td>escritor</td><td class="num">5.000</td><td class="num">12.000</td><td class="num">3.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:36px"></span><span class="limite"></span></div><span class="cifra"><b>20.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr><td>editor</td><td class="num">5.000</td><td class="num">12.000</td><td class="num">3.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:36px"></span><span class="limite"></span></div><span class="cifra"><b>20.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr><td>extractor de capítulo</td><td class="num">2.000</td><td class="num">8.000</td><td class="num">2.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:22px"></span><span class="limite"></span></div><span class="cifra"><b>12.000</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<tr><td>juez</td><td class="num">3.500</td><td class="num">26.000</td><td class="num">3.000</td><td><div class="celda-barra"><div class="carril"><span class="barra-techo" style="width:58px"></span><span class="limite"></span></div><span class="cifra"><b>32.500</b></span></div></td><td class="mono" style="font-weight:400">—</td><td class="num">1</td></tr>
+<!-- END gen:techos -->
+    </table>
+    <div class="fila" style="margin-top:12px; gap:16px">
+      <div class="franja col"><b>Peor caso del sistema: 45.000 tokens</b>, la sesión inicial del investigador, con tres <code>WebFetch</code> acotados a 10.000. El grafo es secuencial: hay un solo agente abierto a la vez.</div>
+      <div class="caja fina col"><b>Impuesto por el arnés.</b> Un hook <code>PreToolUse</code> deniega la llamada que excede la cuota; un hook <code>PostToolUse</code> recorta la respuesta con <code>updatedToolOutput</code>. Una guarda rechaza el prompt que excede su techo.</div>
+    </div>
+  </main>
+</section>
+
+<script src="marca.js"></script>
+</body>
+</html>

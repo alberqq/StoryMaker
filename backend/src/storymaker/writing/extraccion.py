@@ -92,6 +92,14 @@ async def catalogo(
         "Catalogo de identificadores. Usa SOLO estos numeros en los campos *_id, "
         "participantes e hitos; si algo no esta aqui, no lo declares."
     )
+    # Sin esta regla, el extractor contaba como participante a quien solo se recuerda, y
+    # un abuelo muerto en 1790 «participaba» en 1805: la cronología bloqueaba un capítulo
+    # correcto y ningún parche podía arreglarlo sin quitar un elemento obligatorio.
+    lineas.append(
+        "En `participantes` van solo los personajes presentes en el evento, en ese momento. "
+        "Quien solo se recuerda, se nombra, se sueña o ya ha muerto no participa: no lo "
+        "pongas."
+    )
     for titulo, entradas in (
         ("Personajes (personaje_id, participantes)", personajes),
         ("Escenarios (escenario_id)", escenarios),
@@ -221,16 +229,18 @@ async def volcar_cronologia(
             VALUES (?, ?, ?, 'narrativo', ?)
             """,
             (
-                f"cap{numero}-{evento.clave}",
+                f"cap{numero}-v{capitulo_version_id}-{evento.clave}",
                 evento.descripcion,
                 evento.momento,
                 capitulo_version_id,
             ),
         )
-        # Si el INSERT se ignora —la clave ya la escribió un intento anterior del mismo
-        # capítulo—, `lastrowid` no vuelve a cero: conserva el último id insertado en la
-        # conexión, sea de la tabla que sea, y los participantes colgarían de un evento
-        # que no existe. Lo que dice si hubo fila es `rowcount`.
+        # La clave lleva la versión: cada intento escribe sus eventos, y un evento que el
+        # editor corrigió no se queda con la fila del intento anterior. Si aun así el
+        # INSERT se ignora —el extractor repitió una clave—, `lastrowid` no vuelve a
+        # cero: conserva el último id insertado en la conexión, sea de la tabla que sea,
+        # y los participantes colgarían de un evento que no existe. Lo que dice si hubo
+        # fila es `rowcount`.
         if cursor.rowcount == 0 or not cursor.lastrowid:
             continue
         evento_id = cursor.lastrowid

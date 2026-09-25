@@ -27,6 +27,23 @@ from storymaker.commons.validation.puras import normalizar
 #: Los tres niveles de §15, del más general al más personal.
 NIVELES = ("global", "novela", "destinatario")
 
+#: El nivel `global`, el único que pone el arnés y no el comprador. Se vuelca en
+#: `canon_prohibida` junto a los de la novela al escribir el canon.
+#:
+#: Solo insultos y términos ofensivos sin otra acepción corriente. Una palabra con un
+#: sentido inocente —«zorra», «capullo», «retrasado»— bloquearía capítulos limpios de una
+#: novela histórica, y la comparación por raíz lo agrava: por eso no están.
+PROHIBIDAS_GLOBALES: tuple[str, ...] = (
+    "gilipollas",
+    "hijo de puta",
+    "hijoputa",
+    "cabrón",
+    "maricón",
+    "subnormal",
+    "sudaca",
+    "negrata",
+)
+
 
 def guardrail_prohibidas(capitulo: CapituloEnRevision) -> list[Incidencia]:
     """Términos vetados en los tres niveles, normalizando antes de comparar.

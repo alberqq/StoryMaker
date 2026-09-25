@@ -43,6 +43,7 @@ from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
 from storymaker.commons.obs.prompts import RepositorioDePrompts
 from storymaker.commons.obs.trazas import Span, nombre_de_span
+from storymaker.intake.contradicciones import EDAD_MINIMA_RAZONABLE
 from storymaker.intake.esquemas import Brief
 from storymaker.investigation.corpus import escribir_hecho
 from storymaker.investigation.esquemas import (
@@ -53,7 +54,7 @@ from storymaker.investigation.esquemas import (
 from storymaker.investigation.nodos import periodo_y_lugar, resolver_hueco, verificar_hecho
 from storymaker.plotting import canon, contexto, escaleta, trama
 from storymaker.plotting import gate as revision
-from storymaker.plotting.esquemas import HuecoPropuesto, SalidaArquitecto
+from storymaker.plotting.esquemas import HuecoPropuesto, SalidaArquitecto, con_claves
 
 ORIGEN_MICRO = "micro_arquitecto"
 ORIGEN_INVENTADO = "invencion_autorizada"
@@ -141,7 +142,25 @@ def forma_de_la_escaleta(brief: Brief) -> str:
     return (
         f"Exactamente {brief.n_capitulos} capitulos, cada uno con entre {minimo} y {maximo} "
         f"escenas, y unas {brief.palabras_por_capitulo} palabras por capitulo repartidas "
-        "entre sus escenas."
+        "entre sus escenas. La fecha_narrativa de cada escena va en ISO —AAAA, AAAA-MM o "
+        "AAAA-MM-DD, tan precisa como la sepas—; la hora del dia o «dias despues» van en el "
+        "objetivo de la escena, no en la fecha."
+    )
+
+
+def regla_de_los_arcos() -> str:
+    """Lo que `arco_anclado` va a exigir, dicho antes y no después (trama-rehacible §3.6).
+
+    Sin esto el arquitecto se enteraba de la regla al rehacer, con la primera trama ya
+    pagada: la segunda novela con gates llegó al gate con cuatro secundarios sin arco.
+    """
+    return (
+        f"Todo personaje que aparezca en {Defaults.ESCENAS_PARA_EXIGIR_ARCO} escenas o mas "
+        "necesita un arco. Si no cambia, declaralo con tipo plano, sin hitos: es una "
+        "decision valida. Un arco positivo o negativo lleva al menos "
+        f"{Defaults.HITOS_MINIMOS_ARCO_CON_TRANSFORMACION} hitos, anclados a escenas de "
+        "capitulos que no retroceden. El del homenajeado no puede ser plano y su ultimo "
+        "hito cae en el tercio final de la novela."
     )
 
 
@@ -151,7 +170,18 @@ FORMA_DE_LOS_HUECOS = (
     "Declara cada hueco con: la pregunta concreta; la clave de la escena que lo necesita; "
     "su dimension (cronologia, lugar, cultura_material, lenguaje, mentalidad o "
     "estructura_social), y en si_no_se_encuentra la afirmacion que usarias si la "
-    "investigacion no lo encuentra, escrita como un hecho y no como una pregunta."
+    "investigacion no lo encuentra, escrita como un hecho y no como una pregunta. "
+    "En si_no_se_encuentra no atribuyas cargos, oficios, lugares ni actos a personajes "
+    "historicos reales: lo que se inventa es el ambiente, no la biografia de nadie."
+)
+
+#: La fecha de nacimiento del homenajeado en el canon es la de su personaje en la época
+#: (arq. §4, Fase 3). El encargo puede traer la real, y copiarla dejaba al protagonista sin
+#: nacer en todas sus escenas, que es justo lo que el Lean de la publicación no deja pasar.
+NACIMIENTO_DEL_HOMENAJEADO = (
+    "La fecha_nacimiento del homenajeado en su ficha es la de su personaje en la epoca, no "
+    "la de su vida real: si la del encargo cae despues del periodo o le da menos de "
+    "{edad} anos en el, elige una coherente con su rol en la epoca."
 )
 
 
@@ -201,23 +231,35 @@ async def planificar(brief: Brief, *, fase_run_id: int, rehacer: str = "") -> Sa
         f"--- Forma de la escaleta ---\n{forma_de_la_escaleta(brief)}\n\n"
         f"--- Firmeza de los hechos ---\n{USO_DE_LA_FIRMEZA_EN_LA_TRAMA}\n\n"
         f"--- Huecos ---\n{FORMA_DE_LOS_HUECOS}\n\n"
+        f"--- Arcos ---\n{regla_de_los_arcos()}\n\n"
+        f"--- Homenajeado ---\n"
+        f"{NACIMIENTO_DEL_HOMENAJEADO.format(edad=EDAD_MINIMA_RAZONABLE)}\n\n"
         f"{rehacer}"
         "Ancla cada escena a los hechos y elementos que la sostienen escribiendo su "
-        "clave #id tal como aparece arriba.\n"
+        "clave #id tal como aparece arriba: en `hecho` las de los hechos del contexto y en "
+        "`dato` las de los elementos del encargo.\n"
     )
+    # Las claves a las que puede anclar, enumeradas en su contrato de salida: los hechos que
+    # ve en el contexto y los elementos del encargo (trama-rehacible §3.5).
+    esquema = con_claves(
+        [int(h["id"]) for h in hechos], [int(d["id"]) for d in await intake.datos(deps.db)]
+    )
+    de_rol = RepositorioDePrompts(deps.settings).para(Perfil.ARQUITECTO)
     resultado = await invocar_rol(
         Perfil.ARQUITECTO,
         prompt,
-        SalidaArquitecto,
+        esquema,
         transporte=deps.transporte,
         settings=deps.settings,
-        sistema=RepositorioDePrompts(deps.settings).para(Perfil.ARQUITECTO).texto,
+        sistema=de_rol.texto,
     )
     deps.observador.registrar_span(
         Span(
             nombre=nombre_de_span(capitulo=None, rol="arquitecto"),
             rol="arquitecto",
             consumo=resultado.consumo,
+            prompt_version=de_rol.version,
+            prompt_nombre=de_rol.nombre,
         )
     )
     _ = fase_run_id
@@ -243,17 +285,23 @@ async def volcar(
         hechos = {int(f["id"]): str(f["enunciado"]) for f in await cursor.fetchall()}
     datos = {int(d["id"]): _valor_de_dato(d["valor_json"]) for d in await intake.datos(deps.db)}
     sin_resolver: list[str] = []
+    por_parecido: list[str] = []
     escenas = await escaleta.volcar_escaleta(
         deps.db,
         salida,
         personajes=personajes,
         hechos=escaleta.mapa_de_claves(hechos),
         datos=escaleta.mapa_de_claves(datos),
+        textos_de_hecho=hechos,
+        textos_de_dato=datos,
         sin_resolver=sin_resolver,
+        resueltos_por_parecido=por_parecido,
     )
     await canon.volcar_arcos(deps.db, salida, personajes, escenas)
-    # Lo que no se pudo anclar no se pierde en silencio: lo enseña el gate (ER §7.2).
-    await arnes.retirar_incidencias_sin_capitulo(deps.db, VALIDADOR_DE_ANCLAJES)
+    # Lo que no se pudo anclar no se pierde en silencio, y lo que se ancló por parecido se
+    # dice: los dos los enseña el gate (ER §7.2, trama-rehacible §3.5).
+    for validador in (VALIDADOR_DE_ANCLAJES, VALIDADOR_DE_PARECIDO):
+        await arnes.retirar_incidencias_sin_capitulo(deps.db, validador)
     for anclaje in sin_resolver:
         await arnes.registrar_incidencia(
             deps.db,
@@ -261,11 +309,20 @@ async def volcar(
             severidad="aviso",
             mensaje=f"El anclaje no apunta a ningun hecho ni elemento conocido: {anclaje}",
         )
+    for anclaje in por_parecido:
+        await arnes.registrar_incidencia(
+            deps.db,
+            validador=VALIDADOR_DE_PARECIDO,
+            severidad="aviso",
+            mensaje=f"Anclaje escrito como frase, resuelto por parecido: {anclaje}",
+        )
     return escenas
 
 
 #: Los anclajes de la escaleta que no se pudieron resolver a un hecho o a un elemento.
 VALIDADOR_DE_ANCLAJES = "anclaje_resuelto"
+#: Los que no traían clave y se resolvieron por parecido léxico.
+VALIDADOR_DE_PARECIDO = "anclaje_por_parecido"
 
 
 def _valor_de_dato(valor_json: object) -> str:
@@ -376,6 +433,16 @@ async def fill_gap(estado: EstadoNovela) -> EstadoNovela:
             ),
             propuesta=str(fila["propuesta"] or "") if fila is not None else "",
         )
+        if origen == ORIGEN_INVENTADO:
+            # La revisión corrió antes de los huecos: lo inventado ahora se mira aquí.
+            for aviso in await revision.invenciones_sobre_historicos(deps.db, [hecho_id]):
+                await arnes.registrar_incidencia(
+                    deps.db,
+                    validador=aviso.validador,
+                    severidad=aviso.severidad.value,
+                    mensaje=aviso.mensaje,
+                    ubicacion=aviso.ubicacion,
+                )
         if fila is not None:
             await repo_plan.cerrar_hueco(
                 deps.db,

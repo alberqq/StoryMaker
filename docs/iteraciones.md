@@ -8,6 +8,135 @@ Cada documento mantiene además su propio registro de cambios al final. Cuando u
 
 ---
 
+## 2026-09-25 · El arnés contra sus requisitos
+
+### It-40 · Tres defectos que solo salieron corriendo los ejemplos: Lean averiado y ramas sin hilo
+
+**Causa.** Al correr los briefs de [`ejemplos/evals/`](../ejemplos/evals) con `lake` en el `PATH`, dos novelas coherentes acabaron en `Fail` desde `PublishVersion` con la misma incidencia: «la cronología no supera la verificación formal y la salida no nombra ningún invariante conocido». En `eval-01-jubilacion`, `lake exe verificar` había salido con `unspecified system_category error (error code: 4551)`: Smart App Control de Windows bloquea a veces el ejecutable recién recompilado, y al repetir la misma cronología daba «✓ coherente, 57 eventos, 6 personas». En `eval-02-hijo`, `Generado.lean` no compilaba: el generador escribía `muerte := some -4035` para Carlos III, que muere antes del origen de la cronología, y Lean lo lee como una resta. Aparte, las ramas de `storymaker ramificar` nacían con el checkpoint vacío (`pc = None`), así que ni se continuaban ni se regeneraban: el hilo de LangGraph se llama como el fichero (`run._hilo`), y la copia traía el checkpoint bajo el nombre del origen.
+
+**Qué se hizo.** Las tres cosas alinean el código con decisiones ya fijadas; ninguna cambia la arquitectura.
+- [`generador.py`](../backend/src/storymaker/commons/formal/generador.py) escribe `some (-n)` para los negativos.
+- [`runner.interpretar`](../backend/src/storymaker/commons/formal/runner.py) lanza `AveriaDeLean`, un `ErrorDeEntorno`, cuando `verificar` sale con fallo sin nombrar ningún invariante, en lugar de abrir una incidencia bloqueante genérica. `verificar_cronologia` ya capturaba las excepciones de Lean y caía a la evaluación en Python, que es lo que piden §11c de la arquitectura y las specs `escritura` y `validacion` («si Lean falla por cualquier avería»). Nada se da por bueno sin juzgar: la avería la juzga Python con la misma severidad.
+- [`branch.ramificar`](../backend/src/storymaker/commons/graph/branch.py) muda `checkpoints` y `writes` al hilo de la rama, que es lo que §8 promete al decir que la rama «se continúa desde ahí».
+
+**Efecto medido.** Pruebas nuevas en `tests/unit/test_formal.py` (paréntesis, avería y caída a Python con la misma severidad) y en `tests/integracion/test_invocacion.py` (la rama hereda su hilo). La suite del backend da 1106 pasadas; los 7 fallos de `tests/correspondencia/test_matrices.py` son anteriores y se deben a que falta `trace-matrix.md` en la raíz. Las novelas que ya habían caído por esto se reabrieron fuera del grafo: la publicación de `eval-01`, repitiendo con Lean y como salida de `AwaitApproval4`, y las ramas `fase-6-*`, reasignando su hilo a mano. Ninguna se publicó sin pasar G5.
+
+**Pendiente.** Que el sistema no deje ejecutar un binario sin firma sigue siendo un riesgo de entorno en Windows. Ahora degrada a Python (U-1) en lugar de tumbar la publicación, pero la score no dice qué motor juzgó.
+
+### It-39 · Un muerto recordado no participa
+
+**Causa.** La novela de prueba `prueba-langfuse` agotó dos veces los reintentos del capítulo 2, en seis versiones, todas por `cronologia_capitulo`. Según esa regla, el abuelo del homenajeado, muerto en 1790 según el canon, participaba en eventos de 1805. El texto era correcto: lo recordaba como «su difunto abuelo», porque el brief exige el elemento obligatorio «aprendió a navegar con su abuelo en una txalupa». El fallo estaba en el extractor. Contaba como participante a quien solo se nombra, porque ni el esquema de `EventoNarrativo.participantes` ni su prompt decían lo contrario. Ningún parche del editor podía arreglarlo sin quitar el elemento obligatorio.
+
+**Qué se hizo.** A petición del Autor, se aplicó directamente, sin pasar antes por la spec de escritura. El campo `participantes` de [`writing/esquemas.py`](../backend/src/storymaker/writing/esquemas.py) lleva ahora una `description`, que viaja en el contrato de salida. El catálogo del extractor, en [`writing/extraccion.py`](../backend/src/storymaker/writing/extraccion.py), dice que solo participan los presentes, y que quien se recuerda, se nombra, se sueña o ya ha muerto no participa.
+
+**Efecto medido.** Hay una prueba nueva en `test_writing.py::TestCatalogoDelExtractor`, y pasan las 80 de escritura e integración. Sobre la novela real, `storymaker reintentar prueba-langfuse` reescribió el capítulo 2 y lo aprobó al primer intento, sin incidencias. El juez dio 5,625, y la versión 1 se publicó con su PDF. La novela entera costó 263 058 + 190 192 tokens y 1,7172 $, y Langfuse da lo mismo en su sesión. El score del juez y los de publicación llegan a Langfuse colgados de la traza de la generación (It-37), no de la sesión.
+
+**Deuda.** La [spec de escritura](../specs/escritura/spec.md) no recoge la regla.
+
+### It-38 · Los validadores que cierran la novela, Lean de verdad y un modelo que termina
+
+**Causa.** El Autor pidió cerrar todo el apartado de validación del enunciado. Una lectura del árbol contra §11 de la [arquitectura](architecture.md) dio siete huecos:
+
+- `render_visual` buscaba tres identificadores en el HTML y no abría ningún navegador.
+- Un rechazo de la publicación lanzaba una excepción y terminaba la novela en `Fail`, sin devolver nada a nadie.
+- `cobertura_personalizacion` estaba escrita y registrada, pero no la llamaba ningún nodo.
+- El juez no puntuaba el tono.
+- La revisión humana no tenía herramienta.
+- `lake` no estaba instalado, así que Lean no había corrido nunca en el flujo.
+- TLC no terminaba.
+
+**Qué se hizo.** Primero se escribió arriba: §9, §11a-§11d y §17 de la arquitectura, y la [spec](../specs/validacion/spec.md), el [plan](../specs/validacion/plan.md) y la matriz de `specs/validacion/`. Después, el código:
+
+- **El render.** `render_visual` abre la lectura candidata en Chromium, comprueba que portada, índice y fichas se pintan y pulsa cada enlace del índice. Lo que no se ve cita su pieza o su capítulo. Sin navegador, avisa y sigue.
+- **El rechazo.** `PublishVersion` gana dos aristas, al gate de Writing y a `Fail`, con el tope del juez. El rechazo queda como incidencia que cita capítulos. Rehacer en el gate reescribe esos capítulos, y su escritor lee el motivo en el bloque 1.
+- **La cobertura.** `cobertura_personalizacion` corre en cada llegada al gate de Writing, también en batch.
+- **El juez y la revisión humana.** El juez gana `tono` como octavo criterio. `storymaker revision hoja` y `registrar` hacen la hoja, el *score* y el acta.
+- **Lean.** Se instaló elan con el toolchain v4.15.0 y `lake build` compila el proyecto. Con Lean, **Lean decide y Python explica**, porque las incidencias de Lean no decían a quién ni cuándo. Lean trabaja en una copia de `formal/lean` para no pisar el `Generado.lean` versionado. La suite lo apaga con `STORYMAKER_LEAN=0`, porque con él tardaba nueve minutos.
+- **El modelo.** El modelo TLA+ gana las acciones `Caida`, `ResumeFromCheckpoint` y `Reintentar`, las dos aristas de `PublishVersion` y un entorno acotado.
+
+**Efecto medido.**
+
+- **Lean sobre las tres novelas publicadas** en `proyectos/`:
+  - `metro` falla I1 en la prosa (26 eventos) y en la escaleta (9 escenas). La homenajeada tiene en el canon su nacimiento real, de 1967, y la novela la sitúa en 1917. Cuando se generó, solo lo avisó la cronología de la escaleta en el gate de Plotting; ni los deterministas ni el juez lo vieron, y se publicó. Es el caso real que pide el enunciado, contado en [`formal/lean/README.md`](../formal/lean/README.md).
+  - `lozoya` falla I3 en la escaleta y pasa en la prosa.
+  - `pepa` pasa las dos.
+  - Python y Lean coinciden en los seis veredictos.
+- **TLC**, con un JRE portátil:
+  - `harness.cfg` agota 12.650 estados distintos y `harness_batch.cfg`, 4.425, cada una en un segundo, sin ninguna violación de los cinco invariantes ni de las dos propiedades temporales.
+  - Cambiando `SF` por `WF` en una copia, TLC viola `Termina` con la traza del Autor que rehace sin fin, así que la comprobación no es vacía.
+  - El modelo ampliado no dio ningún contraejemplo nuevo. Lo que impedía terminar era que el modelo no era finito: sin cota al lector, `versiones` crecía con cada regeneración.
+- **La inspección en el navegador** de la interfaz de lectura de las tres novelas encontró que en `metro` los cinco lugares «no aparecían en ningún capítulo». Ninguna escena tenía escenario, porque el volcado exigía la clave exacta. Provocó `resolver_escenario` y está en [`inspeccion-visual.md`](inspeccion-visual.md). El nuevo `render_visual` no dio incidencias sobre ninguna de las tres.
+- **La suite.** Pasan 1086 pruebas, con 1 omitida, y 26 son nuevas. Fallan las siete de `test_matrices.py` por la ausencia del `trace-matrix.md` de la raíz, igual que en It-37. Con Chromium abierto en las pruebas que publican, la suite pasa de un minuto a casi dos.
+
+**Deuda.**
+
+- La revisión humana tiene herramienta y ninguna acta: la escribe una persona que haya leído una novela entera (REQ-VA-15).
+- Las tres novelas publicadas no se han vuelto a volcar, así que `metro` sigue sin escenarios en sus escenas.
+- El MCP de Playwright no conectó en la sesión de la inspección, que se hizo con la librería.
+
+### It-37 · La traza de una generación, con capítulos, latencia, herramientas y prompts
+
+**Causa.** El Autor señaló que faltaba todo lo de Langfuse del enunciado. Tras It-36 llegaban a Langfuse los tokens y el coste de cada invocación, en la sesión de su novela, pero cuatro cosas no salían. Primera: cada invocación era su propia traza, mientras que el enunciado pide una traza por generación, y una generación cruza seis o siete procesos de la CLI por los gates. Segunda: las llamadas a herramientas no aparecían. Tercera: la latencia era cero, porque la observación se abría y se cerraba en el mismo instante. Cuarta: ningún nodo rellenaba la versión de prompt ni había forma de sembrar los prompts. It-36 anotaba además que los deterministas no puntuaban; ya lo hacen desde `validar_determinista`, que escribió la sesión que lleva la validación.
+
+**Qué se hizo.** Se siguió el flujo completo. Primero se reescribió §14 de la [arquitectura](architecture.md) con la forma de la traza y se añadieron tres filas a §17. Después, un grilling con cinco decisiones: el Autor pidió que las resolviera el agente, y se tomaron las recomendaciones. Por último, la [spec](../specs/observabilidad/spec.md), el [plan](../specs/observabilidad/plan.md) y su matriz. El resultado:
+- El id de la traza se deriva de la novela y de la versión objetivo.
+- Hay un span `capitulo_NN` que agrupa a sus invocaciones.
+- Cada `generation` lleva inicio y fin reales, calculados con `duration_ms` y fijados con el tracer interno del SDK, con la vía pública como respaldo (U-20).
+- Cada llamada a herramienta es una observación `tool`, leída del flujo de mensajes.
+- Los *scores* van a la traza de su generación.
+- Los nodos pasan la versión y el nombre del prompt, y `python -m storymaker.commons.obs.prompts subir` crea en Langfuse los prompts que faltan.
+- El Span del juez vive en `publication/nodos.py`, que en ese momento editaba la sesión de validación; lo cambia ella.
+
+**Efecto medido.**
+- Hay 15 pruebas nuevas, 14 en `test_observabilidad.py` y una en `test_contabilidad.py`. Una de ellas corre el observador sobre el SDK real con un exportador en memoria: los cuatro spans comparten el id de traza esperado y la sesión, la jerarquía es capítulo → `generation` → `tool` y las latencias son las del SDK (2500 y 1000 ms).
+- De la suite pasan 1085, con dos omitidas. Fallan las siete de `test_matrices.py` por la ausencia del `trace-matrix.md` de la raíz, igual que en It-35 e It-36.
+- **No se ha medido** nada contra un Langfuse de verdad, porque en esta máquina no hay claves (REQ-OB-14).
+
+**Deuda.** Las aserciones de G6 siguen ensayándose contra `ObservadorNulo` y no contra la API. Los *datasets* de evaluación no existen, porque los briefs de `evals/` están borrados.
+
+### It-36 · Dos hooks, herramientas con esquema y el coste de la novela en Langfuse
+
+**Causa.** Una revisión del repositorio contra la lista de requisitos del arnés encontró cuatro huecos. El hook de validación leía `$CLAUDE_FILE_PATH`, que Claude Code no define, y saltaba con cualquier fichero. No había hook de policy propio. Ninguna herramienta tenía un esquema del arnés. Y `ObservadorLangfuse` llamaba a `trace()` y `score()`, que no existen en langfuse 4.15.4, sin abrir nunca la sesión.
+
+**Qué se hizo.** A petición del Autor, se implementó directamente, sin pasar antes por la arquitectura, la spec y el plan, y sin grilling. La [spec](../specs/final/spec.md) y el [plan](../specs/final/plan.md) de `specs/final/` se escribieron después, describiendo lo que ya estaba hecho. El hook de validación lee el evento por `stdin`, solo mira capítulos y bloquea por `stderr`. Hay un hook de policy en `PreToolUse` que deniega la edición que introduce un término prohibido. El arquitecto tiene dos herramientas de fechas con entrada Pydantic, servidas por un servidor MCP en proceso. Y el observador usa la API v4, con una `generation` por invocación y la novela como sesión.
+
+**Efecto medido.** Hay 40 pruebas nuevas en `test_herramientas.py`, `test_hooks_de_claude.py`, `test_observabilidad.py` y `test_contabilidad.py`. De la suite pasan 1047, con una omitida. Fallan las siete de `test_matrices.py` porque el `trace-matrix.md` de la raíz no está en el árbol, igual que en It-35. Los dos hooks se ejecutaron por su comando real con un evento de prueba, y la policy denegó con 2. Con las claves ya puestas, una novela real de dos capítulos en batch (`prueba-langfuse`) dejó 14 `generation` en su sesión de Langfuse, con 153 126 + 99 786 tokens y 1,0058 $. Son exactamente los de `storymaker estado`. La novela terminó en `Fail` en el capítulo 2, por reintentos agotados desde `Extract`, así que no llegó al juez. **No se ha medido** si el arquitecto llegó a usar sus herramientas: el span no lo registra.
+
+**Deuda.** §5 y §12 de [`architecture.md`](architecture.md) no recogen que el arquitecto tiene herramientas. La matriz consolidada no existe. Y `registrar_veredicto` sigue sin llamarse desde los validadores deterministas.
+
+## 2026-09-25 · La Fase 6 de verdad
+
+### It-37 · La novela que se reescribe, en la columna de Publicación
+
+**Causa.** Durante la reescritura de `lozoya`, el tablero la ponía en la columna de Publicación, «en marcha», mientras el panel decía Escritura. `fase_actual` elige la fase más avanzada que haya trabajado, y una novela publicada ya tiene Publication trabajada aunque lo que corre sea Writing.
+
+**Qué se hizo.** En [`seguimiento.py`](../backend/src/storymaker/api/seguimiento.py), `fase_actual` devuelve, **tras publicar**, la fase de la última `fase_run` si sigue abierta. Antes de publicar se mantiene la regla de siempre, porque la novela solo avanza y hay novelas antiguas con su única fila de fase abierta.
+
+**Efecto medido.** Una prueba nueva en `test_seguimiento.py`: la semilla publicada con todas sus filas cerradas sale en `publication`, y con una ejecución de Writing abierta sale en `writing`. Pasan las 85 de la API. El servidor en marcha no se ha reiniciado, porque tenía evals en curso, así que el cambio entra en el próximo arranque.
+
+### It-36 · El nombre nuevo no llegaba al texto
+
+**Causa.** La primera regeneración real, un cambio de nombre de personaje en `lozoya`, recorrió la Fase 6 entera y publicó la versión 2, pero el nombre nuevo no aparecía en ningún capítulo y el viejo seguía en todos. El paquete del escritor llevaba el nombre nuevo una vez, en la ficha del canon, y el viejo de tres a seis veces: siete beats de `plan_beat` y la prosa del capítulo anterior en la memoria. Ningún validador miraba el nombre retirado. Además, el capítulo 3 lo nombraba y quedó fuera del alcance, porque ni `continuidad` ni la escaleta ni `uso_hito` lo registraban. Las pruebas de It-35 pasaban porque el agente falso no escribe nombres: comprobaban la maquinaria, no que el cambio llegara.
+
+**Qué se hizo.** `regeneration/retirados.py` y §9 de la [spec de escritura](../specs/escritura/spec.md), con REQ-ES-13 a REQ-ES-15 y los ítems ES-13 y ES-14. Un cambio de nombre de personaje o de término de glosario hace ahora tres cosas más:
+- reescribe el valor viejo, como palabra entera, en las columnas de texto de `plan_*` y `canon_*`;
+- suma al alcance los capítulos cuyo texto aprobado lo dice;
+- mientras dura la regeneración, lleva los pares en `EstadoNovela.retirados`, y la pasada determinista, también en la revisión de los invalidados, marca como bloqueante cada valor viejo que conserve el capítulo.
+
+**Efecto medido.** En `lozoya`, con el canon devuelto al nombre viejo y la petición repetida, la propagación reescribió siete celdas y el alcance pasó de cuatro capítulos a cinco. Los cinco regenerados dicen el nombre nuevo 5, 3, 1, 2 y 2 veces y el viejo ninguna, y la escaleta ya no lo contiene. El validador nuevo no llegó a saltar: con la escaleta coherente y la memoria ya regenerada, el escritor no escribió el nombre viejo. Los dos segundos intentos, del 3 y del 5, fueron por longitud. Diez pruebas nuevas: nueve en `test_valor_retirado.py` y una de integración en la que el escritor conserva el nombre y el editor lo repara. La ejecución se cortó una vez a mitad al caerse el servidor que la había lanzado, y se retomó con `desbloquear` y `continuar` desde el checkpoint, sin repetir capítulos.
+
+### It-35 · Un cambio aprobado que no llegaba a ninguna parte
+
+**Causa.** Al preguntar el Autor cómo se propaga un cambio sobre la novela terminada, la lectura del código dio tres huecos, y una prueba con un grafo mínimo confirmó el primero. **Uno:** a `RequestChange` no llegaba ninguna arista ni ninguna invocación. El gate de Regeneración lo abre la API como fila, no un `interrupt()`, y `decidir` reanudaba con `Command(resume=...)` un hilo que ya había terminado en `Idle`: LangGraph devolvía el estado sin ejecutar nada e `invocar` cerraba la fase como **completada**. Es muy probablemente el síntoma de It-30, «terminó en `Idle` sin gastar un token», que allí se atribuyó a la resolución de la fila. **Dos:** si hubiera entrado, `Checkpoint` sumaba uno y `WriteChapter` reescribía todo lo posterior, la cascada que §4 descarta; `a_regenerar` y `regenerando` no los leía nadie. **Tres:** ningún código pasaba los validadores de coste cero a los `invalidado` ni los devolvía a `aprobado`, así que `publicar` los habría rechazado.
+
+**Qué se hizo.** §9 de la [spec de escritura](../specs/escritura/spec.md), con REQ-ES-08 a REQ-ES-12 y los ítems ES-09 a ES-12. `decidir` sobre un gate de Regeneración llama a `regenerar`, que escribe `pc = RequestChange` en el checkpoint como salida de `Idle` —el mismo truco que `reintentar`— y `Idle` gana un router, `tras_idle`. `Checkpoint`, en regeneración, saca el siguiente de `a_regenerar` y, con la cola vacía, pasa `revisar_invalidados`: determinista y cronología sobre las filas ya escritas; los que pasan vuelven a `aprobado` y los que fallan entran en la cola. Sin nada que regenerar no se entra en el grafo: sin fila ni valor no se toca nada, con una fila que nadie usa se aplica sin versión nueva, y rehacer o editar descartan la petición.
+
+**Lo que destapó la prueba.** Un hecho del corpus no se puede cambiar en una novela publicada: el sello hace `mundo_hecho` de solo lectura por *trigger*, y `RequestChange` reventaba. `/ediciones` ya lo rechazaba; `regenerar` ahora también, con una nota. Contradice a §8 de la arquitectura, que dice «el corpus se re-sella», y queda abierto.
+
+**Lo que no se hizo.** El modelo TLA+ sigue con la guarda `~regenerando` en `Checkpoint → WriteChapter` y con un solo capítulo invalidado por petición. El conjunto de aristas no cambia y la prueba de identidad pasa, pero la guarda del código ya no es la del modelo, y **TLC no se ha vuelto a pasar**: esta máquina no tiene JVM. Siguen abiertos también el «rehacer» del gate de Writing, que vuelve a `WriteChapter` con `capitulo = N + 1`, y `/ediciones`, que cambia la fila sin propagar.
+
+**Efecto medido.** Seis pruebas nuevas en [`test_regeneracion.py`](../backend/tests/integracion/test_regeneracion.py): cambiar el nombre de un personaje que sale en el capítulo 1 publica una versión 2 con el 1 regenerado y el 2 reutilizado —el escritor se llama una vez— y la versión 1 intacta; con un evento imposible sembrado en el 2, Lean lo tumba y se reescribe también, y su versión vieja se queda `invalidado`; los tres caminos sin grafo no escriben versión. Pasan 1041 de la suite; fallan las siete de `test_matrices.py` porque `trace-matrix.md` de la raíz ya no está en el árbol.
+
 ## 2026-09-24 · La firmeza de los hechos
 
 ### It-33 · Un verificador menos estricto con lo que el fragmento calla

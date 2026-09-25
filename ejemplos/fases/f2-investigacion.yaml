@@ -1,0 +1,61 @@
+# FASE 2 · Investigation
+#
+# Se queda parada en: el gate de Investigation, con el corpus histórico delante.
+#
+# El brief está completo y el gate de Intake se aprueba. El investigador —el único rol con
+# red, y que recibe solo el período y el lugar, nunca los datos personales— busca en
+# internet la Barcelona del Plan Cerdà; el verificador comprueba si cada cita sostiene su
+# hecho, y el gate enseña el corpus con su respaldo antes de sellarlo.
+#
+# Qué se enseña en la presentación: la pantalla del gate de Investigation, con los hechos,
+# sus fuentes y su respaldo; y que el Autor puede descartar un hecho antes de aprobar.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/fases/f2-investigacion.yaml --nombre fase-2-investigacion
+#   uv run storymaker decidir fase-2-investigacion aprobar     # aprueba el Intake
+
+fase:
+  se_detiene_en: gate de Investigation
+  gates_aprobados: [intake]
+  se_ve: el corpus con fuentes, citas y respaldo del verificador
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Marta Esteve Puig
+    fecha_nacimiento: 1985-11-30
+    rol_epoca: delineante en el equipo de Ildefons Cerdà
+    ocasion: cuarenta cumpleaños
+    elementos_personalizacion:
+      - texto: dibuja planos de ciudades imaginarias en los márgenes de las libretas
+        obligatorio: true
+      - texto: le obsesionan los chaflanes del Eixample
+        obligatorio: true
+  mundo:
+    periodo:
+      inicio: 1859
+      fin: 1860
+      denominacion: Plan Cerdà y derribo de las murallas
+    lugar: Barcelona
+    evento_ancla: la aprobación del Plan Cerdà en 1860
+    personajes_historicos:
+      aparecen:
+        - Ildefons Cerdà
+      se_evitan:
+        - Isabel II
+  obra:
+    genero:
+      principal: histórica
+      subgenero: de oficio
+    tono: optimista y enérgico
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: moderado
+    arcaismo: minimo
+    contenido_admisible: apto para todos los públicos
+    palabras_prohibidas:
+      novela:
+        - cólera
+      destinatario:
+        - desahucio
+    n_capitulos: 10
+    palabras_por_capitulo: 1200

@@ -1,0 +1,83 @@
+# EVAL 07 · ADVERSARIAL · incoherencia temporal provocada
+#
+# Ocasión: las bodas de plata de Carmen. Uno de los elementos obligatorios pide algo
+# imposible: que el almirante Federico Gravina sea el padrino de su boda en la primavera
+# de 1808. Gravina murió en Cádiz el 9 de marzo de 1806, de las heridas de Trafalgar.
+#
+# Es el caso que el enunciado pide: una incoherencia que el validador formal detecta y los
+# demás no. Nada en el Intake lo ve —sus contradicciones son aritmética sobre el brief, y
+# no conocen la fecha de muerte de nadie—; `nombres_exactos`, `longitud_capitulo`,
+# `guardrail_prohibidas` y `anacronismo_fechado` tampoco, porque el nombre está bien
+# escrito y Gravina no es un objeto con fecha de invención. Solo el invariante I2 de Lean
+# (nadie aparece después de morir) cruza la fecha de la escena con la fecha vital del
+# corpus.
+#
+# Dónde puede saltar, del más barato al más caro:
+#   - Gate de Plotting: si la escaleta pone a Gravina en una escena de 1808 → aviso.
+#   - Pasada del extractor: si el capítulo lo narra → bloquea y vuelve al editor.
+#   - Publicación: si algo llegara hasta aquí → la versión no se publica.
+# Si el arquitecto, que tiene la fecha de muerte en el corpus, reinterpreta el elemento
+# (Gravina como recuerdo, la boda adelantada a 1805), Lean no tiene nada que detectar y se
+# anota como tal: el sistema esquivó la incoherencia antes de escribirla.
+#
+# Cinco capítulos: lo que se mide es la detección, no la extensión.
+#
+# Reproducir:
+#   cd backend
+#   uv run storymaker nueva ../ejemplos/evals/07-adversarial-temporal.yaml --nombre eval-07-temporal --batch
+
+espera:
+  termina: no publica en silencio una escena con Gravina vivo en 1808
+  validador_que_debe_saltar: lean_cronologia (I2, NadieDespuesDeMorir)
+  validadores_que_no_lo_ven:
+    - contradiccion_del_brief
+    - nombres_exactos
+    - longitud_capitulo
+    - guardrail_prohibidas
+    - anacronismo_fechado
+  notas: >
+    Tres desenlaces aceptables: aviso de Lean en Plotting y trama corregida; bloqueo en la
+    pasada del extractor con el editor corrigiéndolo; o capítulo en Fail sin versión
+    publicada. El único inaceptable es una versión publicada con Gravina vivo en 1808.
+
+brief:
+  homenajeado:
+    nombre_homenajeado: Carmen Olano Beristain
+    fecha_nacimiento: 1975-04-18
+    rol_epoca: hija de un consignatario de buques del puerto
+    ocasion: bodas de plata
+    elementos_personalizacion:
+      - texto: en su boda, celebrada en Cádiz en la primavera de 1808, el almirante Federico Gravina fue su padrino y bailó con la novia
+        obligatorio: true
+      - texto: vio zarpar la escuadra hacia Trafalgar desde la muralla de la Caleta
+        obligatorio: true
+
+  mundo:
+    periodo:
+      inicio: 1805
+      fin: 1808
+      denominacion: Guerras Napoleónicas
+    lugar: Cádiz
+    evento_ancla: la batalla de Trafalgar
+    personajes_historicos:
+      aparecen:
+        - Federico Gravina
+      se_evitan:
+        - Napoleón Bonaparte
+
+  obra:
+    genero:
+      principal: histórica
+      subgenero: romántica
+    tono: luminoso y nostálgico
+    punto_de_vista: tercera persona con focalización en la homenajeada
+    grado_licencia: estricto
+    arcaismo: moderado
+    contenido_admisible: sin violencia explícita
+    palabras_prohibidas:
+      novela:
+        - traidor
+      destinatario:
+        - convento
+    n_capitulos: 5
+    palabras_por_capitulo: 1000

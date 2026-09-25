@@ -1,0 +1,69 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "StoryMaker, al taller" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: StoryMaker
+    - navigation "Navegación principal" [ref=e7]:
+      - link "Taller" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=e10]:
+      - radio "Tema del sistema" [checked] [ref=e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=e13] [cursor=pointer]: ☾
+  - main [ref=e14]:
+    - article [ref=e869]:
+      - generic [ref=e870]:
+        - navigation [ref=e871]:
+          - link "Índice" [ref=e872] [cursor=pointer]:
+            - /url: /novelas/eval-01-jubilacion/v/1
+        - button "Ajustes de lectura" [ref=e874] [cursor=pointer]:
+          - generic [ref=e875]: A
+          - generic [ref=e876]: a
+      - heading "Capítulo 5. Sombras en el horizonte" [level=1] [ref=e877]
+      - article [ref=e878]:
+        - paragraph [ref=e879]: "A los cuarenta y dos años, Ramón Iriarte había dejado atrás la incertidumbre de los primeros viajes. Su fortuna se había multiplicado con cada regreso de sus barcos, cada carga bien especulada, cada comprobación de que la precisión en la lectura del agua se convertía en ventaja comercial. La Esperanza había sido el primero; verdad. Pero ahora su flota contaba tres navíos: la Rosa Dorada y la Santa Magdalena navegaban junto a la nave original, todos ellos amarrados en los muelles de Cádiz cuando no surcaban el Atlántico hacia las colonias de América, hacia las islas de comercio azucarero, hacia rutas que Ramón había trazado con la precisión de quien entiende que el agua responde solo a quienes saben preguntar."
+        - paragraph [ref=e880]: Andrés, su hijo mayor, ahora de diez años, corría por los muelles persiguiendo marineros, imitando los gestos de los capitanes, prometiendo a gritos que él también sería armador. Ramón lo veía desde el despacho ubicado sobre los almacenes de piedra, y una satisfacción profunda le llenaba el pecho. La dinastía comercial que su abuelo había iniciado, que él había transformado en prosperidad tangible, seguía su curso natural.
+        - paragraph [ref=e881]: Pero en octubre de ese año de 1803, algo cambió en el ritmo de la bahía.
+        - paragraph [ref=e882]: "Tomás entró al despacho sin tocar, lo que era inusual. El contador leal, discreto, quien había acompañado a Ramón durante todos sus viajes como observador silencioso, ahora traía una misiva de la Secretaría de Marina. Su expresión no era la de quien trae buenas noticias. Ramón reconoció ese gesto: era el mismo que los marineros hacían cuando el cielo nublado prometía tormenta."
+        - paragraph [ref=e883]: La carta refería que España había formalizado alianza con Francia en contra de Inglaterra, potencia naval que dominaba los océanos. La Armada necesitaba barcos mercantes para transporte de suministros, para operaciones de defensa, para enfrentar la amenaza que ya controlaba las rutas principales del Atlántico. Los armadores de Cádiz eran invitados a presentarse ante los oficiales navales para negociar requisas temporales de sus embarcaciones.
+        - paragraph [ref=e884]: Ramón leyó la carta dos veces. Tres. La tinta no cambiaba con cada lectura. Los hechos se imponían con la contundencia de una vela que se infla cuando el viento gira de manera inesperada.
+        - paragraph [ref=e885]: "\"¿Qué crees?\" preguntó Tomás, quien conocía a su patrón lo suficiente para saber que la pregunta no era intrusa sino necesaria."
+        - paragraph [ref=e886]: Ramón no respondió de inmediato. Se levantó del escritorio, anduvo hacia la ventana que miraba al puerto. Desde allí podía ver los muelles donde sus barcos descargaban mercancía valiosa, donde los marineros trabajaban bajo la luz de la tarde, donde la máquina del comercio seguía su rutina diaria, ajena aún al cambio que el papel acababa de anunciar. Los ingleses controlan el océano, pensó. Eso significa que las rutas hacia América se vuelven peligrosas. Eso significa que un barco mercante que se aleje de la costa podría ser capturado, confiscado, hundido. Eso significa que toda la riqueza que había acumulado en doce años de trabajo, de mapas bien trazados, de viajes correctamente calculados, podía evaporarse en una sola decisión de un capitán enemigo.
+        - paragraph [ref=e887]: "\"Continuaremos navegando,\" dijo al fin, sin apartar la vista del puerto. \"Pero ahora navegaremos en aguas políticas además de oceánicas. No es lo mismo, Tomás. No es lo mismo.\""
+        - paragraph [ref=e888]: Una semana después, en un salón ubicado en la casa de un comerciante prominente, fue convocada una asamblea informal de armadores. Allí, en medio de hombres cuyo rostro reflejaba la misma incertidumbre que Ramón sentía, llegó el Teniente General Federico Gravina.
+        - paragraph [ref=e889]: Gravina entró en uniforme de almirante. Su presencia transformó la atmósfera del salón como un cambio súbito en la dirección del viento. No era un hombre joven, pero su autoridad emanaba de cada movimiento, de la manera en que se colocó ante los reunidos sin ceremonial excesivo. Llevaba años de mando en sus hombros; la derrota potencial que Europa auguraba para España se reflejaba también en su rostro.
+        - paragraph [ref=e890]: "\"La Armada de Su Majestad requiere barcos,\" dijo sin preámbulo. \"Requiere capitanes que conozcan el océano, que sepan leer el agua como lee un marinero su propia sangre. La Inglaterra nos cierra el paso. Nuestro deber es responder. El deber de los hombres de negocios es auxiliar a la defensa de la corona.\""
+        - paragraph [ref=e891]: "Gravina explicó los planes con claridad marcial: barcos mercantes convertidos en transportes de suministros, algunos incluso armados para defensa. Rutas asignadas por la Armada, no por la lógica comercial. Riesgos compartidos entre el Estado y los propietarios. Compensación, pero compensación que no igualaba la ganancia de los viajes privados."
+        - paragraph [ref=e892]: Ramón escuchó mientras otros mercaderes murmuraban, mientras algunos protegían verbalmente sus intereses, mientras la tensión entre patriotismo y preservación del capital económico se hacía evidente en cada pregunta formulada a Gravina.
+        - paragraph [ref=e893]: "Cuando se abrió la palabra a los presentes, Ramón se puso de pie. El acto fue casi involuntario, como si su cuerpo respondiera a una orden que su mente aún no había formulado completamente. Era la misma fuerza que lo había movido a los once años cuando su abuelo lo ordenó tirar de la cuerda en medio de la tormenta: obediencia más profunda que la voluntad consciente."
+        - paragraph [ref=e894]: "\"Mi Teniente General,\" dijo, la voz clara en el silencio del salón. \"Pongo a disposición de la Armada mis tres navíos, si el servicio lo requiere. No pido plazo ni deliberación. Están listos.\""
+        - paragraph [ref=e895]: El silencio que siguió fue profundo. Gravina levantó la vista de sus papeles y miró a Ramón directamente. En esos ojos había sorpresa, reconocimiento, algo que se parecía al respeto que un marinero ofrece a quien ha demostrado coraje en la tormenta. Ramón comprendió en ese instante que había dicho exactamente lo que la Armada necesitaba escuchar, no como transacción sino como compromiso.
+        - paragraph [ref=e896]: "\"¿Su nombre?\" preguntó Gravina."
+        - paragraph [ref=e897]: "\"Ramón Iriarte Sologaray, armador de Cádiz.\""
+        - paragraph [ref=e898]: "Gravina asintió lentamente. Luego, uno a uno, otros mercaderes comenzaron a ofrecerse. Pero el gesto de Ramón había establecido el tono de la asamblea: la lealtad no era negociable, aunque la riqueza sí lo fuera."
+        - paragraph [ref=e899]: Cuando regresó a casa esa noche, María lo esperaba en la sala. Su rostro reflejaba la preocupación de quien ha pasado horas esperando noticias que sospecha serán difíciles. Ella ya conocía el contenido de la carta de Marina. En Cádiz, las nuevas viajaban más rápido que los barcos.
+        - paragraph [ref=e900]: "\"¿Has vuelto loco?\" preguntó sin preámbulo, su voz práctica pero temblando. \"¿Ofrecer tus barcos así? ¿Sin hablar conmigo primero? ¿Sin pensar en Andrés? ¿Sin pensar en lo que una guerra significa para las mujeres que quedan atrás?\""
+        - paragraph [ref=e901]: Ramón la miró. María, hermana de navegantes, hija de comerciantes, había comprendido inmediatamente las implicaciones. Su miedo no era el de una mujer ignorante sino el de una mujer que sabía exactamente qué significaba perder un hombre al océano.
+        - paragraph [ref=e902]: "\"Tenía que hacerlo,\" respondió. \"Es el precio de vivir en Cádiz. Es el precio de ser un hombre de negocios en tiempos de transformación. Si no oferezco ahora, más tarde me quitarán sin compensación. Esto es negociación, María. Es estrategia comercial aplicada a la política.\""
+        - paragraph [ref=e903]: "\"¿Volverás?\" preguntó ella. La pregunta era directa, desnuda de rodeos, angustiosamente simple."
+        - paragraph [ref=e904]: "\"Los barcos van. Yo me quedo,\" dijo Ramón. \"Seré soldado del comercio, no de la batalla. Alguien debe mantener los registros, debe coordinar los suministros, debe asegurar que cuando los barcos regresen, haya estructura donde reapoderarse del negocio. Mi vida vale más en tierra que en el agua ahora, María. Te lo prometo.\""
+        - paragraph [ref=e905]: María cerró los ojos. Luego se acercó a él, y Ramón la sostuvo. Ella apoyó su cabeza contra su pecho, donde el corazón seguía latiendo con su ritmo constante, ese sonido que era prueba de vida, de permanencia, de promesa cumplida en el presente, aunque el futuro fuera incierto.
+        - paragraph [ref=e906]: Ambos escucharon ese latido en el silencio de la sala, mientras fuera el puerto continuaba su labor nocturna, indiferente a las decisiones que los hombres tomaban en despachos y salones, continuando su respuesta eterna a las mareas que giraban bajo las estrellas.
+      - navigation "Navegación entre capítulos" [ref=e907]:
+        - link "← Capítulo anterior" [ref=e909] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/4
+        - link "Índice" [ref=e910] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1
+        - link "Capítulo siguiente →" [ref=e912] [cursor=pointer]:
+          - /url: /novelas/eval-01-jubilacion/v/1/capitulos/6
+      - generic [ref=e913]:
+        - heading "Pedir un cambio" [level=2] [ref=e914]
+        - generic [ref=e915]:
+          - paragraph [ref=e916]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=e917]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=e918]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=e919]

@@ -1,0 +1,133 @@
+{
+  "referencia": "enunciado.md (raiz del repo; docs/enunciado.md no existe)",
+  "preferencia_informe": "El Autor pidió retirar de GAP-REPORT.md los bloques cerrados por él (cerrado_por_autor). Al cerrar un bloque, se elimina su sección; la cabecera final solo resume los abiertos.",
+  "auditoria_completa": true,
+  "cabecera_final": "2026-09-25: resumen global, bloqueantes, Top 10, tareas humanas y riesgos escritos en GAP-REPORT.md",
+  "bloques": [
+    {
+      "n": 1,
+      "nombre": "Configuración y entrevistador",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Brief con schema Pydantic, 4 contradicciones por código, cuarentena del texto libre con tests; faltan campos explícitos de rasgos/edad y ningún brief de ejemplo usa texto_libre.",
+      "cerrado_por_autor": true,
+      "nota": "El Autor da el bloque por finalizado; los 2 🟡 se mantienen sin cambios de evidencia."
+    },
+    {
+      "n": 2,
+      "nombre": "Lectura interactiva",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Web React con índice, fichas enlazadas, petición de cambio, regeneración por uso_hecho y versiones inmutables; dedicatoria de plantilla y novedades al final del PDF; tests de frontend no ejecutados (sin node).",
+      "cerrado_por_autor": true,
+      "nota": "El Autor da el bloque por finalizado; los 2 🟡 se mantienen sin cambios de evidencia."
+    },
+    {
+      "n": 3,
+      "nombre": "Harness",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "11 perfiles (arquitecto/escritor/editor/juez), skill continuity-check, hooks Pre/PostToolUse con tests, tools Pydantic, retries acotados; CLAUDE.md es solo '@AGENTS.md'; policy hook y tools sin versionar; falla test_identidad_nodos (aristas TLA+ vs grafo).",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor. Al cerrar: test_identidad_nodos ya pasa; CLAUDE.md sigue 🟡; hook de policy y tools siguen sin versionar (riesgo de entrega)."
+    },
+    {
+      "n": 4,
+      "nombre": "Memoria",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Story bible SQLite STRICT, uso_hecho/intake_uso_dato, cronologia_evento+participante, resúmenes con vec_resumen, AsyncSqliteSaver y reintentar con test; 8 fallos transitorios en extremo_a_extremo que luego pasaron.",
+      "cerrado_por_autor": true,
+      "nota": "El Autor da el bloque por finalizado; sin 🟡 ni ❌."
+    },
+    {
+      "n": 5,
+      "nombre": "Validadores programáticos",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "11 validadores registrados con nombre y punto; 10 puntúan (falta schema_guard); render_visual con Playwright programático, no agente+MCP; 4 tests fallan por cambio en curso de render.py/rúbrica.",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor y retirado del informe. Al cerrar: test_publicacion ya pasa; schema_guard sigue sin score; validación visual sigue siendo Playwright programático."
+    },
+    {
+      "n": 6,
+      "nombre": "Validadores semánticos",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Juez con 8 criterios y justificación; score juez_rubrica con objeto_id=1 fijo; revisión humana con CLI pero 0 actas y sin comparación; publication/ sin commitear y 1 test roto (7 vs 8 criterios)."
+    },
+    {
+      "n": 7,
+      "nombre": "Lean 4",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "lake build OK y verificar.exe detecta I1/I4; generador desde SQLite y 4 invariantes; el arnés cae a Python si lake no está en PATH (aquí no lo está); caso 'solo Lean' es ejemplo escrito a mano, no real; cronologia.py sin versionar.",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor; los 2 🟡 siguen igual."
+    },
+    {
+      "n": 8,
+      "nombre": "TLA+",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "TLC ejecutado: harness.cfg 12.650 y batch 4.425 estados distintos sin errores; 5 invariantes + PreviousVersionPreserved + Termina; 3 contraejemplos documentados; tabla del README desfasada (faltan Caida/Reintentar/…, Branch apunta a módulo inexistente); spec sin commitear.",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor; el 🟡 sigue igual y harness_batch.cfg está sin versionar."
+    },
+    {
+      "n": 9,
+      "nombre": "Evals",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Revisado: 7 briefs nuevos en ejemplos/evals (5 básicos + injection + temporal) sin versionar y sin ejecutar; sin tabla ni tuning; storymaker evaluar apunta a evals/briefs. Bloqueante."
+    },
+    {
+      "n": 10,
+      "nombre": "Observabilidad Langfuse",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Sesión por novela, traza por generación, generation+tool por invocación, span capitulo_NN, scores en SQLite+traza y prompts con get_prompt/subir; 32 tests OK; sin evidencia real tras It-37 ni coste de novela completa (solo 2 caps, 1,0058 $).",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor y retirado del informe. Al cerrar: It-39 publica prueba-langfuse (2 capítulos) con 1,7172 $ que coincide con Langfuse; sigue sin novela completa de 10 capítulos ni tuning de prompts."
+    },
+    {
+      "n": 11,
+      "nombre": "Guardrails",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "canon_prohibida con 3 niveles y normalizado, raíz para derivadas, Repair→Fail con límite, audit_log y score, tests por nivel y variante, 100k por construcción con techos; 39 tests OK.",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor y retirado del informe; sin 🟡 ni ❌."
+    },
+    {
+      "n": 12,
+      "nombre": "Repo y entregables",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "README reproducible, .env.example vacío, historial sin secretos; faltan novela-ejemplo.pdf, deck PDF+editable, anexos, README de presentacion, vídeo y evidencias; presentacion/ sin versionar."
+    },
+    {
+      "n": 13,
+      "nombre": "/docs",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Spec previa al código, 70 trade-offs, 8 explainers, 4 diagramas, 37 iteraciones; falta uso real del browser MCP (DOC-07), red-team sin ejecuciones, docs desfasados (continuity-check, trece skills, Playwright MCP en §16)."
+    },
+    {
+      "n": 14,
+      "nombre": "Claude Code",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": ".claude/ con settings y 17 skills (inspeccion-visual nueva sin versionar); sin memoria ni commands; .mcp.json con Playwright pero sin node no arranca."
+    },
+    {
+      "n": 15,
+      "nombre": "Opcionales",
+      "estado": "hecho",
+      "fecha": "2026-09-25",
+      "resumen": "Sin servidor MCP, login, TLA+ extra ni security-report; linters de repetición y auto-similitud, continuity-check para edición manual, 4 invariantes Lean sin theorems.",
+      "cerrado_por_autor": true,
+      "nota": "Cerrado por el Autor el 2026-09-25 y retirado del informe: no se implementa ningún opcional."
+    }
+  ]
+}

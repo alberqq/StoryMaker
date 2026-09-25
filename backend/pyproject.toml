@@ -12,7 +12,7 @@ dependencies = [
     "pydantic-settings>=2.6",
     "aiosqlite>=0.20",
     "sqlite-vec>=0.1.6",
-    "langfuse>=2.53",
+    "langfuse>=4.0",
     "httpx>=0.27",
     "typer>=0.15",
     # Los briefs del comprador y los cinco de evaluacion se escriben en YAML porque los
@@ -52,10 +52,10 @@ dev = [
     "mypy>=1.13",
     "ruff>=0.7",
 ]
-# Herramientas que corren en CI sobre Linux y no en el portatil del Autor, por dos motivos
+# Herramientas de G1 y G2 que no corren en el portatil del Autor con Windows, por dos motivos
 # distintos: Semgrep no publica rueda para Windows, y `mutmut` se niega a correr ahi y remite
 # a WSL. `crosshair` si funciona en local, y conviene, porque es la que encuentra bordes que
-# nadie escribe a mano; se deja en este grupo para que la nocturna instale una sola cosa.
+# nadie escribe a mano; se deja en este grupo para que G2 instale una sola cosa.
 ci = [
     "semgrep>=1.95",
     "pip-audit>=2.7",

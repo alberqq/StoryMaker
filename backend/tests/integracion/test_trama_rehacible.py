@@ -217,6 +217,33 @@ class TestHuecosAnclados:
             "invencion_autorizada",
         )
 
+    async def test_lo_inventado_sobre_un_historico_deja_aviso_en_el_gate(
+        self, tmp_path: Path, ajustes: Settings
+    ) -> None:
+        """El hueco se cubre después de la revisión, así que el aviso lo deja `FillGap`."""
+        ruta = tmp_path / "proyectos" / "biografia.db"
+        hueco = HuecoPropuesto(
+            pregunta="Quien inspeccionaba las escuelas",
+            escena="c1e1",
+            dimension=Dimension.ESTRUCTURA_SOCIAL,
+            si_no_se_encuentra="Don Emeterio inspeccionaba las escuelas del valle cada otono.",
+        )
+        transporte = _hasta_el_gate_de_la_trama(guion.arquitectura(CAPITULOS, huecos=(hueco,)))
+        transporte.respuestas[Perfil.INVESTIGADOR_MICRO] = [
+            HuecoResuelto(encontrado=False, motivo="no aparece en las fuentes")
+        ]
+        await _llegar(ruta, ajustes, transporte)
+
+        async with abrir_novela(ruta) as db:
+            async with db.execute(
+                "SELECT severidad, mensaje FROM incidencia "
+                "WHERE validador = 'invencion_sobre_historico'"
+            ) as cursor:
+                filas = [tuple(f) for f in await cursor.fetchall()]
+        assert len(filas) == 1
+        assert filas[0][0] == "aviso"
+        assert "Don Emeterio" in filas[0][1]
+
 
 class TestRevisionGuardada:
     async def test_la_revision_se_guarda_y_llega_al_arquitecto_al_rehacer(

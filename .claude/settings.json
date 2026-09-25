@@ -1,12 +1,23 @@
 {
   "hooks": {
-    "PostToolUse": [
+    "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "cd backend && uv run python -m storymaker.commons.validation.cli_hook \"$CLAUDE_FILE_PATH\""
+            "command": "cd \"$CLAUDE_PROJECT_DIR/backend\" && uv run --quiet python -m storymaker.commons.validation.cli_policy"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR/backend\" && uv run --quiet python -m storymaker.commons.validation.cli_hook"
           }
         ]
       }

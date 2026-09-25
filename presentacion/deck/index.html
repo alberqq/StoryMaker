@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Novela Relicario · Qapítulo</title>
+<link rel="stylesheet" href="../anexos/marca.css">
+<link rel="stylesheet" href="deck.css">
+<style>
+  /* ---- 01 · Portada y 22 · Contraportada ---- */
+  .cubierta { position: absolute; left: 150px; top: 64px; width: 540px; height: 592px; border: 1px solid var(--oro); }
+  .cubierta .filete { position: absolute; left: 12px; top: 12px; right: 12px; bottom: 12px; border: 1px solid var(--oro); }
+  .cubierta .dentro { position: absolute; left: 56px; right: 56px; top: 64px; }
+  .logo-grande { display: flex; align-items: center; gap: 16px; }
+  .logo-grande .svgq { width: 58px; height: 64px; }
+  .logo-grande .svgq svg { width: 58px; height: 64px; display: block; }
+  .logo-grande .wm { font-family: var(--serif); font-weight: 600; font-size: 42px; line-height: 48px; color: var(--pergamino); }
+  .ini-grande { font-size: 15px; line-height: 20px; color: var(--perg-60); margin: 8px 0 0 74px; }
+  .portada-titulo { font-family: var(--serif); font-weight: 600; font-size: 56px; line-height: 62px; color: var(--pergamino); margin: 58px 0 14px 0; }
+  .portada-sub { font-size: 22px; line-height: 30px; color: var(--oro); }
+  .filete-corto { width: 72px; height: 0; border-top: 1.5px solid var(--oro); margin: 34px 0 26px 0; }
+  .portada-datos { font-size: 17px; line-height: 27px; color: var(--perg-80); }
+  .para-cliente { position: absolute; left: 790px; top: 262px; width: 360px; display: flex; align-items: center; gap: 22px; }
+  .para-cliente .svgr { width: 62px; height: 80px; }
+  .para-cliente .svgr svg { width: 62px; height: 80px; display: block; }
+  .para-cliente .pp { font-size: 15px; line-height: 20px; color: var(--perg-60); }
+  .para-cliente .rel { font-family: var(--serif); font-weight: 600; font-size: 34px; line-height: 40px; color: var(--pergamino); }
+  .para-cliente .reldesc { font-size: 15px; line-height: 20px; color: var(--perg-60); margin-top: 4px; }
+  .contra .dentro { top: 120px; text-align: center; left: 40px; right: 40px; }
+  .contra .logo-grande { justify-content: center; }
+  .lema { font-family: var(--serif); font-weight: 500; font-style: italic; font-size: 30px; line-height: 38px; color: var(--oro); margin: 34px 0 0 0; }
+  .contra .filete-corto { margin: 34px auto 28px auto; }
+  .contacto { font-size: 17px; line-height: 28px; color: var(--perg-80); }
+  .contacto .mono { color: var(--pergamino); font-size: 16px; }
+  .gracias { position: absolute; left: 790px; top: 520px; width: 380px; font-size: 16px; line-height: 23px; color: var(--perg-80); }
+
+  /* ---- 02 ---- */
+  .tres { position: absolute; left: 0; right: 0; top: 18px; height: 230px; }
+  .tres .t3 { position: absolute; top: 0; width: 322px; height: 230px; border: 1.5px solid var(--tinta); border-radius: 8px; padding: 20px 22px; background: #FBF8F1; }
+  .tres .t3 .n { font-family: var(--serif); font-weight: 600; font-size: 40px; line-height: 44px; color: var(--oro); margin-bottom: 10px; }
+  .tres .t3 .h2 { margin-bottom: 10px; }
+  .tres .t3 p { font-size: 17px; line-height: 24px; color: var(--tinta); }
+  .ejemplos { position: absolute; left: 0; right: 0; top: 290px; display: flex; gap: 28px; }
+  .ejemplos .ej { flex: 1 1 0; border-top: 1.5px solid var(--oro); padding-top: 12px; }
+  .ejemplos .anio { display: block; font-family: var(--mono); font-weight: 500; font-size: 16px; line-height: 20px; color: #9A7A2E; margin-bottom: 6px; }
+  .ejemplos .txt { display: block; font-family: var(--serif); font-weight: 500; font-style: italic; font-size: 21px; line-height: 28px; }
+  .ej-pie { position: absolute; left: 0; top: 410px; font-size: 15px; color: var(--piedra); }
+
+  /* ---- 03 ---- */
+  .persona { display: flex; gap: 16px; align-items: center; border: 1px solid var(--linea); background: #FBF8F1; border-radius: 8px; padding: 18px 18px; margin-bottom: 16px; }
+  .persona .ic { width: 40px; height: 40px; flex: 0 0 40px; }
+  .persona .ic svg { width: 40px; height: 40px; display: block; }
+  .persona p { margin: 0; font-size: 18px; line-height: 24px; }
+  .espera { display: flex; gap: 14px; align-items: baseline; margin-bottom: 22px; }
+  .espera .v { font-size: 24px; line-height: 26px; color: #9A7A2E; font-weight: 700; flex: 0 0 22px; }
+  .espera p { margin: 0; font-size: 20px; line-height: 27px; }
+
+  /* ---- 04 ---- */
+  table.alt td { padding: 11px 12px; font-size: 16px; }
+  table.alt td.alt-n { font-weight: 600; font-size: 17px; width: 250px; }
+  table.alt tr.nuestra td { background: var(--oro-t); border-bottom: 2px solid var(--oro); border-top: 2px solid var(--oro); }
+  table.alt .chip { font-size: 14px; }
+
+  /* ---- 05 ---- */
+  .flujo .paso { position: absolute; top: 0; height: 92px; border: 2px solid var(--tinta); border-radius: 8px; padding: 10px 14px; background: #FBF8F1; }
+  .flujo .paso .quien { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--piedra); line-height: 16px; margin-bottom: 4px; }
+  .flujo .paso p { margin: 0; font-size: 16px; line-height: 21px; }
+  .flujo .paso.dest { border-color: var(--oro); background: var(--oro-t); }
+  .mini4 { position: absolute; left: 0; top: 140px; width: 700px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mini4 .m { border: 1px solid var(--linea); background: #FBF8F1; border-radius: 8px; padding: 12px 14px; }
+  .mini4 .m .h { font-weight: 600; font-size: 16px; line-height: 20px; margin-bottom: 4px; }
+  .mini4 .m p { margin: 0; font-size: 15px; line-height: 20px; color: var(--tinta); }
+  .yaml { position: absolute; right: 0; top: 140px; width: 424px; }
+  .yaml pre.codigo { font-size: 14px; line-height: 20px; }
+
+  /* ---- 06 ---- */
+  .tile { position: absolute; top: 0; width: 272px; }
+  .tile .marco-img { position: relative; width: 272px; height: 262px; }
+  .tile .barra { position: absolute; left: 0; right: 0; top: 0; height: 18px; background: var(--tinta-t); border-bottom: 1px solid var(--linea); }
+  .tile .barra .pto { position: absolute; top: 6px; width: 7px; height: 7px; border-radius: 4px; background: var(--piedra); }
+  .tile .marco-img img { left: 0; top: 18px; width: 272px; height: 244px; object-fit: cover; object-position: 50% 0%; }
+  .tile.pdf .marco-img img { top: 0; height: 262px; object-position: 50% 30%; }
+  .tile.cambio .marco-img img { top: 70px; height: 94px; object-fit: fill; }
+  .tile .pdf-et { position: absolute; right: 8px; top: 8px; }
+  .tile .leyenda { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; }
+  .tile .leyenda p { margin: 0; font-size: 16px; line-height: 21px; }
+
+  /* ---- 07 ---- */
+  .fase { position: absolute; top: 58px; width: 172px; height: 196px; border: 2px solid var(--tinta); border-radius: 8px; background: #FBF8F1; padding: 12px 14px; }
+  .fase .fn { font-family: var(--mono); font-weight: 700; font-size: 13px; line-height: 16px; color: #9A7A2E; }
+  .fase .ft { font-family: var(--serif); font-weight: 600; font-size: 20px; line-height: 24px; margin: 4px 0 8px 0; }
+  .fase p { margin: 0 0 4px 0; font-size: 15px; line-height: 20px; }
+  .fase.sin { border-style: dashed; }
+  .gate-ic { position: absolute; top: 0; width: 172px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; line-height: 16px; font-weight: 600; color: #8A6D28; }
+  .gate-ic svg { width: 26px; height: 26px; display: block; }
+  .gate-ic .sv { width: 26px; height: 26px; }
+  .chips3 { position: absolute; left: 0; right: 0; top: 290px; display: flex; gap: 16px; }
+  .chips3 .chip { font-size: 16px; line-height: 20px; padding: 8px 14px; }
+
+  /* ---- 08 ---- */
+  .n8 { position: absolute; border: 2px solid var(--tinta); border-radius: 22px; background: #FBF8F1; padding: 8px 14px; text-align: center; }
+  .n8 .nm { font-family: var(--mono); font-weight: 500; font-size: 15px; line-height: 19px; white-space: nowrap; }
+  .n8 .ns { font-size: 12.5px; line-height: 16px; color: var(--piedra); white-space: nowrap; }
+  .n8.lacre { border-color: var(--lacre); background: var(--lacre-t); }
+  .n8.fail { border: 2px dashed var(--lacre); background: transparent; }
+  .n8.fail .nm { color: var(--lacre); }
+  .et8 { position: absolute; font-size: 13px; line-height: 17px; color: var(--tinta); }
+  .et8.lacre { color: var(--lacre); }
+  .afirm { position: absolute; left: 790px; right: 0; top: 30px; }
+  .afirm .a { display: flex; gap: 14px; margin-bottom: 26px; }
+  .afirm .a .ic { width: 34px; height: 34px; flex: 0 0 34px; }
+  .afirm .a .ic svg { width: 34px; height: 34px; display: block; }
+  .afirm .a p { margin: 0; font-size: 18px; line-height: 25px; }
+
+  /* ---- 09 ---- */
+  .lomo { position: absolute; left: 0; top: 0; width: 86px; height: 420px; border: 2px solid var(--tinta); border-radius: 6px; overflow: hidden; }
+  .lomo .sg { position: absolute; left: 0; right: 0; border-bottom: 1px solid var(--pergamino); }
+  .bloq { position: absolute; left: 104px; width: 470px; display: flex; align-items: center; gap: 10px; font-size: 15px; line-height: 18px; }
+  .bloq .bn { font-family: var(--mono); font-weight: 700; color: #9A7A2E; width: 14px; }
+  .bloq .bt { flex: 1 1 auto; }
+  .bloq .bk { font-family: var(--mono); font-weight: 500; }
+  .caja9 { position: absolute; width: 268px; border: 1.5px solid var(--tinta); border-radius: 8px; background: #FBF8F1; padding: 9px 12px; }
+  .caja9 .tn { font-family: var(--mono); font-weight: 500; font-size: 14px; line-height: 18px; }
+  .caja9 p { margin: 2px 0 0 0; font-size: 13.5px; line-height: 18px; color: var(--piedra); }
+  .caja9.oro { border-color: var(--oro); background: var(--oro-t); }
+
+  /* ---- 10 ---- */
+  .dec { position: absolute; top: 0; width: 360px; }
+  .dec .dn { font-family: var(--serif); font-weight: 600; font-size: 64px; line-height: 66px; color: var(--oro); }
+  .dec .dt { font-family: var(--serif); font-weight: 600; font-size: 25px; line-height: 30px; margin: 6px 0 10px 0; }
+  .dec p { margin: 0; font-size: 17px; line-height: 24px; }
+  .chips5 { position: absolute; left: 0; right: 0; top: 300px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .chips5 .chip { font-size: 15px; line-height: 19px; padding: 7px 12px; font-weight: 500; }
+  .chips5 .chip code { font-size: 14px; }
+
+  /* ---- 11 ---- */
+  table.mat { width: 1152px; border-collapse: collapse; table-layout: fixed; }
+  table.mat td .v { font-size: 12.5px; }
+  table.mat th { background: var(--tinta); color: var(--pergamino); font-size: 14px; line-height: 17px; font-weight: 600; padding: 7px 8px; text-align: left; vertical-align: bottom; }
+  table.mat td { position: relative; border-bottom: 1px solid var(--linea); padding: 7px 8px 7px 24px; vertical-align: top; font-size: 13.5px; line-height: 17px; }
+  table.mat td.fam { font-weight: 600; font-size: 15px; line-height: 19px; width: 150px; background: var(--tinta-t); padding-left: 10px; }
+  table.mat td.fam span { display: block; font-weight: 400; font-size: 13px; color: var(--piedra); }
+  table.mat td .v { display: block; font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+  table.mat td .v.av { color: #8A6D28; }
+  table.mat td .pt { position: absolute; left: 7px; top: 10px; width: 11px; height: 11px; border-radius: 6px; background: var(--oro); }
+  table.mat th { padding-left: 24px; }
+  table.mat th:first-child { padding-left: 10px; }
+
+  /* ---- 12 ---- */
+  table.ev { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 17px; }
+  table.ev th { background: var(--tinta); color: var(--pergamino); font-weight: 600; font-size: 13px; line-height: 15px; padding: 6px 6px; text-align: center; vertical-align: bottom; }
+  table.ev th.izq { text-align: left; padding-left: 10px; }
+  table.ev th.num { text-align: right; }
+  table.ev td { border-bottom: 1px solid var(--linea); padding: 3px 6px; height: 31px; vertical-align: middle; }
+  table.ev td.nov { padding-left: 10px; white-space: nowrap; }
+  table.ev td.nov b { font-weight: 600; font-size: 14px; }
+  table.ev td.nov .oc { font-size: 12.5px; line-height: 15px; color: var(--piedra); }
+  table.ev td.c { text-align: center; }
+  table.ev td.num { text-align: right; font-family: var(--mono); font-weight: 500; white-space: nowrap; font-size: 13.5px; }
+  table.ev tr.ref td { background: #EFE9DC; }
+  table.ev tr.curso td.nota-curso { color: var(--piedra); font-size: 13.5px; }
+  table.ev .chip { font-size: 12.5px; line-height: 14px; padding: 2px 6px; gap: 3px; border-width: 1.2px; }
+  .ev-lado { position: absolute; }
+  table.ev tr.fallo td { background: var(--lacre-t); }
+  .ley12 { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .ley12 .chip { font-size: 12px; line-height: 14px; padding: 1px 5px; border-width: 1.2px; }
+  .ley12 .lt, .lt2 { font-size: 12.5px; line-height: 16px; color: var(--piedra); }
+  table.ev tr.alerta td { height: auto; padding: 1px 10px 4px 10px; font-size: 12.5px; line-height: 15px; font-weight: 600; color: #8A6D28; background: #F2EAD6; }
+  table.ev tr.alerta.fallo td { color: var(--lacre); background: var(--lacre-t); }
+
+  /* ---- 13 ---- */
+  .ad { position: absolute; top: 0; width: 520px; }
+  .ad .lista li { font-size: 17px; line-height: 23px; margin-bottom: 10px; }
+  .ad.antes .lista li .m { color: var(--lacre); }
+  .ad.despues .lista li .m { color: var(--salvia); }
+  .flecha13 { position: absolute; left: 540px; top: 60px; width: 72px; height: 60px; }
+  .barras13 { position: absolute; left: 0; right: 0; top: 262px; }
+  .barra-fila { display: flex; align-items: center; gap: 14px; margin-bottom: 9px; }
+  .barra-fila .be { width: 150px; font-weight: 600; font-size: 16px; line-height: 20px; }
+  .barra-fila .bc { width: 170px; font-size: 15px; line-height: 20px; color: var(--piedra); }
+  .barra-fila .bpista { position: relative; width: 600px; height: 22px; background: var(--tinta-t); border-radius: 4px; }
+  .barra-fila .bb { position: absolute; left: 0; top: 0; height: 22px; border-radius: 4px; }
+  .barra-fila .bv { font-family: var(--mono); font-weight: 700; font-size: 18px; line-height: 20px; }
+
+  /* ---- 14 ---- */
+  .veredicto { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 16px; line-height: 21px; }
+  .veredicto .chip { width: 76px; text-align: center; }
+
+  /* ---- 15 ---- */
+  .props li { display: flex; gap: 10px; align-items: baseline; margin-bottom: 9px; font-size: 15.5px; line-height: 20px; }
+  .props li .chip { font-size: 13px; padding: 2px 6px; }
+  .props li code { font-size: 15px; font-weight: 700; }
+  .cifras15 { display: flex; gap: 26px; margin-top: 12px; }
+  .cifras15 .cg { font-family: var(--serif); font-weight: 600; font-size: 40px; line-height: 44px; color: #9A7A2E; }
+  .cifras15 .cl { font-size: 14px; line-height: 18px; color: var(--piedra); }
+  .ficha { border: 1.5px solid var(--lacre); border-radius: 8px; padding: 11px 14px; margin-bottom: 12px; background: #FBF8F1; }
+  .ficha .fh { font-size: 13px; line-height: 16px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--lacre); margin-bottom: 4px; }
+  .ficha p { margin: 0; font-size: 15.5px; line-height: 21px; }
+
+  /* ---- 16 ---- */
+  .etiquetas16 { position: absolute; left: 800px; right: 0; top: 0; }
+  .etiquetas16 .e16 { display: flex; gap: 12px; margin-bottom: 14px; }
+  .etiquetas16 .e16 p { margin: 0; font-size: 16px; line-height: 21px; }
+  .apilada { display: flex; height: 26px; border-radius: 5px; overflow: hidden; }
+  .apilada .seg { display: block; height: 26px; }
+  .leyenda { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 10px; font-size: 15px; line-height: 19px; }
+  .leyenda .ley { display: inline-flex; align-items: center; gap: 7px; }
+  .leyenda .sw { display: inline-block; width: 13px; height: 13px; border-radius: 3px; }
+  .leyenda b { font-family: var(--mono); font-weight: 500; }
+
+  /* ---- 17 ---- */
+  .paso17 { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+  .paso17 .cita { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 19px; line-height: 26px; }
+  .paso17 .cita .sub { text-decoration: underline; text-decoration-color: var(--lacre); text-decoration-thickness: 2px; color: var(--lacre); }
+  .paso17 p { margin: 0; font-size: 16px; line-height: 21px; }
+  .r17 { border: 1px solid var(--linea); background: #FBF8F1; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .r17 .h { font-weight: 600; font-size: 16px; line-height: 20px; margin-bottom: 4px; }
+  .r17 p { margin: 0; font-size: 15px; line-height: 20px; }
+
+  /* ---- 18 ---- */
+  table.cu td { font-size: 17px; line-height: 22px; padding: 10px 12px; }
+  table.cu td .sec { font-size: 15px; }
+  table.cu td.num { font-size: 18px; }
+  table.cu tr.total td { font-size: 19px; }
+  .precio { position: absolute; left: 720px; right: 0; top: 0; }
+  .precio .gl { font-size: 15px; line-height: 20px; color: var(--piedra); margin-top: 4px; }
+  .gran.xl { font-size: 72px; line-height: 76px; }
+
+  /* ---- 19 ---- */
+  table.pr td { font-size: 15px; line-height: 19px; padding: 6px 10px; }
+  table.pr td .sec { font-size: 14px; }
+  .escs { display: flex; gap: 18px; align-items: flex-end; height: 200px; position: relative; padding-left: 0; }
+  .esc { display: flex; flex-direction: column; align-items: center; width: 150px; }
+  .esc .ev { font-family: var(--mono); font-weight: 700; font-size: 16px; line-height: 20px; margin-bottom: 4px; }
+  .esc .eb { display: block; width: 76px; background: var(--salvia); border-radius: 4px 4px 0 0; }
+  .esc .en { font-size: 13.5px; line-height: 17px; margin-top: 6px; color: var(--tinta); }
+  .esc .ep { font-family: var(--mono); font-weight: 500; font-size: 14px; line-height: 17px; color: var(--salvia); }
+  .tor-fila { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .tor-fila .tl { width: 300px; font-size: 15.5px; line-height: 20px; }
+  .tor-fila.base .tl { font-weight: 600; }
+  .tor-fila .tp { display: flex; width: 520px; height: 20px; }
+  .tor-fila .tb { display: block; height: 20px; }
+  .tor-fila .tv { font-family: var(--mono); font-weight: 500; font-size: 15px; line-height: 20px; white-space: nowrap; }
+  .tor-fila .td { font-weight: 700; }
+
+  /* ---- 20 ---- */
+  .pasos20 { position: absolute; left: 0; right: 0; top: 0; height: 124px; }
+  .p20 { position: absolute; top: 0; width: 212px; height: 124px; border: 1.5px solid #4A5366; border-radius: 8px; background: var(--tinta-2); padding: 10px 12px; }
+  .p20 .pn { font-family: var(--mono); font-weight: 700; font-size: 13px; line-height: 16px; color: var(--oro); }
+  .p20 p { margin: 4px 0 6px 0; font-size: 15px; line-height: 19px; color: var(--pergamino); }
+  .p20 .dato { font-family: var(--mono); font-weight: 500; font-size: 12.5px; line-height: 17px; color: var(--oro); }
+  .cap20 { position: absolute; border: 1.5px solid #4A5366; border-radius: 8px; overflow: hidden; background: #FAF7F0; }
+  .cap20 img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; object-position: 0% 0%; display: block; }
+  .cap20-et { position: absolute; font-size: 13px; line-height: 16px; color: var(--perg-60); }
+  table.mf { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 17px; }
+  table.mf th { font-size: 12.5px; line-height: 15px; font-weight: 600; color: var(--perg-60); text-align: left; padding: 3px 6px; border-bottom: 1px solid #4A5366; letter-spacing: 0.08em; text-transform: uppercase; }
+  table.mf th.c { text-align: center; }
+  table.mf td { padding: 4px 6px; border-bottom: 1px solid #3A4356; color: var(--pergamino); white-space: nowrap; }
+  table.mf td.c { text-align: center; }
+  table.mf td.mono { font-family: var(--mono); font-weight: 500; }
+  table.mf td.q { font-size: 13px; color: var(--perg-80); white-space: nowrap; }
+  table.mf .chip { font-family: var(--mono); font-weight: 500; font-size: 13px; line-height: 15px; padding: 2px 7px; }
+  .cifras20 { display: flex; gap: 30px; align-items: baseline; }
+  .cifras20 .cg { font-family: var(--serif); font-weight: 600; font-size: 44px; line-height: 48px; color: var(--oro); }
+  .cifras20 .cl { font-size: 14px; line-height: 18px; color: var(--perg-80); }
+  .apoyo20 { font-size: 14px; line-height: 19px; color: var(--perg-80); }
+  .apoyo20 b { color: var(--pergamino); }
+  .cuadros { display: flex; gap: 4px; margin-top: 6px; }
+  .cuadros span { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 22px; border-radius: 4px; font-family: var(--mono); font-weight: 700; font-size: 12px; line-height: 14px; }
+  .cuadros .nw { background: var(--lacre); color: var(--pergamino); }
+  .cuadros .rv { background: var(--salvia); color: var(--pergamino); }
+  .cuadros .it { background: #3A4356; color: var(--perg-80); }
+
+  /* ---- 21 ---- */
+  .rs { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+  .rs .ic { width: 26px; height: 26px; flex: 0 0 26px; }
+  .rs .ic svg { width: 26px; height: 26px; display: block; }
+  .rs p { margin: 0; font-size: 17px; line-height: 23px; }
+  .rs .nn { font-family: var(--serif); font-weight: 600; font-size: 28px; line-height: 26px; color: #9A7A2E; width: 26px; flex: 0 0 26px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 01 · PORTADA -->
+<section class="slide oscura" data-pie="no" data-notas="Guion: slide 1 (0:15).">
+  <div class="cubierta">
+    <div class="filete"></div>
+    <div class="dentro">
+      <div class="logo-grande"><div class="svgq" data-render="logoQ" data-bowl="#C9A34E" data-cinta="#F5EFE3"></div><div class="wm">{{empresa}}</div></div>
+      <div class="ini-grande">{{iniciativa}}</div>
+      <div class="portada-titulo">{{producto}}</div>
+      <div class="portada-sub">{{subtitulo}}</div>
+      <div class="filete-corto"></div>
+      <div class="portada-datos">{{ocasion}}<br>{{fecha}}<br>Presenta: {{estudiante}} · {{empresa}}</div>
+    </div>
+  </div>
+  <div class="para-cliente">
+    <div class="svgr" data-render="logoR" data-color="#C9A34E"></div>
+    <div>
+      <div class="pp">Preparado para</div>
+      <div class="rel">{{cliente}}</div>
+      <div class="reldesc">Regalos personalizados para bodas, aniversarios, jubilaciones y cumpleaños redondos</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 02 -->
+<section class="slide" data-notas="Guion: slide 2 (0:15).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo I</span><span class="sep"></span>El encargo</div>
+    <h1>Convertimos a la persona homenajeada en protagonista de un momento histórico real</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="tres">
+      <div class="t3" style="left:0"><div class="n">1</div><div class="h2">Lo que aporta el comprador</div><p>Nombre, época, recuerdos y palabras que no deben aparecer.</p></div>
+      <div class="t3" style="left:415px"><div class="n">2</div><div class="h2">Lo que hace el sistema</div><p>Investiga la época, escribe diez capítulos y verifica cada uno antes de seguir.</p></div>
+      <div class="t3" style="left:830px"><div class="n">3</div><div class="h2">Lo que recibe el homenajeado</div><p>Una novela en web y en PDF, con su dedicatoria.</p></div>
+      <svg class="diag" width="1152" height="230" viewBox="0 0 1152 230">
+        <g stroke="#C9A34E" stroke-width="2" fill="none"><path d="M334 115 H400"/><path d="M392 108 L401 115 L392 122"/><path d="M749 115 H815"/><path d="M807 108 L816 115 L807 122"/></g>
+      </svg>
+    </div>
+    <div class="ejemplos" data-render="ejemplos"></div>
+    <div class="ej-pie">{{ejemplos_pie}}</div>
+  </main>
+</section>
+
+<!-- ============================================================ 03 -->
+<section class="slide" data-notas="Guion: slide 3 (0:30).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo II</span><span class="sep"></span>El problema</div>
+    <h1>Relicario vende emoción, y el regalo personalizado de hoy se queda en la superficie</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="abs" style="left:0;top:0;width:540px">
+      <div class="etq">Quién compra</div>
+      <div class="persona"><div class="ic"><svg viewBox="0 0 40 40"><g fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"><circle cx="15" cy="13" r="6"/><path d="M4 34 C4 25 26 25 26 34"/><circle cx="29" cy="16" r="4.5"/><path d="M26 25 C31 24 37 27 37 33"/></g></svg></div><p>Hijos que buscan un regalo de jubilación para su padre o su madre</p></div>
+      <div class="persona"><div class="ic"><svg viewBox="0 0 40 40"><g fill="none" stroke="#1C2433" stroke-width="2"><circle cx="15" cy="22" r="9"/><circle cx="25" cy="22" r="9"/><path d="M22 8 L25 4 L28 8" stroke="#C9A34E"/></g></svg></div><p>Parejas en un aniversario o una boda</p></div>
+      <div class="persona"><div class="ic"><svg viewBox="0 0 40 40"><g fill="none" stroke="#1C2433" stroke-width="2" stroke-linejoin="round"><rect x="7" y="20" width="26" height="14" rx="2"/><path d="M7 26 C11 29 15 23 20 26 C25 29 29 23 33 26"/><path d="M14 20 V14 M20 20 V12 M26 20 V14"/><path d="M20 7 C18.5 9 18.5 10 20 11 C21.5 10 21.5 9 20 7 Z" stroke="#C9A34E"/></g></svg></div><p>Amigos y familia en un cumpleaños redondo: 50, 60, 70</p></div>
+    </div>
+    <div class="abs" style="left:620px;top:0;width:532px">
+      <div class="etq">Qué esperan</div>
+      <div class="espera"><span class="v">✓</span><p>Que la persona se reconozca: su nombre, sus manías, sus recuerdos</p></div>
+      <div class="espera"><span class="v">✓</span><p>Que se lea de un tirón, sin tropiezos</p></div>
+      <div class="espera"><span class="v">✓</span><p>Que sea único, y no una plantilla con el nombre cambiado</p></div>
+    </div>
+    <div class="franja abs" style="left:0;right:0;top:372px;font-size:19px;line-height:26px;padding:14px 20px">Dos exigencias igual de importantes: <b>personalización</b> y <b>calidad narrativa mínima</b>.</div>
+  </main>
+</section>
+
+<!-- ============================================================ 04 -->
+<section class="slide" data-notas="Guion: slide 4 (0:30).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo II</span><span class="sep"></span>El problema</div>
+    <h1>Ninguna alternativa actual da a la vez personalización, calidad y precio</h1>
+  </header>
+  <main class="cuerpo">
+    <table class="t alt">
+      <tr><th>Alternativa</th><th>Personalización real</th><th>Calidad narrativa</th><th>Precio</th><th>Plazo</th></tr>
+      <tr><td class="alt-n">Libro de plantilla con el nombre insertado</td><td><span class="chip aviso">Solo el nombre</span></td><td><span class="chip pasa"><span class="g">✓</span> Correcta, pero genérica</span></td><td><span class="chip pasa"><span class="g">✓</span> 30–40 €</span></td><td><span class="chip pasa"><span class="g">✓</span> Días</span></td></tr>
+      <tr><td class="alt-n">Escritor por encargo</td><td><span class="chip pasa"><span class="g">✓</span> Total</span></td><td><span class="chip pasa"><span class="g">✓</span> Alta</span></td><td><span class="chip falla">✕ Cientos o miles de €</span></td><td><span class="chip falla">✕ Semanas</span></td></tr>
+      <tr><td class="alt-n">Pedírselo a un chatbot generalista</td><td><span class="chip pasa"><span class="g">✓</span> Alta</span></td><td><span class="chip falla">✕ Contradicciones y finales abruptos</span></td><td><span class="chip pasa"><span class="g">✓</span> Casi gratis</span></td><td><span class="chip pasa"><span class="g">✓</span> Minutos</span></td></tr>
+      <tr class="nuestra"><td class="alt-n">{{producto}}</td><td><span class="chip pasa"><span class="g">✓</span> Recuerdos + época documentada</span></td><td><span class="chip pasa"><span class="g">✓</span> Validada capítulo a capítulo</span></td><td><span class="chip pasa"><span class="g">✓</span> {{coste.pvp_iva_eur}} €</span></td><td><span class="chip pasa"><span class="g">✓</span> Horas</span></td></tr>
+    </table>
+    <p class="nota abs" style="left:0;right:0;top:330px;font-size:17px;line-height:24px">Un modelo generalista escribe bien una escena; falla en la coherencia de diez capítulos: repite frases, se contradice y cierra de golpe. <b>Ese es el hueco que cubre el harness</b>: no escribimos mejor que el modelo, lo controlamos capítulo a capítulo.</p>
+  </main>
+</section>
+
+<!-- ============================================================ 05 -->
+<section class="slide" data-notas="Guion: slide 5 (0:30).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo III</span><span class="sep"></span>Configuración</div>
+    <h1>Una entrevista corta produce un brief validado con schema</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="flujo abs" style="left:0;right:0;top:0;height:92px">
+      <div class="paso" style="left:0;width:250px"><div class="quien">Comprador</div><p>Premisa libre y, si quiere, un texto pegado</p></div>
+      <div class="paso" style="left:300px;width:268px"><div class="quien">Entrevistador · agente</div><p>Pregunta solo lo que falta</p></div>
+      <div class="paso" style="left:618px;width:238px"><div class="quien">Brief</div><p>Modelo Pydantic validado</p></div>
+      <div class="paso dest" style="left:906px;width:246px"><div class="quien">Gate de Intake</div><p>El autor lo aprueba antes de seguir</p></div>
+      <svg class="diag" width="1152" height="92" viewBox="0 0 1152 92"><g stroke="#1C2433" stroke-width="2" fill="none"><path d="M254 46 H294"/><path d="M287 40 L295 46 L287 52"/><path d="M572 46 H612"/><path d="M605 40 L613 46 L605 52"/><path d="M860 46 H900"/><path d="M893 40 L901 46 L893 52"/></g></svg>
+    </div>
+    <div class="mini4">
+      <div class="m"><div class="h">Datos que faltan</div><p>El entrevistador pregunta por los campos vacíos del brief.</p></div>
+      <div class="m"><div class="h">Contradicciones</div><p>4 detectores de código: edad y época, nacimiento y evento, tono y época, dato y palabra prohibida.</p></div>
+      <div class="m"><div class="h">Texto libre = no confiable</div><p>Va a cuarentena; solo salen filas tipadas: persona, lugar, fecha, objeto, anécdota.</p></div>
+      <div class="m"><div class="h">Lo que no debe aparecer</div><p>Palabras prohibidas por novela y por destinatario.</p></div>
+    </div>
+    <div class="yaml">
+      <div class="etq">brief 01 · Cádiz, 1803–1806 (extracto)</div>
+<pre class="codigo"><span class="k">homenajeado:</span>
+  rol_epoca: armador de navío mercante
+  ocasion: jubilación tras cuarenta años
+<span class="k">mundo:</span>
+  periodo: { inicio: 1803, fin: 1806 }
+  evento_ancla: la batalla de Trafalgar
+<span class="k">obra:</span>
+  palabras_prohibidas:
+    novela: [pirata, tesoro]
+    destinatario: [naufragio]</pre>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 06 -->
+<section class="slide" data-notas="Guion: slide 6 (0:30). Capturas de la novela de Cádiz, 1812, versión 1; el nombre del homenajeado está anonimizado.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo III</span><span class="sep"></span>Lectura</div>
+    <h1>Se lee en web o en PDF, y un cambio se pide seleccionando el texto</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="tile" style="left:0">
+      <div class="marco-img"><div class="barra"><span class="pto" style="left:8px"></span><span class="pto" style="left:19px"></span><span class="pto" style="left:30px"></span></div><img src="img/cadiz1812-indice.png" alt="Índice web" style="object-position:0% 0%"></div>
+      <div class="leyenda"><span class="num-circ">1</span><p>Índice navegable, con marca en los capítulos que cambiaron</p></div>
+    </div>
+    <div class="tile" style="left:293px">
+      <div class="marco-img"><div class="barra"><span class="pto" style="left:8px"></span><span class="pto" style="left:19px"></span><span class="pto" style="left:30px"></span></div><img src="img/cadiz1812-personajes.png" alt="Personajes y lugares"></div>
+      <div class="leyenda"><span class="num-circ">2</span><p>Personajes y lugares desde la story bible, enlazados a cada capítulo</p></div>
+    </div>
+    <div class="tile pdf" style="left:586px">
+      <div class="marco-img"><img src="img/cadiz1812-impresion.png" alt="Portada impresa"><span class="chip neutro pdf-et">PDF</span></div>
+      <div class="leyenda"><span class="num-circ">3</span><p>Portada con dedicatoria personalizada</p></div>
+    </div>
+    <div class="tile cambio" style="left:879px">
+      <div class="marco-img" style="border-color:var(--oro)"><div class="barra"><span class="pto" style="left:8px"></span><span class="pto" style="left:19px"></span><span class="pto" style="left:30px"></span></div><img src="img/cadiz1812-pedir-cambio.png" alt="Pedir un cambio"></div>
+      <div class="leyenda"><span class="num-circ">4</span><p>Se selecciona un fragmento, «pedir cambio» y pasa al gate de Regeneración</p></div>
+    </div>
+    <div class="franja abs" style="left:0;right:0;top:392px">Web y PDF salen de la misma ruta de lectura: <b>Playwright imprime la web</b>, así que nunca divergen. Toda versión anterior se conserva.</div>
+  </main>
+</section>
+
+<!-- ============================================================ 07 -->
+<section class="slide" data-notas="Guion: slide 7 (0:40).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo IV</span><span class="sep"></span>Arquitectura</div>
+    <h1>Seis fases, nueve roles especializados y un humano en cinco puntos de control</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="gate-ic" style="left:0"><span class="sv"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10.5" fill="#EEE0C0" stroke="#C9A34E" stroke-width="2"/><path d="M8.5 13.5 L11.7 16.5 L17.5 9.8" fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"/></svg></span>gate humano</div>
+    <div class="gate-ic" style="left:196px"><span class="sv"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10.5" fill="#EEE0C0" stroke="#C9A34E" stroke-width="2"/><path d="M8.5 13.5 L11.7 16.5 L17.5 9.8" fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"/></svg></span>gate humano</div>
+    <div class="gate-ic" style="left:392px"><span class="sv"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10.5" fill="#EEE0C0" stroke="#C9A34E" stroke-width="2"/><path d="M8.5 13.5 L11.7 16.5 L17.5 9.8" fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"/></svg></span>gate humano</div>
+    <div class="gate-ic" style="left:588px"><span class="sv"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10.5" fill="#EEE0C0" stroke="#C9A34E" stroke-width="2"/><path d="M8.5 13.5 L11.7 16.5 L17.5 9.8" fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"/></svg></span>gate humano</div>
+    <div class="gate-ic" style="left:784px;color:var(--piedra);font-weight:500">sin gate: decide el juez</div>
+    <div class="gate-ic" style="left:980px"><span class="sv"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10.5" fill="#EEE0C0" stroke="#C9A34E" stroke-width="2"/><path d="M8.5 13.5 L11.7 16.5 L17.5 9.8" fill="none" stroke="#1C2433" stroke-width="2" stroke-linecap="round"/></svg></span>gate humano</div>
+    <div class="fase" style="left:0"><div class="fn">1</div><div class="ft">Intake</div><p>entrevistador</p><p>extractor de intake</p></div>
+    <div class="fase" style="left:196px"><div class="fn">2</div><div class="ft">Investigation</div><p>investigador · única salida a internet</p><p>verificador</p></div>
+    <div class="fase" style="left:392px"><div class="fn">3</div><div class="ft">Plotting · planner</div><p>arquitecto → canon + escaleta</p><p>sello del corpus</p></div>
+    <div class="fase" style="left:588px"><div class="fn">4</div><div class="ft">Writing</div><p>escritor (writer)</p><p>editor (critic)</p><p>extractor de capítulo</p></div>
+    <div class="fase sin" style="left:784px"><div class="fn">5</div><div class="ft">Publication</div><p>juez (LLM-as-judge)</p><p>Lean · render_visual</p></div>
+    <div class="fase" style="left:980px"><div class="fn">6</div><div class="ft">Regeneration</div><p>cambios del lector: escritor + editor</p></div>
+    <svg class="diag" width="1152" height="260" viewBox="0 0 1152 260"><g stroke="#1C2433" stroke-width="2" fill="none">
+      <path d="M173 156 H194"/><path d="M188 151 L195 156 L188 161"/>
+      <path d="M369 156 H390"/><path d="M384 151 L391 156 L384 161"/>
+      <path d="M565 156 H586"/><path d="M580 151 L587 156 L580 161"/>
+      <path d="M761 156 H782"/><path d="M776 151 L783 156 L776 161"/>
+      <path d="M957 156 H978" stroke-dasharray="4 3"/><path d="M972 151 L979 156 L972 161"/>
+    </g></svg>
+    <div class="chips3">
+      <span class="chip neutro txt">Orquestación: <b>LangGraph</b> con estado explícito</span>
+      <span class="chip neutro txt">Agentes: <b>Claude Agent SDK</b>, todos en Haiku 4.5</span>
+      <span class="chip neutro txt">Estado: <b>un fichero SQLite</b> por novela</span>
+    </div>
+    <div class="franja abs" style="left:0;right:0;top:360px">Planner = arquitecto · Writer = escritor · Editor/critic = editor + juez, separados: <b>quien escribe no aprueba</b>. El editor repara dentro del bucle; el juez mide fuera y no toca el texto.</div>
+  </main>
+</section>
+
+<!-- ============================================================ 08 -->
+<section class="slide" data-notas="Guion: slide 8 (0:30).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo IV</span><span class="sep"></span>Arquitectura</div>
+    <h1>Los validadores son nodos del grafo: ningún agente puede saltárselos</h1>
+  </header>
+  <main class="cuerpo">
+    <svg class="diag" width="740" height="470" viewBox="0 0 740 470"><g fill="none" stroke-width="2">
+      <g stroke="#1C2433">
+        <path d="M168 118 H212"/><path d="M205 112 L213 118 L205 124"/>
+        <path d="M358 118 H402"/><path d="M395 112 L403 118 L395 124"/>
+        <path d="M540 118 H584"/><path d="M577 112 L585 118 L577 124"/>
+        <path d="M660 144 V250"/><path d="M654 243 L660 251 L666 243"/>
+        <path d="M660 290 V380 H84 V146"/><path d="M78 153 L84 145 L90 153"/>
+      </g>
+      <g stroke="#B23A2B">
+        <path d="M286 144 V250"/><path d="M280 243 L286 251 L292 243"/>
+        <path d="M470 144 V200 H330 V250"/><path d="M324 243 L330 251 L336 243"/>
+        <path d="M250 250 V150"/><path d="M244 157 L250 149 L256 157"/>
+      </g>
+      <g stroke="#B23A2B" stroke-dasharray="5 4">
+        <path d="M300 92 V56 H372"/><path d="M365 50 L373 56 L365 62"/>
+        <path d="M456 92 V56 H449"/><path d="M456 50 L448 56 L456 62"/>
+      </g>
+    </g></svg>
+    <div class="n8" style="left:0;top:96px;width:168px"><div class="nm">WriteChapter</div><div class="ns">escritor</div></div>
+    <div class="n8" style="left:212px;top:92px;width:146px"><div class="nm">Validate</div><div class="ns">Python · coste cero</div></div>
+    <div class="n8" style="left:402px;top:92px;width:138px"><div class="nm">Extract</div><div class="ns">extractor + Lean</div></div>
+    <div class="n8" style="left:584px;top:96px;width:156px"><div class="nm">ApproveChapter</div></div>
+    <div class="n8 fail" style="left:372px;top:36px;width:76px"><div class="nm">Fail</div></div>
+    <div class="et8 lacre" style="left:460px;top:30px;width:280px">reintentos agotados → para e informa</div>
+    <div class="n8 lacre" style="left:196px;top:250px;width:196px"><div class="nm">Repair</div><div class="ns" style="color:var(--lacre)">el editor emite un parche</div></div>
+    <div class="et8 lacre" style="left:176px;top:310px;width:236px;text-align:center">máx. 2 reintentos, contador compartido</div>
+    <div class="n8" style="left:588px;top:250px;width:144px"><div class="nm">Checkpoint</div></div>
+    <div class="et8" style="left:414px;top:254px;width:164px;text-align:right">misma transacción que<br>el capítulo aprobado</div>
+    <div class="et8" style="left:250px;top:388px;width:260px;text-align:center">siguiente capítulo</div>
+    <div class="afirm">
+      <div class="a"><div class="ic"><svg viewBox="0 0 34 34"><g fill="none" stroke="#1C2433" stroke-width="2"><rect x="4" y="6" width="26" height="22" rx="4"/><path d="M10 17 L15 22 L24 12" stroke="#5E8C6A"/></g></svg></div><p>Las aristas leen <b>booleanos calculados en Python</b>, no la opinión de un modelo</p></div>
+      <div class="a"><div class="ic"><svg viewBox="0 0 34 34"><g fill="none" stroke="#1C2433" stroke-width="2"><circle cx="17" cy="17" r="12"/><path d="M17 10 V17 L22 21"/></g></svg></div><p>Primero lo gratis: longitud, nombres, prohibidas. <b>Luego la llamada</b></p></div>
+      <div class="a"><div class="ic"><svg viewBox="0 0 34 34"><g fill="none" stroke="#1C2433" stroke-width="2"><ellipse cx="17" cy="9" rx="11" ry="4"/><path d="M6 9 V25 C6 27 11 29 17 29 C23 29 28 27 28 25 V9"/><path d="M6 17 C6 19 11 21 17 21 C23 21 28 19 28 17"/></g></svg></div><p>Si el proceso muere, <b>se reanuda desde el último capítulo aprobado</b></p></div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 09 -->
+<section class="slide" data-notas="Guion: slide 9 (0:30).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo IV</span><span class="sep"></span>Contexto y story bible</div>
+    <h1>El writer no busca su contexto: lo recibe, acotado a 12.000 tokens</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="lomo">
+      <div class="sg" style="top:0;height:28px;background:#C9A34E"></div>
+      <div class="sg" style="top:28px;height:87px;background:#1C2433"></div>
+      <div class="sg" style="top:115px;height:87px;background:#5E6A7E"></div>
+      <div class="sg" style="top:202px;height:105px;background:#7D7869"></div>
+      <div class="sg" style="top:307px;height:52px;background:#B9A36A"></div>
+      <div class="sg" style="top:359px;height:42px;background:#A9A393"></div>
+      <div class="sg" style="top:401px;height:19px;background:#C9A34E"></div>
+    </div>
+    <div class="bloq" style="top:5px"><span class="bn">1</span><span class="bt">Encargo del capítulo</span><span class="bk">800</span></div>
+    <div class="bloq" style="top:62px"><span class="bn">2</span><span class="bt">Canon relevante</span><span class="bk">2.500</span></div>
+    <div class="bloq" style="top:149px"><span class="bn">3</span><span class="bt">Continuidad + lo que ya pasó</span><span class="bk">2.500</span></div>
+    <div class="bloq" style="top:246px"><span class="bn">4</span><span class="bt">Memoria: capítulo N−1 íntegro + resúmenes</span><span class="bk">3.000</span></div>
+    <div class="bloq" style="top:324px"><span class="bn">5</span><span class="bt">Anclajes históricos con su firmeza</span><span class="bk">1.500</span></div>
+    <div class="bloq" style="top:371px"><span class="bn">6</span><span class="bt">Reglas, estilo, prohibidas, repeticiones gastadas</span><span class="bk">1.200</span></div>
+    <div class="bloq" style="top:401px"><span class="bn">7</span><span class="bt">Personalización que toca este capítulo</span><span class="bk">500</span></div>
+    <div class="bloq" style="top:436px;font-weight:600"><span class="bn"></span><span class="bt">Total del paquete</span><span class="bk" style="font-weight:700">12.000</span></div>
+    <div class="etq abs" style="left:620px;top:0">La story bible: un SQLite por novela</div>
+    <svg class="diag" width="1152" height="400" viewBox="0 0 1152 400"><g fill="none" stroke="#7D7869" stroke-width="1.6">
+      <path d="M888 60 H 874"/><path d="M880 55 L888 60 L880 65"/>
+      <path d="M1018 98 V 140"/><path d="M1013 133 L1018 141 L1023 133"/>
+      <path d="M888 190 H 874"/><path d="M880 185 L888 190 L880 195"/>
+      <path d="M1018 228 V 270"/><path d="M1013 263 L1018 271 L1023 263"/>
+      <path d="M754 228 V 270"/><path d="M749 263 L754 271 L759 263"/>
+    </g></svg>
+    <div class="caja9" style="left:620px;top:30px"><div class="tn">intake_dato</div><p>lo que dio el comprador, tipado</p></div>
+    <div class="caja9 oro" style="left:888px;top:30px"><div class="tn">uso_hecho · intake_uso_dato</div><p>qué capítulo usa qué dato</p></div>
+    <div class="caja9" style="left:620px;top:160px"><div class="tn">mundo_hecho</div><p>corpus histórico sellado</p></div>
+    <div class="caja9" style="left:888px;top:160px"><div class="tn">canon_personaje</div><p>nombres, edades, relaciones</p></div>
+    <div class="caja9" style="left:620px;top:290px"><div class="tn">cronologia_evento</div><p>alimenta a Lean</p></div>
+    <div class="caja9" style="left:888px;top:290px"><div class="tn">capitulo_version + version_novela</div><p>inmutables: una versión es un manifiesto</p></div>
+    <div class="franja abs" style="left:620px;right:0;top:386px;font-size:16px;line-height:22px">Límite de 100.000 tokens concurrentes <b>garantizado por construcción</b>: grafo secuencial, peor caso 45.000 (investigador).</div>
+  </main>
+</section>
+
+<!-- ============================================================ 10 -->
+<section class="slide" data-notas="Guion: slide 10 (0:20). Si vas justo, di solo las tres decisiones.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo IV</span><span class="sep"></span>Por qué este diseño</div>
+    <h1>Tres decisiones explican el resto del sistema</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="dec" style="left:0"><div class="dn">1</div><div class="dt">Validar no es opcional</div><p>Validadores como nodos; tools con schema Pydantic; toda salida de rol pasa <code>schema_guard</code>.</p></div>
+    <div class="dec" style="left:396px"><div class="dn">2</div><div class="dt">El estado vive en un solo sitio</div><p>Un SQLite por novela: checkpoint y capítulo en la misma transacción. Ramificar es copiar el fichero.</p></div>
+    <div class="dec" style="left:792px"><div class="dn">3</div><div class="dt">Nada se sobrescribe</div><p>Capítulos inmutables y un manifiesto por versión: la anterior se conserva por estructura.</p></div>
+    <div class="etq abs" style="left:0;top:268px">Para el desarrollo con Claude Code</div>
+    <div class="chips5">
+      <span class="chip neutro txt"><code>CLAUDE.md</code> + <code>AGENTS.md</code>: instrucciones del repo</span>
+      <span class="chip neutro txt">Skill <code>continuity-check</code></span>
+      <span class="chip neutro txt">Hook <code>PostToolUse</code>: valida el capítulo editado</span>
+      <span class="chip neutro txt">Hook <code>PreToolUse</code>: policy de palabras prohibidas</span>
+      <span class="chip aviso txt">Retries con límite: 2 por capítulo · 5 huecos por Plotting · 2 rechazos del juez</span>
+    </div>
+    <p class="nota abs" style="left:0;right:0;top:400px;font-size:16px">Los hooks y la skill usan exactamente el mismo Core Domain en Python que los nodos del grafo.</p>
+  </main>
+</section>
+
+<!-- ============================================================ 11 -->
+<section class="slide" data-notas="Guion: slide 11 (0:25).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Validación</div>
+    <h1>Cuatro familias de validadores, cada una en su punto del harness</h1>
+  </header>
+  <main class="cuerpo alto">
+    <table class="mat">
+      <colgroup><col style="width:118px"><col style="width:146px"><col style="width:162px"><col style="width:184px"><col style="width:168px"><col style="width:222px"><col style="width:152px"></colgroup>
+      <tr><th>Familia</th><th>Intake · Investigation</th><th>Gate de Plotting</th><th>Post WriteChapter</th><th>Post Extract</th><th>Antes de publicar</th><th>Desarrollo · fuera de línea</th></tr>
+      <tr><td class="fam">Programáticos<span>11, deterministas</span></td>
+        <td><i class="pt"></i><span class="v">schema_guard</span><span class="sec">todos los roles</span></td>
+        <td><i class="pt"></i><span class="v">cobertura_anclada</span><span class="v">arco_anclado</span></td>
+        <td><i class="pt"></i><span class="v">nombres_exactos</span><span class="v">longitud_capitulo</span><span class="v">guardrail_prohibidas</span><span class="v">anacronismo_fechado</span><span class="v">anclaje_valido</span></td>
+        <td><i class="pt"></i><span class="v av">cobertura_capitulo</span><span class="sec">avisa</span></td>
+        <td><i class="pt"></i><span class="v">cobertura_personalizacion</span><span class="v">render_visual</span><span class="sec">Playwright</span></td>
+        <td></td></tr>
+      <tr><td class="fam">Semánticos<span>juicio de un modelo o de una persona</span></td>
+        <td><i class="pt"></i><span class="v av">respaldo_fuente</span><span class="sec">avisa</span></td>
+        <td></td><td></td>
+        <td><i class="pt"></i><span class="v av">ejecucion_escaleta</span><span class="v av">arco_ejecutado</span><span class="sec">avisan</span></td>
+        <td><i class="pt"></i><span class="v">juez_rubrica</span><span class="sec">8 criterios, 1–10, con justificación</span></td>
+        <td><i class="pt"></i><span class="v">revision_humana</span><span class="sec">la misma rúbrica</span><span class="sec" style="display:block;color:var(--tinta);margin-top:3px">persona {{revision_humana.persona|2}} · juez {{revision_humana.juez|2}}, novela de {{revision_humana.novela}}</span></td></tr>
+      <tr><td class="fam">Formal de la historia<span>Lean 4</span></td>
+        <td></td><td><i class="pt"></i><span class="v av">I1–I4</span><span class="sec">avisa</span></td><td></td>
+        <td><i class="pt"></i><span class="v">I1–I4</span><span class="sec">bloquea</span></td>
+        <td><i class="pt"></i><span class="v">I1–I4</span><span class="sec">bloquea</span></td><td></td></tr>
+      <tr><td class="fam">Formal del sistema<span>TLA+</span></td>
+        <td></td><td></td><td></td><td></td><td></td>
+        <td><i class="pt"></i><span class="v">TLC</span><span class="sec">en desarrollo</span></td></tr>
+    </table>
+    <div class="nota" style="margin-top:10px;font-size:15px;line-height:20px"><b>Juez:</b> continuidad, arco, coherencia de personajes, ritmo, tono, prosa, naturalidad de la personalización y autenticidad de época. <b>Todos envían su resultado a Langfuse como score.</b></div>
+  </main>
+</section>
+
+<!-- ============================================================ 12 -->
+<section class="slide" data-notas="Guion: slide 12 (0:30). Tabla extraída de las bases el {{evals.extraido}} con presentacion/datos/extraer.py.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Evaluación</div>
+    <h1 class="l2">Diez novelas publicadas: lo que un validador cazó se reparó antes de publicar, y dos fallos se le escaparon</h1>
+  </header>
+  <main class="cuerpo" style="top:148px;left:40px;right:40px">
+    <table class="ev">
+      <tr><th class="izq">Novela · ocasión</th><th>Caps.</th><th>Estado</th><th class="num">Intentos</th><th>nombres<br>exactos</th><th>longitud</th><th>prohibidas</th><th>Lean</th><th class="num">Juez media<br>/ continuidad</th><th class="num">Tokens</th><th class="num">Coste</th></tr>
+      <tbody data-render="evals"></tbody>
+    </table>
+    <div class="ev-lado" style="left:0;top:436px;width:250px;display:flex;align-items:baseline;gap:10px"><span class="gran" style="font-size:44px;line-height:46px;color:#9A7A2E">{{evals.caps_ok}} / {{evals.caps_total}}</span></div>
+    <div class="ev-lado nota" style="left:156px;top:436px;width:320px;color:var(--tinta)">capítulos publicados de las evals pasan los cinco deterministas y Lean</div>
+    <div class="ev-lado" style="left:490px;top:436px"><span class="gran" style="font-size:44px;line-height:46px;color:#9A7A2E">{{evals.media_juez|2}}</span></div>
+    <div class="ev-lado nota" style="left:590px;top:436px;width:190px;color:var(--tinta)">media del juez en las {{evals.versiones_publicadas}} versiones publicadas</div>
+    <div class="ev-lado" style="left:800px;top:428px;width:400px">
+      <div class="ley12"><span class="chip rep">✕→<span class="ok">✓</span> ×n</span><span class="lt">n rechazos reparados</span><span class="chip aviso">!</span><span class="lt">aviso de Lean en la escaleta</span></div>
+      <div class="lt2">Haiku 4.5 en los 9 roles · evals en batch, sin gates · referencias (fondo gris): sin score por capítulo, cuentan las incidencias.</div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 13 -->
+<section class="slide" data-notas="Guion: slide 13 (0:20). Bloque tuning de datos.json ({{tuning.id}}).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Evaluación · tuning</div>
+    <h1>{{tuning.titulo}}</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="ad antes" style="left:0"><div class="etq" style="color:var(--lacre)">{{tuning.antes_titulo}}</div><ul class="lista" data-render="tuningAntes"></ul></div>
+    <svg class="flecha13 diag" style="left:548px;top:70px" width="60" height="40" viewBox="0 0 60 40"><g fill="none" stroke="#C9A34E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 H52"/><path d="M40 8 L53 20 L40 32"/></g></svg>
+    <div class="ad despues" style="left:632px"><div class="etq" style="color:var(--salvia)">{{tuning.despues_titulo}}</div><ul class="lista" data-render="tuningDespues"></ul></div>
+    <div class="barras13"><div class="etq">{{tuning.barras_titulo}}</div><div data-render="tuningBarras"></div></div>
+    <p class="nota abs" style="left:0;right:0;top:420px;font-size:15px">{{tuning.pie}}</p>
+  </main>
+</section>
+
+<!-- ============================================================ 14 -->
+<section class="slide" data-notas="Guion: slide 14 (0:20).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Validación formal</div>
+    <h1 class="l2">Lean vio una protagonista que existía antes de nacer; ni el juez ni los validadores de texto lo vieron</h1>
+  </header>
+  <main class="cuerpo" style="top:148px">
+    <div class="etq abs" style="left:0;top:0">Novela de {{lean.novela}} · escaleta y prosa frente a la fecha de nacimiento</div>
+    <svg class="diag" style="top:24px" width="640" height="210" viewBox="0 0 640 210">
+      <g fill="none">
+        <path d="M60 30 H 214" stroke="#B23A2B" stroke-width="2"/><path d="M60 22 V 30 M214 22 V30" stroke="#B23A2B" stroke-width="2"/>
+        <line x1="20" y1="110" x2="620" y2="110" stroke="#C9A34E" stroke-width="2"/>
+      </g>
+      <g stroke="#C9A34E" stroke-width="1.5">
+        <line x1="20" y1="104" x2="20" y2="116"/><line x1="106" y1="106" x2="106" y2="114"/><line x1="191" y1="104" x2="191" y2="116"/><line x1="277" y1="106" x2="277" y2="114"/><line x1="363" y1="104" x2="363" y2="116"/><line x1="449" y1="106" x2="449" y2="114"/><line x1="534" y1="104" x2="534" y2="116"/><line x1="620" y1="106" x2="620" y2="114"/>
+      </g>
+      <g fill="#B23A2B"><circle cx="20" cy="110" r="6"/><circle cx="165" cy="110" r="6"/><circle cx="172" cy="110" r="6"/><circle cx="180" cy="110" r="6"/><circle cx="187" cy="110" r="6"/><circle cx="194" cy="110" r="6"/></g>
+      <circle cx="594" cy="110" r="8" fill="#1C2433"/>
+      <path d="M594 100 V 70" stroke="#1C2433" stroke-width="1.5"/>
+      <path d="M180 100 V 42" stroke="#B23A2B" stroke-width="1.5"/>
+      <text x="20" y="140" text-anchor="middle" fill="#7D7869" class="mono">1900</text>
+      <text x="191" y="140" text-anchor="middle" fill="#7D7869" class="mono">1920</text>
+      <text x="363" y="140" text-anchor="middle" fill="#7D7869" class="mono">1940</text>
+      <text x="534" y="140" text-anchor="middle" fill="#7D7869" class="mono">1960</text>
+      <text x="136" y="16" text-anchor="middle" fill="#B23A2B" font-weight="600">I1 · nadie participa antes de nacer</text>
+      <text x="180" y="170" text-anchor="middle" fill="#B23A2B">escenas de 1900 a 1919</text>
+      <text x="180" y="188" text-anchor="middle" fill="#B23A2B" font-weight="600">9 escenas · 26 eventos de la prosa</text>
+      <text x="594" y="60" text-anchor="middle" fill="#1C2433" font-weight="600">1967</text>
+      <text x="530" y="170" text-anchor="middle" fill="#1C2433">nacimiento copiado</text>
+      <text x="530" y="188" text-anchor="middle" fill="#1C2433">del encargo</text>
+    </svg>
+    <div class="abs" style="left:0;top:262px;width:640px">
+      <div class="veredicto"><span class="chip falla">✕ no ve</span><span><code>nombres_exactos</code> y el resto de deterministas: no miran fechas de vida</span></div>
+      <div class="veredicto"><span class="chip falla">✕ no ve</span><span>Juez ({{lean.juez|2}}): vio una edad incoherente, no el nacimiento imposible</span></div>
+      <div class="veredicto"><span class="chip pasa"><span class="g">✓</span> la ve</span><span>Lean (<code>lake build</code> + <code>verificar</code>): exit 1, con los eventos culpables</span></div>
+    </div>
+<pre class="codigo abs" style="left:690px;right:0;top:24px;font-size:15px;line-height:22px"><span class="k">theorem</span> I1_NadieAntesDeNacer :
+  <span class="k">∀</span> e <span class="k">∈</span> eventos, <span class="k">∀</span> p <span class="k">∈</span> e.participantes,
+    p.nacimiento <span class="k">≤</span> e.momento := <span class="k">by</span> decide
+
+<span class="c">-- lake exe verificar → exit 1</span>
+<span class="c">-- I1 falla: 9 escenas, 26 eventos</span></pre>
+    <div class="caja oro abs" style="left:690px;right:0;top:200px;padding:12px 14px"><p class="pq" style="margin:0">Cuando se generó, la cronología solo avisaba en el gate de Plotting y la novela se publicó. <b>Hoy Lean bloquea la publicación</b>, y el canon usa una fecha de nacimiento de época para el personaje del homenajeado.</p></div>
+    <div class="caja lacre abs" style="left:0;right:0;top:384px;padding:10px 16px;background:#FBF8F1"><p class="pq" style="margin:0">{{rt09}}</p></div>
+  </main>
+</section>
+
+<!-- ============================================================ 15 -->
+<section class="slide" data-notas="Guion: slide 15 (0:15).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Validación formal · TLA+</div>
+    <h1 class="l2">TLC agota todos los estados del harness sin violaciones, después de cazar tres errores de diseño</h1>
+  </header>
+  <main class="cuerpo" style="top:150px">
+    <div class="abs" style="left:0;top:0;width:640px">
+      <ul class="props">
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>NoPublishUnvalidated</code> · nunca se publica un capítulo sin validar</span></li>
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>ResumeIsExactlyOnce</code> · reanudar no duplica ni pierde capítulos</span></li>
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>RetriesBounded</code> · los reintentos nunca superan el límite</span></li>
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>CorpusSelladoNoSeToca</code> · tras el sello, nadie escribe en el corpus</span></li>
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>PreviousVersionPreserved</code> · la versión anterior se conserva</span></li>
+        <li><span class="chip pasa"><span class="g">✓</span> </span><span><code>Termina</code> (liveness) · toda generación publica o para con error</span></li>
+      </ul>
+      <p class="nota" style="margin-top:4px">Modelo: 5 capítulos · 2 reintentos · 1 caída · 1 reintento manual · 1 cambio del lector.</p>
+      <div class="cifras15">
+        <div><div class="cg">{{tlc.estados_interactivo|0}}</div><div class="cl">estados · interactivo</div></div>
+        <div><div class="cg">{{tlc.estados_batch|0}}</div><div class="cl">estados · batch</div></div>
+        <div><div class="cg">{{tlc.violaciones}}</div><div class="cl">violaciones</div></div>
+      </div>
+      <p class="nota" style="margin-top:10px">Control de vacuidad: con weak fairness en vez de strong, TLC viola <code>Termina</code>; la comprobación no es vacía.</p>
+    </div>
+    <div class="abs" style="left:680px;right:0;top:0">
+      <div class="etq" style="color:var(--lacre)">Tres contraejemplos que cambiaron el diseño</div>
+      <div class="ficha"><div class="fh">1 · ResumeIsExactlyOnce</div><p>Rehacer el gate de Writing se trataba como pasada inicial y duplicaba capítulos. <b>Cambio:</b> acción <code>RehacerWriting</code>.</p></div>
+      <div class="ficha"><div class="fh">2 · Termina</div><p>El juez podía rechazar para siempre: bucle infinito. <b>Cambio:</b> tope de 2 rechazos y arista a <code>Fail</code>.</p></div>
+      <div class="ficha"><div class="fh">3 · Termina</div><p>Weak fairness no bastaba: el autor podía rehacer eternamente. <b>Cambio:</b> strong fairness en la especificación.</p></div>
+    </div>
+    <p class="nota abs" style="left:0;right:0;top:372px">Los nodos de LangGraph y las acciones TLA+ se llaman igual; un test compara las aristas del <code>StateGraph</code> con la definición <code>Aristas</code>.</p>
+  </main>
+</section>
+
+<!-- ============================================================ 16 -->
+<section class="slide" data-notas="Guion: slide 16 (0:10). Captura real de Langfuse, recortada sin el panel de metadatos. {{langfuse.nota_rt08}}">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo V</span><span class="sep"></span>Observabilidad</div>
+    <h1>Cada novela es una sesión en Langfuse: tokens, coste y latencia por llamada</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="marco-img" style="left:0;top:0;width:690px;height:354px;background:#171717"><img data-src="{{langfuse.captura}}" style="left:0;top:0;width:690px;height:354px;object-fit:cover;object-position:0% 0%" alt="Traza en Langfuse"></div>
+    <div class="abs" style="left:0;top:362px;width:690px"><span class="chip aviso txt" style="font-weight:600">{{langfuse.etiqueta}}</span></div>
+    <div class="etiquetas16" style="left:726px"><div data-render="etiquetasLangfuse"></div><p class="nota" style="margin:2px 0 0 0;font-size:13px;line-height:17px">{{langfuse.nota_rt08}}</p></div>
+    <div class="abs" style="left:0;right:0;top:404px">
+      <div class="etq" style="margin-bottom:6px">Coste por fase de esa novela · {{langfuse.novela}} · fase_run</div>
+      <div data-render="costeFases"></div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 17 -->
+<section class="slide" data-notas="Guion: slide 17 (0:30). RT-07 en docs/red-team.md y anexo A7.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VI</span><span class="sep"></span>Guardrails</div>
+    <h1 class="l2">Lo que no debe aparecer no aparece y queda registrado, incluso cuando el guardrail se pasa de estricto</h1>
+  </header>
+  <main class="cuerpo" style="top:150px">
+    <div class="abs" style="left:0;top:0;width:676px">
+      <div class="paso17"><span class="num-circ">1</span><div><div class="cita">«…no dejaría oro a sus herederos, sino el <span class="sub">tesoro</span> que permanecería eternamente…»</div><p class="sec" style="margin-top:4px">Capítulo 2, intento 1 · <code>guardrail_prohibidas</code> · nivel novela</p></div></div>
+      <div class="paso17"><span class="num-circ">2</span><p style="padding-top:2px">El capítulo vuelve al editor con la incidencia</p></div>
+      <div class="paso17"><span class="num-circ">3</span><span class="chip pasa grande"><span class="g">✓</span> El intento siguiente sale sin el término</span></div>
+      <div class="caja lacre" style="margin-top:6px;padding:12px 16px">
+        <div class="h2" style="font-size:18px;line-height:22px;color:var(--lacre)">Lo que encontró el red-team (RT-07)</div>
+        <p class="pq">De 4 rechazos reales, 1 era la palabra. Los otros 3 eran raíces dentro de otras palabras: «res<b>pirat</b>orio» por «pirata», «<b>despid</b>iéndose» por «despido», «<b>suspens</b>ión» por «suspenso». Uno detuvo una novela.</p>
+        <p class="nota" style="margin:0">Mitigación propuesta: que el aviso nombre la palabra que saltó y que la coincidencia por raíz avise en vez de bloquear.</p>
+      </div>
+    </div>
+    <div class="abs" style="left:712px;right:0;top:0">
+      <div class="r17"><div class="h">Datos personales</div><p>El único rol con internet nunca recibe el nombre, la fecha ni los recuerdos del homenajeado: regla Semgrep y guarda de PII sobre cada prompt.</p></div>
+      <div class="r17"><div class="h">Injection</div><p>Una carta con 5 órdenes inyectadas: 0 llegaron al texto. Al writer solo llegan filas tipadas.</p></div>
+      <div class="r17"><div class="h">Audit log</div><p>Cada decisión de policy, de gate y cada edición humana, con actor, momento, antes y después.</p></div>
+    </div>
+    <p class="nota abs" style="left:0;right:0;top:396px">Niveles de la lista: global · novela · destinatario, guardados en SQLite. Normaliza mayúsculas, acentos, plurales y derivados.</p>
+  </main>
+</section>
+
+<!-- ============================================================ 18 -->
+<section class="slide" data-notas="Guion: slide 18 (0:30). Cifras del bloque coste de datos.json.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VII</span><span class="sep"></span>Propuesta económica</div>
+    <h1>Cada novela cuesta {{coste.total_eur|2}} € y se vende a {{coste.pvp_iva_eur}} €: margen del {{coste.margen_pct|1}} %</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="abs" style="left:0;top:0;width:660px">
+      <div class="etq">Coste unitario por novela · 10 capítulos · {{coste.novelas_mes}} novelas/mes</div>
+      <table class="t cu">
+        <tr><td>Tokens (Haiku 4.5) <span class="sec">· medido</span></td><td class="num">{{coste.tokens_eur|2}} €</td></tr>
+        <tr><td>Revisiones del lector <span class="sec">· {{coste.revisiones_media|1}} de media × {{coste.revision_eur|2}} €</span></td><td class="num">{{coste.revisiones_eur|2}} €</td></tr>
+        <tr><td>Supervisión editorial de gates <span class="sec">· {{coste.supervision_min}} min × {{coste.supervision_eur_h}} €/h</span></td><td class="num">{{coste.supervision_eur|2}} €</td></tr>
+        <tr><td>Infraestructura y mantenimiento <span class="sec">· ({{coste.infra_mes_eur}} € + {{coste.mantenimiento_mes_eur}} €/mes) ÷ {{coste.novelas_mes}}</span></td><td class="num">{{coste.infra_eur|2}} €</td></tr>
+        <tr class="total"><td>Total</td><td class="num">{{coste.total_eur|2}} €</td></tr>
+      </table>
+    </div>
+    <div class="precio">
+      <div class="etq">Precio y margen</div>
+      <div class="gran xl" style="color:#9A7A2E">{{coste.pvp_iva_eur}} €</div>
+      <div class="gl">PVP con IVA · {{coste.pvp_sin_iva_eur|2}} € sin IVA · {{coste.revisiones_incluidas}} revisiones incluidas</div>
+      <div class="gran xl salvia" style="margin-top:22px">{{coste.margen_eur|2}} €</div>
+      <div class="gl">margen por novela ({{coste.margen_pct|1}} %)</div>
+    </div>
+    <div class="abs nota" style="left:0;right:0;top:268px;font-size:14px;line-height:19px">
+      <b>Tokens medidos</b> (<code>total_cost_usd</code> del Agent SDK, sumado por fase en <code>fase_run</code>) en tres novelas de diez capítulos: Cádiz 1803–06 {{coste.medidas.0.usd|2}} $ ({{coste.medidas.0.nota}}) · Santiago 1180–88 {{coste.medidas.1.usd|2}} $ · Madrid 1787–89 {{coste.medidas.2.usd|2}} $ ({{coste.medidas.2.nota}}). Media {{coste.media_usd|2}} $ ≈ {{coste.tokens_eur|2}} € (1 $ ≈ {{cambio_usd_eur|2}} €). Con las cinco novelas de diez capítulos ya publicadas (Madrid 1787–89 terminó en 3,68 $, Barcelona 2,99 $, Valencia 2,76 $), la media es 3,07 $: confirma la cifra. Langfuse registra el mismo coste que el arnés: {{coste.langfuse_prueba_usd|4}} $ en los dos en la novela de prueba (It-39) y 3,621496 $ en la de Cádiz. <b>Revisión medida</b> en una rama de la novela de Cádiz, 1805: {{coste.revision_usd|2}} $ ≈ {{coste.revision_eur|2}} €, {{coste.revision_min}} min (la de Madrid, 1858, costó {{demo.coste_usd|2}} $). Supervisión, infraestructura y tarifa son estimaciones.
+    </div>
+    <div class="franja abs" style="left:0;right:0;top:372px;font-size:18px">El coste dominante no son los tokens: <b>es la supervisión humana de los gates</b> ({{coste.supervision_eur|2}} € de {{coste.total_eur|2}} €).</div>
+  </main>
+</section>
+
+<!-- ============================================================ 19 -->
+<section class="slide" data-notas="Guion: slide 19 (0:30). Bloques proyecto, escenarios y sensibilidad de datos.json.">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VII</span><span class="sep"></span>Propuesta económica</div>
+    <h1>El margen aguanta una subida del 50 % en tokens; lo que hay que proteger son las revisiones</h1>
+  </header>
+  <main class="cuerpo" style="top:160px">
+    <div class="abs" style="left:0;top:0;width:560px">
+      <div class="etq">Coste del proyecto de desarrollo</div>
+      <table class="t pr"><tbody data-render="proyecto"></tbody></table>
+    </div>
+    <div class="abs" style="left:620px;right:0;top:0">
+      <div class="etq">Escenarios de volumen · margen mensual</div>
+      <div class="escs" data-render="escenarios"></div>
+      <p class="nota" style="margin-top:4px;font-size:13px;line-height:17px">Ingreso {{escenarios.ingreso_eur|2}} €/novela · variable {{escenarios.variable_eur|2}} €/novela · fijo {{escenarios.fijo_eur}} €/mes ({{escenarios.fijo_1000_eur}} € a 1.000/mes)</p>
+    </div>
+    <div class="abs" style="left:0;right:0;top:300px">
+      <div class="etq">Sensibilidad · {{coste.novelas_mes}} novelas/mes · margen por novela</div>
+      <div data-render="tornado"></div>
+      <p class="nota" style="margin:2px 0 0 314px;color:var(--tinta)"><b>Mitigación:</b> {{sensibilidad.mitigacion}}.</p>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 20 · DEMO -->
+<section class="slide oscura" data-notas="Guion: slide 20 (0:40). Demo real: novela de Madrid, 1858 (lozoya), de la versión 2 a la 3. Dato de apoyo: Cádiz, 1805 (fase-6-regenerada).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VIII</span><span class="sep"></span>Demo</div>
+    <h1>El lector cambia un dato; solo se reescriben los capítulos que lo usan</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="pasos20">
+      <div class="p20" style="left:0"><div class="pn">1 · LECTOR</div><p>Selecciona {{demo.seleccion}} y pide el cambio</p><div class="dato">{{demo.peticion}}</div></div>
+      <div class="p20" style="left:235px"><div class="pn">2 · STORY BIBLE</div><p>Candidatos con su coste; se elige el personaje</p><div class="dato">regenerar {{demo.previstos}} · revisar {{demo.revisado}}</div></div>
+      <div class="p20" style="left:470px"><div class="pn">3 · GATE</div><p>El Autor confirma fila y valor nuevo</p><div class="dato">{{demo.gate}}</div></div>
+      <div class="p20" style="left:705px"><div class="pn">4 · REGENERATION</div><p>El valor retirado se propaga a {{demo.celdas}} celdas de escaleta y canon</p></div>
+      <div class="p20" style="left:940px"><div class="pn">5 · PUBLICATION</div><p>Versión {{demo.version_nueva}} publicada; la 1 y la 2, intactas</p><div class="dato">Lean ✓ · render_visual ✓</div></div>
+    </div>
+    <div class="cap20" style="left:0;top:142px;width:330px;height:208px"><img data-src="{{demo.captura_indice}}" alt="Índice de la versión 3"></div>
+    <div class="cap20-et" style="left:0;top:354px;width:330px">Índice web de la versión {{demo.version_nueva}}, con los capítulos cambiados marcados</div>
+    <div class="cap20" style="left:346px;top:142px;width:250px;height:208px"><img data-src="{{demo.captura_versiones}}" alt="Historial de versiones"></div>
+    <div class="cap20-et" style="left:346px;top:354px;width:250px">Historial: versiones 1, 2 y 3</div>
+    <div class="abs" style="left:620px;top:142px;width:316px">
+      <table class="mf" data-render="manifiesto"></table>
+    </div>
+    <div class="abs" style="left:956px;right:0;top:142px">
+      <div class="cifras20" style="flex-direction:column;gap:0">
+        <div class="cg">{{demo.coste_usd|2}} $</div><div class="cl">la revisión · {{demo.coste_fases}}</div>
+        <div class="cg" style="margin-top:10px">{{demo.minutos}} min</div><div class="cl">de la petición a la versión {{demo.version_nueva}}</div>
+      </div>
+    </div>
+    <div class="abs apoyo20" style="left:0;top:398px;width:600px">Se previeron {{demo.previstos}}; al final se reescribieron los {{demo.reescritos_final}}: el primer intento del <b>capítulo 3</b> se pasó de longitud ({{demo.cap3_palabras|0}} palabras, máximo {{demo.cap3_maximo|0}}) y hubo que repararlo.</div>
+    <div class="abs apoyo20" style="left:620px;top:396px;width:532px">
+      <b>Con diez capítulos</b> ({{demo.apoyo.novela}}): {{demo.apoyo.texto}}. <span style="color:var(--perg-60)">Es una {{demo.apoyo.nota}}.</span>
+      <div class="cuadros"><span class="it">1</span><span class="it">2</span><span class="it">3</span><span class="it">4</span><span class="nw">5</span><span class="nw">6</span><span class="rv">7</span><span class="rv">8</span><span class="rv">9</span><span class="nw">10</span></div><div style="margin-top:5px;font-size:13px;line-height:17px;color:var(--perg-80)"><span style="color:#E08A7C;font-weight:600">■ nuevo</span> · <span style="color:#8FC09C;font-weight:600">■ revalidado a coste cero</span> · ■ intacto</div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================ 21 -->
+<section class="slide" data-notas="Guion: slide 21 (0:20).">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VIII</span><span class="sep"></span>Cierre</div>
+    <h1>Lo que queda por hacer antes de vender la primera novela</h1>
+  </header>
+  <main class="cuerpo alto">
+    <div class="abs" style="left:0;top:0;width:548px">
+      <div class="etq" style="color:var(--lacre)">Riesgos</div>
+      <div class="rs"><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3 L24 22 H2 Z" fill="none" stroke="#B23A2B" stroke-width="2" stroke-linejoin="round"/><path d="M13 10 V15" stroke="#B23A2B" stroke-width="2"/><circle cx="13" cy="18.5" r="1.3" fill="#B23A2B"/></svg></span><p>Hoy el modelo se usa a través de una sesión de Claude Code: producción necesita <b>API propia</b> con límites de throughput</p></div>
+      <div class="rs"><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3 L24 22 H2 Z" fill="none" stroke="#B23A2B" stroke-width="2" stroke-linejoin="round"/><path d="M13 10 V15" stroke="#B23A2B" stroke-width="2"/><circle cx="13" cy="18.5" r="1.3" fill="#B23A2B"/></svg></span><p>El juez y el writer son el mismo modelo: sesgo; se compensa con revisión humana y el tope de continuidad</p></div>
+      <div class="rs"><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3 L24 22 H2 Z" fill="none" stroke="#B23A2B" stroke-width="2" stroke-linejoin="round"/><path d="M13 10 V15" stroke="#B23A2B" stroke-width="2"/><circle cx="13" cy="18.5" r="1.3" fill="#B23A2B"/></svg></span><p>Sin el toolchain de Lean, la cronología se evalúa en Python: la instalación de producción debe llevar <code>lake</code></p></div>
+      <div class="rs"><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3 L24 22 H2 Z" fill="none" stroke="#B23A2B" stroke-width="2" stroke-linejoin="round"/><path d="M13 10 V15" stroke="#B23A2B" stroke-width="2"/><circle cx="13" cy="18.5" r="1.3" fill="#B23A2B"/></svg></span><p>El coste de tokens es una estimación en cliente del SDK, no una factura</p></div>
+      <div class="rs"><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3 L24 22 H2 Z" fill="none" stroke="#B23A2B" stroke-width="2" stroke-linejoin="round"/><path d="M13 10 V15" stroke="#B23A2B" stroke-width="2"/><circle cx="13" cy="18.5" r="1.3" fill="#B23A2B"/></svg></span><p>Las fechas vitales de los personajes históricos que no están en el corpus <b>las pone el arquitecto sin fuente</b> (RT-09)</p></div>
+    </div>
+    <div class="abs" style="left:604px;right:0;top:0">
+      <div class="etq">Siguientes pasos</div>
+      <div class="rs"><span class="nn">1</span><p>Piloto con <b>50 novelas reales</b> de clientes de Relicario</p></div>
+      <div class="rs"><span class="nn">2</span><p>Fechas vitales de los personajes históricos <b>solo desde el corpus sellado</b>: la mitigación determinista de RT-09 va primero, porque «determinista antes que modelo»</p></div>
+      <div class="rs"><span class="nn">3</span><p>Un <b>revisor de canon y escaleta</b>, como nodo antes del gate de Plotting y no como herramienta, que mire trama, arcos y fechas; y el arquitecto y el juez en un modelo mayor. Opcional: una «edición premium» con precio aparte, a definir con Relicario, en vez de subir el precio base</p></div>
+      <div class="rs"><span class="nn">4</span><p>Migrar a una <b>API propia</b> (RT-08)</p></div>
+    </div>
+    <p class="nota abs" style="left:0;right:0;top:432px;font-size:15px">{{siguientes_pasos_pie}}</p>
+  </main>
+</section>
+
+<!-- ============================================================ 22 · CONTRAPORTADA -->
+<section class="slide oscura contra" data-pie="no" data-notas="Guion: slide 22.">
+  <div class="cubierta">
+    <div class="filete"></div>
+    <div class="dentro">
+      <div class="logo-grande"><div class="svgq" data-render="logoQ" data-bowl="#C9A34E" data-cinta="#F5EFE3"></div><div class="wm">{{empresa}}</div></div>
+      <div class="ini-grande" style="margin-left:0">{{iniciativa}}</div>
+      <div class="lema">«{{lema}}»</div>
+      <div class="filete-corto"></div>
+      <div class="contacto">{{estudiante}} · {{empresa}}<br>{{email}}<br><span class="mono">{{repositorio}}</span></div>
+    </div>
+  </div>
+  <div class="para-cliente">
+    <div class="svgr" data-render="logoR" data-color="#7D7869"></div>
+    <div>
+      <div class="pp">Preparado para</div>
+      <div class="rel" style="color:var(--perg-80)">{{cliente}}</div>
+    </div>
+  </div>
+  <div class="gracias">Gracias. Preguntas técnicas: 5 minutos.<br>Anexos A1–A8, en PDF aparte.</div>
+</section>
+
+<script src="deck.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - link "StoryMaker, al taller" [ref=f3e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e6]: StoryMaker
+    - navigation "Navegación principal" [ref=f3e7]:
+      - link "Taller" [ref=f3e8] [cursor=pointer]:
+        - /url: /
+      - link "Nuevo encargo" [ref=f3e9] [cursor=pointer]:
+        - /url: /encargo
+    - radiogroup "Tema de la aplicación" [ref=f3e10]:
+      - radio "Tema del sistema" [checked] [ref=f3e11] [cursor=pointer]: ◐
+      - radio "Tema claro" [ref=f3e12] [cursor=pointer]: ☀
+      - radio "Tema oscuro" [ref=f3e13] [cursor=pointer]: ☾
+  - main [ref=f3e14]:
+    - article [ref=f3e224]:
+      - generic [ref=f3e225]:
+        - navigation [ref=f3e226]:
+          - link "Índice" [ref=f3e227] [cursor=pointer]:
+            - /url: /novelas/lozoya/v/3
+        - button "Ajustes de lectura" [ref=f3e229] [cursor=pointer]:
+          - generic [ref=f3e230]: A
+          - generic [ref=f3e231]: a
+      - heading "Capítulo 4. 24 de Junio" [level=1] [ref=f3e232]
+      - article [ref=f3e233]:
+        - paragraph [ref=f3e234]: "La madrugada del veinticuatro encontró a Tomás despierto antes de que la ciudad amaneciera. No había dormido bien, el sueño le rehuyó como temeroso de lo que vendría, dejándolo entre sus vasijas de barro con los ojos abiertos escuchando los sonidos nocturnos de Lavapiés. Se levantó en la penumbra, se vistió sin prisa, y sin saber por qué comenzó a silbar la copla que siempre lo acompañaba cuando la inquietud lo devoraba: \"Que vueltas da la rueda, que vueltas da la fortuna...\" Sus dedos temblaban ligeramente mientras se anudaba la faja."
+        - paragraph [ref=f3e235]: Se dirigió al pozo como tantas otras mañanas, pero esta vez cada gesto llevaba el peso de una despedida. Llenó sus recipientes uno a uno, realizando cada movimiento con la precisión ritual de quien sabe que repetirá esos actos pocas veces más. El agua brotaba clara, fría, la misma que había traído en su angarilla durante casi treinta años. Sus dedos la conocían como la piel de alguien cercano.
+        - paragraph [ref=f3e236]: Las primeras casas aún dormían. En la de Doña Martina, encontró sus ojos esperando junto a la ventana, como si supiera que Tomás llegaría con una diferencia casi imperceptible en la manera de cruzar el umbral. Ella no preguntó nada. Simplemente, cuando él se disponía a marcharse, le ofreció un pedazo de pan que había guardado desde la víspera. "Para que tengas fuerza", murmuró, y en esas palabras había una certeza de que ese día exigía más que los otros.
+        - paragraph [ref=f3e237]: "Los clientes lo recibieron con una amabilidad extraña, como si todos habitaran simultáneamente dos mundos: el que se iba y el que llegaba. Nadie hablaba del agua que vendría por los grifos. Era demasiado próximo, demasiado real. En su lugar, cada encuentro se cargaba de silencios largos, de miradas que decían lo que la lengua no osaba. Un maestro le pagó doble sin explicación. Una muchacha le sonrió como recordando algo que aún no había sucedido."
+        - paragraph [ref=f3e238]: Cuando pasó por el taller del sastre, el maestro salió con sus manos llenas de alfileres y simplemente le colocó una mano en el hombro. No hubo palabras. Tampoco las necesitaba.
+        - paragraph [ref=f3e239]: Amancio lo encontró cerca de la iglesia de San Andrés. Su viejo compañero, su rival de ronda, su hermano de oficio. Se acercó en silencio y le palmoteó la espalda con una fuerza que parecía transmitir todo lo que treinta años de compartir calles había acumulado. "Hoy es el día", dijo simplemente, y Tomás asintió sin apartar la vista del horizonte.
+        - paragraph [ref=f3e240]: "Por las once de la mañana, la gente comenzó a congregarse en la Calle San Bernardo. Corrió la noticia por el barrio como fuego en hierba seca: la inauguración. Tomás se dejó llevar por la marea de cuerpos, notando cómo algunos vecinos lo saludaban con gestos que parecían homenajes, aunque él solo fuera un aguador que llegaba con su angarilla. La multitud se hacía cada vez más densa. Había autoridades civiles, técnicos con papeles en las manos, obreros que habían cavado durante meses. Y entre ellos, erguido a caballo con su compostura impenetrable, estaba Lucio del Valle."
+        - paragraph [ref=f3e241]: Comenzaron los discursos. Palabras sobre progreso, sobre futuro, sobre la voluntad de la nación moderna que traía el agua limpia a todos. "Este es el día en que Madrid se transforma", proclamó una voz desde la multitud, y la gente asintió, algunos con genuina alegría, otros con ese aturdimiento de quien presencia el fin de una era.
+        - paragraph [ref=f3e242]: Del Valle avanzó hacia el primer grifo público que había sido instalado en la calle. Llevaba los documentos de la obra, los planos, la historia completa de tuberías que habían traído el agua desde el Lozoya hasta aquí, hasta este patio de vecindad donde mañana cualquier criada podría llenar un cántaro sin esperar. Los técnicos colocaron sus manos junto a la suya en el grifo de cobre.
+        - paragraph [ref=f3e243]: Y entonces, con un gesto que parecía casi ceremonial, Del Valle giró la manecilla.
+        - paragraph [ref=f3e244]: El agua brotó clara, abundante, limpia. No fue un chorizo débil como el de las fuentes viejas. Fue una fuente de agua que parecía no agotarse, que transformaba en ese instante la noción misma de lo que era tener agua en una ciudad. La multitud estalló en gritos. Aplausos, vivas, algunos llantos de los ancianos que jamás imaginaron ver este día. Mujeres se arrodillaban junto al grifo como si rezaran, tocando el agua con incredulidad.
+        - paragraph [ref=f3e245]: Tomás estaba en el margen. Nadie lo empujaba hacia adelante, pero tampoco lo dejaba atrás del todo. Su angarilla seguía cargada de vasijas que ahora eran arqueología viviente, reliquias de un oficio que contaba sus últimas horas.
+        - paragraph [ref=f3e246]: "En algún momento, los ojos de Lucio del Valle encontraron los suyos entre la multitud. No fue casual. Fue el reconocimiento de dos hombres que comprendían lo que estaba sucediendo: uno que lo había provocado con toda la fuerza de su ingenio, otro que lo recibía con la serenidad de quien ha vivido bien hasta el final. Del Valle inclinó levemente la cabeza. Tomás sostuvo la mirada."
+        - paragraph [ref=f3e247]: Amancio se acercó y sus dedos encontraron el brazo de Tomás. Se sonrieron con una complicidad que ningún grifo podría borrar, el conocimiento tácito de que habían sido necesarios, que habían cumplido, que la ciudad los había bebido durante décadas.
+        - paragraph [ref=f3e248]: "Sin pensar, Tomás comenzó a silbar. La copla nuevamente, pero esta vez inaudible, casi para sí mismo: \"Que vueltas da la rueda, que vueltas da la fortuna...\" La multitud cantaba y festejaba alrededor, celebrando el futuro mientras él silbaba su duelo privado."
+        - paragraph [ref=f3e249]: La tarde encontró a Tomás caminando lentamente de regreso a Lavapiés. No había prisa. Las calles que conocía parecían haber cambiado en cuestión de horas, aunque nada físicamente fuera distinto. Era el aire mismo el que se había transformado, como si la ciudad entera hubiera respirado hondo y exhalara un suspiro por abandonar lo que era.
+        - paragraph [ref=f3e250]: En el pozo donde tantas veces había llenado sus recipientes, Tomás se sentó. El agua seguía fluyendo desde la fuente subterránea, ajena ahora a los grifos de cobre que llevaban su alma hacia las casas de Madrid. Se quedó allí observando cómo el agua caía, cómo brillaba bajo la última luz del día.
+        - paragraph [ref=f3e251]: Pepino lo encontró cuando el cielo comenzaba a teñirse de naranja. El muchacho se sentó silenciosamente a su lado, sin preguntas, sin urgencias.
+        - paragraph [ref=f3e252]: "\"¿Qué hacemos ahora, Maestro?\", preguntó después de un tiempo."
+        - paragraph [ref=f3e253]: "Tomás respiró profundamente. Tenía treinta años para responder esa pregunta, y sin embargo las palabras vinieron con una claridad que lo sorprendió: \"Aprendimos a hacer bien nuestro trabajo. Eso es lo que importa. No importa cuánto tiempo dure\"."
+        - paragraph [ref=f3e254]: "Miró hacia las montañas del Lozoya en la lejanía, donde el agua comenzaba su viaje hacia la ciudad. Allá arriba, en esas sierras que sus ojos nunca habían visto pero que ahora conocía de nombre, existía el origen de lo que había matado su oficio. Y sin embargo, allá también existía el origen de lo que él había dado durante décadas: agua limpia, agua que saciaba, agua que permitía vivir."
+        - paragraph [ref=f3e255]: Silbó nuevamente la copla, pero esta vez el tono había cambiado. No era la música de la angustia, sino la música de quien reconoce que la rueda gira y que ha tenido el privilegio de ser parte de su movimiento, aunque solo fuera por un instante, aunque solo fuera antes de que todo cambiara para siempre.
+      - navigation "Navegación entre capítulos" [ref=f3e256]:
+        - link "← Capítulo anterior" [ref=f3e258] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/3
+        - link "Índice" [ref=f3e259] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3
+        - link "Capítulo siguiente →" [ref=f3e261] [cursor=pointer]:
+          - /url: /novelas/lozoya/v/3/capitulos/5
+      - generic [ref=f3e262]:
+        - heading "Pedir un cambio" [level=2] [ref=f3e263]
+        - generic [ref=f3e264]:
+          - paragraph [ref=f3e265]: Selecciona en el texto el fragmento que quieres cambiar.
+          - generic [ref=f3e266]:
+            - text: Qué quieres cambiar
+            - textbox "Qué quieres cambiar" [disabled] [ref=f3e267]:
+              - /placeholder: "Por ejemplo: el perro se llama Nala, no Toby"
+          - button "Enviar petición" [disabled] [ref=f3e268]

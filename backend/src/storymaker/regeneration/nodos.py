@@ -29,13 +29,17 @@ import aiosqlite
 from storymaker.commons.db.repos import arnes, plan, texto
 from storymaker.commons.graph.dependencias import actuales
 from storymaker.commons.graph.estado import EstadoNovela
-from storymaker.regeneration import cambio
+from storymaker.regeneration import cambio, retirados
 from storymaker.regeneration.esquemas import Alcance, ObjetoDelCambio
 from storymaker.writing.nodos import escribir_capitulo
 
 
 async def calcular_alcance(
-    db: aiosqlite.Connection, *, objeto: ObjetoDelCambio, fila_id: int
+    db: aiosqlite.Connection,
+    *,
+    objeto: ObjetoDelCambio,
+    fila_id: int,
+    pares: retirados.Pares | None = None,
 ) -> Alcance:
     """Qué capítulos se regeneran y cuáles solo se revisan.
 
@@ -43,11 +47,16 @@ async def calcular_alcance(
     agrega a capítulo. Si lo que cambió es un arco, salen de `uso_hito`, su gemelo — sin él,
     mover un hito del capítulo 8 al 5 no invalidaría nada y los avisos de ejecución quedarían
     calculados contra un arco que ya no existe.
+
+    En un cambio de nombre se suman los capítulos cuyo texto aprobado lo dice: las tablas de
+    uso las escribe un extractor, y un personaje nombrado de pasada no deja fila en ninguna.
     """
     if objeto is ObjetoDelCambio.HECHO:
         afectados = await texto.capitulos_afectados(db, fila_id)
     else:
         afectados = await _capitulos_por_canon(db, objeto, fila_id)
+    if pares:
+        afectados = sorted({*afectados, *await retirados.capitulos_que_lo_nombran(db, pares)})
 
     total = await plan.total_de_capitulos(db)
     if not afectados:
@@ -166,13 +175,18 @@ async def request(estado: EstadoNovela) -> EstadoNovela:
     await cambio.aplicar(
         deps.db, deps.vectorizador, resuelto, actor="autor", fase_run_id=estado["fase_run_id"]
     )
-    alcance = await calcular_alcance(deps.db, objeto=resuelto.objeto, fila_id=resuelto.fila_id)
+    pares = retirados.pares(resuelto.objeto, resuelto.campo, resuelto.antes, resuelto.despues)
+    await retirados.propagar(deps.db, pares)
+    alcance = await calcular_alcance(
+        deps.db, objeto=resuelto.objeto, fila_id=resuelto.fila_id, pares=pares
+    )
     return {
         **estado,
         "pc": "Invalidate",
         "regenerando": True,
         "a_regenerar": list(alcance.a_regenerar),
         "a_invalidar": list(alcance.a_invalidar),
+        "retirados": [list(p) for p in pares],
     }
 
 
