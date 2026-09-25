@@ -2,7 +2,7 @@
 //
 // Lee datos.json y rellena la maqueta: sustituye cada {{ruta|formato}} de los textos y de
 // los atributos src, pinta las tablas y gráficos que llevan data-render y añade el pie de
-// cada slide (línea de tiempo de Oro viejo, logo y «03 / 22»). Al terminar deja
+// cada slide (línea de tiempo de Oro viejo, logo y «03 / 23»). Al terminar deja
 // window.DECK_LISTO = true, que es lo que espera construir.py antes de imprimir.
 //
 // Formatos: |0 entero con punto de miles, |1 y |2 decimales con coma. Sin formato, el valor

@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="../anexos/marca.css">
 <link rel="stylesheet" href="deck.css">
 <style>
-  /* ---- 01 · Portada y 22 · Contraportada ---- */
+  /* ---- 01 · Portada y 23 · Contraportada ---- */
   .cubierta { position: absolute; left: 150px; top: 64px; width: 540px; height: 592px; border: 1px solid var(--oro); }
   .cubierta .filete { position: absolute; left: 12px; top: 12px; right: 12px; bottom: 12px; border: 1px solid var(--oro); }
   .cubierta .dentro { position: absolute; left: 56px; right: 56px; top: 64px; }
@@ -15,10 +15,11 @@
   .logo-grande .svgq svg { width: 58px; height: 64px; display: block; }
   .logo-grande .wm { font-family: var(--serif); font-weight: 600; font-size: 42px; line-height: 48px; color: var(--pergamino); }
   .ini-grande { font-size: 15px; line-height: 20px; color: var(--perg-60); margin: 8px 0 0 74px; }
-  .portada-titulo { font-family: var(--serif); font-weight: 600; font-size: 56px; line-height: 62px; color: var(--pergamino); margin: 58px 0 14px 0; }
+  .portada-titulo { font-family: var(--serif); font-weight: 600; font-size: 56px; line-height: 62px; color: var(--pergamino); margin: 40px 0 14px 0; }
   .portada-sub { font-size: 22px; line-height: 30px; color: var(--oro); }
-  .filete-corto { width: 72px; height: 0; border-top: 1.5px solid var(--oro); margin: 34px 0 26px 0; }
+  .filete-corto { width: 72px; height: 0; border-top: 1.5px solid var(--oro); margin: 28px 0 20px 0; }
   .portada-datos { font-size: 17px; line-height: 27px; color: var(--perg-80); }
+  .portada-poc { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oro); margin: 2px 0 6px 0; }
   .para-cliente { position: absolute; left: 790px; top: 262px; width: 360px; display: flex; align-items: center; gap: 22px; }
   .para-cliente .svgr { width: 62px; height: 80px; }
   .para-cliente .svgr svg { width: 62px; height: 80px; display: block; }
@@ -270,7 +271,27 @@
   .cuadros .rv { background: var(--salvia); color: var(--pergamino); }
   .cuadros .it { background: #3A4356; color: var(--perg-80); }
 
-  /* ---- 21 ---- */
+  /* ---- 21 · Versión 2 ---- */
+  .v2c { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .v2c .num-circ { margin-top: 1px; }
+  .v2c p { margin: 0; font-size: 16px; line-height: 22px; }
+  table.v2 { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.v2 th { background: var(--tinta); color: var(--pergamino); font-weight: 600; font-size: 15px; line-height: 18px; padding: 7px 10px; text-align: right; vertical-align: bottom; }
+  table.v2 th:first-child { text-align: left; }
+  table.v2 th .sub { display: block; font-weight: 400; font-size: 14px; line-height: 17px; color: var(--perg-80); margin-top: 2px; }
+  table.v2 td { font-size: 16px; line-height: 20px; padding: 6px 10px; border-bottom: 1px solid var(--linea); }
+  table.v2 td.num { font-size: 16px; }
+  table.v2 td .sec { font-family: var(--sans); font-weight: 400; font-size: 14px; }
+  table.v2 tr.total td { font-size: 17px; }
+  table.v2 tr.margen td { font-weight: 600; background: var(--salvia-t); border-bottom: 2px solid var(--salvia); }
+  table.v2 tr.margen td .sec { color: var(--tinta); }
+  .dev21 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dev21 .chip { font-size: 15px; line-height: 18px; padding: 5px 10px; font-weight: 500; }
+  .dev21 .chip b { font-weight: 600; }
+  .dev21 .tot { font-size: 16px; line-height: 20px; font-weight: 600; }
+  .dev21 .tot .cifra { font-family: var(--sans); font-weight: 700; color: #9A7A2E; }
+
+  /* ---- 22 · Riesgos ---- */
   .rs { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
   .rs .ic { width: 26px; height: 26px; flex: 0 0 26px; }
   .rs .ic svg { width: 26px; height: 26px; display: block; }
@@ -290,7 +311,9 @@
       <div class="portada-titulo">{{producto}}</div>
       <div class="portada-sub">{{subtitulo}}</div>
       <div class="filete-corto"></div>
-      <div class="portada-datos">{{ocasion}}<br>{{fecha}}<br>Presenta: {{estudiante}} · {{empresa}}</div>
+      <div class="portada-datos">{{ocasion}}</div>
+      <div class="portada-poc">{{version_poc}}</div>
+      <div class="portada-datos">{{fecha}}<br>Presenta: {{estudiante}} · {{empresa}}</div>
     </div>
   </div>
   <div class="para-cliente">
@@ -856,8 +879,49 @@
   </main>
 </section>
 
-<!-- ============================================================ 21 -->
-<section class="slide" data-notas="Guion: slide 21 (0:20).">
+<!-- ============================================================ 21 · VERSIÓN 2 -->
+<section class="slide" data-notas="Guion: slide 21 (0:30). Bloque v2 de datos.json; detalle en el anexo A8, página «Versión 2».">
+  <header class="cab">
+    <div class="kicker"><span class="cap">Capítulo VIII</span><span class="sep"></span>Versión 2</div>
+    <h1 class="l2">De la prueba de concepto a la versión 2: críticos internos en lugar de gates humanos</h1>
+  </header>
+  <main class="cuerpo" style="top:150px">
+    <div class="abs" style="left:0;top:0;width:470px">
+      <div class="etq">Qué cambia</div>
+      <div class="v2c"><span class="num-circ">a</span><p><b>{{v2.cambios.0.fase}}:</b> {{v2.cambios.0.texto}}</p></div>
+      <div class="v2c"><span class="num-circ">b</span><p><b>{{v2.cambios.1.fase}}:</b> {{v2.cambios.1.texto}}</p></div>
+      <div class="v2c"><span class="num-circ">c</span><p><b>{{v2.cambios.2.fase}}:</b> {{v2.cambios.2.texto}}</p></div>
+      <div class="franja" style="margin-top:4px;font-size:16px;line-height:22px;padding:10px 14px">{{v2.gates}}</div>
+    </div>
+    <div class="abs" style="left:502px;right:0;top:0">
+      <div class="etq">Coste unitario por novela · {{v2.novelas_mes}} novelas/mes</div>
+      <table class="t v2">
+        <colgroup><col style="width:206px"><col><col><col></colgroup>
+        <tr><th>&nbsp;</th><th>{{v2.escenarios.0.nombre}}<span class="sub">{{v2.escenarios.0.detalle}}</span></th><th>{{v2.escenarios.1.nombre}}<span class="sub">{{v2.escenarios.1.detalle}}</span></th><th>{{v2.escenarios.2.nombre}}<span class="sub">{{v2.escenarios.2.detalle}}</span></th></tr>
+        <tr><td>Tokens</td><td class="num">{{v2.escenarios.0.tokens_eur|2}} €</td><td class="num">{{v2.escenarios.1.tokens_eur|2}} €</td><td class="num">{{v2.escenarios.2.tokens_eur|2}} €</td></tr>
+        <tr><td>Revisiones <span class="sec">({{coste.revisiones_media|1}} de media)</span></td><td class="num">{{v2.escenarios.0.revisiones_eur|2}} €</td><td class="num">{{v2.escenarios.1.revisiones_eur|2}} €</td><td class="num">{{v2.escenarios.2.revisiones_eur|2}} €</td></tr>
+        <tr><td>Supervisión humana</td><td class="num">{{v2.escenarios.0.supervision_eur|2}} € <span class="sec">({{v2.escenarios.0.supervision_min}} min)</span></td><td class="num">{{v2.escenarios.1.supervision_eur|2}} € <span class="sec">({{v2.escenarios.1.supervision_min}} min)</span></td><td class="num">{{v2.escenarios.2.supervision_eur|2}} € <span class="sec">({{v2.escenarios.2.supervision_min}} min)</span></td></tr>
+        <tr><td>Infraestructura y mantenimiento</td><td class="num">{{v2.escenarios.0.infra_eur|2}} €</td><td class="num">{{v2.escenarios.1.infra_eur|2}} €</td><td class="num">{{v2.escenarios.2.infra_eur|2}} €</td></tr>
+        <tr class="total"><td>Total</td><td class="num">{{v2.escenarios.0.total_eur|2}} €</td><td class="num">{{v2.escenarios.1.total_eur|2}} €</td><td class="num">{{v2.escenarios.2.total_eur|2}} €</td></tr>
+        <tr class="margen"><td>Margen a {{v2.pvp_iva_eur}} €</td><td class="num">{{v2.escenarios.0.margen_eur|2}} € <span class="sec">{{v2.escenarios.0.margen_pct|1}} %</span></td><td class="num">{{v2.escenarios.1.margen_eur|2}} € <span class="sec">{{v2.escenarios.1.margen_pct|1}} %</span></td><td class="num">{{v2.escenarios.2.margen_eur|2}} € <span class="sec">{{v2.escenarios.2.margen_pct|0}} %</span></td></tr>
+      </table>
+    </div>
+    <div class="abs" style="left:0;right:0;top:362px">
+      <div class="etq">Desarrollo de la versión 2 · {{v2.desarrollo.tarifa_eur_h}} €/h</div>
+      <div class="dev21">
+        <span class="chip neutro">{{v2.desarrollo.fases.0.fase}} <b>{{v2.desarrollo.fases.0.horas}} h</b></span>
+        <span class="chip neutro">{{v2.desarrollo.fases.1.fase}} <b>{{v2.desarrollo.fases.1.horas}} h</b></span>
+        <span class="chip neutro">{{v2.desarrollo.fases.2.fase}} <b>{{v2.desarrollo.fases.2.horas}} h</b></span>
+        <span class="chip neutro">{{v2.desarrollo.fases.3.fase}} <b>{{v2.desarrollo.fases.3.horas}} h</b></span>
+        <span class="tot">= <span class="cifra">{{v2.desarrollo.total_horas}} h · {{v2.desarrollo.total_eur|0}} €</span>, más ≈{{v2.desarrollo.evals_eur}} € de ejecuciones de evaluación</span>
+      </div>
+    </div>
+    <p class="nota abs" style="left:0;right:0;top:428px;font-size:14px;line-height:18px">{{v2.pie}}</p>
+  </main>
+</section>
+
+<!-- ============================================================ 22 · RIESGOS -->
+<section class="slide" data-notas="Guion: slide 22 (0:20).">
   <header class="cab">
     <div class="kicker"><span class="cap">Capítulo VIII</span><span class="sep"></span>Cierre</div>
     <h1>Lo que queda por hacer antes de vender la primera novela</h1>
@@ -875,15 +939,14 @@
       <div class="etq">Siguientes pasos</div>
       <div class="rs"><span class="nn">1</span><p>Piloto con <b>50 novelas reales</b> de clientes de Relicario</p></div>
       <div class="rs"><span class="nn">2</span><p>Fechas vitales de los personajes históricos <b>solo desde el corpus sellado</b>: la mitigación determinista de RT-09 va primero, porque «determinista antes que modelo»</p></div>
-      <div class="rs"><span class="nn">3</span><p>Un <b>revisor de canon y escaleta</b>, como nodo antes del gate de Plotting y no como herramienta, que mire trama, arcos y fechas; y el arquitecto y el juez en un modelo mayor. Opcional: una «edición premium» con precio aparte, a definir con Relicario, en vez de subir el precio base</p></div>
-      <div class="rs"><span class="nn">4</span><p>Migrar a una <b>API propia</b> (RT-08)</p></div>
+      <div class="rs"><span class="nn">3</span><p>La <b>versión 2</b>: críticos internos y modelos por rol (slide 21)</p></div>
     </div>
     <p class="nota abs" style="left:0;right:0;top:432px;font-size:15px">{{siguientes_pasos_pie}}</p>
   </main>
 </section>
 
-<!-- ============================================================ 22 · CONTRAPORTADA -->
-<section class="slide oscura contra" data-pie="no" data-notas="Guion: slide 22.">
+<!-- ============================================================ 23 · CONTRAPORTADA -->
+<section class="slide oscura contra" data-pie="no" data-notas="Guion: slide 23.">
   <div class="cubierta">
     <div class="filete"></div>
     <div class="dentro">

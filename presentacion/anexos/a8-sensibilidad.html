@@ -20,6 +20,14 @@
   table.mx td.base { box-shadow: none; outline: 2px solid var(--tinta); outline-offset: 2px; }
   .ley { display: flex; gap: 20px; align-items: center; font-size: 15px; margin-top: 8px; }
   .ley i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; vertical-align: -2px; }
+  table.v2 th { text-align: right; vertical-align: bottom; }
+  table.v2 th:first-child { text-align: left; }
+  table.v2 th span { display: block; font-weight: 400; font-size: 15px; color: #D9D4C8; }
+  table.v2 tr.margen td { font-weight: 600; background: var(--salvia-15); border-bottom: 2px solid var(--salvia); }
+  table.v2 td.num span { font-family: var(--sans); font-weight: 400; color: var(--piedra); }
+  table.v2 tr.margen td.num span { color: var(--tinta); }
+  table.fs th { text-align: right; }
+  table.fs th:first-child { text-align: left; }
   .formula { font-family: var(--mono); font-weight: 500; font-size: 15px; background: var(--tinta-06); border-radius: 6px; padding: 8px 12px; }
 </style>
 </head>
@@ -85,8 +93,93 @@
     </div>
     <div class="fila" style="gap:16px;margin-top:16px">
       <div class="caja fina col"><h2 style="font-size:17px">Qué protege el margen</h2><p style="margin:0">Con los tokens de hoy, cobrar 4,90 € desde la 4.ª revisión devuelve la fila de 6 revisiones a la de 1,5 (≈ 35 €). Con tokens ×3 recupera 12,15 € de los 16,65 € que cuestan esas revisiones: la palanca que hay que vigilar son las revisiones, no el modelo.</p></div>
-      <div class="caja fina col"><h2 style="font-size:17px">Subir de modelo el arquitecto y el juez</h2><p style="margin:0">Pendiente de precio oficial; el efecto se lee en la columna del factor correspondiente. No se ponen aquí precios de modelos: no están verificados.</p></div>
+      <div class="caja fina col"><h2 style="font-size:17px">Subir de modelo el arquitecto, los críticos y el juez</h2><p style="margin:0">Con precios oficiales, en las páginas 3 y 4 («Versión 2»): con Sonnet 5 en los roles clave la novela cuesta 14,04 €; con Opus 5 en arquitecto, críticos y juez, 19,49 €. La subida de tokens la compensa la supervisión por muestreo.</p></div>
     </div>
+  </main>
+</section>
+
+<!-- 3 · Versión 2: coste unitario -->
+<section class="pagina" data-fuente="Bloque <code>v2</code> de <code>presentacion/deck/datos.json</code> · slide 21 · estimación con precios oficiales, no medición">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A8</span><span class="sep"></span>Versión 2 · coste unitario</div>
+    <h1>A cuesta como la PoC y quita el cuello de botella humano: a 300 novelas/mes, la supervisión baja de 100 h a 25 h</h1>
+  </header>
+  <main class="cuerpo" style="top:140px">
+    <div class="fila" style="gap:32px">
+      <div style="flex:0 0 700px">
+        <h2>Coste unitario por novela · 300 novelas/mes</h2>
+        <table class="t v2">
+          <tr><th style="width:240px">&nbsp;</th><th>PoC v1<span>Haiku 4.5</span></th><th>v2 A<span>Sonnet 5 en roles clave</span></th><th>v2 B<span>Opus 5 en arquitecto, críticos y juez</span></th></tr>
+          <tr><td>Tokens</td><td class="num">2,77 €</td><td class="num">7,72 €</td><td class="num">12,74 €</td></tr>
+          <tr><td>Revisiones (1,5 de media)</td><td class="num">0,81 €</td><td class="num">2,27 €</td><td class="num">2,70 €</td></tr>
+          <tr><td>Supervisión humana</td><td class="num">8,35 € <span>(20 min)</span></td><td class="num">2,08 € <span>(5 min)</span></td><td class="num">2,08 € <span>(5 min)</span></td></tr>
+          <tr><td>Infraestructura y mantenimiento</td><td class="num">1,97 €</td><td class="num">1,97 €</td><td class="num">1,97 €</td></tr>
+          <tr class="dest"><td><b>Total</b></td><td class="num"><b>13,90 €</b></td><td class="num"><b>14,04 €</b></td><td class="num"><b>19,49 €</b></td></tr>
+          <tr class="margen"><td>Margen a 59 €</td><td class="num">34,86 € <span>71,5 %</span></td><td class="num">34,72 € <span>71,2 %</span></td><td class="num">29,27 € <span>60 %</span></td></tr>
+        </table>
+        <p class="nota" style="margin-top:8px">Margen sobre 48,76 € sin IVA. Infraestructura y mantenimiento no cambian: (70 € + 520 €/mes) ÷ 300. Supervisión a 300 novelas/mes: 20 min × 300 = <b>100 h</b> en la PoC; 5 min × 300 = <b>25 h</b> en la v2.</p>
+      </div>
+      <div class="col">
+        <div class="caja fina">
+          <h2 style="font-size:17px">Supervisión por muestreo</h2>
+          <p style="margin:0">Los cinco gates humanos pasan a ser nodos críticos. La persona ya no aprueba cada gate: lee entera <b>una novela de cada quince</b> (≈45 min, 3 min por novela) y hace un <b>control de 2 min</b> en cada una. Queda en ≈5 min de media por novela, a 25 €/h: <b>2,08 €</b>.</p>
+        </div>
+        <div class="caja fina" style="margin-top:14px">
+          <h2 style="font-size:17px">Desarrollo de la versión 2 · 65 €/h</h2>
+          <table class="t">
+            <tr><td>Diseño</td><td class="num">40 h</td></tr>
+            <tr><td>Desarrollo</td><td class="num">90 h</td></tr>
+            <tr><td>Validación</td><td class="num">60 h</td></tr>
+            <tr><td>Despliegue</td><td class="num">20 h</td></tr>
+            <tr class="dest"><td><b>Total</b></td><td class="num"><b>210 h · 13.650 €</b></td></tr>
+          </table>
+          <p class="nota" style="margin:6px 0 0 0">Más ≈300 € de ejecuciones de evaluación.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- 4 · Versión 2: supuestos -->
+<section class="pagina" data-fuente="Coste medido por fase: media de <code>fase_run</code> en las novelas de 10 capítulos · precios oficiales por millón de tokens">
+  <header class="cab">
+    <div class="kicker"><span class="anexo">Anexo A8</span><span class="sep"></span>Versión 2 · supuestos de cada escenario</div>
+    <h1>Los tokens de la v2 salen de multiplicar, fase a fase, lo que ya se ha medido en la PoC</h1>
+  </header>
+  <main class="cuerpo">
+    <div class="fila" style="gap:32px">
+      <div style="flex:0 0 700px">
+        <h2>Coste de tokens por fase · novela de 10 capítulos</h2>
+        <table class="t fs">
+          <tr><th>Fase</th><th>PoC medido</th><th>Factor A</th><th>v2 A</th><th>Factor B</th><th>v2 B</th></tr>
+          <tr><td>Encargo</td><td class="num">0,06 $</td><td class="num">×1</td><td class="num">0,06 $</td><td class="num">×1</td><td class="num">0,06 $</td></tr>
+          <tr><td>Investigación</td><td class="num">0,22 $</td><td class="num">×3</td><td class="num">0,65 $</td><td class="num">×5</td><td class="num">1,08 $</td></tr>
+          <tr><td>Trama (canon y escaleta)</td><td class="num">0,70 $</td><td class="num">×3</td><td class="num">2,09 $</td><td class="num">×9</td><td class="num">6,26 $</td></tr>
+          <tr><td>Escritura</td><td class="num">1,77 $</td><td class="num">×3</td><td class="num">5,30 $</td><td class="num">×3</td><td class="num">5,30 $</td></tr>
+          <tr><td>Publicación (juez)</td><td class="num">0,24 $</td><td class="num">×2</td><td class="num">0,48 $</td><td class="num">×6</td><td class="num">1,45 $</td></tr>
+          <tr class="dest"><td><b>Total</b></td><td class="num"><b>2,98 $</b></td><td class="num">&nbsp;</td><td class="num"><b>8,58 $</b></td><td class="num">&nbsp;</td><td class="num"><b>14,15 $</b></td></tr>
+          <tr><td>En euros (1 $ ≈ 0,90 €)</td><td class="num">2,68 €</td><td class="num">&nbsp;</td><td class="num"><b>7,72 €</b></td><td class="num">&nbsp;</td><td class="num"><b>12,74 €</b></td></tr>
+        </table>
+        <p class="nota" style="margin-top:8px">Los multiplicadores se aplican a la media por fase sin redondear; por eso 3 × 0,22 da 0,65 y no 0,66. La slide 18 usa para la PoC la media de tres novelas completas (3,08 $ ≈ 2,77 €); la base por fase es la de 2,98 $.</p>
+      </div>
+      <div class="col">
+        <div class="caja fina">
+          <h2 style="font-size:17px">Precios oficiales · $ por millón de tokens</h2>
+          <table class="t">
+            <tr><th>Modelo</th><th class="num">Entrada</th><th class="num">Salida</th></tr>
+            <tr><td>Haiku 4.5</td><td class="num">1 $</td><td class="num">5 $</td></tr>
+            <tr><td>Sonnet 5</td><td class="num">2 $</td><td class="num">10 $</td></tr>
+            <tr><td>Opus 5</td><td class="num">5 $</td><td class="num">25 $</td></tr>
+          </table>
+          <p class="nota" style="margin:6px 0 0 0">Opus 5 lleva además ×1,2 por tokenizador.</p>
+        </div>
+        <div class="caja fina" style="margin-top:14px">
+          <h2 style="font-size:17px">Revisiones</h2>
+          <p style="margin:0">0,54 € por revisión × 1,5 de media = 0,81 € en la PoC. En la v2, × 2,8 en A (<b>2,27 €</b>) y × 10/3 en B (<b>2,70 €</b>): una revisión reescribe capítulos y pasa por el juez, así que sube con ellos.</p>
+        </div>
+      </div>
+    </div>
+    <p class="nota" style="margin-top:12px"><b>Estimación, no medición:</b> la v2 no se ha ejecutado. Un crítico solo sustituye a un gate humano cuando las evals demuestran que caza lo mismo que la persona; esa comprobación es la fase de validación del presupuesto.</p>
   </main>
 </section>
 

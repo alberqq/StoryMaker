@@ -7,6 +7,7 @@
   "producto": "Novela Relicario",
   "subtitulo": "Novelas históricas personalizadas, verificadas antes de regalarse",
   "ocasion": "Propuesta técnico-comercial para Relicario",
+  "version_poc": "Prueba de concepto · versión 1",
   "fecha": "[FECHA DE LA PRESENTACIÓN]",
   "estudiante": "[TU NOMBRE]",
   "email": "[TU EMAIL]",
@@ -488,5 +489,92 @@
     "divergencias": 1
   },
   "rt09": "Y el límite: Lean solo es tan fiable como sus fechas. En el brief adversarial temporal, el arquitecto movió la muerte de Gravina de 1806 a 1809 y Lean validó contra la fecha inventada (RT-09). Mitigación propuesta: exigir que las fechas vitales de un personaje histórico salgan del corpus sellado.",
-  "siguientes_pasos_pie": "Los tokens son ~20 % del coste unitario: aun triplicándolos, el margen se queda en el 57 %."
+  "siguientes_pasos_pie": "Los tokens son ~20 % del coste unitario de la PoC; en la v2 suben, pero la supervisión humana baja más.",
+  "v2": {
+    "_nota": "Slide 21 y anexo A8, página «Versión 2». Estimación, no medición: precios oficiales por millón de tokens y multiplicadores por fase sobre el coste medido por fase (2,98 $ por novela de 10 capítulos). Los importes de la PoC son los del bloque coste.",
+    "novelas_mes": 300,
+    "pvp_iva_eur": 59,
+    "cambios": [
+      {
+        "fase": "Investigación histórica",
+        "texto": "modo exhaustivo por defecto y un crítico que coteja las fechas vitales de los personajes históricos contra el corpus (cierra RT-09)"
+      },
+      {
+        "fase": "Canon y escaleta",
+        "texto": "un crítico en un modelo mayor antes de sellar, que mira coherencia de trama, arcos y fechas"
+      },
+      {
+        "fase": "Redacción",
+        "texto": "un crítico por capítulo, además de los validadores deterministas, y escritor y editor en Sonnet 5"
+      }
+    ],
+    "gates": "Los cinco gates humanos pasan a ser nodos críticos; la persona solo revisa por muestreo (≈5 min por novela en vez de 20)",
+    "escenarios": [
+      {
+        "nombre": "PoC v1",
+        "detalle": "Haiku 4.5 en todos los roles",
+        "tokens_eur": 2.77,
+        "revisiones_eur": 0.81,
+        "supervision_eur": 8.35,
+        "supervision_min": 20,
+        "infra_eur": 1.97,
+        "total_eur": 13.9,
+        "margen_eur": 34.86,
+        "margen_pct": 71.5
+      },
+      {
+        "nombre": "v2 A",
+        "detalle": "Sonnet 5 en roles clave",
+        "tokens_usd": 8.58,
+        "tokens_eur": 7.72,
+        "revisiones_factor": 2.8,
+        "revisiones_eur": 2.27,
+        "supervision_eur": 2.08,
+        "supervision_min": 5,
+        "infra_eur": 1.97,
+        "total_eur": 14.04,
+        "margen_eur": 34.72,
+        "margen_pct": 71.2
+      },
+      {
+        "nombre": "v2 B",
+        "detalle": "Opus 5 en arquitecto, críticos y juez",
+        "tokens_usd": 14.15,
+        "tokens_eur": 12.74,
+        "revisiones_factor": 3.3,
+        "revisiones_eur": 2.7,
+        "supervision_eur": 2.08,
+        "supervision_min": 5,
+        "infra_eur": 1.97,
+        "total_eur": 19.49,
+        "margen_eur": 29.27,
+        "margen_pct": 60
+      }
+    ],
+    "desarrollo": {
+      "tarifa_eur_h": 65,
+      "fases": [
+        {
+          "fase": "Diseño",
+          "horas": 40
+        },
+        {
+          "fase": "Desarrollo",
+          "horas": 90
+        },
+        {
+          "fase": "Validación",
+          "horas": 60
+        },
+        {
+          "fase": "Despliegue",
+          "horas": 20
+        }
+      ],
+      "total_horas": 210,
+      "total_eur": 13650,
+      "evals_eur": 300
+    },
+    "pie": "Precios oficiales por millón de tokens (entrada/salida): Haiku 4.5 1/5 $ · Sonnet 5 2/10 $ · Opus 5 5/25 $. Multiplicadores sobre el coste medido por fase (2,98 $ por novela de 10 capítulos): v2 A investigación ×3, trama ×3, escritura ×3, juez ×2; v2 B investigación ×5, trama ×9, escritura ×3, juez ×6 (Opus con ×1,2 por tokenizador). Estimación, no medición."
+  }
 }
