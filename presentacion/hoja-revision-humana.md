@@ -2,7 +2,7 @@
 
 Hoja de trabajo para la revisión que pide el enunciado: una persona puntúa una novela completa con la misma rúbrica que el juez, para comparar los dos juicios. El procedimiento completo está en [`docs/revision-humana.md`](../docs/revision-humana.md). Esta hoja no lo sustituye: solo te deja a mano dónde anotar.
 
-**Novela propuesta:** Madrid 1858, **versión 1**. Tiene 5 capítulos y se lee en unos 25 minutos. Ábrela desde el historial de la interfaz o con el PDF `backend/proyectos/lozoya/lozoya.v1.pdf`. La versión 2 de esta novela no sirve: salió de una regeneración que falló.
+**Primera revisión hecha:** `eval-04-boda` (Barcelona, 1928-1929), versión 1. Persona 8,75 frente a juez 7,88; el acta está en `docs/revision-humana.md` §5. Para una revisión nueva, genera la hoja con `cd backend && uv run storymaker revision hoja <novela>` y regístrala con `uv run storymaker revision registrar <novela> hoja.yaml --acta acta.md`.
 
 ## Tres reglas antes de empezar
 

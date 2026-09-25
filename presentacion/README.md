@@ -8,23 +8,24 @@ Propuesta técnico-comercial de StoryMaker, presentada por **Qapítulo, una inic
 
 | Fichero | Qué es | Estado |
 |---|---|---|
-| `storymaker-propuesta.pptx` | Deck principal, formato editable | En construcción |
-| `storymaker-propuesta.pdf` | Deck principal en PDF | Por exportar |
+| `storymaker-propuesta.pptx` | Deck principal, formato editable: 23 slides, texto editable, fuentes incrustadas y el guion como notas del orador | Hecho |
+| `storymaker-propuesta.pdf` | Deck principal en PDF, 23 slides | Hecho |
 | `anexo-arquitectura.pdf` | A1 · Topología del harness y techos de contexto por rol | Hecho · 6 páginas |
 | `anexo-tla-spec.pdf` | A2 · Máquina de estados TLA+ comentada y contraejemplos de TLC | Hecho · 6 páginas |
 | `anexo-esquema-sqlite.pdf` | A3 · Story bible en SQLite, por familias de tablas | Hecho · 5 páginas |
 | `anexo-validadores.pdf` | A4 · Validadores, punto de ejecución y si bloquean | Hecho · 5 páginas |
-| `anexo-evals-tabla.pdf` | A5 · Resultados completos por brief, con juez por criterio, tokens y coste | Por exportar |
-| `anexo-juez-vs-humano.pdf` | A6 · Rúbrica aplicada por el juez y por una persona a la misma novela | Por exportar, tras la revisión |
-| `anexo-red-team.pdf` | A7 · Casos adversariales, clase de evidencia y mitigación | Hecho · 3 páginas |
-| `anexo-sensibilidad.pdf` | A8 · Margen frente a precio de tokens y número de revisiones | Por exportar |
+| `anexo-evals-tabla.pdf` | A5 · Resultados completos por brief, con juez por criterio, tokens y coste | Hecho · 4 páginas |
+| `anexo-juez-vs-humano.pdf` | A6 · Rúbrica aplicada por el juez y por una persona a la misma novela (Barcelona 1929) | Hecho · 3 páginas |
+| `anexo-red-team.pdf` | A7 · Casos adversariales, clase de evidencia y mitigación | Hecho · 5 páginas |
+| `anexo-sensibilidad.pdf` | A8 · Margen frente a precio de tokens y revisiones, y escenarios de la versión 2 | Hecho · 4 páginas |
 | `demo.mp4`, o su enlace aquí si supera el límite de GitHub | Vídeo de la demo: un cambio del lector propagado a los capítulos afectados | Por grabar |
 | [`guion.md`](guion.md) | Guion slide por slide, con tiempos y preparación de preguntas | Hecho |
-| [`prompts-claude-design.md`](prompts-claude-design.md) | Prompts con los que se genera el deck en Claude Design | Hecho |
+| [`deck/`](deck) | Fuentes del deck: `index.html`, `datos.json` (todas las cifras y los datos de portada), `construir.py` (PDF + PPTX, desde `backend/`: `uv run --with python-pptx python ../presentacion/deck/construir.py`) e `incrustar_fuentes.ps1` | Hecho |
+| [`prompts-claude-design.md`](prompts-claude-design.md) | Especificación de contenido de cada slide, escrita al principio como prompts para Claude Design | Histórico |
 | [`anexos/`](anexos) | Fuentes HTML de los anexos, con `marca.css`, `marca.js` e `imprimir.py` (se ejecuta desde `backend/`: `uv run python ../presentacion/anexos/imprimir.py`) | Hecho |
-| [`capturas/`](capturas) | Capturas de la lectura web (Cádiz 1812 y Madrid 1919, versión 1) para las slides 6 y 16 | Hecho |
-| [`datos/`](datos) | `extraer.py` saca de las bases, en solo lectura, las cifras de evals y costes a `evals.md` y `evals.json` | Hecho; se vuelve a ejecutar al terminar las evals |
-| [`hoja-revision-humana.md`](hoja-revision-humana.md) | Hoja para puntuar a mano una novela con la rúbrica del juez | Por rellenar |
+| [`capturas/`](capturas) | Capturas de la lectura web, de Langfuse (con la clave tapada), de la demo y de la inspección con el MCP de Playwright | Hecho |
+| [`datos/`](datos) | `extraer.py` saca de las bases, en solo lectura, las cifras de evals y costes a `evals.md` y `evals.json` | Hecho |
+| [`hoja-revision-humana.md`](hoja-revision-humana.md) | Hoja para puntuar a mano una novela con la rúbrica del juez | Usada: el acta está en `docs/revision-humana.md` §5 |
 
 ## De dónde salen las cifras
 
