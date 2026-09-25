@@ -2,7 +2,7 @@
 
 Diez minutos de propuesta formal y cinco de preguntas técnicas. El guion sigue **slide a slide** el deck `storymaker-propuesta.pdf` / `.pptx`. Cada bloque «Qué decir» es también la nota del orador de su slide en el PPTX, así que el guion y el deck dicen lo mismo. Si cambias uno, cambia el otro: las notas salen de este fichero al reconstruir el deck.
 
-Suma **9:00** y deja un minuto de margen. Si vas justo, se recorta primero en la slide 10 y después en la 16. El ritmo es de unas **150 palabras por minuto**. No hace falta decirlo literal, pero sí mantener las cifras, porque son las que el tribunal va a buscar.
+Suma **9:30** y deja medio minuto de margen. Si vas justo, se recorta primero en la slide 10 y después en la 16. El ritmo es de unas **150 palabras por minuto**. No hace falta decirlo literal, pero sí mantener las cifras, porque son las que el tribunal va a buscar.
 
 | Bloque | Slides | Tiempo | Acumulado |
 |---|---|---|---|
@@ -13,8 +13,8 @@ Suma **9:00** y deja un minuto de margen. Si vas justo, se recorta primero en la
 | Validación, evaluación y observabilidad | 11-16 | 2:00 | 6:30 |
 | Guardrails | 17 | 0:30 | 7:00 |
 | Presupuesto y coste | 18-19 | 1:00 | 8:00 |
-| Demo y cierre | 20-21 | 1:00 | 9:00 |
-| Contraportada | 22 | — | — |
+| Demo, versión 2 y cierre | 20-22 | 1:30 | 9:30 |
+| Contraportada | 23 | — | — |
 
 ---
 
@@ -23,7 +23,7 @@ Suma **9:00** y deja un minuto de margen. Si vas justo, se recorta primero en la
 ### Slide 1 · Portada (0:15)
 
 **Qué decir.**
-> Buenos días. Soy [TU NOMBRE], de Qapítulo, una iniciativa de Qaracter. Venimos a proponer a Relicario una línea de producto nueva: la Novela Relicario, novelas históricas personalizadas para regalar, verificadas antes de llegar a quien las recibe.
+> Buenos días. Soy [TU NOMBRE], de Qapítulo, una iniciativa de Qaracter. Venimos a proponer a Relicario una línea de producto nueva: la Novela Relicario, novelas históricas personalizadas para regalar, verificadas antes de llegar a quien las recibe. Lo que os enseñamos es la prueba de concepto, la versión 1, funcionando de verdad; al final veréis cómo sería la versión 2.
 
 ### Slide 2 · Convertimos a la persona homenajeada en protagonista de un momento histórico real (0:15)
 
@@ -145,7 +145,7 @@ Suma **9:00** y deja un minuto de margen. Si vas justo, se recorta primero en la
 
 ---
 
-## Capítulo VIII · Demo y cierre (1:00)
+## Capítulo VIII · Demo, versión 2 y cierre (1:30)
 
 ### Slide 20 · El lector cambia un dato; solo se reescriben los capítulos que lo usan (0:40)
 
@@ -154,12 +154,19 @@ Suma **9:00** y deja un minuto de margen. Si vas justo, se recorta primero en la
 
 **Y en directo.** La rama `fase-6-regeneracion` tiene un gate de Regeneración pendiente. Si hay tiempo, apruébalo delante del tribunal y enseña cómo arranca. El resultado tarda minutos, así que remite a esta slide.
 
-### Slide 21 · Lo que queda por hacer antes de vender la primera novela (0:20)
+### Slide 21 · De la prueba de concepto a la versión 2: críticos internos en lugar de gates humanos (0:30)
 
 **Qué decir.**
-> Los riesgos, con franqueza. Hoy el modelo corre sobre una sesión de Claude Code, y producción necesita una API propia. El juez es el mismo modelo que escribe, y lo calibramos con revisión humana. Y las fechas de los personajes históricos que no están en el corpus las pone el arquitecto. Lo siguiente, por orden: un piloto de cincuenta novelas con Relicario, sacar esas fechas del corpus, y después un revisor de canon y escaleta con el arquitecto y el juez en un modelo mayor. Nos lo podemos permitir: los tokens son el veinte por ciento del coste.
+> Esto es la versión 1, una prueba de concepto. Hoy un humano aprueba cinco gates, y eso es lo que más cuesta: veinte minutos por novela. En la versión 2, esos gates los sustituyen críticos internos que revisan con más dureza la investigación histórica, el canon y la escaleta, y cada capítulo, con modelos mejores donde hace falta. Hay dos escenarios. Con Sonnet 5 en los roles clave, los tokens suben a 7,7 euros, pero la supervisión baja a cinco minutos por muestreo, y la novela cuesta prácticamente lo mismo, 14 euros, con un 71 % de margen. Con Opus 5 en el arquitecto, los críticos y el juez, cuesta 19,5 euros y el margen es del 60 %. Desarrollarlo son 210 horas, unos 14.000 euros.
 
-### Slide 22 · Contraportada
+**Si preguntan por qué no se hizo ya así.** Porque primero había que medir: sin los gates humanos no habríamos visto RT-07, RT-08 ni RT-09, y un crítico solo sustituye a un gate cuando las evals demuestran que caza lo mismo.
+
+### Slide 22 · Lo que queda por hacer antes de vender la primera novela (0:20)
+
+**Qué decir.**
+> Los riesgos, con franqueza. Hoy el modelo corre sobre una sesión de Claude Code, y producción necesita una API propia. El juez es el mismo modelo que escribe, y lo calibramos con revisión humana. Y las fechas de los personajes históricos que no están en el corpus las pone el arquitecto. Lo siguiente, por orden: un piloto de cincuenta novelas con Relicario, sacar esas fechas del corpus, que es un arreglo determinista, y después la versión 2 con sus críticos.
+
+### Slide 23 · Contraportada
 
 **Qué decir.**
 > Gracias. Quedamos a vuestra disposición para las preguntas técnicas.
@@ -175,6 +182,9 @@ Porque la separación es lo que da valor a las métricas. Si el mismo agente esc
 
 **¿Por qué todo en Haiku?**
 Porque es barato y el harness compensa lo que le falta: el contexto se entrega acotado, los validadores son código y el juez se calibra con revisión humana. Subir de modelo un rol es una línea de configuración. → §5 «Sobre el juez en Haiku», anexo A8.
+
+**¿Por qué no quitáis ya los gates humanos?**
+Porque en una prueba de concepto el humano es el instrumento de medida: gracias a él vimos los falsos positivos del guardrail, las etiquetas de privacidad y las fechas inventadas. Un crítico interno sustituye a un gate cuando las evals demuestran que caza lo mismo que el humano. Esa es la versión 2 (slide 21, anexo A8).
 
 **¿Por qué no usáis ya un modelo mayor o más agentes revisores?**
 Porque primero va lo determinista. El fallo del adversarial temporal se arregla exigiendo que las fechas salgan del corpus, sin gastar un token más. Un revisor de escaleta con un modelo mayor es el paso siguiente, para lo que no se puede calcular. El coste no es el freno: triplicar los tokens baja el margen del 71 % al 57 % (anexo A8).
